@@ -5,7 +5,7 @@ Copyright (c) 2019 - present AppSeed.us
 """
 
 from flask_wtf import FlaskForm
-from wtforms import TextField, PasswordField, DateField, SelectField, RadioField, SubmitField
+from wtforms import TextField, PasswordField, DateField, SelectField, RadioField, SubmitField, BooleanField
 from flask_wtf.file import FileField, FileRequired, FileAllowed
 from wtforms.validators import InputRequired, Email, DataRequired
 from flask_uploads import UploadSet
@@ -291,3 +291,8 @@ class UploadDataForm(FlaskForm):
     docs = UploadSet('documents', ['xls', 'xlsx', 'csv'])
     file = FileField    (validators=[FileAllowed(docs, 'Только файлы с расширением .xls, .xlsx и .csv!'), FileRequired('Файл пуст!')])
     submit = SubmitField('Загрузить')
+
+class TableSearchForm(FlaskForm):
+	region = SelectField(id='region')
+	not_found = BooleanField(id="not_found")
+	not_in_hospital = BooleanField(id="not_in_hospital")

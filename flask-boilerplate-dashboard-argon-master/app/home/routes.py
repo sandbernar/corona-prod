@@ -15,12 +15,13 @@ from flask_uploads import UploadSet
 import pandas as pd
 from opencage.geocoder import OpenCageGeocode
 import numpy as np
+from wtforms import SelectField
 
 key = '6670b10323b541bdbbf3e39bf07b7e46'
 geocoder = OpenCageGeocode(key)
-from app.home.forms import PatientForm, UploadDataForm
+from app.home.forms import PatientForm, UploadDataForm, TableSearchForm
 
-@blueprint.route('/index')
+@blueprint.route('/index', methods=['GET'])
 @login_required
 def index():
     
@@ -45,11 +46,33 @@ def tables():
     if not current_user.is_authenticated:
         return redirect(url_for('base_blueprint.login'))
 
+    form = TableSearchForm()
+    regions = np.unique([ p.region for p in Patient.query.filter_by().all()])
+
+    form.region.choices = [ ("Все Регионы", "Все Регионы") ] + [(r, r) for r in regions]
+    default_choice = "Все Регионы" if "region" not in request.args else request.args["region"]
+
     patients = []
-    for p in Patient.query.all():
+    filt = dict()
+    if "region" in request.args:
+        region = request.args["region"]
+        if region != "Все Регионы":
+            if region in regions:
+                filt["region"] = region
+                form.region.default = region
+
+    if "not_found" in request.args:
+        filt["is_found"] = False
+        form.not_found.default='checked'
+    if "not_in_hospital" in request.args:
+        filt["in_hospital"] = False
+        form.not_in_hospital.default='checked'
+
+    for p in Patient.query.filter_by(**filt).all():
         patients.append(p)
 
-    return route_template('tables', patients=patients)
+    form.process()
+    return route_template('tables', patients=patients, form=form)
 
 @blueprint.route('/<template>')
 def route_template(template, **kwargs):
@@ -75,8 +98,8 @@ def route_template(template, **kwargs):
     except TemplateNotFound:
         return render_template('error-404.html'), 404
     
-    except:
-        return render_template('error-500.html'), 500
+    # except:
+    #     return render_template('error-500.html'), 500
 
 ## Patient Handling
 
