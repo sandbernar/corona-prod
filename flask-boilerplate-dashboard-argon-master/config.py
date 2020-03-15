@@ -7,6 +7,8 @@ Copyright (c) 2019 - present AppSeed.us
 import os
 from   os import environ
 
+basedir = os.path.abspath(os.path.dirname(__file__))
+
 class Config(object):
 
     basedir    = os.path.abspath(os.path.dirname(__file__))
@@ -27,6 +29,7 @@ class Config(object):
     #    /static/<DEFAULT_THEME>/filename
     # DEFAULT_THEME = "themes/dark"
     DEFAULT_THEME = None
+    UPLOADED_DOCUMENTS_DEST = os.path.join(basedir, 'documents')
 
 
 class ProductionConfig(Config):

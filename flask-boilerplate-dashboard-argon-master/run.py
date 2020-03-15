@@ -7,6 +7,7 @@ Copyright (c) 2019 - present AppSeed.us
 from flask_migrate import Migrate
 from os import environ
 from sys import exit
+from flask_uploads import UploadSet, configure_uploads
 
 from config import config_dict
 from app import create_app, db
@@ -20,6 +21,9 @@ except KeyError:
 
 app = create_app(config_mode) 
 Migrate(app, db)
+
+docs = UploadSet('documents', ['xls', 'xlsx', 'csv'])
+configure_uploads(app, docs)
 
 if __name__ == "__main__":
     app.run()

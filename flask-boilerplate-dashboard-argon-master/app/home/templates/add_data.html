@@ -10,7 +10,9 @@
 
   {% include "site_template/navigation.html" %}
 
-  {% include "site_template/top-stats.html" %}
+  {% with stats=stats %}
+    {% include "site_template/top-stats.html" %}
+  {% endwith %}
 
   <div class="container-fluid mt--7">
 
@@ -40,19 +42,20 @@
                 <h3 class="mb-0">Добавить через Excel</h3>
               </div>
               <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                  {{ form.hidden_tag() }}
               <div class="row">
                 <div class="col">
-                <form>
                     <div class="custom-file">
-                        <input type="file" class="custom-file-input" id="customFileLang" lang="en">
+                      {{ form.file(class="custom-file-input", id="customFileLang", lang="ru") }}
                         <label class="custom-file-label" for="customFileLang">Select file</label>
                     </div>
-                </form>
               </div>
               <div class="col-md-auto">
-                <button class="btn btn-primary" type="button">Button</button>
+                {{ form.submit(class="btn btn-primary") }}
               </div>
               </div>
+                </form>
             </div>
             </div>
           </div>
