@@ -1,0 +1,67 @@
+{% extends "base_site.html" %}
+
+{% block title %} Icons {% endblock title %}
+
+{% block stylesheets %}
+  {{ super() }}
+{% endblock stylesheets %}
+
+{% block content %}
+
+  {% include "site_template/navigation.html" %}
+
+  {% include "site_template/top-stats.html" %}
+
+  <div class="container-fluid mt--7">
+
+      <div class="row">
+          <div class="col">
+            <div class="card shadow">
+              <div class="card-header bg-transparent">
+                <h3 class="mb-0">Инструкция</h3>
+              </div>
+              <div class="card-body">
+                <!-- <p> -->
+                Ваш Excel файл должен быть формата:
+                <img src="/static/assets/files/example_table.png">
+                <!-- </p> -->
+            </div>
+            </div>
+          </div>
+        </div>
+    
+      <!-- Table -->
+      <div class="row mt-5">
+          <div class="col">
+            <div class="card shadow">
+              <div class="card-header bg-transparent">
+                <h3 class="mb-0">Добавить через Excel</h3>
+              </div>
+              <div class="card-body">
+              <div class="row">
+                <div class="col">
+                <form>
+                    <div class="custom-file">
+                        <input type="file" class="custom-file-input" id="customFileLang" lang="en">
+                        <label class="custom-file-label" for="customFileLang">Select file</label>
+                    </div>
+                </form>
+              </div>
+              <div class="col-md-auto">
+                <button class="btn btn-primary" type="button">Button</button>
+              </div>
+              </div>
+            </div>
+            </div>
+          </div>
+        </div>
+
+        {% include "site_template/footer.html" %}
+          
+    </div>        
+
+{% endblock content %}
+
+{% block javascripts %}
+  {{ super()}}
+{% endblock javascripts %}
