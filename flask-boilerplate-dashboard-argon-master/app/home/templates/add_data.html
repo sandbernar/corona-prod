@@ -15,7 +15,15 @@
   {% endwith %}
 
   <div class="container-fluid mt--7">
-
+    {% if added > -1 %}
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <span class="alert-icon"><i class="ni ni-like-2"></i></span>
+        <span class="alert-text">{{ added }} пациентов было добавлено в базу данных</span>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    {% endif %}
       <div class="row">
           <div class="col">
             <div class="card shadow">

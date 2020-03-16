@@ -64,13 +64,14 @@ def create_user():
         username  = request.form['username']
         email     = request.form['email'   ]
 
+
         user = User.query.filter_by(username=username).first()
         if user:
-            return render_template( 'login/register.html', msg='Username already registered', form=create_account_form)
+            return render_template( 'login/register.html', msg='Имя пользователя уже зарегистрировано', form=create_account_form)
 
         user = User.query.filter_by(email=email).first()
         if user:
-            return render_template( 'login/register.html', msg='Email already registered', form=create_account_form)
+            return render_template( 'login/register.html', msg='Данный Email уже зарегистрирован', form=create_account_form)
 
         # else we can create the user
         user = User(**request.form)

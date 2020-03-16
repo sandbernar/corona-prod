@@ -88,6 +88,7 @@ def patient_profile():
             return render_template('error-404.html'), 404
         else:
             form = UpdateProfileForm()
+            updated = False
 
             if len(request.form):
                 if "hospital" in request.form:
@@ -97,6 +98,7 @@ def patient_profile():
                 patient.in_hospital = "in_hospital" in request.form 
                 db.session.add(patient)
                 db.session.commit()
+                updated = True
             
             form.hospital.default = patient.hospital
 
@@ -109,7 +111,7 @@ def patient_profile():
 
             age = 2020 - int(patient.dob.year)
             form.process()
-            return route_template('profile', patient=patient, age=age, form = form)
+            return route_template('profile', patient=patient, age=age, form = form, updated = updated)
 
     else:    
         return render_template('error-500.html'), 500
@@ -177,7 +179,7 @@ def add_patient():
     if not current_user.is_authenticated:
         return redirect(url_for('base_blueprint.login'))
 
-    patient_form = PatientForm(request.form)
+    patient_form = PatientForm()
     if 'create' in request.form:
 
         # fullname  = request.form['fullname']
@@ -188,8 +190,8 @@ def add_patient():
         new_dict['arrival_date'] = datetime.strptime(request.form['arrival_date'], '%Y-%m-%d')
         new_dict['dob'] = datetime.strptime(request.form['dob'], '%Y-%m-%d')
 
-        new_dict['is_found'] = (new_dict['is_found'] == 1)
-        new_dict['in_hospital'] = (new_dict['in_hospital'] == 1)
+        new_dict['is_found'] = int(new_dict['is_found'][0]) == 1
+        new_dict['in_hospital'] = int(new_dict['in_hospital'][0]) == 1
 
         # user = User.query.filter_by(username=username).first()
         # if user:
@@ -201,13 +203,21 @@ def add_patient():
 
         # # else we can create the user
         patient = Patient(**new_dict)
+
+        query = "{}, {}".format(patient.region, patient.home_address)
+        results = geocoder.geocode(query)
+        
+        if len(results):
+            patient.address_lat = results[0]['geometry']['lat']
+            patient.address_lng = results[0]['geometry']['lng']        
+
         db.session.add(patient)
         db.session.commit()
 
-        return route_template( 'add_person', form=patient_form)
+        return route_template( 'add_person', form=patient_form, added=True)
         # return render_template( 'login/register.html', success='User created please <a href="/login">login</a>', form=patient_form)
     else:
-        return route_template( 'add_person', form=patient_form)
+        return route_template( 'add_person', form=patient_form, added=False)
 
 @blueprint.route('/add_data', methods=['GET', 'POST'])
 def add_data():
@@ -224,6 +234,7 @@ def add_data():
 
         patients = pd.read_excel(docs.path(filename))
         print(patients)
+        added = 0
 
         for index, row in patients.iterrows():
             patient = Patient()
@@ -245,24 +256,17 @@ def add_data():
 
             query = "{}, {}".format(patient.region, patient.home_address)
             results = geocoder.geocode(query)
-            print(results)
+            
             if len(results):
                 patient.address_lat = results[0]['geometry']['lat']
                 patient.address_lng = results[0]['geometry']['lng']
 
             db.session.add(patient)
             db.session.commit()
-
-        # user = User.query.filter_by(username=username).first()
-        # if user:
-        #     return render_template( 'login/register.html', msg='Username already registered', form=patient_form)
-
-        # user = User.query.filter_by(email=email).first()
-        # if user:
-        #     return render_template( 'login/register.html', msg='Email already registered', form=patient_form)
+            added += 1
 
         # # else we can create the user
-        return route_template( 'add_data', form=data_form)
+        return route_template( 'add_data', form=data_form, added=added)
         # return render_template( 'login/register.html', success='User created please <a href="/login">login</a>', form=patient_form)
     else:
-        return route_template( 'add_data', form=data_form)
+        return route_template( 'add_data', form=data_form, added=-1)
