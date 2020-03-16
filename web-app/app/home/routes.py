@@ -16,6 +16,7 @@ import pandas as pd
 from opencage.geocoder import OpenCageGeocode
 import numpy as np
 from wtforms import SelectField
+import math
 
 key = '6670b10323b541bdbbf3e39bf07b7e46'
 geocoder = OpenCageGeocode(key)
@@ -54,6 +55,7 @@ def tables():
 
     patients = []
     filt = dict()
+
     if "region" in request.args:
         region = request.args["region"]
         if region != "Все Регионы":
@@ -68,11 +70,23 @@ def tables():
         filt["in_hospital"] = False
         form.not_in_hospital.default='checked'
 
-    for p in Patient.query.filter_by(**filt).all():
+    page = 1
+    per_page = 5
+    if "page" in request.args:
+        page = int(request.args["page"][0])
+
+    q = Patient.query.filter_by(**filt)
+    
+    total_len = q.count()
+
+    for p in q.offset((page-1)*per_page).limit(per_page).all():
         patients.append(p)
 
+    max_page = math.ceil(total_len/per_page)
+    print(max_page)
+
     form.process()
-    return route_template('tables', patients=patients, form=form)
+    return route_template('tables', patients=patients, form=form, page=page, max_page=max_page, total = total_len)
 
 @blueprint.route('/patient_profile', methods=['GET', 'POST'])
 @login_required
