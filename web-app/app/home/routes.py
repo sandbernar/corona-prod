@@ -38,7 +38,16 @@ def index():
         if p.address_lat:
             coordinates_patients.append(p)
 
-    return route_template('index', last_five_patients=last_five_patients, coordinates_patients=coordinates_patients)
+    patients = [ p for p in Patient.query.filter_by().all()]
+    regions = dict()
+    for p in patients:
+        found_hospital = regions.get(p.region, (0, 0))
+        print(found_hospital, p.region, int(p.is_found), int(p.in_hospital))
+        regions[p.region] = (found_hospital[0] + (1 - int(p.is_found)), found_hospital[1] + (1 - int(p.in_hospital)))
+
+    print(regions)
+
+    return route_template('index', last_five_patients=last_five_patients, coordinates_patients=coordinates_patients, regions=regions)
 
 @blueprint.route('/tables')
 @login_required
@@ -83,7 +92,6 @@ def tables():
         patients.append(p)
 
     max_page = math.ceil(total_len/per_page)
-    print(max_page)
 
     form.process()
     return route_template('tables', patients=patients, form=form, page=page, max_page=max_page, total = total_len)

@@ -28,7 +28,27 @@
             <div id="map" class="map-canvas"></div>
           </div>
       </div>
+      <div class="col-xl-4">
+        <div class="card shadow">
+          <div class="card-header bg-transparent">
+            <div class="row align-items-center">
+              <div class="col">
+                <h6 class="text-uppercase text-muted ls-1 mb-1">Статистика</h6>
+                <h2 class="mb-0">Не Найдены</h2>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <!-- Chart -->
+            <div class="chart">
+              <canvas id="not-found"></canvas>
+            </div>
+
+        </div>
+      </div>
+    </div>      
     </div>
+
     <div class="row mt-5">
       <div class="col-xl mb-5">
         <div class="card shadow">
@@ -89,6 +109,25 @@
           </div>
         </div>
       </div>
+      <div class="col-xl-4">
+        <div class="card shadow">
+          <div class="card-header bg-transparent">
+            <div class="row align-items-center">
+              <div class="col">
+                <h6 class="text-uppercase text-muted ls-1 mb-1">Статистика</h6>
+                <h2 class="mb-0">Не Госпитализированы</h2>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <!-- Chart -->
+            <div class="chart">
+              <canvas id="not-in-hospital"></canvas>
+            </div>
+
+        </div>
+      </div>
+    </div>        
     </div>
 
     {% include "site_template/footer.html" %}
@@ -96,6 +135,8 @@
   </div>
 
 {% endblock content %}
+
+        
 
 
 {% block javascripts %}
@@ -133,6 +174,58 @@ function init() {
         //     iconColor: '#735184'
         // }))
 }
+
+new Chart(document.getElementById("not-found"), {
+    type: 'pie',
+    data: {    
+      labels:       [
+        {% for region in regions %}
+                "{{ region }}", 
+        {% endfor %}
+      ],
+      datasets: [{
+        label: "Не найдены",
+        backgroundColor: ["#3e95cd", "#8e5ea2","#3cba9f","#e8c3b9","#c45850"],
+        data: [
+        {% for region in regions %}
+                {{ regions[region][0] }}, 
+        {% endfor %}
+        ]
+      }]
+    },
+    options: {
+      title: {
+        display: true,
+        text: 'Не найдены (по регионам)'
+      }
+    }
+});
+
+new Chart(document.getElementById("not-in-hospital"), {
+    type: 'pie',
+    data: {    
+      labels:       [
+        {% for region in regions %}
+                "{{ region }}", 
+        {% endfor %}
+      ],
+      datasets: [{
+        label: "Не найдены",
+        backgroundColor: ["#3e95cd", "#8e5ea2","#3cba9f","#e8c3b9","#c45850"],
+        data: [
+        {% for region in regions %}
+                {{ regions[region][1] }}, 
+        {% endfor %}
+        ]
+      }]
+    },
+    options: {
+      title: {
+        display: true,
+        text: 'Не найдены (по регионам)'
+      }
+    }
+});
 
 </script>
 {{ super()}}
