@@ -116,33 +116,6 @@ def patient_profile():
     else:    
         return render_template('error-500.html'), 500
 
-
-    # form = TableSearchForm()
-    # regions = np.unique([ p.region for p in Patient.query.filter_by().all()])
-
-    # form.region.choices = [ ("Все Регионы", "Все Регионы") ] + [(r, r) for r in regions]
-    # default_choice = "Все Регионы" if "region" not in request.args else request.args["region"]
-
-    # patients = []
-    # filt = dict()
-    # if "region" in request.args:
-    #     region = request.args["region"]
-    #     if region != "Все Регионы":
-    #         if region in regions:
-    #             filt["region"] = region
-    #             form.region.default = region
-
-    # if "not_found" in request.args:
-    #     filt["is_found"] = False
-    #     form.not_found.default='checked'
-    # if "not_in_hospital" in request.args:
-    #     filt["in_hospital"] = False
-    #     form.not_in_hospital.default='checked'
-
-    # for p in Patient.query.filter_by(**filt).all():
-    #     patients.append(p)
-
-    # form.process()
     return route_template('profile')
 
 @blueprint.route('/<template>')
@@ -193,13 +166,15 @@ def add_patient():
         new_dict['is_found'] = int(new_dict['is_found'][0]) == 1
         new_dict['in_hospital'] = int(new_dict['in_hospital'][0]) == 1
 
-        # user = User.query.filter_by(username=username).first()
-        # if user:
-        #     return render_template( 'login/register.html', msg='Username already registered', form=patient_form)
+        patient = Patient.query.filter_by(iin=new_dict["iin"][0]).first()
+        if patient:
+            msg = 'Пациент с ИИН {} уже есть в базе'.format(new_dict["iin"][0])
+            return route_template( 'add_person', form=PatientForm(request.form), added=False, error_msg=msg)
 
-        # user = User.query.filter_by(email=email).first()
-        # if user:
-        #     return render_template( 'login/register.html', msg='Email already registered', form=patient_form)
+        patient = Patient.query.filter_by(pass_num=new_dict["pass_num"][0]).first()
+        if patient:
+            msg = 'Пациент с Номером Паспорта {} уже есть в базе'.format(new_dict["pass_num"][0])
+            return route_template( 'add_person', form=PatientForm(request.form), added=False, error_msg=msg)
 
         # # else we can create the user
         patient = Patient(**new_dict)
@@ -214,10 +189,10 @@ def add_patient():
         db.session.add(patient)
         db.session.commit()
 
-        return route_template( 'add_person', form=patient_form, added=True)
+        return route_template( 'add_person', form=patient_form, added=True, error_msg=None)
         # return render_template( 'login/register.html', success='User created please <a href="/login">login</a>', form=patient_form)
     else:
-        return route_template( 'add_person', form=patient_form, added=False)
+        return route_template( 'add_person', form=patient_form, added=False, error_msg=None)
 
 @blueprint.route('/add_data', methods=['GET', 'POST'])
 def add_data():
