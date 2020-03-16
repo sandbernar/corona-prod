@@ -19,7 +19,7 @@ from wtforms import SelectField
 
 key = '6670b10323b541bdbbf3e39bf07b7e46'
 geocoder = OpenCageGeocode(key)
-from app.home.forms import PatientForm, UploadDataForm, TableSearchForm
+from app.home.forms import PatientForm, UploadDataForm, TableSearchForm, UpdateProfileForm
 
 @blueprint.route('/index', methods=['GET'])
 @login_required
@@ -30,12 +30,12 @@ def index():
 
     last_five_patients = []
     for p in Patient.query.order_by(Patient.id.desc()).limit(5).all():
-        last_five_patients.append([p.full_name, p.is_found, p.in_hospital, p.hospital, p.visited_country])
+        last_five_patients.append(p)
 
     coordinates_patients = []
     for p in Patient.query.all():
         if p.address_lat:
-            coordinates_patients.append((p.address_lat, p.address_lng, p.full_name))
+            coordinates_patients.append(p)
 
     return route_template('index', last_five_patients=last_five_patients, coordinates_patients=coordinates_patients)
 
@@ -74,6 +74,75 @@ def tables():
     form.process()
     return route_template('tables', patients=patients, form=form)
 
+@blueprint.route('/patient_profile', methods=['GET', 'POST'])
+@login_required
+def patient_profile():
+    
+    if not current_user.is_authenticated:
+        return redirect(url_for('base_blueprint.login'))
+
+    if "id" in request.args:
+        patient = Patient.query.filter_by(id=request.args["id"]).first()
+        
+        if not patient:
+            return render_template('error-404.html'), 404
+        else:
+            form = UpdateProfileForm()
+
+            if len(request.form):
+                if "hospital" in request.form:
+                    patient.hospital = request.form["hospital"]
+                
+                patient.is_found = "is_found" in request.form 
+                patient.in_hospital = "in_hospital" in request.form 
+                db.session.add(patient)
+                db.session.commit()
+            
+            form.hospital.default = patient.hospital
+
+            if patient.is_found:
+                form.is_found.default = 'checked'
+            
+            if patient.in_hospital:
+                form.in_hospital.default='checked'
+
+
+            age = 2020 - int(patient.dob.year)
+            form.process()
+            return route_template('profile', patient=patient, age=age, form = form)
+
+    else:    
+        return render_template('error-500.html'), 500
+
+
+    # form = TableSearchForm()
+    # regions = np.unique([ p.region for p in Patient.query.filter_by().all()])
+
+    # form.region.choices = [ ("Все Регионы", "Все Регионы") ] + [(r, r) for r in regions]
+    # default_choice = "Все Регионы" if "region" not in request.args else request.args["region"]
+
+    # patients = []
+    # filt = dict()
+    # if "region" in request.args:
+    #     region = request.args["region"]
+    #     if region != "Все Регионы":
+    #         if region in regions:
+    #             filt["region"] = region
+    #             form.region.default = region
+
+    # if "not_found" in request.args:
+    #     filt["is_found"] = False
+    #     form.not_found.default='checked'
+    # if "not_in_hospital" in request.args:
+    #     filt["in_hospital"] = False
+    #     form.not_in_hospital.default='checked'
+
+    # for p in Patient.query.filter_by(**filt).all():
+    #     patients.append(p)
+
+    # form.process()
+    return route_template('profile')
+
 @blueprint.route('/<template>')
 def route_template(template, **kwargs):
 
@@ -98,8 +167,8 @@ def route_template(template, **kwargs):
     except TemplateNotFound:
         return render_template('error-404.html'), 404
     
-    # except:
-    #     return render_template('error-500.html'), 500
+    except:
+        return render_template('error-500.html'), 500
 
 ## Patient Handling
 

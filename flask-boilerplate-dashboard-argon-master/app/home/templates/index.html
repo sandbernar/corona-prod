@@ -58,27 +58,29 @@
               {% for patient in last_five_patients %}
                 <tr>
                   <th scope="row">
-                    {{ patient[0] }}
+                    <a href="/patient_profile?id={{patient.id}}">
+                      {{ patient.full_name }}
+                    </a>
                   </th>
                   <td>
-                    {% if patient[1] %}
+                    {% if patient.is_found %}
                       <font color="green">Да</font>
                     {% else %}
                       <font color="red">Нет</font>
                     {% endif %}
                   </td>
                   <td>
-                    {% if patient[2] %}
+                    {% if patient.in_hospital %}
                       <font color="green">Да</font>
                     {% else %}
                       <font color="red">Нет</font>
                     {% endif %}
                   </td>
                   <td>
-                    {{ patient[3] }}
+                    {{ patient.hospital }}
                   </td>
                   <td>
-                    {{ patient[4] }}
+                    {{ patient.visited_country }}
                   </td>                  
                 </tr>
                 {% endfor %}            
@@ -110,12 +112,18 @@ function init() {
         })
 
     myMap.geoObjects
-        {% for coordinate in coordinates_patients %}
-        .add(new ymaps.Placemark([{{ coordinate[0] }}, {{ coordinate[1] }} ], {
-            balloonContent: '{{ coordinate[2] }}'
+        {% for p in coordinates_patients %}
+        .add(new ymaps.Placemark([{{ p.address_lat }}, {{ p.address_lng }} ], {
+            balloonContent: '<a href="/patient_profile?id={{p.id}}">{{ p.full_name }}</a>'
         }, {
             preset: 'islands#icon',
-            iconColor: '#0095b6'
+            {% if not p.is_found and not p.in_hospital %}
+            iconColor: 'red'
+            {% elif p.is_found and not p.in_hospital %}
+            iconColor: 'yellow'
+            {% else %}
+            iconColor: 'green'
+            {% endif %}
         }))
         {% endfor %}            
         // .add(new ymaps.Placemark([55.833436, 37.715175], {

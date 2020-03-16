@@ -296,3 +296,8 @@ class TableSearchForm(FlaskForm):
 	region = SelectField(id='region')
 	not_found = BooleanField(id="not_found")
 	not_in_hospital = BooleanField(id="not_in_hospital")
+
+class UpdateProfileForm(FlaskForm):
+	is_found = BooleanField(id="is_found")
+	in_hospital = BooleanField(id="in_hospital")
+	hospital = TextField('Hospital', id='hospital')
