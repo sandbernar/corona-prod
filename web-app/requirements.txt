@@ -3,7 +3,9 @@ flask_login
 flask_migrate
 flask_wtf
 flask_sqlalchemy
-flask_upload
+flask-uploads
 gunicorn
 xlrd
 opencage
+werkzeug==0.16.0
+pandas
