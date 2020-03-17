@@ -48,45 +48,38 @@
           <table class="table align-items-center table-flush">
             <thead class="thead-light">
               <tr>
-                <th scope="col">ФИО</th>
-                <th scope="col">Телефон</th>
-                <th scope="col">Дата Въезда</th>
                 <th scope="col">Регион</th>
-                <th scope="col">Найден</th>
-                <th scope="col">Госпитализирован</th>
+                <th scope="col">Название</th>
+                <th scope="col">Тип</th>
+                <th scope="col">Адрес</th>
+                <th scope="col">Мед. Защита</th>
+                <th scope="col">Тесты</th>
               </tr>
             </thead>
             <tbody>
-              {% for patient in patients %}
+              {% for hospital in hospitals %}
               <tr>
                 <th scope="row">
                   <div class="media align-items-center">
                     <div class="media-body">
-                      <span class="mb-0 text-sm"><a href="/patient_profile?id={{patient.id}}">{{ patient.full_name }}</a></span>
+                      <span class="mb-0 text-sm">{{ hospital.region }}</span>
                     </div>
                   </div>
                 </th>
                 <td>
-                  {{ patient.telephone }}
+                  {{ hospital.name }}
                 </td>
                 <td>
-                  {{ patient.arrival_date }}
+                  {{ hospital.hospital_type }}
                 </td>
                 <td>
-                  {{ patient.region }}
+                  {{ hospital.address }}
                 </td>
                 <td>
-                  {% if patient.is_found %}
-                  <font color="green">Да</font>
-                  {% else %}
-                  <font color="red">Нет</font>
-                {% endif %}                        </td>
+                  {{ hospital.meds_amount }}
+                </td>
                 <td>
-                  {% if patient.in_hospital %}
-                  <font color="green">Да</font>
-                  {% else %}
-                  <font color="red">Нет</font>
-                {% endif %}                        </td>
+                  {{ hospital.tests_amount }}</td>
               </tr>
               {% endfor %}
 

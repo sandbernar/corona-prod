@@ -10,7 +10,7 @@ from flask_login import login_required, current_user
 from app import login_manager, db
 from app import constants as c
 from jinja2 import TemplateNotFound
-from app.home.models import Patient
+from app.home.models import Patient, Hospital
 from datetime import datetime
 from flask_uploads import UploadSet
 import pandas as pd
@@ -18,10 +18,10 @@ from opencage.geocoder import OpenCageGeocode
 import numpy as np
 from wtforms import SelectField
 import math
+from app.home.forms import PatientForm, UploadDataForm, TableSearchForm, UpdateProfileForm, AddHospitalsDataForm
 
 key = '6670b10323b541bdbbf3e39bf07b7e46'
 geocoder = OpenCageGeocode(key)
-from app.home.forms import PatientForm, UploadDataForm, TableSearchForm, UpdateProfileForm
 
 @blueprint.route('/index', methods=['GET'])
 @login_required
@@ -279,11 +279,39 @@ def all_hospitals():
     if not current_user.is_authenticated:
         return redirect(url_for('base_blueprint.login'))
     form = TableSearchForm()
-    regions = np.unique([ p.region for p in Patient.query.all()])
+    print([ h.region for h in Hospital.query.all()])
+    regions = np.unique([ h.region for h in Hospital.query.all()])
 
-    form.region.choices = [ (c.all_regions, c.all_regions) ] + [(r, r) for r in regions]    
+    form.region.choices = [ (c.all_regions, c.all_regions) ] + [(r, r) for r in regions]
+    default_choice = c.all_regions if "region" not in request.args else request.args["region"]
 
-    return route_template('hospitals', patients=[], form=form, page=1, max_page=1, total = 1)
+    hospitals = []
+    filt = dict()
+
+    if "region" in request.args:
+        region = request.args["region"]
+        if region != c.all_regions:
+            if region in regions:
+                filt["region"] = region
+                form.region.default = region
+
+    page = 1
+    per_page = 5
+    if "page" in request.args:
+        page = int(request.args["page"][0])
+
+    q = Hospital.query.filter_by(**filt)
+    
+    total_len = q.count()
+
+    for h in q.offset((page-1)*per_page).limit(per_page).all():
+        hospitals.append(h)
+
+    max_page = math.ceil(total_len/per_page)
+
+    form.process()    
+
+    return route_template('hospitals', hospitals=hospitals, form=form, page=page, max_page=max_page, total = total_len)
 
 
 @blueprint.route('/add_hospital', methods=['GET', 'POST'])
@@ -332,3 +360,53 @@ def add_hospital():
         # return render_template( 'login/register.html', success='User created please <a href="/login">login</a>', form=patient_form)
     else:
         return route_template( 'add_person', form=patient_form, added=False, error_msg=None)
+
+@blueprint.route('/add_hospitals_csv', methods=['GET', 'POST'])
+def add_hospitals_csv():
+    if not current_user.is_authenticated:
+        return redirect(url_for('base_blueprint.login'))
+
+    data_form = AddHospitalsDataForm()
+    docs = UploadSet('documents', 'csv')
+
+    if "submit" in request.form:
+        filename = docs.save(data_form.file.data)
+        file_url = docs.url(filename)
+
+        hospitals = pd.read_csv(docs.path(filename))
+        added = 0
+
+        def get_default(l, index, default_val):
+            try:
+                return l[index]
+            except IndexError:
+                return default_val
+        print(data_form.region)
+        for index, row in hospitals.iterrows():
+            hospital = Hospital()
+
+            hospital.name = row[0]
+            hospital.address = row[1]
+            hospital.beds_amount = get_default(row, 2, 0)
+            hospital.meds_amount = get_default(row, 3, 0)
+            hospital.tests_amount = get_default(row, 4, 0)
+            hospital.tests_used = get_default(row, 5, 0)
+            hospital.region = request.form["region"]
+            hospital.hospital_type = request.form["hospital_type"]
+
+            query = "{}, {}".format(data_form.region, hospital.address)
+            results = geocoder.geocode(query)
+            
+            if len(results):
+                hospital.address_lat = results[0]['geometry']['lat']
+                hospital.address_lng = results[0]['geometry']['lng']
+
+            db.session.add(hospital)
+            db.session.commit()
+            added += 1
+
+        # # else we can create the user
+        return route_template( 'add_hospitals_csv', form=data_form, added=added)
+        # return render_template( 'login/register.html', success='User created please <a href="/login">login</a>', form=patient_form)
+    else:
+        return route_template( 'add_hospitals_csv', form=data_form, added=-1)        

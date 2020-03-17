@@ -301,3 +301,12 @@ class UpdateProfileForm(FlaskForm):
 	is_found = BooleanField(id="is_found")
 	in_hospital = BooleanField(id="in_hospital")
 	hospital = TextField('Hospital', id='hospital')
+
+class AddHospitalsDataForm(UploadDataForm):
+	region = TextField('Region', id='region'   , validators=[DataRequired()])
+	hospital_type = SelectField('Hospital Type', id='hospital_type',
+    	default=0,
+    	choices=[(0, "Больница"),
+    			(1, "Диспансер"),
+    			(2, "Поликлиника")])
+

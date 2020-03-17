@@ -61,3 +61,28 @@ class Region(db.Model):
 
     def __repr__(self):
         return str(self.id)
+
+class Hospital(db.Model):
+
+    __tablename__ = 'Hospital'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String, unique=False)
+    address = Column(String, unique=False)
+    region = Column(String, unique=False)
+    address_lat = Column(Float, unique=False)
+    address_lng = Column(Float, unique=False)
+    beds_amount = Column(Integer, unique=False)
+    meds_amount = Column(Integer, unique=False)
+    tests_amount = Column(Integer, unique=False)
+    tests_used = Column(Integer, unique=False)
+
+    def __init__(self, **kwargs):
+        for property, value in kwargs.items():
+            if hasattr(value, '__iter__') and not isinstance(value, str):
+                value = value[0]
+                
+            setattr(self, property, value)
+
+    def __repr__(self):
+        return str(self.id)
