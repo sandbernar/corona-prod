@@ -9,3 +9,4 @@ xlrd
 opencage
 werkzeug==0.16.0
 pandas
+psycopg2
