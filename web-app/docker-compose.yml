@@ -13,8 +13,3 @@ services:
     volumes:
       - ./app:/app
       - ./migrations:/migrations
-networks:
-  db_network:
-    driver: bridge
-  web_network:
-    driver: bridge
