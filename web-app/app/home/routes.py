@@ -47,111 +47,8 @@ def index():
 
     return route_template('index', last_five_patients=last_five_patients, coordinates_patients=coordinates_patients, regions=regions)
 
-@blueprint.route('/tables')
-@login_required
-def tables():
-    
-    if not current_user.is_authenticated:
-        return redirect(url_for('base_blueprint.login'))
-
-    form = TableSearchForm()
-    regions = np.unique([ p.region for p in Patient.query.all()])
-
-    form.region.choices = [ (c.all_regions, c.all_regions) ] + [(r, r) for r in regions]
-    default_choice = c.all_regions if "region" not in request.args else request.args["region"]
-
-    patients = []
-    filt = dict()
-
-    if "region" in request.args:
-        region = request.args["region"]
-        if region != c.all_regions:
-            if region in regions:
-                filt["region"] = region
-                form.region.default = region
-
-    if "not_found" in request.args:
-        filt["is_found"] = False
-        form.not_found.default='checked'
-    if "not_in_hospital" in request.args:
-        filt["in_hospital"] = False
-        form.not_in_hospital.default='checked'
-
-    page = 1
-    per_page = 5
-    if "page" in request.args:
-        page = int(request.args["page"][0])
-
-    q = Patient.query.filter_by(**filt)
-    
-    total_len = q.count()
-
-    for p in q.offset((page-1)*per_page).limit(per_page).all():
-        patients.append(p)
-
-    max_page = math.ceil(total_len/per_page)
-
-    form.process()
-    return route_template('tables', patients=patients, form=form, page=page, max_page=max_page, total = total_len)
-
-@blueprint.route('/delete_patient', methods=['POST'])
-@login_required
-def delete_patient():
-    if not current_user.is_authenticated:
-        return redirect(url_for('base_blueprint.login'))
-
-    if len(request.form):
-        if "delete" in request.form:
-            Patient.query.filter(Patient.id == request.form["delete"][0]).delete()
-            db.session.commit()
-
-    return redirect(url_for('home_blueprint.tables'))
-
-@blueprint.route('/patient_profile', methods=['GET', 'POST'])
-@login_required
-def patient_profile():
-    if not current_user.is_authenticated:
-        return redirect(url_for('base_blueprint.login'))
-
-    if "id" in request.args:
-        patient = Patient.query.filter_by(id=request.args["id"]).first()
-        
-        if not patient:
-            return render_template('error-404.html'), 404
-        else:
-            form = UpdateProfileForm()
-            updated = False
-
-            if len(request.form):
-                if "hospital" in request.form:
-                    patient.hospital = request.form["hospital"]
-                
-                patient.is_found = "is_found" in request.form 
-                patient.in_hospital = "in_hospital" in request.form 
-                db.session.add(patient)
-                db.session.commit()
-                updated = True
-            
-            form.hospital.default = patient.hospital
-
-            if patient.is_found:
-                form.is_found.default = 'checked'
-            
-            if patient.in_hospital:
-                form.in_hospital.default='checked'
-
-
-            age = 2020 - int(patient.dob.year)
-            form.process()
-            return route_template('profile', patient=patient, age=age, form = form, updated = updated)
-    else:    
-        return render_template('error-500.html'), 500
-
-    return route_template('profile')
-
 @blueprint.route('/<template>')
 def route_template(template, **kwargs):
-
     if not current_user.is_authenticated:
         return redirect(url_for('base_blueprint.login'))
 
@@ -176,7 +73,7 @@ def route_template(template, **kwargs):
     except:
         return render_template('error-500.html'), 500
 
-## Patient Handling
+# Patients
 
 @blueprint.route('/add_person', methods=['GET', 'POST'])
 def add_patient():
@@ -236,10 +133,8 @@ def add_data():
     if data_form.validate_on_submit():
         filename = docs.save(data_form.file.data)
         file_url = docs.url(filename)
-        print(docs.path(filename))
 
         patients = pd.read_excel(docs.path(filename))
-        print(patients)
         added = 0
 
         for index, row in patients.iterrows():
@@ -276,3 +171,164 @@ def add_data():
         # return render_template( 'login/register.html', success='User created please <a href="/login">login</a>', form=patient_form)
     else:
         return route_template( 'add_data', form=data_form, added=-1)
+
+@blueprint.route('/patients')
+@login_required
+def patients():
+    if not current_user.is_authenticated:
+        return redirect(url_for('base_blueprint.login'))
+
+    form = TableSearchForm()
+    regions = np.unique([ p.region for p in Patient.query.all()])
+
+    form.region.choices = [ (c.all_regions, c.all_regions) ] + [(r, r) for r in regions]
+    default_choice = c.all_regions if "region" not in request.args else request.args["region"]
+
+    patients = []
+    filt = dict()
+
+    if "region" in request.args:
+        region = request.args["region"]
+        if region != c.all_regions:
+            if region in regions:
+                filt["region"] = region
+                form.region.default = region
+
+    if "not_found" in request.args:
+        filt["is_found"] = False
+        form.not_found.default='checked'
+    if "not_in_hospital" in request.args:
+        filt["in_hospital"] = False
+        form.not_in_hospital.default='checked'
+
+    page = 1
+    per_page = 5
+    if "page" in request.args:
+        page = int(request.args["page"][0])
+
+    q = Patient.query.filter_by(**filt)
+    
+    total_len = q.count()
+
+    for p in q.offset((page-1)*per_page).limit(per_page).all():
+        patients.append(p)
+
+    max_page = math.ceil(total_len/per_page)
+
+    form.process()
+    return route_template('patients', patients=patients, form=form, page=page, max_page=max_page, total = total_len)
+
+@blueprint.route('/delete_patient', methods=['POST'])
+@login_required
+def delete_patient():
+    if not current_user.is_authenticated:
+        return redirect(url_for('base_blueprint.login'))
+
+    if len(request.form):
+        if "delete" in request.form:
+            Patient.query.filter(Patient.id == request.form["delete"][0]).delete()
+            db.session.commit()
+
+    return redirect(url_for('home_blueprint.patients'))
+
+@blueprint.route('/patient_profile', methods=['GET', 'POST'])
+@login_required
+def patient_profile():
+    if not current_user.is_authenticated:
+        return redirect(url_for('base_blueprint.login'))
+
+    if "id" in request.args:
+        patient = Patient.query.filter_by(id=request.args["id"]).first()
+        
+        if not patient:
+            return render_template('error-404.html'), 404
+        else:
+            form = UpdateProfileForm()
+            updated = False
+
+            if len(request.form):
+                if "hospital" in request.form:
+                    patient.hospital = request.form["hospital"]
+                
+                patient.is_found = "is_found" in request.form 
+                patient.in_hospital = "in_hospital" in request.form 
+                db.session.add(patient)
+                db.session.commit()
+                updated = True
+            
+            form.hospital.default = patient.hospital
+
+            if patient.is_found:
+                form.is_found.default = 'checked'
+            
+            if patient.in_hospital:
+                form.in_hospital.default='checked'
+
+
+            age = 2020 - int(patient.dob.year)
+            form.process()
+            return route_template('profile', patient=patient, age=age, form = form, updated = updated)
+    else:    
+        return render_template('error-500.html'), 500
+
+# Hospitals
+
+@blueprint.route('/hospitals')
+@login_required
+def all_hospitals():
+    if not current_user.is_authenticated:
+        return redirect(url_for('base_blueprint.login'))
+    form = TableSearchForm()
+    regions = np.unique([ p.region for p in Patient.query.all()])
+
+    form.region.choices = [ (c.all_regions, c.all_regions) ] + [(r, r) for r in regions]    
+
+    return route_template('hospitals', patients=[], form=form, page=1, max_page=1, total = 1)
+
+
+@blueprint.route('/add_hospital', methods=['GET', 'POST'])
+def add_hospital():
+    if not current_user.is_authenticated:
+        return redirect(url_for('base_blueprint.login'))
+
+    patient_form = PatientForm()
+    if 'create' in request.form:
+
+        # fullname  = request.form['fullname']
+        # iin     = request.form['iin'   ]
+        # dob = request.form['dob']
+        new_dict = request.form.to_dict(flat=False)
+
+        new_dict['arrival_date'] = datetime.strptime(request.form['arrival_date'], '%Y-%m-%d')
+        new_dict['dob'] = datetime.strptime(request.form['dob'], '%Y-%m-%d')
+
+        new_dict['is_found'] = int(new_dict['is_found'][0]) == 1
+        new_dict['in_hospital'] = int(new_dict['in_hospital'][0]) == 1
+
+        patient = Patient.query.filter_by(iin=new_dict["iin"][0]).first()
+        if patient:
+            msg = 'Пациент с ИИН {} уже есть в базе'.format(new_dict["iin"][0])
+            return route_template( 'add_person', form=PatientForm(request.form), added=False, error_msg=msg)
+
+        patient = Patient.query.filter_by(pass_num=new_dict["pass_num"][0]).first()
+        if patient:
+            msg = 'Пациент с Номером Паспорта {} уже есть в базе'.format(new_dict["pass_num"][0])
+            return route_template( 'add_person', form=PatientForm(request.form), added=False, error_msg=msg)
+
+        # # else we can create the user
+        patient = Patient(**new_dict)
+
+        query = "{}, {}".format(patient.region, patient.home_address)
+        results = geocoder.geocode(query)
+        
+        if len(results):
+            patient.address_lat = results[0]['geometry']['lat']
+            patient.address_lng = results[0]['geometry']['lng']        
+
+        db.session.add(patient)
+        db.session.commit()
+
+        return route_template( 'add_person', form=patient_form, added=True, error_msg=None)
+        # return render_template( 'login/register.html', success='User created please <a href="/login">login</a>', form=patient_form)
+    else:
+        return route_template( 'add_person', form=patient_form, added=False, error_msg=None)

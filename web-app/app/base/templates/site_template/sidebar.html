@@ -98,23 +98,36 @@
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/tables">
+            <a class="nav-link" href="/patients">
               <i class="ni ni-bullet-list-67 text-blue"></i> Все Пациенты
             </a>
+          </li>       
+        </ul>
+        <hr class="my-3">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link" href="/hospitals">
+              <i class="ni ni-ambulance text-blue"></i> Все Больницы
+            </a>
           </li>          
-          
+          <li class="nav-item">
+            <a class="nav-link" href="/add_hospital">
+              <i class="ni ni-fat-add text-blue"></i> Добавить Больницу
+            </a>
+          </li>
+        </ul>
+
+        <hr class="my-3">
 
           {% if current_user.is_authenticated %}
-
+        <ul class="navbar-nav">
             <li class="nav-item">
               <a class="nav-link" href={{ url_for('base_blueprint.logout') }}>
                 <i class="ni ni-user-run text-red"></i> Выйти
               </a>
             </li>
-
+        </ul>
           {% endif %}
-
-
       </div>
     </div>
   </nav>
