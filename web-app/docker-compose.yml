@@ -7,9 +7,6 @@ services:
     build: .
     ports:
       - "5005:5005"
-    networks:
-      - db_network
-      - web_network
     volumes:
       - ./app:/app
       - ./migrations:/migrations
