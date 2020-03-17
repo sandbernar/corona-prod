@@ -11,6 +11,8 @@ from importlib import import_module
 from logging import basicConfig, DEBUG, getLogger, StreamHandler
 from os import path
 
+from app import constants as C
+
 db = SQLAlchemy()
 login_manager = LoginManager()
 
@@ -24,10 +26,21 @@ def register_blueprints(app):
         app.register_blueprint(module.blueprint)
 
 def configure_database(app):
+    def initialize_db(db):
+        from app.home.models import Region
+        regions = Region.query.all()
+        print(regions)
+        if len(regions) == 0:
+            for region in C.regions_list:
+                print(region)
+                db.session.add(Region(name=region))
+                db.session.commit()
 
     @app.before_first_request
     def initialize_database():
         db.create_all()
+
+        initialize_db(db)
 
     @app.teardown_request
     def shutdown_session(exception=None):

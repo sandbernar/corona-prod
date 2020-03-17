@@ -12,12 +12,13 @@ from flask_uploads import UploadSet, configure_uploads
 from config import config_dict
 from app import create_app, db
 
-get_config_mode = environ.get('APPSEED_CONFIG_MODE', 'Debug')
+get_config_mode = environ.get('CONFIG_MODE', 'Debug')
+print(get_config_mode)
 
 try:
     config_mode = config_dict[get_config_mode.capitalize()]
 except KeyError:
-    exit('Error: Invalid APPSEED_CONFIG_MODE environment variable entry.')
+    exit('Error: Invalid CONFIG_MODE environment variable entry.')
 
 app = create_app(config_mode) 
 Migrate(app, db)

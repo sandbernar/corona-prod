@@ -8,6 +8,7 @@ from app.home import blueprint
 from flask import render_template, redirect, url_for, request
 from flask_login import login_required, current_user
 from app import login_manager, db
+from app import constants as c
 from jinja2 import TemplateNotFound
 from app.home.models import Patient
 from datetime import datetime
@@ -42,10 +43,7 @@ def index():
     regions = dict()
     for p in patients:
         found_hospital = regions.get(p.region, (0, 0))
-        print(found_hospital, p.region, int(p.is_found), int(p.in_hospital))
         regions[p.region] = (found_hospital[0] + (1 - int(p.is_found)), found_hospital[1] + (1 - int(p.in_hospital)))
-
-    print(regions)
 
     return route_template('index', last_five_patients=last_five_patients, coordinates_patients=coordinates_patients, regions=regions)
 
@@ -57,17 +55,17 @@ def tables():
         return redirect(url_for('base_blueprint.login'))
 
     form = TableSearchForm()
-    regions = np.unique([ p.region for p in Patient.query.filter_by().all()])
+    regions = np.unique([ p.region for p in Patient.query.all()])
 
-    form.region.choices = [ ("Все Регионы", "Все Регионы") ] + [(r, r) for r in regions]
-    default_choice = "Все Регионы" if "region" not in request.args else request.args["region"]
+    form.region.choices = [ (c.all_regions, c.all_regions) ] + [(r, r) for r in regions]
+    default_choice = c.all_regions if "region" not in request.args else request.args["region"]
 
     patients = []
     filt = dict()
 
     if "region" in request.args:
         region = request.args["region"]
-        if region != "Все Регионы":
+        if region != c.all_regions:
             if region in regions:
                 filt["region"] = region
                 form.region.default = region
