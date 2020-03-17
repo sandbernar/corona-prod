@@ -94,10 +94,22 @@ def tables():
     form.process()
     return route_template('tables', patients=patients, form=form, page=page, max_page=max_page, total = total_len)
 
+@blueprint.route('/delete_patient', methods=['POST'])
+@login_required
+def delete_patient():
+    if not current_user.is_authenticated:
+        return redirect(url_for('base_blueprint.login'))
+
+    if len(request.form):
+        if "delete" in request.form:
+            Patient.query.filter(Patient.id == request.form["delete"][0]).delete()
+            db.session.commit()
+
+    return redirect(url_for('home_blueprint.tables'))
+
 @blueprint.route('/patient_profile', methods=['GET', 'POST'])
 @login_required
 def patient_profile():
-    
     if not current_user.is_authenticated:
         return redirect(url_for('base_blueprint.login'))
 
@@ -132,7 +144,6 @@ def patient_profile():
             age = 2020 - int(patient.dob.year)
             form.process()
             return route_template('profile', patient=patient, age=age, form = form, updated = updated)
-
     else:    
         return render_template('error-500.html'), 500
 
