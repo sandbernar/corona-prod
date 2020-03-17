@@ -42,11 +42,11 @@ class ProductionConfig(Config):
 
     # PostgreSQL database
     SQLALCHEMY_DATABASE_URI = 'postgresql://{}:{}@{}:{}/{}'.format(
-        environ.get('DATABASE_USER', 'polaris'),
-        environ.get('DATABASE_PASSWORD', 'bccui'),
-        environ.get('DATABASE_HOST', ''),
-        environ.get('DATABASE_PORT', 5432),
-        environ.get('DATABASE_NAME', 'covid_19')
+        environ.get('DATABASE_USER', environ.get('DATABASE_USER')),
+        environ.get('DATABASE_PASSWORD', environ.get('DATABASE_PASSWORD')),
+        environ.get('DATABASE_HOST', environ.get('DATABASE_HOST')),
+        environ.get('DATABASE_PORT', environ.get('DATABASE_PORT')),
+        environ.get('DATABASE_NAME', environ.get('DATABASE_NAME'))
     )
 
 
