@@ -45,7 +45,7 @@ class ProductionConfig(Config):
         environ.get('DATABASE_USER', environ.get('DATABASE_USER')),
         environ.get('DATABASE_PASSWORD', environ.get('DATABASE_PASSWORD')),
         environ.get('DATABASE_HOST', environ.get('DATABASE_HOST')),
-        environ.get('DATABASE_PORT', environ.get('DATABASE_PORT')),
+        environ.get('DATABASE_PORT', environ.get('DATABASE_PORT'), '5432'),
         environ.get('DATABASE_NAME', environ.get('DATABASE_NAME'))
     )
 
