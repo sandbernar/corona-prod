@@ -26,12 +26,17 @@ class Patient(db.Model):
     arrival_date = Column(Date, unique=False)
     flight_code = Column(String, unique=False)
     visited_country = Column(String, unique=False)
-    region = Column(String, unique=False)
+    
+    region_id = Column(Integer, ForeignKey('Region.id'))
+    region = db.relationship('Region')
+
+    hospital_id = Column(Integer, ForeignKey('Hospital.id'))
+    hospital = db.relationship('Hospital')
+
     home_address = Column(String, unique=False)
     job = Column(String, unique=False)
     is_found = Column(Boolean, unique=False)
     in_hospital = Column(Boolean, unique=False)
-    hospital = Column(String, unique=False)
     address_lat = Column(Float, unique=False)
     address_lng = Column(Float, unique=False)
 
@@ -120,6 +125,43 @@ class Hospital_Nomenklatura(db.Model):
 
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
+
+    def __init__(self, **kwargs):
+        for property, value in kwargs.items():
+            if hasattr(value, '__iter__') and not isinstance(value, str):
+                value = value[0]
+                
+            setattr(self, property, value)
+
+    def __repr__(self):
+        return str(self.name)
+
+class Infected_Country_Category(db.Model):
+
+    __tablename__ = 'Infected_Country_Category'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String, unique=True)
+
+    def __init__(self, **kwargs):
+        for property, value in kwargs.items():
+            if hasattr(value, '__iter__') and not isinstance(value, str):
+                value = value[0]
+                
+            setattr(self, property, value)
+
+    def __repr__(self):
+        return str(self.name)
+
+class From_Country(db.Model):
+
+    __tablename__ = 'From_Country'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String, unique=True)
+    
+    category_id = Column(Integer, ForeignKey('Infected_Country_Category.id'))
+    category = db.relationship('Infected_Country_Category')
 
     def __init__(self, **kwargs):
         for property, value in kwargs.items():

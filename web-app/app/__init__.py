@@ -59,10 +59,15 @@ def configure_database(app):
 
             full_name = row["Name"]
             short_name = re.findall('"([^"]*)"', full_name.replace("«", "\"").replace("»", "\""))
-            short_name = full_name if not len(short_name) else short_name[0]
+            if not len(short_name):
+                short_name = full_name
+            elif not (len(short_name[0])):
+                short_name = full_name
+            else:
+                short_name = short_name[0]
 
             hospital.name = short_name
-            hospital_full_name = full_name
+            hospital.full_name = full_name
             
             region = Region.query.filter_by(name=row["region"]).first()
             hospital.region_id = region.id
