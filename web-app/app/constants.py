@@ -1,4 +1,5 @@
 all_regions = "Все Регионы"
+hospitals_list_xlsx = "app/data/hospitals_list.xlsx"
 
 regions_list = [
 	"Нур-Султан",

@@ -10,7 +10,7 @@ from flask_login import login_required, current_user
 from app import login_manager, db
 from app import constants as c
 from jinja2 import TemplateNotFound
-from app.home.models import Patient, Hospital
+from app.home.models import Patient, Hospital, Region, Hospital_Type, Hospital_Nomenklatura
 from datetime import datetime
 from flask_uploads import UploadSet
 import pandas as pd
@@ -279,21 +279,20 @@ def all_hospitals():
     if not current_user.is_authenticated:
         return redirect(url_for('base_blueprint.login'))
     form = TableSearchForm()
-    print([ h.region for h in Hospital.query.all()])
-    regions = np.unique([ h.region for h in Hospital.query.all()])
+    regions = Region.query.all()
 
-    form.region.choices = [ (c.all_regions, c.all_regions) ] + [(r, r) for r in regions]
+    form.region.choices = [ (c.all_regions, c.all_regions) ] + [(r.id, r.name) for r in regions]
     default_choice = c.all_regions if "region" not in request.args else request.args["region"]
 
     hospitals = []
     filt = dict()
 
-    if "region" in request.args:
-        region = request.args["region"]
-        if region != c.all_regions:
-            if region in regions:
-                filt["region"] = region
-                form.region.default = region
+    # if "region" in request.args:
+    #     region = request.args["region"]
+    #     if region != c.all_regions:
+    #         if region in regions:
+    #             filt["region"] = region
+    #             form.region.default = region
 
     page = 1
     per_page = 5
