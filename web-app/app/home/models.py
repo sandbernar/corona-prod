@@ -51,10 +51,18 @@ class Hospital(db.Model):
 
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=False)
+    full_name = Column(String, unique=False)
     address = Column(String, unique=False)
-    region = Column(Integer, ForeignKey('Region.id'))
-    hospital_nomenklatura = Column(Integer, ForeignKey('Hospital_Nomenklatura.id'))
-    hospital_type = Column(Integer, ForeignKey('Hospital_Type.id'))
+    
+    region_id = Column(Integer, ForeignKey('Region.id'))
+    region = db.relationship('Region')
+
+    hospital_nomenklatura_id = Column(Integer, ForeignKey('Hospital_Nomenklatura.id'))
+    hospital_nomenklatura = db.relationship('Hospital_Nomenklatura')
+
+    hospital_type_id = Column(Integer, ForeignKey('Hospital_Type.id'))
+    hospital_type = db.relationship('Hospital_Type')
+
     address_lat = Column(Float, unique=False)
     address_lng = Column(Float, unique=False)
     beds_amount = Column(Integer, unique=False)
@@ -87,7 +95,7 @@ class Region(db.Model):
             setattr(self, property, value)
 
     def __repr__(self):
-        return str(self.id)
+        return str(self.name)
 
 class Hospital_Type(db.Model):
 
@@ -104,7 +112,7 @@ class Hospital_Type(db.Model):
             setattr(self, property, value)
 
     def __repr__(self):
-        return str(self.id)
+        return str(self.name)
 
 class Hospital_Nomenklatura(db.Model):
 
@@ -121,4 +129,4 @@ class Hospital_Nomenklatura(db.Model):
             setattr(self, property, value)
 
     def __repr__(self):
-        return str(self.id)
+        return str(self.name)

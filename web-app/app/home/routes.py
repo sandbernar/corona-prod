@@ -18,7 +18,7 @@ from opencage.geocoder import OpenCageGeocode
 import numpy as np
 from wtforms import SelectField
 import math
-from app.home.forms import PatientForm, UploadDataForm, TableSearchForm, UpdateProfileForm, AddHospitalsDataForm
+from app.home.forms import PatientForm, UploadDataForm, TableSearchForm, UpdateProfileForm, AddHospitalsDataForm, HospitalSearchForm
 
 key = '6670b10323b541bdbbf3e39bf07b7e46'
 geocoder = OpenCageGeocode(key)
@@ -70,8 +70,8 @@ def route_template(template, **kwargs):
     except TemplateNotFound:
         return render_template('error-404.html'), 404
     
-    except:
-        return render_template('error-500.html'), 500
+    # except:
+        # return render_template('error-500.html'), 500
 
 # Patients
 
@@ -278,28 +278,57 @@ def patient_profile():
 def all_hospitals():
     if not current_user.is_authenticated:
         return redirect(url_for('base_blueprint.login'))
-    form = TableSearchForm()
+    
+    form = HospitalSearchForm(request.form)
     regions = Region.query.all()
 
-    form.region.choices = [ (c.all_regions, c.all_regions) ] + [(r.id, r.name) for r in regions]
-    default_choice = c.all_regions if "region" not in request.args else request.args["region"]
-
-    hospitals = []
+    if not form.region.choices:
+        form.region.choices = [ (-1, c.all_regions) ] + [(r.id, r.name) for r in regions]
+    
     filt = dict()
 
-    # if "region" in request.args:
-    #     region = request.args["region"]
-    #     if region != c.all_regions:
-    #         if region in regions:
-    #             filt["region"] = region
-    #             form.region.default = region
+    q = Hospital.query
+    region = request.args.get("region", '-1')
+    if region != str(-1):
+        filt["region_id"] = region
+        form.region.default = region
+        q = Hospital.query.filter_by(region_id = filt["region_id"])
 
+    hospital_type = Hospital_Type.query.all()
+
+    if not form.hospital_type.choices:
+        form.hospital_type.choices = [ (-1, c.all_hospital_types) ] + [(r.id, r.name) for r in hospital_type]
+
+    nomenklatura_ids = q.with_entities(Hospital.hospital_nomenklatura_id).all()
+    nomenklatura_ids = np.unique([n.hospital_nomenklatura_id for n in nomenklatura_ids])
+    print(nomenklatura_ids)
+    choices = [(-1, c.all_hospital_nomenklatura)]
+
+    if not form.nomenklatura.choices:
+        for i in nomenklatura_ids:
+            choice = Hospital_Nomenklatura.query.filter_by(id = str(i)).first()
+            choices.append((choice.id, choice.name))
+        
+        form.nomenklatura.choices = choices
+
+    hospitals = []
+
+    hospital_type = request.args.get("hospital_type", '-1')
+    if hospital_type != str(-1):
+        filt["hospital_type_id"] = hospital_type
+        form.hospital_type.default = hospital_type
+
+    nomenklatura = request.args.get("nomenklatura", '-1')
+    if nomenklatura != str(-1):
+        filt["hospital_nomenklatura_id"] = nomenklatura
+        form.nomenklatura.default = nomenklatura        
+    
     page = 1
-    per_page = 5
+    per_page = 10
     if "page" in request.args:
         page = int(request.args["page"][0])
 
-    q = Hospital.query.filter_by(**filt)
+    q = q.filter_by(**filt)
     
     total_len = q.count()
 

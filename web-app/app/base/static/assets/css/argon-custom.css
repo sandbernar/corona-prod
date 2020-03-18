@@ -1,0 +1,11 @@
+.short_p {
+	width: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.8125rem;
+    font-weight: initial;
+    line-height: initial
+    margin-top: 0;
+    margin-bottom: 0;
+}

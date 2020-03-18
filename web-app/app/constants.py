@@ -1,5 +1,7 @@
 all_regions = "Все Регионы"
 hospitals_list_xlsx = "app/data/hospitals_list.xlsx"
+all_hospital_types = "Все Типы"
+all_hospital_nomenklatura = "Все Номенклатуры"
 
 regions_list = [
 	"Нур-Султан",

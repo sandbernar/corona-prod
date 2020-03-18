@@ -310,3 +310,8 @@ class AddHospitalsDataForm(UploadDataForm):
     			(1, "Диспансер"),
     			(2, "Поликлиника")])
 
+class HospitalSearchForm(FlaskForm):
+	region = SelectField(id='region')
+	nomenklatura = SelectField(id='nomenklatura')
+	hospital_type = SelectField(id='hospital_type')
+

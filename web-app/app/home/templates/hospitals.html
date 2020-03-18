@@ -21,27 +21,23 @@
         <div class="card-header border-0">
           <div class="row">
             <div class="col">
-              <h3 class="mb-0">Найдено {{total}}, показано {{ patients|length }} пациентов</h3>
+              <h3 class="mb-0">Найдено {{total}}, показано {{ hospitals|length }} больниц</h3>
             </div>
+          </div>
+          <div class="row">
             <form method="GET">            
-            <div class="col">
-              <div class="row">
-                <div class="col">
-                {{ form.region(class="form-control", onchange="this.form.submit()") }}
+              <div class="row mt-2">
+                <div class="col-lg-2">
+                  {{ form.region(class="form-control", onchange="this.form.submit()") }}
                 </div>
-                <div class="col-mt">
-                  <div class="custom-control custom-checkbox">
-                    {{ form.not_found(class="custom-control-input", onchange="this.form.submit()") }}
-                    <label class="custom-control-label" for="not_found">Не найден</label>
-                  </div>
-                  <div class="custom-control custom-checkbox">
-                    {{ form.not_in_hospital(class="custom-control-input", onchange="this.form.submit()") }}                    
-                    <label class="custom-control-label" for="not_in_hospital">Не госпитализирован</label>
-                  </div>
+                <div class="col-lg-4">
+                  {{ form.nomenklatura(class="form-control", onchange="this.form.submit()") }}
+                </div>
+                <div class="col-lg-4">
+                  {{ form.hospital_type(class="form-control", onchange="this.form.submit()") }}
                 </div>
               </div>
-            </div>
-          </form>
+            </form>
           </div>
         </div>
         <div class="table-responsive">
@@ -50,8 +46,8 @@
               <tr>
                 <th scope="col">Регион</th>
                 <th scope="col">Название</th>
+                <th scope="col">Номенклатура</th>
                 <th scope="col">Тип</th>
-                <th scope="col">Адрес</th>
                 <th scope="col">Мед. Защита</th>
                 <th scope="col">Тесты</th>
               </tr>
@@ -67,19 +63,19 @@
                   </div>
                 </th>
                 <td>
-                  {{ hospital.name }}
+                  <p class="short_p" style="width:400px;">{{ hospital.name }}</p>
                 </td>
                 <td>
-                  {{ hospital.hospital_type }}
+                  <p class="short_p" style="width:250px;">{{ hospital.hospital_nomenklatura }}</p>
                 </td>
                 <td>
-                  {{ hospital.address }}
+                  <p class="short_p">{{ hospital.hospital_type }}</p>
                 </td>
                 <td>
                   {{ hospital.meds_amount }}
                 </td>
                 <td>
-                  {{ hospital.tests_amount }}</td>
+                {{ hospital.tests_used }} / {{ hospital.tests_amount }}</td>
               </tr>
               {% endfor %}
 
@@ -124,26 +120,26 @@
 {% block javascripts %}
 <script type="text/javascript">
   var setSearchParam = function(key, value) {
-      if (!window.history.pushState) {
-          return;
-      }
+    if (!window.history.pushState) {
+      return;
+    }
 
-      if (!key) {
-          return;
-      }
+    if (!key) {
+      return;
+    }
 
-      var url = new URL(window.location.href);
-      var params = new window.URLSearchParams(window.location.search);
-      if (value === undefined || value === null) {
-          params.delete(key);
-      } else {
-          params.set(key, value);
-      }
+    var url = new URL(window.location.href);
+    var params = new window.URLSearchParams(window.location.search);
+    if (value === undefined || value === null) {
+      params.delete(key);
+    } else {
+      params.set(key, value);
+    }
 
-      url.search = params;
-      url = url.toString();
-      window.history.replaceState({url: url}, null, url);
-      window.location.href = window.location.href
+    url.search = params;
+    url = url.toString();
+    window.history.replaceState({url: url}, null, url);
+    window.location.href = window.location.href
   }
 </script>
 {{ super()}}

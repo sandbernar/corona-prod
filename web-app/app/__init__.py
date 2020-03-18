@@ -11,6 +11,8 @@ from importlib import import_module
 from logging import basicConfig, DEBUG, getLogger, StreamHandler
 from os import path
 import pandas as pd
+import re
+
 
 from app import constants as C
 
@@ -36,6 +38,7 @@ def configure_database(app):
         db.session.commit()
 
         df = pd.read_excel(C.hospitals_list_xlsx)
+        df = df.drop_duplicates()
 
         for n in df.region.unique():
             typ = Region(name=n)
@@ -54,16 +57,22 @@ def configure_database(app):
         for index, row in df.iterrows():
             hospital = Hospital()
 
-            hospital.name = row["Name"]
+            full_name = row["Name"]
+            short_name = re.findall('"([^"]*)"', full_name.replace("«", "\"").replace("»", "\""))
+            short_name = full_name if not len(short_name) else short_name[0]
+
+            hospital.name = short_name
+            hospital_full_name = full_name
             
             region = Region.query.filter_by(name=row["region"]).first()
-            hospital.region = region.id
+            hospital.region_id = region.id
+            hospital.address = ", ".join(row["Adres"].split(":")[3:])
 
             hospital_type = Hospital_Type.query.filter_by(name=row["TIPMO"]).first()
-            hospital.hospital_type = hospital_type.id
+            hospital.hospital_type_id = hospital_type.id
 
             hospital_nomenklatura = Hospital_Nomenklatura.query.filter_by(name=row["Nomenklatura"]).first()
-            hospital.hospital_nomenklatura = hospital_nomenklatura.id
+            hospital.hospital_nomenklatura_id = hospital_nomenklatura.id
 
             hospital.beds_amount = 0
             hospital.meds_amount = 0
@@ -77,6 +86,9 @@ def configure_database(app):
     def initialize_db(db):
         from app.home.models import Hospital
         hospitals = Hospital.query.all()
+        
+        # Hospital.query.delete()
+        # db.session.commit()
 
         if len(hospitals) == 0:
             add_hospitals()
