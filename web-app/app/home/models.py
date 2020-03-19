@@ -18,10 +18,10 @@ class Patient(db.Model):
 
     id = Column(Integer, primary_key=True)
     full_name = Column(String, unique=False)
-    iin = Column(String, unique=True)
+    iin = Column(String, unique=False)
     dob = Column(Date, unique=False)
     citizenship = Column(String, unique=False)
-    pass_num = Column(String, unique=True)
+    pass_num = Column(String, unique=False)
     telephone = Column(String, unique=False)
     arrival_date = Column(Date, unique=False)
     flight_code = Column(String, unique=False)

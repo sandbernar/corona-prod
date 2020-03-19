@@ -21,7 +21,7 @@ import math
 from app.home.forms import PatientForm, UploadDataForm, TableSearchForm, UpdateProfileForm, AddHospitalsDataForm, HospitalSearchForm, UpdateHospitalProfileForm
 import json
 import nltk
-
+import dateutil.parser
 
 key = '6670b10323b541bdbbf3e39bf07b7e46'
 geocoder = OpenCageGeocode(key)
@@ -163,36 +163,57 @@ def add_data():
 
         patients = pd.read_excel(docs.path(filename))
         added = 0
+        regions = Region.query.all()
+        hospitals = Hospital.query.all()
+        i = 0
 
         for index, row in patients.iterrows():
+            print(i)
+            i+=1
             patient = Patient()
             patient.full_name = row["ФИО"]
             patient.iin = row["ИИН"]
-            patient.dob = datetime.strptime(row["Дата рождения"], '%d.%m.%Y')
+
+            if isinstance(row["Дата рождения"], pd._libs.tslibs.nattype.NaTType):
+                patient.dob = datetime(1000, 1, 1)
+            else:
+                if not isinstance(row["Дата рождения"], datetime):
+                    try:
+                        patient.dob = dateutil.parser.parse(row["Дата рождения"])
+                    except TypeError:
+                        patient.dob = datetime(1000, 1, 1)
+                else:
+                    patient.dob = row["Дата рождения"]
+
             patient.citizenship = row["Гражданство"]
             patient.pass_num = row["Номер паспорта"]
             patient.telephone = row["Номер мобильного телефона"]
-            patient.arrival_date = datetime.strptime(row["Дата въезда"], '%d.%m.%Y')
+
+            try:
+                patient.arrival_date = dateutil.parser.parse(row["Дата въезда"])
+            except TypeError:
+                patient.arrival_date = datetime(1000, 1, 1)           
+
             patient.flight_code = row["рейс"]
             patient.visited_country = row["Место и сроки пребывания в последние 14 дней до прибытия в Казахстан (укажите страну, область, штат и т.д.)"]
             
-            regions = [ r for r in Region.query.all() ]
-            regions_distance = []
+            if not pd.isnull(row["регион"]):
+                regions_distance = []
 
-            for r in regions:
-                regions_distance.append(nltk.edit_distance(row["регион"], r.name))
+                for r in regions:
+                    regions_distance.append(nltk.edit_distance(row["регион"], r.name))
 
-            region = regions[np.argmin(regions_distance)]
-            patient.region_id = region.id
+                region = regions[np.argmin(regions_distance)]
+                patient.region_id = region.id
+            else:
+                patient.region_id = Region.query.filter_by(name="Вне РК").first().id
 
             patient.home_address = row["Место жительство, либо предпологаемое место проживания"]
             patient.job = row["Место работы"]
             patient.is_found = True if row["Найден (да/нет)"].lower() == "да" else False
             patient.in_hospital = True if row["Госпитализирован (да/нет)"].lower() == "да" else False
-            # patient.hospital = row["Место госпитализации"] if not pd.isnull(row["Место госпитализации"]) else ""
 
             if not pd.isnull(row["Место госпитализации"]):
-                hospitals = [ h for h in Hospital.query.all() ]
                 hospitals_distance = []
 
                 for h in hospitals:
@@ -201,16 +222,17 @@ def add_data():
                 hospital = hospitals[np.argmin(hospitals_distance)]
                 patient.hospital_id = hospital.id
 
-            query = "{}, {}".format(region.name, patient.home_address)
-            results = geocoder.geocode(query)
+            # query = "{}, {}".format(region.name, patient.home_address)
+            # results = geocoder.geocode(query)
             
-            if len(results):
-                patient.address_lat = results[0]['geometry']['lat']
-                patient.address_lng = results[0]['geometry']['lng']
+            # if len(results):
+            #     patient.address_lat = results[0]['geometry']['lat']
+            #     patient.address_lng = results[0]['geometry']['lng']
 
             db.session.add(patient)
-            db.session.commit()
             added += 1
+
+        db.session.commit()
 
         # # else we can create the user
         return route_template( 'add_data', form=data_form, added=added)

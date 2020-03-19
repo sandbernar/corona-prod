@@ -42,7 +42,10 @@ def configure_database(app):
 
         for n in df.region.unique():
             typ = Region(name=n)
-            db.session.add(typ)        
+            db.session.add(typ)
+
+        typ = Region(name="Вне РК")
+        db.session.add(typ)
 
         for n in df.Nomenklatura.unique():
             nomen = Hospital_Nomenklatura(name=n)
