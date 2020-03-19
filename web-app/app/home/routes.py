@@ -18,8 +18,10 @@ from opencage.geocoder import OpenCageGeocode
 import numpy as np
 from wtforms import SelectField
 import math
-from app.home.forms import PatientForm, UploadDataForm, TableSearchForm, UpdateProfileForm, AddHospitalsDataForm, HospitalSearchForm
+from app.home.forms import PatientForm, UploadDataForm, TableSearchForm, UpdateProfileForm, AddHospitalsDataForm, HospitalSearchForm, UpdateHospitalProfileForm
 import json
+import nltk
+
 
 key = '6670b10323b541bdbbf3e39bf07b7e46'
 geocoder = OpenCageGeocode(key)
@@ -45,6 +47,7 @@ def index():
     for p in patients:
         found_hospital = regions.get(p.region, (0, 0))
         regions[p.region] = (found_hospital[0] + (1 - int(p.is_found)), found_hospital[1] + (1 - int(p.in_hospital)))
+    print(regions)
 
     return route_template('index', last_five_patients=last_five_patients, coordinates_patients=coordinates_patients, regions=regions)
 
@@ -64,7 +67,7 @@ def route_template(template, **kwargs):
         ratio = 0 if is_found == 0 else in_hospital/is_found
         in_hospital_str = str("{}/{} ({}%)".format(in_hospital, is_found, format(ratio*100, '.2f')))
 
-        regions = len(np.unique([ p.region for p in Patient.query.filter_by().all()]))
+        regions = len(Region.query.all())
 
         return render_template(template + '.html', stats = [str(total), is_found_str, in_hospital_str, regions], **kwargs)
 
@@ -172,14 +175,33 @@ def add_data():
             patient.arrival_date = datetime.strptime(row["Дата въезда"], '%d.%m.%Y')
             patient.flight_code = row["рейс"]
             patient.visited_country = row["Место и сроки пребывания в последние 14 дней до прибытия в Казахстан (укажите страну, область, штат и т.д.)"]
-            patient.region = row["регион"]
+            
+            regions = [ r for r in Region.query.all() ]
+            regions_distance = []
+
+            for r in regions:
+                regions_distance.append(nltk.edit_distance(row["регион"], r.name))
+
+            region = regions[np.argmin(regions_distance)]
+            patient.region_id = region.id
+
             patient.home_address = row["Место жительство, либо предпологаемое место проживания"]
             patient.job = row["Место работы"]
             patient.is_found = True if row["Найден (да/нет)"].lower() == "да" else False
             patient.in_hospital = True if row["Госпитализирован (да/нет)"].lower() == "да" else False
-            patient.hospital = row["Место госпитализации"] if not pd.isnull(row["Место госпитализации"]) else ""
+            # patient.hospital = row["Место госпитализации"] if not pd.isnull(row["Место госпитализации"]) else ""
 
-            query = "{}, {}".format(patient.region, patient.home_address)
+            if not pd.isnull(row["Место госпитализации"]):
+                hospitals = [ h for h in Hospital.query.all() ]
+                hospitals_distance = []
+
+                for h in hospitals:
+                    hospitals_distance.append(nltk.edit_distance(row["Место госпитализации"], h.name))
+
+                hospital = hospitals[np.argmin(hospitals_distance)]
+                patient.hospital_id = hospital.id
+
+            query = "{}, {}".format(region.name, patient.home_address)
             results = geocoder.geocode(query)
             
             if len(results):
@@ -203,8 +225,6 @@ def patients():
         return redirect(url_for('base_blueprint.login'))
 
     form = TableSearchForm()
-    regions = np.unique([ p.region for p in Patient.query.all()])
-
     regions = Region.query.all()
 
     if not form.region.choices:
@@ -252,7 +272,7 @@ def delete_patient():
 
     if len(request.form):
         if "delete" in request.form:
-            Patient.query.filter(Patient.id == request.form["delete"][0]).delete()
+            Patient.query.filter(Patient.id == request.form["delete"]).delete()
             db.session.commit()
 
     return redirect(url_for('home_blueprint.patients'))
@@ -286,17 +306,26 @@ def patient_profile():
                 
                 patient.is_found = "is_found" in request.form 
                 patient.in_hospital = "in_hospital" in request.form
-                patient_hospital = Hospital.query.filter_by(id=request.form['hospital_id']).first()
+                
+                if "hospital_id" in request.form:
+                    patient_hospital = Hospital.query.filter_by(id=request.form['hospital_id']).first()
 
-                if patient_hospital:
-                    patient.hospital_id =patient_hospital.id
+                    if patient_hospital:
+                        patient.hospital_id = patient_hospital.id
 
                 db.session.add(patient)
                 db.session.commit()
                 updated = True
             
-            form.hospital_region_id.default = patient.hospital.region_id
-            form.hospital_type.default = patient.hospital.hospital_type_id
+            hospital_region_id = patient.region_id
+            hospital_type_id = hospital_types[0].id
+
+            if patient.hospital:
+                hospital_region_id = patient.hospital.region_id
+                hospital_type_id = patient.hospital.hospital_type_id
+
+            form.hospital_region_id.default = hospital_region_id
+            form.hospital_type.default = hospital_type_id
 
             if patient.is_found:
                 form.is_found.default = 'checked'
@@ -304,16 +333,20 @@ def patient_profile():
             if patient.in_hospital:
                 form.in_hospital.default='checked'
 
-            hospitals = Hospital.query.filter_by(region_id=patient.hospital.region_id, hospital_type_id=patient.hospital.hospital_type_id).all()
+            hospitals = Hospital.query.filter_by(region_id=hospital_region_id, hospital_type_id=hospital_type_id).all()
             if not form.hospital_id.choices:
-                form.hospital_id.choices = [ (-1, c.no_hospital) ] + [(h.id, h.name) for h in hospitals]
+                form.hospital_id.choices = [(h.id, h.name) for h in hospitals]
 
-            form.hospital_id.default = patient.hospital.id
+            hospital_name = None
+            if patient.hospital:
+                form.hospital_id.default = patient.hospital.id
+                hospital_name = Hospital.query.filter_by(id=patient.hospital.id).first().name
 
-            age = 2020 - int(patient.dob.year)
+            today = datetime.today()
+            age =  today.year - patient.dob.year - ((today.month, today.day) < (patient.dob.month, patient.dob.day))
+
             form.process()
-            hospital_name = Hospital.query.filter_by(id=patient.hospital.id).first()
-            return route_template('profile', patient=patient, age=age, hospital_name=hospital_name.name, form = form, updated = updated)
+            return route_template('profile', patient=patient, age=age, hospital_name=hospital_name, form = form, updated = updated)
     else:    
         return render_template('error-500.html'), 500
 
@@ -498,7 +531,7 @@ def hospital_profile():
         if not hospital:
             return render_template('error-404.html'), 404
         else:
-            form = UpdateProfileForm()
+            form = UpdateHospitalProfileForm()
             updated = False
 
             # if len(request.form):

@@ -69,3 +69,10 @@ class HospitalSearchForm(FlaskForm):
 	region = SelectField(id='region')
 	nomenklatura = SelectField(id='nomenklatura')
 	hospital_type = SelectField(id='hospital_type')
+
+
+class UpdateHospitalProfileForm(FlaskForm):
+	is_found = BooleanField(id="is_found")
+	in_hospital = BooleanField(id="in_hospital")
+
+	hospital = TextField('Hospital', id='hospital'   , validators=[DataRequired()])

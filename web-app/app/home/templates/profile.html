@@ -73,7 +73,7 @@
                           <div class="row">
                             <div class="col">
                               <div class="custom-control custom-checkbox">
-                                {{ form.is_found(class="custom-control-input") }}
+                                {{ form.is_found(class="custom-control-input", id="is_found_checkbox", onchange="1") }}
                                 <label class="custom-control-label" for="is_found">Найден</label>
                             </div>
                         </div>
@@ -227,9 +227,20 @@
 {{ super()}}
 
 <script type="text/javascript">
+    function disable_in_hospital(value) {
+        disable = true;
+        if (value == 1 || value == true) {
+            disable = false;
+        }
+
+        document.getElementById('in_hospital_checkbox').disabled = disable;
+        document.getElementById('hospital_type').disabled = disable;
+        document.getElementById('hospital_select').disabled = disable;
+    }
+
     function disable_hospital_choice(value) {
         disable = true;
-        if (value) {
+        if (value == 1 || value == "True") {
             disable = false;
         }
 
@@ -261,7 +272,6 @@ $("#hospital_type").on("change", function(){
 window.onload = function() {
     // alert('{{ patient.hospital.hospital_nomenklatura_id }}')
     // $("#hospital_region_id").val('{{ patient.hospital.region_id }}')
-    $("#hospital_type").val('{{ patient.hospital.hospital_type_id }}')
     disable_hospital_choice('{{ patient.in_hospital }}')
     // update_hospitals_list()  
 }
