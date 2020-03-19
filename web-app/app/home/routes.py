@@ -265,24 +265,38 @@ def patient_profile():
 
     if "id" in request.args:
         patient = Patient.query.filter_by(id=request.args["id"]).first()
-        
+      
         if not patient:
             return render_template('error-404.html'), 404
         else:
-            form = UpdateProfileForm()
+            form = UpdateProfileForm(request.form)
             updated = False
+
+            regions = Region.query.all()
+
+            if not form.hospital_region_id.choices:
+                form.hospital_region_id.choices = [(r.id, r.name) for r in regions]
+
+            hospital_types = Hospital_Type.query.all()
+            form.hospital_type.choices = [(h.id, h.name) for h in hospital_types]
 
             if len(request.form):
                 if "hospital" in request.form:
                     patient.hospital = request.form["hospital"]
                 
                 patient.is_found = "is_found" in request.form 
-                patient.in_hospital = "in_hospital" in request.form 
+                patient.in_hospital = "in_hospital" in request.form
+                patient_hospital = Hospital.query.filter_by(id=request.form['hospital_id']).first()
+
+                if patient_hospital:
+                    patient.hospital_id =patient_hospital.id
+
                 db.session.add(patient)
                 db.session.commit()
                 updated = True
             
-            form.hospital.default = patient.hospital
+            form.hospital_region_id.default = patient.hospital.region_id
+            form.hospital_type.default = patient.hospital.hospital_type_id
 
             if patient.is_found:
                 form.is_found.default = 'checked'
@@ -290,10 +304,15 @@ def patient_profile():
             if patient.in_hospital:
                 form.in_hospital.default='checked'
 
+            hospitals = Hospital.query.filter_by(region_id=patient.hospital.region_id, hospital_type_id=patient.hospital.hospital_type_id).all()
+            if not form.hospital_id.choices:
+                form.hospital_id.choices = [ (-1, c.no_hospital) ] + [(h.id, h.name) for h in hospitals]
+
+            form.hospital_id.default = patient.hospital.id
 
             age = 2020 - int(patient.dob.year)
             form.process()
-            hospital_name = Hospital.query.filter_by(id=patient.hospital_id).first()
+            hospital_name = Hospital.query.filter_by(id=patient.hospital.id).first()
             return route_template('profile', patient=patient, age=age, hospital_name=hospital_name.name, form = form, updated = updated)
     else:    
         return render_template('error-500.html'), 500

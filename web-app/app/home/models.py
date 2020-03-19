@@ -50,6 +50,32 @@ class Patient(db.Model):
     def __repr__(self):
         return str(self.id)
 
+class ContactedPerson(db.Model):
+
+    __tablename__ = 'ContactedPerson'
+
+    id = Column(Integer, primary_key=True)
+    full_name = Column(String, unique=False)
+    iin = Column(String, unique=True)
+    # dob = Column(Date, unique=False)
+    telephone = Column(String, unique=False)
+    
+    region_id = Column(Integer, ForeignKey('Region.id'))
+    region = db.relationship('Region')
+
+    home_address = Column(String, unique=False)
+
+    def __init__(self, **kwargs):
+        for property, value in kwargs.items():
+            if hasattr(value, '__iter__') and not isinstance(value, str):
+                value = value[0]
+                
+            setattr(self, property, value)
+
+    def __repr__(self):
+        return str(self.id)
+
+
 class Hospital(db.Model):
 
     __tablename__ = 'Hospital'

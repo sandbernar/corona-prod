@@ -21,21 +21,21 @@
         <h5 class="modal-title" id="exampleModalLabel">Удалить пациента?</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true"></span>
-        </button>
-      </div>
-      <div class="modal-body">
-        Вы уверены, что хотите удалить пациента <bold> {{patient.full_name}} </bold>?
-      </div>
-      <div class="modal-footer">
-        <form action="/delete_patient" method="POST">
-            {{ form.hidden_tag() }}
-            <input type="hidden" name="delete" value='{{ patient.id }}'>
-            <button type="submit" class="btn btn-primary">Да</button>
-        </form>
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Нет</button>
-      </div>
-    </div>
+      </button>
   </div>
+  <div class="modal-body">
+    Вы уверены, что хотите удалить пациента <bold> {{patient.full_name}} </bold>?
+</div>
+<div class="modal-footer">
+    <form action="/delete_patient" method="POST">
+        {{ form.hidden_tag() }}
+        <input type="hidden" name="delete" value='{{ patient.id }}'>
+        <button type="submit" class="btn btn-primary">Да</button>
+    </form>
+    <button type="button" class="btn btn-secondary" data-dismiss="modal">Нет</button>
+</div>
+</div>
+</div>
 </div>
 
 <!-- Page content -->
@@ -61,7 +61,6 @@
                 <div class="card-header text-center border-0 pt-8 pt-md-4 pb-0 pb-md-4">
                 </div>
                 <div class="card-body pt-0 pt-md-1">
-
                     <div class="text-center">
                         <h3>
                             {{ patient.full_name }}<span class="font-weight-light"></span>
@@ -71,35 +70,48 @@
                         </div>
                         <hr class="my-4" />
                         <form method="POST">            
+                          <div class="row">
                             <div class="col">
-                              <div class="row">
-                                <div class="col">
-                                    <input type="text" id="hospital-name" class="form-control form-control-alternative" disabled value="{{ hospital_name }}">
-                                </div>
-                                <div class="col-mt">
-                                  <div class="custom-control custom-checkbox">
-                                    {{ form.is_found(class="custom-control-input") }}
-                                    <label class="custom-control-label" for="is_found">Найден</label>
-                                </div>
-                                <div class="custom-control custom-checkbox">
-                                    {{ form.in_hospital(class="custom-control-input") }}                    
-                                    <label class="custom-control-label" for="in_hospital">Госпитализирован</label>
-                                </div>
+                              <div class="custom-control custom-checkbox">
+                                {{ form.is_found(class="custom-control-input") }}
+                                <label class="custom-control-label" for="is_found">Найден</label>
                             </div>
                         </div>
-                        <div class="row  mt-3">
-                            <div class="col">
-                                <input class="btn btn-primary" id="submit" name="submit" type="submit" value="Обновить">
+                        <div class="col">
+                            <div class="custom-control custom-checkbox">
+                                {{ form.in_hospital(class="custom-control-input", id="in_hospital_checkbox", onchange="disable_hospital_choice($(this).prop('checked'))") }}                    
+                                <label class="custom-control-label" for="in_hospital_checkbox">Госпитализирован</label>
                             </div>
-                            <div class="col">
-                                <input class="btn btn-danger" data-toggle="modal" data-target="#deletePatientModal" value="Удалить Пациента">
-                            </div>                            
                         </div>
                     </div>
-                </form>
+                    <hr class="my-4" />
+                    <div class="col mt-3">
+                          <div class="form-group">
+                            <label for="job-input" class="form-control-label">Регион Госпитализации</label>
+                            {{ form.hospital_region_id(class="form-control", id="hospital_region_id") }}
+                                        </div>
+                            <div class="form-group">
+                            <label for="job-input" class="form-control-label">Тип Больницы</label>
+                            {{ form.hospital_type(class="form-control", id="hospital_type") }}
+                      </div>
+                      <div class="form-group">
+                        <label for="job-input" class="form-control-label">Место Госпитализации</label>
+                        {{ form.hospital_id(class="form-control", id="hospital_select") }}
+                    </div>
+            <hr class="my-4" />                    
             </div>
-        </div>
+            <div class="row  mt-3">
+                <div class="col">
+                    <input class="btn btn-primary" id="submit" name="submit" type="submit" value="Обновить">
+                </div>
+                <div class="col">
+                    <input class="btn btn-danger" data-toggle="modal" data-target="#deletePatientModal" value="Удалить Пациента">
+                </div>                            
+            </div>
+        </form>
     </div>
+</div>
+</div>
 </div>
 <div class="col-xl-8 order-xl-1">
     <div class="card bg-secondary shadow">
@@ -213,4 +225,46 @@
 
 {% block javascripts %}
 {{ super()}}
+
+<script type="text/javascript">
+    function disable_hospital_choice(value) {
+        disable = true;
+        if (value) {
+            disable = false;
+        }
+
+        document.getElementById('hospital_region_id').disabled = disable;
+        document.getElementById('hospital_type').disabled = disable;
+        document.getElementById('hospital_select').disabled = disable;
+    }
+
+    function update_hospitals_list(){
+        $.ajax({
+          type: 'POST',
+          url: "/get_hospital_by_region",
+          data: {region_id: $("#hospital_region_id").val(), hospital_type_id: $("#hospital_type").val()},
+          dataType: "text",
+          success: function(data){
+            document.getElementById("hospital_select").innerHTML = data.toString();
+        }
+    });
+};
+
+// $("#hospital_region_id").on("click", update_hospitals_list());
+$("#hospital_region_id").on("change", function(){
+  update_hospitals_list();
+});
+$("#hospital_type").on("change", function(){
+  update_hospitals_list();
+});
+
+window.onload = function() {
+    // alert('{{ patient.hospital.hospital_nomenklatura_id }}')
+    // $("#hospital_region_id").val('{{ patient.hospital.region_id }}')
+    $("#hospital_type").val('{{ patient.hospital.hospital_type_id }}')
+    disable_hospital_choice('{{ patient.in_hospital }}')
+    // update_hospitals_list()  
+}
+
+</script>
 {% endblock javascripts %}

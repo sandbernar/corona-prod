@@ -38,7 +38,6 @@ class PatientForm(FlaskForm):
     in_hospital = RadioField("In Hospital", id="in_hospital", choices=[(1, "Да"),(0,"Нет")], validators=[DataRequired()])
     hospital = TextField('Hospital', id='hospital')
 	
-
 class UploadDataForm(FlaskForm):
     docs = UploadSet('documents', ['xls', 'xlsx', 'csv'])
     file = FileField    (validators=[FileAllowed(docs, 'Только файлы с расширением .xls, .xlsx и .csv!'), FileRequired('Файл пуст!')])
@@ -52,7 +51,11 @@ class TableSearchForm(FlaskForm):
 class UpdateProfileForm(FlaskForm):
 	is_found = BooleanField(id="is_found")
 	in_hospital = BooleanField(id="in_hospital")
-	hospital = TextField('Hospital', id='hospital')
+
+	hospital_region_id = SelectField('Hospital Region', id='hospital_region' , validators=[DataRequired()])
+	hospital_type = SelectField('Hospital Type', id='hospital_type' , validators=[DataRequired()])
+
+	hospital_id = SelectField('Hospital_id', id='hospital_id' , validators=[DataRequired()])
 
 class AddHospitalsDataForm(UploadDataForm):
 	region = TextField('Region', id='region'   , validators=[DataRequired()])
@@ -66,4 +69,3 @@ class HospitalSearchForm(FlaskForm):
 	region = SelectField(id='region')
 	nomenklatura = SelectField(id='nomenklatura')
 	hospital_type = SelectField(id='hospital_type')
-
