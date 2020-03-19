@@ -165,12 +165,10 @@ def add_data():
         added = 0
         regions = Region.query.all()
         hospitals = Hospital.query.all()
-        i = 0
 
-        for index, row in patients.iterrows():
-            print(i)
-            i+=1
+        def create_patient(row):
             patient = Patient()
+            print(row)
             patient.full_name = row["ФИО"]
             patient.iin = row["ИИН"]
 
@@ -230,7 +228,9 @@ def add_data():
             #     patient.address_lng = results[0]['geometry']['lng']
 
             db.session.add(patient)
-            added += 1
+
+        patients.apply(lambda row: create_patient(row), axis=1)
+        added = len(patients)
 
         db.session.commit()
 
