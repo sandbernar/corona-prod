@@ -27,15 +27,15 @@ class PatientForm(FlaskForm):
     flight_code = TextField('Flight Code', id='flight_code'   , validators=[DataRequired()])
     visited_country = TextField('Visited Country', id='visited_country'   , validators=[DataRequired()])
     
-    region_id = SelectField('Region', id='region' , validators=[DataRequired()])
+    region_id = SelectField('Region', id='region', validators=[DataRequired()])
 
     hospital_region_id = SelectField('Hospital Region', id='hospital_region' , validators=[DataRequired()])
     hospital_id = SelectField('Hospital', id='hospital' , validators=[DataRequired()])
 
     home_address = TextField('Home Address', id='home_address'   , validators=[DataRequired()])
     job = TextField('Job', id='job'   , validators=[DataRequired()])
-    is_found = RadioField("Is Found", id="is_found", choices=[(1, "Да"),(0,"Нет")], validators=[DataRequired()])
-    in_hospital = RadioField("In Hospital", id="in_hospital", choices=[(1, "Да"),(0,"Нет")], validators=[DataRequired()])
+    patient_status = SelectField('Patient Status', id='patient_status' , validators=[DataRequired()])
+    is_found = RadioField("Is Found", id="is_found", choices=[(1, "Да"),(0,"Нет")], default=0, validators=[DataRequired()])
     hospital = TextField('Hospital', id='hospital')
 	
 class UploadDataForm(FlaskForm):
@@ -49,13 +49,15 @@ class TableSearchForm(FlaskForm):
 	not_in_hospital = BooleanField(id="not_in_hospital")
 
 class UpdateProfileForm(FlaskForm):
-	is_found = BooleanField(id="is_found")
-	in_hospital = BooleanField(id="in_hospital")
+    is_found = BooleanField(id="is_found")
+    in_hospital = BooleanField(id="in_hospital")
+    is_home = BooleanField(id="is_home")
+    is_transit = BooleanField(id="is_transit")
 
-	hospital_region_id = SelectField('Hospital Region', id='hospital_region' , validators=[DataRequired()])
-	hospital_type = SelectField('Hospital Type', id='hospital_type' , validators=[DataRequired()])
+    hospital_region_id = SelectField('Hospital Region', id='hospital_region' , validators=[DataRequired()])
+    hospital_type = SelectField('Hospital Type', id='hospital_type' , validators=[DataRequired()])
 
-	hospital_id = SelectField('Hospital_id', id='hospital_id' , validators=[DataRequired()])
+    hospital_id = SelectField('Hospital_id', id='hospital_id' , validators=[DataRequired()])
 
 class AddHospitalsDataForm(UploadDataForm):
 	region = TextField('Region', id='region'   , validators=[DataRequired()])

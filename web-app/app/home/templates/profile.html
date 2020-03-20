@@ -73,32 +73,47 @@
                           <div class="row">
                             <div class="col">
                               <div class="custom-control custom-checkbox">
-                                {{ form.is_found(class="custom-control-input", id="is_found_checkbox", onchange="1") }}
+                                {{ form.is_found(class="custom-control-input", id="is_found_checkbox", onchange="found_changed($(this).prop('checked'))") }}
                                 <label class="custom-control-label" for="is_found_checkbox">Найден</label>
-                            </div>
-                        </div>
-                        <div class="col">
-                            <div class="custom-control custom-checkbox">
-                                {{ form.in_hospital(class="custom-control-input", id="in_hospital_checkbox", onchange="disable_hospital_choice($(this).prop('checked'))") }}                    
-                                <label class="custom-control-label" for="in_hospital_checkbox">Госпитализирован</label>
                             </div>
                         </div>
                     </div>
                     <hr class="my-4" />
-                    <div class="col mt-3">
-                          <div class="form-group">
-                            <label for="job-input" class="form-control-label">Регион Госпитализации</label>
-                            {{ form.hospital_region_id(class="form-control", id="hospital_region_id") }}
-                                        </div>
-                            <div class="form-group">
-                            <label for="job-input" class="form-control-label">Тип Больницы</label>
-                            {{ form.hospital_type(class="form-control", id="hospital_type") }}
-                      </div>
-                      <div class="form-group">
-                        <label for="job-input" class="form-control-label">Место Госпитализации</label>
-                        {{ form.hospital_id(class="form-control", id="hospital_select") }}
+                    <div class="row">
+                    <div class="col">
+                        <div class="custom-control custom-checkbox">
+                            {{ form.in_hospital(class="custom-control-input", id="in_hospital_checkbox") }}                    
+                            <label class="custom-control-label" for="in_hospital_checkbox">Госпитализирован</label>
+                        </div>
                     </div>
-            <hr class="my-4" />                    
+                    <div class="col">
+                        <div class="custom-control custom-checkbox">
+                            {{ form.is_home(class="custom-control-input", id="is_home", onchange="status_exclusive_checkbox($(this))") }}
+                            <label class="custom-control-label" for="is_home">Домашний Карантин</label>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="custom-control custom-checkbox">
+                            {{ form.is_transit(class="custom-control-input", id="is_transit", onchange="status_exclusive_checkbox($(this))") }}
+                            <label class="custom-control-label" for="is_transit">Транзит</label>
+                        </div>
+                    </div>                    
+                </div>                    
+                <hr class="my-4" />
+                <div class="col mt-3">
+                  <div class="form-group">
+                    <label for="job-input" class="form-control-label">Регион Госпитализации</label>
+                    {{ form.hospital_region_id(class="form-control", id="hospital_region_id") }}
+                </div>
+                <div class="form-group">
+                    <label for="job-input" class="form-control-label">Тип Больницы</label>
+                    {{ form.hospital_type(class="form-control", id="hospital_type") }}
+                </div>
+                <div class="form-group">
+                    <label for="job-input" class="form-control-label">Место Госпитализации</label>
+                    {{ form.hospital_id(class="form-control", id="hospital_select") }}
+                </div>
+                <hr class="my-4" />                    
             </div>
             <div class="row  mt-3">
                 <div class="col">
@@ -227,15 +242,38 @@
 {{ super()}}
 
 <script type="text/javascript">
-    function disable_in_hospital(value) {
+    $("#in_hospital_checkbox").on("change", function(){
+        status_exclusive_checkbox($("#in_hospital_checkbox"))
+        disable_hospital_choice($("#in_hospital_checkbox").prop('checked'))
+    });
+
+    function status_exclusive_checkbox(checkbox) {
+        if(checkbox.prop('checked')) {
+            checkboxes = [$("#in_hospital_checkbox"), $("#is_home"), $("#is_transit")]
+            for (i = 0; i < checkboxes.length; i++) {
+                if (!checkboxes[i].is(checkbox)) {
+                    checkboxes[i].prop('checked', false).change()
+                }
+            }
+        }
+    }
+
+    function found_changed(value) {
         disable = true;
         if (value == 1 || value == true) {
             disable = false;
+        } else {
+            $("#in_hospital_checkbox").prop('checked', false)
+            $("#is_home").prop('checked', false)
+            $("#is_transit").prop('checked', false)
         }
 
         document.getElementById('in_hospital_checkbox').disabled = disable;
-        document.getElementById('hospital_type').disabled = disable;
-        document.getElementById('hospital_select').disabled = disable;
+
+        document.getElementById('is_home').disabled = disable;
+        document.getElementById('is_transit').disabled = disable;
+        
+        disable_hospital_choice($("#in_hospital_checkbox").prop('checked'))
     }
 
     function disable_hospital_choice(value) {
@@ -259,7 +297,7 @@
             document.getElementById("hospital_select").innerHTML = data.toString();
         }
     });
-};
+    };
 
 // $("#hospital_region_id").on("click", update_hospitals_list());
 $("#hospital_region_id").on("change", function(){
@@ -272,7 +310,7 @@ $("#hospital_type").on("change", function(){
 window.onload = function() {
     // alert('{{ patient.hospital.hospital_nomenklatura_id }}')
     // $("#hospital_region_id").val('{{ patient.hospital.region_id }}')
-    disable_hospital_choice('{{ patient.in_hospital }}')
+    disable_hospital_choice($("#in_hospital_checkbox").prop('checked'))
     // update_hospitals_list()  
 }
 

@@ -10,7 +10,7 @@ from flask_login import login_required, current_user
 from app import login_manager, db
 from app import constants as c
 from jinja2 import TemplateNotFound
-from app.home.models import Patient, Hospital, Region, Hospital_Type, Hospital_Nomenklatura
+from app.home.models import Patient, Hospital, Region, Hospital_Type, Hospital_Nomenklatura, PatientStatus
 from datetime import datetime
 from flask_uploads import UploadSet
 import pandas as pd
@@ -29,7 +29,6 @@ geocoder = OpenCageGeocode(key)
 @blueprint.route('/index', methods=['GET'])
 @login_required
 def index():
-    
     if not current_user.is_authenticated:
         return redirect(url_for('base_blueprint.login'))
 
@@ -60,10 +59,14 @@ def route_template(template, **kwargs):
         total = len(Patient.query.filter_by().all())
 
         is_found = len(Patient.query.filter_by(is_found=True).all())
+
         ratio = 0 if total == 0 else is_found/total
         is_found_str  = str("{}/{} ({}%)".format(is_found, total, format(ratio*100, '.2f')))
         
-        in_hospital  = len(Patient.query.filter_by(in_hospital=True).all())
+
+        in_hospital_status_id = PatientStatus.query.filter_by(value=c.in_hospital[0]).first().id
+        in_hospital = len(Patient.query.filter_by(status_id=in_hospital_status_id).all())
+        # in_hospital = 1
         ratio = 0 if is_found == 0 else in_hospital/is_found
         in_hospital_str = str("{}/{} ({}%)".format(in_hospital, is_found, format(ratio*100, '.2f')))
 
@@ -108,6 +111,10 @@ def add_patient():
     if not patient_form.hospital_id.choices:
         patient_form.hospital_id.choices = [ (-1, c.no_hospital) ] + [(h.id, h.name) for h in hospitals]
 
+    patient_statuses = PatientStatus.query.all()
+    if not patient_form.patient_status.choices:
+        patient_form.patient_status.choices = [(s.value, s.name) for s in patient_statuses]
+
     hospital_types = Hospital_Type.query.all()
     hospital_types = [(h.id, h.name) for h in hospital_types]
 
@@ -117,18 +124,18 @@ def add_patient():
         new_dict['arrival_date'] = datetime.strptime(request.form['arrival_date'], '%Y-%m-%d')
         new_dict['dob'] = datetime.strptime(request.form['dob'], '%Y-%m-%d')
 
+        new_dict['status_id'] = PatientStatus.query.filter_by(value=request.form["patient_status"]).first().id
         new_dict['is_found'] = int(new_dict['is_found'][0]) == 1
-        new_dict['in_hospital'] = int(new_dict['in_hospital'][0]) == 1
 
-        patient = Patient.query.filter_by(iin=new_dict["iin"][0]).first()
-        if patient:
-            msg = 'Пациент с ИИН {} уже есть в базе'.format(new_dict["iin"][0])
-            return route_template( 'add_person', form=PatientForm(request.form), added=False, error_msg=msg)
+        # patient = Patient.query.filter_by(iin=new_dict["iin"][0]).first()
+        # if patient:
+        #     msg = 'Пациент с ИИН {} уже есть в базе'.format(new_dict["iin"][0])
+        #     return route_template( 'add_person', form=PatientForm(request.form), added=False, error_msg=msg)
 
-        patient = Patient.query.filter_by(pass_num=new_dict["pass_num"][0]).first()
-        if patient:
-            msg = 'Пациент с Номером Паспорта {} уже есть в базе'.format(new_dict["pass_num"][0])
-            return route_template( 'add_person', form=PatientForm(request.form), added=False, error_msg=msg)
+        # patient = Patient.query.filter_by(pass_num=new_dict["pass_num"][0]).first()
+        # if patient:
+        #     msg = 'Пациент с Номером Паспорта {} уже есть в базе'.format(new_dict["pass_num"][0])
+        #     return route_template( 'add_person', form=PatientForm(request.form), added=False, error_msg=msg)
 
         # # else we can create the user
         patient = Patient(**new_dict)
@@ -157,6 +164,8 @@ def add_data():
     data_form = UploadDataForm()
     docs = UploadSet('documents', ['xls', 'xlsx', 'csv'])
 
+    found_hospitals = dict()
+
     if data_form.validate_on_submit():
         filename = docs.save(data_form.file.data)
         file_url = docs.url(filename)
@@ -164,11 +173,10 @@ def add_data():
         patients = pd.read_excel(docs.path(filename))
         added = 0
         regions = Region.query.all()
-        hospitals = Hospital.query.all()
 
         def create_patient(row):
             patient = Patient()
-            print(row)
+            # print(row)
             patient.full_name = row["ФИО"]
             patient.iin = row["ИИН"]
 
@@ -212,23 +220,44 @@ def add_data():
             patient.job = row["Место работы"]
             patient.is_found = True if row["Найден (да/нет)"].lower() == "да" else False
             patient.in_hospital = True if row["Госпитализирован (да/нет)"].lower() == "да" else False
+    
+            hospitals = Hospital.query.filter_by(region_id=patient.region_id).all()
 
             if not pd.isnull(row["Место госпитализации"]):
-                hospitals_distance = []
+                hospital_lower = row["Место госпитализации"].lower()
 
-                for h in hospitals:
-                    hospitals_distance.append(nltk.edit_distance(row["Место госпитализации"], h.name))
+                # if "вылет" in hospital_lower:
+                #     hospital = Hospital.query.filter_by(name="Вылет").first()
+                # elif "транзит" in hospital_lower:
+                #     hospital = Hospital.query.filter_by(name="Транзит").first()
+                # elif "карантин" in hospital_lower:
+                #     hospital = Hospital.query.filter_by(name="Домашний Карантин", region_id=patient.region_id).first()                    
+                # else:
+                if True:
+                    hospital = found_hospitals.get(row["Место госпитализации"], None)
 
-                hospital = hospitals[np.argmin(hospitals_distance)]
+                    if not hospital:
+                        hospital_distances = []
+
+                        for h in hospitals:
+                            # common_elements = set(row["Место госпитализации"].lower().split(" ")).intersection(h.name.lower().split(" "))
+
+                            hospital_distances.append(nltk.edit_distance(row["Место госпитализации"], h.name))
+                            # hospital_distances.append(common_elements)
+
+                        found_hospitals[row["Место госпитализации"]] = hospitals[np.argmin(hospital_distances)]
+                        hospital = hospitals[np.argmin(hospital_distances)]
+
+                print("Real {}, Predicted {}".format(row["Место госпитализации"], hospital.name))
                 patient.hospital_id = hospital.id
 
-            if region_name:
-                query = "{}, {}".format(region_name, patient.home_address)
-                results = geocoder.geocode(query)
+            # if region_name:
+            #     query = "{}, {}".format(region_name, patient.home_address)
+            #     results = geocoder.geocode(query)
                 
-                if len(results):
-                    patient.address_lat = results[0]['geometry']['lat']
-                    patient.address_lng = results[0]['geometry']['lng']
+            #     if len(results):
+            #         patient.address_lat = results[0]['geometry']['lat']
+            #         patient.address_lng = results[0]['geometry']['lng']
 
             db.session.add(patient)
 
@@ -268,8 +297,12 @@ def patients():
     if "not_found" in request.args:
         filt["is_found"] = False
         form.not_found.default='checked'
+    q = Patient.query.filter_by(**filt)
+
     if "not_in_hospital" in request.args:
-        filt["in_hospital"] = False
+        in_hospital_id = PatientStatus.query.filter_by(value=c.in_hospital[0]).first().id
+        q = Patient.query.filter(Patient.status_id != in_hospital_id).filter_by(**filt)
+
         form.not_in_hospital.default='checked'
 
     page = 1
@@ -277,7 +310,6 @@ def patients():
     if "page" in request.args:
         page = int(request.args["page"][0])
 
-    q = Patient.query.filter_by(**filt)
     
     total_len = q.count()
 
@@ -287,7 +319,7 @@ def patients():
     max_page = math.ceil(total_len/per_page)
 
     form.process()
-    return route_template('patients', patients=patients, form=form, page=page, max_page=max_page, total = total_len)
+    return route_template('patients', patients=patients, form=form, page=page, max_page=max_page, total = total_len, constants=c)
 
 @blueprint.route('/delete_patient', methods=['POST'])
 @login_required
@@ -329,8 +361,22 @@ def patient_profile():
                 if "hospital" in request.form:
                     patient.hospital = request.form["hospital"]
                 
-                patient.is_found = "is_found" in request.form 
-                patient.in_hospital = "in_hospital" in request.form
+                status = None
+                if "is_found" in request.form:
+                    patient.is_found = True
+                else:
+                    patient.is_found = False
+
+                print(request.form)
+                if "in_hospital" in request.form:
+                    status = c.in_hospital
+                elif "is_home" in request.form:
+                    status = c.is_home
+                elif "is_transit" in request.form:
+                    status = c.is_transit
+
+                if status:
+                    patient.status_id = PatientStatus.query.filter_by(value=status[0]).first().id
                 
                 if "hospital_id" in request.form:
                     patient_hospital = Hospital.query.filter_by(id=request.form['hospital_id']).first()
@@ -354,9 +400,13 @@ def patient_profile():
 
             if patient.is_found:
                 form.is_found.default = 'checked'
-            
-            if patient.in_hospital:
-                form.in_hospital.default='checked'
+
+            if patient.status.value == c.in_hospital[0]:
+                form.in_hospital.default = 'checked'
+            elif patient.status.value == c.is_home[0]:
+                form.is_home.default = 'checked'
+            elif patient.status.value == c.is_transit[0]:
+                form.is_transit.default = 'checked'                         
 
             hospitals = Hospital.query.filter_by(region_id=hospital_region_id, hospital_type_id=hospital_type_id).all()
             if not form.hospital_id.choices:

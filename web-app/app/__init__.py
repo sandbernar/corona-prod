@@ -30,22 +30,24 @@ def register_blueprints(app):
 
 def configure_database(app):
     def add_hospitals():
-        from app.home.models import Hospital, Region, Hospital_Type, Hospital_Nomenklatura
+        from app.home.models import Hospital, Region, Hospital_Type, Hospital_Nomenklatura, PatientStatus
         # Clean the tables
         Region.query.delete()
         Hospital_Type.query.delete()
         Hospital_Nomenklatura.query.delete()
+        PatientStatus.query.delete()
         db.session.commit()
 
         df = pd.read_excel(C.hospitals_list_xlsx)
         df = df.drop_duplicates()
 
-        for n in df.region.unique():
-            typ = Region(name=n)
-            db.session.add(typ)
+        for status in C.patient_statuses:
+            p_status = PatientStatus(value=status[0], name=status[1])
+            db.session.add(p_status)
 
-        typ = Region(name="Вне РК")
-        db.session.add(typ)
+        for n in df.region.unique():
+            region = Region(name=n)
+            db.session.add(region)
 
         for n in df.Nomenklatura.unique():
             nomen = Hospital_Nomenklatura(name=n)

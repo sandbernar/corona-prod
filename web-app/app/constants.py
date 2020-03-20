@@ -4,6 +4,12 @@ all_hospital_types = "Все Типы"
 all_hospital_nomenklatura = "Все Номенклатуры"
 no_hospital = "Не Госпитализирован"
 
+in_hospital = ("in_hospital", "Госпитализирован")
+is_home = ("is_home", "Домашний Карантин")
+is_transit = ("is_transit", "Транзит")
+
+patient_statuses = [in_hospital, is_home, is_transit]
+
 regions_list = [
 	"Нур-Султан",
 	"Алматы",

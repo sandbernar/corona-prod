@@ -30,13 +30,17 @@ class Patient(db.Model):
     region_id = Column(Integer, ForeignKey('Region.id'))
     region = db.relationship('Region')
 
+    status_id = Column(Integer, ForeignKey('PatientStatus.id'))
+    status = db.relationship('PatientStatus')
+
+    is_found = Column(Boolean, unique=False)
+
     hospital_id = Column(Integer, ForeignKey('Hospital.id'))
     hospital = db.relationship('Hospital')
 
     home_address = Column(String, unique=False)
     job = Column(String, unique=False)
-    is_found = Column(Boolean, unique=False)
-    in_hospital = Column(Boolean, unique=False)
+
     address_lat = Column(Float, unique=False)
     address_lng = Column(Float, unique=False)
 
@@ -49,6 +53,24 @@ class Patient(db.Model):
 
     def __repr__(self):
         return str(self.id)
+
+class PatientStatus(db.Model):
+
+    __tablename__ = 'PatientStatus'
+
+    id = Column(Integer, primary_key=True)
+    value = Column(String, unique=True)
+    name = Column(String, unique=True)
+
+    def __init__(self, **kwargs):
+        for property, value in kwargs.items():
+            if hasattr(value, '__iter__') and not isinstance(value, str):
+                value = value[0]
+                
+            setattr(self, property, value)
+
+    def __repr__(self):
+        return str(self.name)        
 
 class ContactedPerson(db.Model):
 
