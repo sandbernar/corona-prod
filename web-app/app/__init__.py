@@ -49,6 +49,9 @@ def configure_database(app):
             region = Region(name=n)
             db.session.add(region)
 
+        region = Region(name="Вне РК")
+        db.session.add(region)
+
         for n in df.Nomenklatura.unique():
             nomen = Hospital_Nomenklatura(name=n)
             db.session.add(nomen)

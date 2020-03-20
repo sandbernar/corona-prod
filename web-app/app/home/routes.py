@@ -45,10 +45,12 @@ def index():
     regions = dict()
     for p in patients:
         found_hospital = regions.get(p.region, (0, 0))
-        regions[p.region] = (found_hospital[0] + (1 - int(p.is_found)), found_hospital[1] + (1 - int(p.in_hospital)))
+        in_hospital_id = PatientStatus.query.filter_by(value=c.in_hospital[0]).first().id
+
+        regions[p.region] = (found_hospital[0] + (1 - int(p.is_found)), found_hospital[1] + (1 - int(p.status_id == in_hospital_id)))
     print(regions)
 
-    return route_template('index', last_five_patients=last_five_patients, coordinates_patients=coordinates_patients, regions=regions)
+    return route_template('index', last_five_patients=last_five_patients, coordinates_patients=coordinates_patients, regions=regions, constants=c)
 
 @blueprint.route('/<template>')
 def route_template(template, **kwargs):
@@ -206,11 +208,22 @@ def add_data():
             region_name = ""
             if not pd.isnull(row["регион"]):
                 regions_distance = []
+                preprocessed_region = row["регион"].lower().split(" ")
 
                 for r in regions:
-                    regions_distance.append(nltk.edit_distance(row["регион"], r.name))
+                    preprocessed_r = r.name.lower().replace("(", "").replace(")", "").split(" ")
+                    common_elements = len(set(preprocessed_region).intersection(preprocessed_r))
+                    regions_distance.append(common_elements)
 
-                region = regions[np.argmin(regions_distance)]
+                if np.max(regions_distance) == len(preprocessed_region):
+                    region = regions[np.argmax(regions_distance)]
+                else:
+                    regions_distance = []
+                    for r in regions:
+                        regions_distance.append(nltk.edit_distance(row["регион"], r.name))
+
+                    region = regions[np.argmin(regions_distance)]
+                
                 patient.region_id = region.id
                 region_name = region.name
             else:
@@ -219,37 +232,40 @@ def add_data():
             patient.home_address = row["Место жительство, либо предпологаемое место проживания"]
             patient.job = row["Место работы"]
             patient.is_found = True if row["Найден (да/нет)"].lower() == "да" else False
-            patient.in_hospital = True if row["Госпитализирован (да/нет)"].lower() == "да" else False
     
             hospitals = Hospital.query.filter_by(region_id=patient.region_id).all()
 
             if not pd.isnull(row["Место госпитализации"]):
                 hospital_lower = row["Место госпитализации"].lower()
 
-                # if "вылет" in hospital_lower:
-                #     hospital = Hospital.query.filter_by(name="Вылет").first()
-                # elif "транзит" in hospital_lower:
-                #     hospital = Hospital.query.filter_by(name="Транзит").first()
-                # elif "карантин" in hospital_lower:
-                #     hospital = Hospital.query.filter_by(name="Домашний Карантин", region_id=patient.region_id).first()                    
-                # else:
-                if True:
+                status = None
+                if "вылет" in hospital_lower or "транзит" in hospital_lower:
+                    status = c.is_transit
+                elif "карантин" in hospital_lower:
+                    status = c.is_home
+                elif len(hospital_lower):
+                    status = c.in_hospital
                     hospital = found_hospitals.get(row["Место госпитализации"], None)
 
                     if not hospital:
                         hospital_distances = []
+                        hospital_name = row["Место госпитализации"]
 
                         for h in hospitals:
                             # common_elements = set(row["Место госпитализации"].lower().split(" ")).intersection(h.name.lower().split(" "))
-
-                            hospital_distances.append(nltk.edit_distance(row["Место госпитализации"], h.name))
+                            hospital_distances.append(nltk.edit_distance(hospital_name, h.name, True))
                             # hospital_distances.append(common_elements)
 
-                        found_hospitals[row["Место госпитализации"]] = hospitals[np.argmin(hospital_distances)]
+                        # found_hospitals[row["Место госпитализации"]] = hospitals[np.argmin(hospital_distances)]
+                        print(Region.query.filter_by(id=patient.region_id).first().name)
                         hospital = hospitals[np.argmin(hospital_distances)]
+                        patient.hospital_id = hospital.id
 
-                print("Real {}, Predicted {}".format(row["Место госпитализации"], hospital.name))
-                patient.hospital_id = hospital.id
+                # print("Real {}, Predicted {}".format(row["Место госпитализации"], hospital.name))
+                
+                if status != None:
+                    patient.status_id = PatientStatus.query.filter_by(value=status[0]).first().id
+
 
             # if region_name:
             #     query = "{}, {}".format(region_name, patient.home_address)
@@ -289,10 +305,9 @@ def patients():
 
     if "region" in request.args:
         region = request.args["region"]
-        if region != c.all_regions:
-            if region in regions:
-                filt["region"] = region
-                form.region.default = region
+        if region != -1:
+            filt["region_id"] = region
+            form.region.default = region
 
     if "not_found" in request.args:
         filt["is_found"] = False
@@ -310,7 +325,6 @@ def patients():
     if "page" in request.args:
         page = int(request.args["page"][0])
 
-    
     total_len = q.count()
 
     for p in q.offset((page-1)*per_page).limit(per_page).all():

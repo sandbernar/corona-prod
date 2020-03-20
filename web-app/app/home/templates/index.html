@@ -93,7 +93,7 @@
                     {% endif %}
                   </td>
                   <td>
-                    {% if patient.in_hospital %}
+                    {% if patient.status.value == constants.in_hospital[0] %}
                       <font color="green">Да</font>
                     {% else %}
                       <font color="red">Нет</font>
