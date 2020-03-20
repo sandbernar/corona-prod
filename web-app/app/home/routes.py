@@ -195,6 +195,7 @@ def add_data():
             patient.flight_code = row["рейс"]
             patient.visited_country = row["Место и сроки пребывания в последние 14 дней до прибытия в Казахстан (укажите страну, область, штат и т.д.)"]
             
+            region_name = ""
             if not pd.isnull(row["регион"]):
                 regions_distance = []
 
@@ -203,6 +204,7 @@ def add_data():
 
                 region = regions[np.argmin(regions_distance)]
                 patient.region_id = region.id
+                region_name = region.name
             else:
                 patient.region_id = Region.query.filter_by(name="Вне РК").first().id
 
@@ -220,12 +222,13 @@ def add_data():
                 hospital = hospitals[np.argmin(hospitals_distance)]
                 patient.hospital_id = hospital.id
 
-            # query = "{}, {}".format(region.name, patient.home_address)
-            # results = geocoder.geocode(query)
-            
-            # if len(results):
-            #     patient.address_lat = results[0]['geometry']['lat']
-            #     patient.address_lng = results[0]['geometry']['lng']
+            if region_name:
+                query = "{}, {}".format(region_name, patient.home_address)
+                results = geocoder.geocode(query)
+                
+                if len(results):
+                    patient.address_lat = results[0]['geometry']['lat']
+                    patient.address_lng = results[0]['geometry']['lng']
 
             db.session.add(patient)
 

@@ -25,7 +25,10 @@
               </div>
             </div>
           </div>
-            <div id="map" class="map-canvas"></div>
+
+           <div id="map" style="width:100%; height:500px"></div>
+
+            <!-- <div id="map" class="map-canvas"></div> -->
           </div>
       </div>
       <div class="col-xl-4">
@@ -141,39 +144,15 @@
 
 {% block javascripts %}
 <script type="text/javascript">
-ymaps.ready(init);
+  var map;
 
-function init() {
-    var myMap = new ymaps.Map("map", {
-            center: [47.1605, 71.4704],
-            zoom: 4,
-            controls: ['zoomControl']
-        }, {
-            searchControlProvider: 'yandex#search'
-        })
+  DG.then(function () {
+      map = DG.map('map', {
+          center: [54.98, 82.89],
+          zoom: 13
+      });
+  });
 
-    myMap.geoObjects
-        {% for p in coordinates_patients %}
-        .add(new ymaps.Placemark([{{ p.address_lat }}, {{ p.address_lng }} ], {
-            balloonContent: '<a href="/patient_profile?id={{p.id}}">{{ p.full_name }}</a>'
-        }, {
-            preset: 'islands#icon',
-            {% if not p.is_found and not p.in_hospital %}
-            iconColor: 'red'
-            {% elif p.is_found and not p.in_hospital %}
-            iconColor: 'yellow'
-            {% else %}
-            iconColor: 'green'
-            {% endif %}
-        }))
-        {% endfor %}            
-        // .add(new ymaps.Placemark([55.833436, 37.715175], {
-        //     balloonContent: '<strong>серобуромалиновый</strong> цвет'
-        // }, {
-        //     preset: 'islands#dotIcon',
-        //     iconColor: '#735184'
-        // }))
-}
 
 new Chart(document.getElementById("not-found"), {
     type: 'pie',
