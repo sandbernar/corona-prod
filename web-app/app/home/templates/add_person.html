@@ -11,28 +11,28 @@
 {% include "site_template/navigation.html" %}
 
 {% with stats=stats %}
-  {% include "site_template/top-stats.html" %}
+{% include "site_template/top-stats.html" %}
 {% endwith %}
 
 <div class="container-fluid mt--7">
-    {% if added %}
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <span class="alert-icon"><i class="ni ni-like-2"></i></span>
-        <span class="alert-text">Пациент добавлен в базу данных</span>
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-        </button>
-    </div>
-    {% endif %}
-    {% if error_msg %}
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <span class="alert-icon"><i class="fas fa-exclamation-circle"></i></span>
-        <span class="alert-text">{{ error_msg }}</span>
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-        </button>
-    </div>
-    {% endif %}
+  {% if added %}
+  <div class="alert alert-success alert-dismissible fade show" role="alert">
+    <span class="alert-icon"><i class="ni ni-like-2"></i></span>
+    <span class="alert-text">Пациент добавлен в базу данных</span>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  {% endif %}
+  {% if error_msg %}
+  <div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <span class="alert-icon"><i class="fas fa-exclamation-circle"></i></span>
+    <span class="alert-text">{{ error_msg }}</span>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  {% endif %}
 
   <!-- Table -->
   <div class="row">
@@ -95,7 +95,7 @@
                         </div>
                         <div class="form-group">
                           <label for="region-input" class="form-control-label">Регион</label>
-                          {{ form.region_id(class="form-control") }}
+                                {{ form.region_id(class="form-control", id="region_id") }}                          
                         </div>
                         <div class="form-group">
                           <label for="home-input" class="form-control-label">Место жительства / возможное место проживания</label>
@@ -120,23 +120,18 @@
                                 <label class="form-control-label">Найден?</label><br>
                                 {% for subfield in form.is_found %}
                                 <div class="custom-control custom-radio custom-control-inline">
-                                  {{ subfield(type="radio", id=subfield.id, class="custom-control-input", onchange="disable_in_hospital(value)" ) }}
+                                  {{ subfield(type="radio", id=subfield.id, class="custom-control-input", onchange="disable_status(value)" ) }}
                                   <label class="custom-control-label" for='{{ subfield.id }}'>{{ subfield.label }}</label>
                                 </div>
                                 {% endfor %}
                               </div>
                             </div>
                             <div class="col">
-                              <label class="form-control-label">Госпитализирован?</label><br>                            
                               <div class="form-group">
-                                {% for subfield in form.in_hospital %}
-                                <div class="custom-control custom-radio custom-control-inline">
-                                  {{ subfield(type="radio", id=subfield.id, class="custom-control-input", onchange="disable_hospital_choice(value)") }}
-                                  <label class="custom-control-label" for='{{ subfield.id }}'>{{ subfield.label }}</label>
-                                </div>
-                                {% endfor %}                                
+                                <label class="form-control-label">Статус Нахождения</label><br>
+                                {{ form.patient_status(class="form-control", id="patient_status", onchange="disable_hospital_choice($(this).val() === 'in_hospital')") }}
                               </div>
-                            </div>
+                            </div>                            
                           </div>
                         </div>
                       </div>
@@ -158,7 +153,7 @@
                                 <label for="job-input" class="form-control-label">Тип Больницы</label>
                                 <select class="form-control" id="hospital_type" name="hospital_region_id" required="">
                                   {% for subfield in hospital_types %}
-                                    <option value={{ subfield[0] }}>{{ subfield[1] }}</option>
+                                  <option value={{ subfield[0] }}>{{ subfield[1] }}</option>
                                   {% endfor %}
                                 </select>                                
                               </div>
@@ -198,45 +193,61 @@
 {% block javascripts %}
 {{ super()}}
 <script type="text/javascript">
-disable_hospital_choice(0)
-update_hospitals_list()
+  disable_hospital_choice(0)
+  update_hospitals_list()
+  disable_status($("#hospital_select").val())
 
-function disable_in_hospital(value) {
-  disable = true
-  if (value == 1) {
-    disable = false
-  } else {
-    document.getElementById('in_hospital-0').checked = false;
-    document.getElementById('in_hospital-1').checked = false;
-    disable_hospital_choice(value)
+  function disable_status(value) {
+    disable = true
+    if (value == 1) {
+      disable = false
+    } else {
+      $('#patient_status').prop('selectedIndex', 1).change();
+      // document.getElementById('in_hospital-0').checked = false;
+      // document.getElementById('in_hospital-1').checked = false;
+      // disable_hospital_choice(value)
+    }
+
+    document.getElementById('patient_status').disabled = disable;
+    // document.getElementById('in_hospital-1').disabled = disable;    
   }
 
-  document.getElementById('in_hospital-0').disabled = disable;
-  document.getElementById('in_hospital-1').disabled = disable;
-}
+  function disable_in_hospital(value) {
+    disable = true
+    if (value == 1) {
+      disable = false
+    } else {
+      document.getElementById('in_hospital-0').checked = false;
+      document.getElementById('in_hospital-1').checked = false;
+      disable_hospital_choice(value)
+    }
 
-function disable_hospital_choice(value) {
-  disable = true;
-  if (value == 1) {
-    disable = false;
+    document.getElementById('in_hospital-0').disabled = disable;
+    document.getElementById('in_hospital-1').disabled = disable;
   }
 
-  document.getElementById('hospital_region_id').disabled = disable;
-  document.getElementById('hospital_type').disabled = disable;
-  document.getElementById('hospital_select').disabled = disable;
-}
+  function disable_hospital_choice(value) {
+    disable = true;
+    if (value == 1) {
+      disable = false;
+    }
 
-function update_hospitals_list(){
+    document.getElementById('hospital_region_id').disabled = disable;
+    document.getElementById('hospital_type').disabled = disable;
+    document.getElementById('hospital_select').disabled = disable;
+  }
+
+  function update_hospitals_list(){
     $.ajax({
       type: 'POST',
       url: "/get_hospital_by_region",
       data: {region_id: $("#hospital_region_id").val(), hospital_type_id: $("#hospital_type").val()},
       dataType: "text",
       success: function(data){
-                document.getElementById("hospital_select").innerHTML = data.toString();
-               }
+        document.getElementById("hospital_select").innerHTML = data.toString();
+      }
     });
-};
+  };
 
 // $("#hospital_region_id").on("click", update_hospitals_list());
 $("#hospital_region_id").on("change", function(){

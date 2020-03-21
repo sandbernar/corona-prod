@@ -12,3 +12,4 @@ pandas
 numpy
 psycopg2
 nltk
+postal
