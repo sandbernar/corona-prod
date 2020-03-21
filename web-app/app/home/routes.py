@@ -10,7 +10,7 @@ from flask_login import login_required, current_user
 from app import login_manager, db
 from app import constants as c
 from jinja2 import TemplateNotFound
-from app.home.models import Patient, Hospital, Region, Hospital_Type, Hospital_Nomenklatura, PatientStatus
+from app.home.models import Patient, Hospital, Region, Hospital_Type, Hospital_Nomenklatura, PatientStatus, Foreign_Country, Infected_Country_Category
 from datetime import datetime
 from flask_uploads import UploadSet
 import pandas as pd
@@ -22,6 +22,11 @@ from app.home.forms import PatientForm, UploadDataForm, TableSearchForm, UpdateP
 import json
 import nltk
 import dateutil.parser
+from postal.parser import parse_address
+import re
+import requests
+import multiprocessing as mp
+import itertools
 
 key = '6670b10323b541bdbbf3e39bf07b7e46'
 geocoder = OpenCageGeocode(key)
@@ -40,6 +45,7 @@ def index():
     for p in Patient.query.all():
         if p.address_lat:
             coordinates_patients.append(p)
+            # print(p.address_lat)
 
     patients = [ p for p in Patient.query.filter_by().all()]
     regions = dict()
@@ -48,7 +54,7 @@ def index():
         in_hospital_id = PatientStatus.query.filter_by(value=c.in_hospital[0]).first().id
 
         regions[p.region] = (found_hospital[0] + (1 - int(p.is_found)), found_hospital[1] + (1 - int(p.status_id == in_hospital_id)))
-    print(regions)
+    print(coordinates_patients)
 
     return route_template('index', last_five_patients=last_five_patients, coordinates_patients=coordinates_patients, regions=regions, constants=c)
 
@@ -158,6 +164,71 @@ def add_patient():
     else:
         return route_template( 'add_person', form=patient_form, hospital_types=hospital_types, added=False, error_msg=None)
 
+def get_lat_lng(patients):
+    lat_lng = []
+    for patient in patients:
+        lat = None
+        lng = None
+
+        if not pd.isnull(patient.home_address):
+            patient.home_address = patient.home_address.replace(".", ". ")
+            region_name = Region.query.filter_by(id=patient.region_id).first().name
+
+            address_query = patient.home_address
+
+            params = dict(
+                apiKey='S25QEDJvW3PCpRvVMoFmIJBHL01xokVyinW8F5Fj0pw',
+            )
+
+            patient.home_address = re.sub(r"([0-9]+(\.[0-9]+)?)",r" \1 ", patient.home_address).strip()
+            parsed_address = {k: v for (v, k) in parse_address(patient.home_address)}
+
+            address_query = patient.home_address
+            if "city" not in parsed_address:
+                city = region_name if "city" not in parsed_address else parsed_address["city"]
+                country = "Kazakhstan" if "country" not in parsed_address else parsed_address["country"]
+
+                address_query = "city={};country={}".format(city, country)
+                
+                street = None
+
+                if "road" in parsed_address:
+                    street = parsed_address["road"]
+                elif "house" in parsed_address:
+                    street = parsed_address["house"]
+                
+                if street:
+                    address_query += ";street={}".format(street)
+
+                if "house_number" in parsed_address:
+                    address_query += ";houseNumber={}".format(parsed_address["house_number"])
+                params['qq'] = address_query
+            else:
+                address_query = address_query.replace(parsed_address["city"], "")
+                address_query = "{}, город {}".format(address_query, parsed_address["city"])
+                params['q'] = address_query
+
+            url = "https://geocode.search.hereapi.com/v1/geocode"
+
+
+            resp = requests.get(url=url, params=params)
+            data = resp.json()
+                       
+            if len(data["items"]):
+                item = data["items"][0]
+
+                if "access" in item:
+                    item = item["access"][0]
+                else:
+                    item = item["position"]
+
+                lat = item["lat"]
+                lng = item["lng"]
+            
+        lat_lng.append((lat, lng))
+
+    return lat_lng
+
 @blueprint.route('/add_data', methods=['GET', 'POST'])
 def add_data():
     if not current_user.is_authenticated:
@@ -175,6 +246,8 @@ def add_data():
         patients = pd.read_excel(docs.path(filename))
         added = 0
         regions = Region.query.all()
+
+        created_patients = []
 
         def create_patient(row):
             patient = Patient()
@@ -230,6 +303,7 @@ def add_data():
                 patient.region_id = Region.query.filter_by(name="Вне РК").first().id
 
             patient.home_address = row["Место жительство, либо предпологаемое место проживания"]
+
             patient.job = row["Место работы"]
             patient.is_found = True if row["Найден (да/нет)"].lower() == "да" else False
     
@@ -252,37 +326,37 @@ def add_data():
                         hospital_name = row["Место госпитализации"]
 
                         for h in hospitals:
-                            # common_elements = set(row["Место госпитализации"].lower().split(" ")).intersection(h.name.lower().split(" "))
                             hospital_distances.append(nltk.edit_distance(hospital_name, h.name, True))
-                            # hospital_distances.append(common_elements)
 
-                        # found_hospitals[row["Место госпитализации"]] = hospitals[np.argmin(hospital_distances)]
-                        print(Region.query.filter_by(id=patient.region_id).first().name)
                         hospital = hospitals[np.argmin(hospital_distances)]
                         patient.hospital_id = hospital.id
 
-                # print("Real {}, Predicted {}".format(row["Место госпитализации"], hospital.name))
                 
                 if status != None:
                     patient.status_id = PatientStatus.query.filter_by(value=status[0]).first().id
 
-
-            # if region_name:
-            #     query = "{}, {}".format(region_name, patient.home_address)
-            #     results = geocoder.geocode(query)
-                
-            #     if len(results):
-            #         patient.address_lat = results[0]['geometry']['lat']
-            #         patient.address_lng = results[0]['geometry']['lng']
-
-            db.session.add(patient)
+            created_patients.append(patient)
 
         patients.apply(lambda row: create_patient(row), axis=1)
         added = len(patients)
 
-        db.session.commit()
+        p_num = mp.cpu_count() - 1
+        pool = mp.Pool(processes = p_num)
+        lat_lng = pool.map(get_lat_lng, np.array_split(created_patients, p_num))
+        pool.close()
+        pool.join()
 
-        # # else we can create the user
+        lat_lng = list(itertools.chain.from_iterable(lat_lng))
+
+        for p, coordinates in zip(created_patients, lat_lng):
+            p.address_lat = coordinates[0]
+            p.address_lng = coordinates[1]
+
+            db.session.add(p)
+
+        db.session.commit()      
+
+        # else we can create the user
         return route_template( 'add_data', form=data_form, added=added)
         # return render_template( 'login/register.html', success='User created please <a href="/login">login</a>', form=patient_form)
     else:
@@ -415,12 +489,13 @@ def patient_profile():
             if patient.is_found:
                 form.is_found.default = 'checked'
 
-            if patient.status.value == c.in_hospital[0]:
-                form.in_hospital.default = 'checked'
-            elif patient.status.value == c.is_home[0]:
-                form.is_home.default = 'checked'
-            elif patient.status.value == c.is_transit[0]:
-                form.is_transit.default = 'checked'                         
+            if patient.status:
+                if patient.status.value == c.in_hospital[0]:
+                    form.in_hospital.default = 'checked'
+                elif patient.status.value == c.is_home[0]:
+                    form.is_home.default = 'checked'
+                elif patient.status.value == c.is_transit[0]:
+                    form.is_transit.default = 'checked'                         
 
             hospitals = Hospital.query.filter_by(region_id=hospital_region_id, hospital_type_id=hospital_type_id).all()
             if not form.hospital_id.choices:
@@ -662,3 +737,13 @@ def hospital_profile():
                                                     patients=patients, total_patients=total_len, max_page=max_page, page=page)
     else:    
         return render_template('error-500.html'), 500
+
+@blueprint.route('/countries_categories')
+@login_required
+def countries_categories():
+    if not current_user.is_authenticated:
+        return redirect(url_for('base_blueprint.login'))
+
+    categories = Infected_Country_Category.query.all()
+
+    return route_template('countries_categories', categories=categories)

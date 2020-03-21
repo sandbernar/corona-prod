@@ -10,6 +10,8 @@ is_transit = ("is_transit", "Транзит")
 
 patient_statuses = [in_hospital, is_home, is_transit]
 
+country_category = ["1a", "1b", "2", "3", "4"]
+
 code_country_list = [("AU", "Австралия"),
 				("AT", "Австрия"),
 				("AZ", "Азербайджан"),

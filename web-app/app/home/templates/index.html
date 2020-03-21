@@ -25,10 +25,7 @@
               </div>
             </div>
           </div>
-
            <div id="map" style="width:100%; height:500px"></div>
-
-            <!-- <div id="map" class="map-canvas"></div> -->
           </div>
       </div>
       <div class="col-xl-4">
@@ -144,15 +141,34 @@
 
 {% block javascripts %}
 <script type="text/javascript">
-  var map;
+ymaps.ready(init);
 
-  DG.then(function () {
-      map = DG.map('map', {
-          center: [54.98, 82.89],
-          zoom: 13
-      });
-  });
+function init() {
+    var myMap = new ymaps.Map("map", {
+            center: [47.1605, 71.4704],
+            zoom: 4,
+            controls: ['zoomControl']
+        }, {
+            searchControlProvider: 'yandex#search'
+        })
 
+    myMap.geoObjects
+        {% for p in coordinates_patients %}
+        .add(new ymaps.Placemark([{{ p.address_lat }}, {{ p.address_lng }} ], {
+            balloonContent: '<a href="/patient_profile?id={{p.id}}">{{ p.full_name }}</a>'
+        }, {
+            preset: 'islands#icon',
+            {% if not p.is_found and not p.status.value == constants.in_hospital[0] %}
+            iconColor: 'red'
+            {% elif p.is_found and not p.status.value == constants.in_hospital[0] and not p.status.value == constants.is_home[0] %}
+            iconColor: 'yellow'
+            {% else %}
+            iconColor: 'green'
+            {% endif %}            
+        }))
+        {% endfor %}            
+
+}
 new Chart(document.getElementById("not-found"), {
     type: 'pie',
     data: {    

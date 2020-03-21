@@ -131,7 +131,7 @@ class Hospital(db.Model):
             setattr(self, property, value)
 
     def __repr__(self):
-        return str(self.id)
+        return str(self.name)
 
 class Region(db.Model):
 
@@ -201,12 +201,13 @@ class Infected_Country_Category(db.Model):
     def __repr__(self):
         return str(self.name)
 
-class From_Country(db.Model):
+class Foreign_Country(db.Model):
 
-    __tablename__ = 'From_Country'
+    __tablename__ = 'Foreign_Country'
 
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
+    value = Column(String, unique=True)
     
     category_id = Column(Integer, ForeignKey('Infected_Country_Category.id'))
     category = db.relationship('Infected_Country_Category')

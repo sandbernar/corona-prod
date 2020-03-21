@@ -30,16 +30,28 @@ def register_blueprints(app):
 
 def configure_database(app):
     def add_hospitals():
-        from app.home.models import Hospital, Region, Hospital_Type, Hospital_Nomenklatura, PatientStatus
+        from app.home.models import Hospital, Region, Hospital_Type, Hospital_Nomenklatura, PatientStatus, Foreign_Country, Infected_Country_Category
         # Clean the tables
         Region.query.delete()
         Hospital_Type.query.delete()
         Hospital_Nomenklatura.query.delete()
         PatientStatus.query.delete()
+
+        Infected_Country_Category.query.delete()
+        Foreign_Country.query.delete()
+
         db.session.commit()
 
         df = pd.read_excel(C.hospitals_list_xlsx)
         df = df.drop_duplicates()
+
+        for cat in C.country_category:
+            country_cat = Infected_Country_Category(name=cat)
+            db.session.add(country_cat)
+
+        for country in C.code_country_list:
+            new_country = Foreign_Country(value=country[0], name=country[1])
+            db.session.add(new_country)
 
         for status in C.patient_statuses:
             p_status = PatientStatus(value=status[0], name=status[1])

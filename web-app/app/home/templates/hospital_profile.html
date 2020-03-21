@@ -81,12 +81,17 @@
         <div class="card-header border-0">
           <div class="row">
             <div class="col">
+            {% if patients %}
               <h3 class="mb-0">Всего - {{total_patients}}, показано {{ patients|length }} пациентов</h3>
+            {% else %}
+                <h3 class="mb-0">{{total_patients}} пациентов</h3>
+            {% endif %}
             </div>
           </div>
         </div>
         <div class="table-responsive">
           <table class="table align-items-center table-flush">
+            {% if patients %}
             <thead class="thead-light">
               <tr>
                 <th scope="col">ФИО</th>
@@ -95,6 +100,7 @@
               </tr>
             </thead>
             <tbody>
+            {% endif %}
               {% for patient in patients %}
               <tr>
                 <th scope="row">

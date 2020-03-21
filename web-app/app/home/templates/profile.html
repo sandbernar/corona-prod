@@ -52,34 +52,35 @@
 
     <div class="row">
         <div class="col-xl-4 order-xl-2 mb-5 mb-xl-0">
-            <div class="card card-profile shadow">
-                <div class="row justify-content-center">
-                    <div class="col-lg-3 order-lg-2">
+        {% if patient.address_lat %}
+          <div class="card shadow">
+             <div id="map" style="width:100%; height:220px"></div>
+         </div>
+         <div class="card card-profile shadow mt-3">
+        {% else %}
+        <div class="card card-profile shadow mt-0">
+        {% endif %} 
+            <div class="row justify-content-center">
+                <div class="col-lg-3 order-lg-2">
 
-                    </div>
                 </div>
-                <div class="card-header text-center border-0 pt-8 pt-md-4 pb-0 pb-md-4">
-                </div>
-                <div class="card-body pt-0 pt-md-1">
-                    <div class="text-center">
-                        <h3>
-                            {{ patient.full_name }}<span class="font-weight-light"></span>
-                        </h3>
-                        <div class="h3">
-                            <i class="ni location_pin mr-2"></i>Возраст - {{ age }}
-                        </div>
-                        <hr class="my-4" />
-                        <form method="POST">            
-                          <div class="row">
-                            <div class="col">
-                              <div class="custom-control custom-checkbox">
-                                {{ form.is_found(class="custom-control-input", id="is_found_checkbox", onchange="found_changed($(this).prop('checked'))") }}
-                                <label class="custom-control-label" for="is_found_checkbox">Найден</label>
-                            </div>
+            </div>
+            <div class="card-body pt-0 pt-md-4">
+                <div class="text-center">
+                    <h3>
+                        {{ patient.full_name }} | {{ age }} лет<span class="font-weight-light"></span>
+                    </h3>
+                    <form method="POST">            
+                      <div class="row">
+                        <div class="col">
+                          <div class="custom-control custom-checkbox">
+                            {{ form.is_found(class="custom-control-input", id="is_found_checkbox", onchange="found_changed($(this).prop('checked'))") }}
+                            <label class="custom-control-label" for="is_found_checkbox">Найден</label>
                         </div>
                     </div>
-                    <hr class="my-4" />
-                    <div class="row">
+                </div>
+                <hr class="my-4" />
+                <div class="row">
                     <div class="col">
                         <div class="custom-control custom-checkbox">
                             {{ form.in_hospital(class="custom-control-input", id="in_hospital_checkbox") }}                    
@@ -110,7 +111,7 @@
                     {{ form.hospital_type(class="form-control", id="hospital_type") }}
                 </div>
                 <div class="form-group">
-                    <label for="job-input" class="form-control-label">Место Госпитализации</label>
+                    <label for="job-input" class="form-control-label"><a href="/hospital_profile?id={{ patient.hospital_id }}">Место Госпитализации</a></label>
                     {{ form.hospital_id(class="form-control", id="hospital_select") }}
                 </div>
                 <hr class="my-4" />                    
@@ -127,6 +128,7 @@
     </div>
 </div>
 </div>
+
 </div>
 <div class="col-xl-8 order-xl-1">
     <div class="card bg-secondary shadow">
@@ -242,6 +244,28 @@
 {{ super()}}
 
 <script type="text/javascript">
+    if ({{ patient.address_lat }}) {
+        ymaps.ready(init);
+
+        function init() {
+        var myMap = new ymaps.Map("map", {
+                center: [{{ patient.address_lat }}, {{ patient.address_lng }}],
+                zoom: 12,
+                controls: ['zoomControl']
+            }, {
+                searchControlProvider: 'yandex#search'
+            })
+
+        myMap.geoObjects
+            .add(new ymaps.Placemark([{{ patient.address_lat }}, {{ patient.address_lng }} ], {
+                balloonContent: '{{ patient.full_name }}</a>'
+            }, {
+                preset: 'islands#icon',
+                iconColor: 'red'
+            }))
+        }
+    }
+
     $("#in_hospital_checkbox").on("change", function(){
         status_exclusive_checkbox($("#in_hospital_checkbox"))
         disable_hospital_choice($("#in_hospital_checkbox").prop('checked'))
