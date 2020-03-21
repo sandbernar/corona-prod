@@ -2,10 +2,10 @@ FROM python:3.6
 
 ENV FLASK_APP run.py
 
-RUN sudo apt-get install curl autoconf automake libtool python-dev pkg-config
+RUN apt-get install curl autoconf automake libtool pkg-config
 RUN git clone https://github.com/openvenues/libpostal
 RUN mkdir /postal
-RUN cd libpostal && ./bootstrap.sh && ./configure --datadir=[/postal] && make && make install && ldconfig
+RUN cd libpostal && ./bootstrap.sh && ./configure --datadir=/postal && make && make install && ldconfig
 
 COPY requirements.txt ./
 RUN pip install -r requirements.txt
