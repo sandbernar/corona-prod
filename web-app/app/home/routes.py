@@ -501,7 +501,8 @@ def all_hospitals():
     total_len = q.count()
 
     for h in q.offset((page-1)*per_page).limit(per_page).all():
-        hospitals.append(h)
+        patients_num = Patient.query.filter_by(hospital_id=h.id).count()
+        hospitals.append((h, patients_num))
 
     max_page = math.ceil(total_len/per_page)
 
@@ -622,6 +623,7 @@ def hospital_profile():
         else:
             form = UpdateHospitalProfileForm()
             updated = False
+            patients = []
 
             # if len(request.form):
             #     if "hospital" in request.form:
@@ -641,8 +643,22 @@ def hospital_profile():
             # if patient.in_hospital:
             #     form.in_hospital.default='checked'
 
+            q = Patient.query.filter_by(hospital_id=hospital.id)
 
+            page = 1
+            per_page = 5
+
+            if "page" in request.args:
+                page = int(request.args["page"][0])
+
+            total_len = q.count()
+
+            for p in q.offset((page-1)*per_page).limit(per_page).all():
+                patients.append(p)
+
+            max_page = math.ceil(total_len/per_page)            
             # form.process()
-            return route_template('hospital_profile', hospital=hospital, form = form, updated = updated)
+            return route_template('hospital_profile', hospital=hospital, form = form, updated = updated, 
+                                                    patients=patients, total_patients=total_len, max_page=max_page, page=page)
     else:    
         return render_template('error-500.html'), 500

@@ -48,6 +48,7 @@
                 <th scope="col">Название</th>
                 <th scope="col">Номенклатура</th>
                 <th scope="col">Тип</th>
+                <th scope="col"><a href="s">Кол-во. пациентов</a></th>
                 <th scope="col">Мед. Защита</th>
                 <th scope="col">Тесты</th>
               </tr>
@@ -58,24 +59,27 @@
                 <th scope="row">
                   <div class="media align-items-center">
                     <div class="media-body">
-                      <span class="mb-0 text-sm">{{ hospital.region }}</span>
+                      <span class="mb-0 text-sm">{{ hospital[0].region }}</span>
                     </div>
                   </div>
                 </th>
                 <td>
-                  <p class="short_p" style="width:400px;"><a href="/hospital_profile?id={{hospital.id}}">{{ hospital.name }}</a></p>
+                  <p class="short_p" style="width:350px;"><a href="/hospital_profile?id={{hospital[0].id}}">{{ hospital[0].name }}</a></p>
                 </td>
                 <td>
-                  <p class="short_p" style="width:250px;">{{ hospital.hospital_nomenklatura }}</p>
+                  <p class="short_p" style="width:250px;">{{ hospital[0].hospital_nomenklatura }}</p>
                 </td>
                 <td>
-                  <p class="short_p">{{ hospital.hospital_type }}</p>
+                  <p class="short_p">{{ hospital[0].hospital_type }}</p>
                 </td>
                 <td>
-                  {{ hospital.meds_amount }}
+                  {{ hospital[1] }}
                 </td>
                 <td>
-                {{ hospital.tests_used }} / {{ hospital.tests_amount }}</td>
+                  {{ hospital[0].meds_amount }}
+                </td>
+                <td>
+                {{ hospital[0].tests_used }} / {{ hospital[0].tests_amount }}</td>
               </tr>
               {% endfor %}
 
@@ -87,14 +91,14 @@
           <nav aria-label="...">
             <ul class="pagination justify-content-end mb-0">
               <li class="page-item {% if page == 1%}disabled{%endif%}">
-                <a class="page-link" onclick="setSearchParam('page', {{ page - 1 }})">
+                <a class="page-link" onclick="setSearchParam('page', {{ page - 1 }} )">
                   <i class="fas fa-angle-left"></i>
                   <span class="sr-only">Previous</span>
                 </a>
               </li>
               <li class="page-item"><div class="page-link" style="cursor: default;"> {{ page }}</div></li>
               <li class="page-item {% if page == max_page %}disabled{%endif%}">
-                <a class="page-link" onclick="setSearchParam('page', {{ page + 1 }})" >
+                <a class="page-link" onclick="setSearchParam('page', {{ page + 1 }} )" >
                   <i class="fas fa-angle-right"></i>
                   <span class="sr-only">Next</span>
                 </a>
