@@ -147,14 +147,11 @@ def add_patient():
 
         # # else we can create the user
         patient = Patient(**new_dict)
-
-        region = Region.query.filter_by(id=new_dict["region_id"][0]).first()
-        query = "{}, {}".format(region.name, patient.home_address)
-        results = geocoder.geocode(query)
         
-        if len(results):
-            patient.address_lat = results[0]['geometry']['lat']
-            patient.address_lng = results[0]['geometry']['lng']        
+        lat_lng = get_lat_lng([patient])[0]
+
+        patient.address_lat = lat_lng[0]
+        patient.address_lng = lat_lng[1]
 
         db.session.add(patient)
         db.session.commit()
