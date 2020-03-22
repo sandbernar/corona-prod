@@ -112,9 +112,6 @@ def configure_database(app):
         from app.home.models import Hospital
         hospitals = Hospital.query.all()
         
-        # Hospital.query.delete()
-        # db.session.commit()
-
         if len(hospitals) == 0:
             add_hospitals()
 

@@ -245,6 +245,7 @@ def add_data():
         regions = Region.query.all()
 
         created_patients = []
+        db.engine.dispose()
 
         def create_patient(row):
             patient = Patient()
