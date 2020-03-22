@@ -245,7 +245,7 @@ def add_data():
         regions = Region.query.all()
 
         created_patients = []
-        db.engine.dispose()
+
 
         def create_patient(row):
             patient = Patient()
@@ -332,6 +332,8 @@ def add_data():
                 
                 if status != None:
                     patient.status_id = PatientStatus.query.filter_by(value=status[0]).first().id
+
+            db.engine.dispose()
 
             created_patients.append(patient)
 
