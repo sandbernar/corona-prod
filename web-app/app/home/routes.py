@@ -338,7 +338,6 @@ def add_data():
             else:
                 patient.status_id = PatientStatus.query.filter_by(value=c.no_status[0]).first().id    
 
-            db.engine.dispose()
 
             created_patients.append(patient)
 
