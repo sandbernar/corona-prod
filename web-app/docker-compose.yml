@@ -6,7 +6,7 @@ services:
     env_file: .env
     build: .
     ports:
-      - "5005:5005"
+      - "5005:80"
     volumes:
-      - ./app:/app
+      - .:/app
       - ./migrations:/migrations
