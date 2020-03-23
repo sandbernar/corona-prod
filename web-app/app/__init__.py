@@ -111,9 +111,9 @@ def configure_database(app):
 
     def initialize_db(db):
         from app.home.models import Hospital
-        hospitals = Hospital.query.all()
+        hospitals = Hospital.query.count()
         
-        if len(hospitals) == 0:
+        if hospitals == 0:
             add_hospitals()
 
     @app.before_first_request
