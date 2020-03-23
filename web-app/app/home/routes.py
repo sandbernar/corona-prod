@@ -403,7 +403,16 @@ def patients():
     total_len = q.count()
 
     for p in q.offset((page-1)*per_page).limit(per_page).all():
+        contacted = ContactedPersons.query.filter_by(patient_id=p.id).all()
+        p.contacted_count = len(contacted)
+        p.contacted_found_count = 0
+
+        for contact in contacted:
+            if Patient.query.filter_by(id=contact.person_id).first().is_found:
+                p.contacted_found_count += 1
+
         patients.append(p)
+
 
     max_page = math.ceil(total_len/per_page)
 

@@ -164,9 +164,20 @@ function init() {
         });    
 
     geoObjects = []
-    {% for p in patients + [patient] %}
+    {% for p in patients %}
+
+    is_found = "Нет"
+    if ('{{ p.is_found }}' == 'True') {
+      is_found = "Да"
+    }
     geoObjects.push(new ymaps.Placemark(['{{ p.address_lat }}', '{{ p.address_lng }}' ], {
-        balloonContent: '<a href="/patient_profile?id={{p.id}}">{{ p.full_name }}</a>'
+        balloonContentBody: 
+        '<a href="/patient_profile?id={{p.id}}">Профиль Пациента</a><br>' +
+        '<strong>Регион</strong>: {{ p.region }}<br>' +
+        '<strong>Адрес</strong>: {{ p.home_address }}<br>' +
+        '<strong>Найден?</strong>:' + is_found + '<br>' +
+        '<strong>Статус</strong>: {{ p.status.name }}<br>',
+        clusterCaption: '<strong>{{ p.full_name }}</strong>'
     }, {
         preset: 'islands#icon',
         {% if not p.is_found and not p.status.value == constants.in_hospital[0] %}

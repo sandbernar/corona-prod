@@ -50,10 +50,10 @@
               <tr>
                 <th scope="col">ФИО</th>
                 <th scope="col">Телефон</th>
-                <th scope="col">Дата Въезда</th>
                 <th scope="col">Регион</th>
                 <th scope="col">Найден</th>
                 <th scope="col">Госпитализирован</th>
+                <th scope="col">Контактов (найдено/всего)</th>
               </tr>
             </thead>
             <tbody>
@@ -70,9 +70,6 @@
                   {{ patient.telephone }}
                 </td>
                 <td>
-                  {{ patient.arrival_date }}
-                </td>
-                <td>
                   {{ patient.region }}
                 </td>
                 <td>
@@ -86,7 +83,11 @@
                   <font color="green">Да</font>
                   {% else %}
                   <font color="red">Нет</font>
-                {% endif %}                        </td>
+                {% endif %}                        
+              </td>
+              <td>
+                {{ patient.contacted_found_count }}/{{ patient.contacted_count }}
+              </td>              
               </tr>
               {% endfor %}
 
