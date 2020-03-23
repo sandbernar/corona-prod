@@ -53,6 +53,7 @@
                 <th scope="col">Регион</th>
                 <th scope="col">Найден</th>
                 <th scope="col">Госпитализирован</th>
+                <th scope="col">Инфицирован</th>
                 <th scope="col">Контактов (найдено/всего)</th>
               </tr>
             </thead>
@@ -77,7 +78,8 @@
                   <font color="green">Да</font>
                   {% else %}
                   <font color="red">Нет</font>
-                {% endif %}                        </td>
+                {% endif %}                        
+                </td>
                 <td>
                   {% if patient.status.value == constants.in_hospital[0] %}
                   <font color="green">Да</font>
@@ -85,6 +87,13 @@
                   <font color="red">Нет</font>
                 {% endif %}                        
               </td>
+                <td>
+                  {% if patient.is_infected %}
+                  <font color="red">Да</font>
+                  {% else %}
+                  <font color="green">Нет</font>
+                {% endif %}                        
+                </td>              
               <td>
                 {{ patient.contacted_found_count }}/{{ patient.contacted_count }}
               </td>              

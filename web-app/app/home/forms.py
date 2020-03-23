@@ -36,6 +36,7 @@ class PatientForm(FlaskForm):
     job = TextField('Job', id='job'   , validators=[DataRequired()])
     patient_status = SelectField('Patient Status', id='patient_status' , validators=[DataRequired()])
     is_found = RadioField("Is Found", id="is_found", choices=[(1, "Да"),(0,"Нет")], default=0, validators=[DataRequired()])
+    is_infected = RadioField("Is Infected", id="is_infected", choices=[(1, "Да"),(0,"Нет")], default=0, validators=[DataRequired()])
     hospital = TextField('Hospital', id='hospital')
 	
 class UploadDataForm(FlaskForm):
@@ -50,6 +51,7 @@ class TableSearchForm(FlaskForm):
 
 class UpdateProfileForm(FlaskForm):
     is_found = BooleanField(id="is_found")
+    is_infected = BooleanField(id="is_infected")
     in_hospital = BooleanField(id="in_hospital")
     is_home = BooleanField(id="is_home")
     is_transit = BooleanField(id="is_transit")

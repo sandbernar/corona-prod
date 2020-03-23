@@ -22,7 +22,7 @@ from app.home.forms import PatientForm, UploadDataForm, TableSearchForm, UpdateP
 import json
 import nltk
 import dateutil.parser
-from postal.parser import parse_address
+# from postal.parser import parse_address
 import re
 import requests
 import multiprocessing as mp
@@ -135,6 +135,7 @@ def add_patient():
         status = request.form.get("patient_status", c.no_status[0])
         new_dict['status_id'] = PatientStatus.query.filter_by(value=status).first().id
         new_dict['is_found'] = int(new_dict['is_found'][0]) == 1
+        new_dict['is_infected'] = int(new_dict['is_infected'][0]) == 1
 
         # patient = Patient.query.filter_by(iin=new_dict["iin"][0]).first()
         # if patient:
@@ -180,32 +181,32 @@ def get_lat_lng(patients):
             )
 
             patient.home_address = re.sub(r"([0-9]+(\.[0-9]+)?)",r" \1 ", patient.home_address).strip()
-            parsed_address = {k: v for (v, k) in parse_address(patient.home_address)}
+            # parsed_address = {k: v for (v, k) in parse_address(patient.home_address)}
 
             address_query = patient.home_address
-            if "city" not in parsed_address:
-                city = region_name if "city" not in parsed_address else parsed_address["city"]
-                country = "Kazakhstan" if "country" not in parsed_address else parsed_address["country"]
+            # if "city" not in parsed_address:
+            #     city = region_name if "city" not in parsed_address else parsed_address["city"]
+            #     country = "Kazakhstan" if "country" not in parsed_address else parsed_address["country"]
 
-                address_query = "city={};country={}".format(city, country)
+            #     address_query = "city={};country={}".format(city, country)
                 
-                street = None
+            #     street = None
 
-                if "road" in parsed_address:
-                    street = parsed_address["road"]
-                elif "house" in parsed_address:
-                    street = parsed_address["house"]
+            #     if "road" in parsed_address:
+            #         street = parsed_address["road"]
+            #     elif "house" in parsed_address:
+            #         street = parsed_address["house"]
                 
-                if street:
-                    address_query += ";street={}".format(street)
+            #     if street:
+            #         address_query += ";street={}".format(street)
 
-                if "house_number" in parsed_address:
-                    address_query += ";houseNumber={}".format(parsed_address["house_number"])
-                params['qq'] = address_query
-            else:
-                address_query = address_query.replace(parsed_address["city"], "")
-                address_query = "{}, город {}".format(address_query, parsed_address["city"])
-                params['q'] = address_query
+            #     if "house_number" in parsed_address:
+            #         address_query += ";houseNumber={}".format(parsed_address["house_number"])
+            #     params['qq'] = address_query
+            # else:
+            #     address_query = address_query.replace(parsed_address["city"], "")
+            #     address_query = "{}, город {}".format(address_query, parsed_address["city"])
+            params['q'] = "{}, {}".format(address_query, region_name)
 
             url = "https://geocode.search.hereapi.com/v1/geocode"
 
@@ -329,10 +330,13 @@ def add_data():
 
                         hospital = hospitals[np.argmin(hospital_distances)]
                         patient.hospital_id = hospital.id
-
+                else:
+                    status = c.no_status
                 
                 if status != None:
                     patient.status_id = PatientStatus.query.filter_by(value=status[0]).first().id
+            else:
+                patient.status_id = PatientStatus.query.filter_by(value=c.no_status[0]).first().id    
 
             db.engine.dispose()
 
@@ -408,7 +412,8 @@ def patients():
         p.contacted_found_count = 0
 
         for contact in contacted:
-            if Patient.query.filter_by(id=contact.person_id).first().is_found:
+            p = Patient.query.filter_by(id=contact.person_id).first()
+            if p and p.is_found:
                 p.contacted_found_count += 1
 
         patients.append(p)
@@ -506,6 +511,9 @@ def patient_profile():
 
             if patient.is_found:
                 form.is_found.default = 'checked'
+
+            if patient.is_infected:
+                form.is_infected.default = 'checked'            
 
             if patient.status:
                 if patient.status.value == c.in_hospital[0]:

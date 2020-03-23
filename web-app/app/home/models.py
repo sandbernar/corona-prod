@@ -26,8 +26,9 @@ class Patient(db.Model):
     arrival_date = Column(Date, unique=False)
     flight_code = Column(String, unique=False)
     visited_country = Column(String, unique=False)
-    is_contacted_person = Column(Boolean, unique=False)
     
+    is_contacted_person = Column(Boolean, unique=False)
+
     region_id = Column(Integer, ForeignKey('Region.id'))
     region = db.relationship('Region')
 
@@ -35,6 +36,7 @@ class Patient(db.Model):
     status = db.relationship('PatientStatus')
 
     is_found = Column(Boolean, unique=False)
+    is_infected = Column(Boolean, unique=False, default=False)
 
     hospital_id = Column(Integer, ForeignKey('Hospital.id'))
     hospital = db.relationship('Hospital')

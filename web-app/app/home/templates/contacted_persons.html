@@ -21,7 +21,7 @@
         <div class="card-header bg-transparent">
           <div class="row align-items-center">
             <div class="col">
-              <h2 class="mb-0">Карта Пациентов</h2>
+              <h2 class="mb-0">Карта Контактных Лиц</h2>
             </div>
           </div>
         </div>
@@ -31,7 +31,7 @@
         <div class="card-header border-0">
           <div class="row">
             <div class="col">
-              <h3 class="mb-0">Найдено {{total}}, показано {{ patients|length }} пациентов</h3>
+              <h3 class="mb-0">Найдено {{total}}, показано {{ patients|length }} контактов</h3>
             </div>
             <div class="col-md-auto">
               <a href="/add_contacted_person?id={{ patient.id }}" class="btn btn-sm btn-primary" style="width:100%;">Добавить Контактное Лицо</a>
@@ -153,18 +153,11 @@ function init() {
                 } else {
                     target.options.set('preset', 'islands#invertedVioletClusterIcons');
                 }
-            } else {
-                // Событие произошло на геообъекте.
-                if (type == 'mouseenter') {
-                    target.options.set('preset', 'islands#pinkIcon');
-                } else {
-                    target.options.set('preset', 'islands#violetIcon');
-                }
             }
         });    
 
     geoObjects = []
-    {% for p in patients %}
+    {% for p in patients + [patient]  %}
 
     is_found = "Нет"
     if ('{{ p.is_found }}' == 'True') {
@@ -175,11 +168,15 @@ function init() {
         '<a href="/patient_profile?id={{p.id}}">Профиль Пациента</a><br>' +
         '<strong>Регион</strong>: {{ p.region }}<br>' +
         '<strong>Адрес</strong>: {{ p.home_address }}<br>' +
-        '<strong>Найден?</strong>:' + is_found + '<br>' +
+        '<strong>Найден</strong>:' + is_found + '<br>' +
         '<strong>Статус</strong>: {{ p.status.name }}<br>',
         clusterCaption: '<strong>{{ p.full_name }}</strong>'
     }, {
+        {% if p == patient %}
+        preset: 'islands#redCircleDotIcon',
+        {% else %}
         preset: 'islands#icon',
+        {% endif %}
         {% if not p.is_found and not p.status.value == constants.in_hospital[0] %}
         iconColor: 'red'
         {% elif p.is_found and not p.status.value == constants.in_hospital[0] and not p.status.value == constants.is_home[0] %}

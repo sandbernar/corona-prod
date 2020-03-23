@@ -128,6 +128,17 @@
                             </div>
                             <div class="col">
                               <div class="form-group">
+                                <label class="form-control-label">Инфицирован?</label><br>
+                                {% for subfield in form.is_infected %}
+                                <div class="custom-control custom-radio custom-control-inline">
+                                  {{ subfield(type="radio", id=subfield.id, class="custom-control-input") }}
+                                  <label class="custom-control-label" for='{{ subfield.id }}'>{{ subfield.label }}</label>
+                                </div>
+                                {% endfor %}
+                              </div>
+                            </div>                            
+                            <div class="col">
+                              <div class="form-group">
                                 <label class="form-control-label">Статус Нахождения</label><br>
                                 {{ form.patient_status(class="form-control", id="patient_status", onchange="disable_hospital_choice($(this).val() === 'in_hospital')") }}
                               </div>
