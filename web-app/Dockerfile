@@ -17,3 +17,6 @@ RUN cd libpostal && ./bootstrap.sh && ./configure --datadir=/postal && make && m
 
 COPY requirements.txt ./
 RUN pip install -r requirements.txt
+
+ENV LISTEN_PORT 5005
+EXPOSE 5005
