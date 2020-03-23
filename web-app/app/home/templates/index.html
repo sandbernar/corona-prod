@@ -152,21 +152,63 @@ function init() {
             searchControlProvider: 'yandex#search'
         })
 
-    myMap.geoObjects
-        {% for p in coordinates_patients %}
-        .add(new ymaps.Placemark([{{ p.address_lat }}, {{ p.address_lng }} ], {
-            balloonContent: '<a href="/patient_profile?id={{p.id}}">{{ p.full_name }}</a>'
-        }, {
-            preset: 'islands#icon',
-            {% if not p.is_found and not p.status.value == constants.in_hospital[0] %}
-            iconColor: 'red'
-            {% elif p.is_found and not p.status.value == constants.in_hospital[0] and not p.status.value == constants.is_home[0] %}
-            iconColor: 'yellow'
-            {% else %}
-            iconColor: 'green'
-            {% endif %}            
-        }))
-        {% endfor %}            
+    clusterer = new ymaps.Clusterer({
+            preset: 'islands#invertedVioletClusterIcons',
+            clusterHideIconOnBalloonOpen: false,
+            geoObjectHideIconOnBalloonOpen: false
+        })
+
+    clusterer.events
+        // Можно слушать сразу несколько событий, указывая их имена в массиве.
+        .add(['mouseenter', 'mouseleave'], function (e) {
+            var target = e.get('target'),
+                type = e.get('type');
+            if (typeof target.getGeoObjects != 'undefined') {
+                // Событие произошло на кластере.
+                if (type == 'mouseenter') {
+                    target.options.set('preset', 'islands#invertedPinkClusterIcons');
+                } else {
+                    target.options.set('preset', 'islands#invertedVioletClusterIcons');
+                }
+            } else {
+                // Событие произошло на геообъекте.
+                if (type == 'mouseenter') {
+                    target.options.set('preset', 'islands#pinkIcon');
+                } else {
+                    target.options.set('preset', 'islands#violetIcon');
+                }
+            }
+        });    
+
+    geoObjects = []
+    {% for p in coordinates_patients %}
+
+    is_found = "Нет"
+    if ('{{ p.is_found }}' == 'True') {
+      is_found = "Да"
+    }
+    geoObjects.push(new ymaps.Placemark(['{{ p.address_lat }}', '{{ p.address_lng }}' ], {
+        balloonContentBody: 
+        '<a href="/patient_profile?id={{p.id}}">Профиль Пациента</a><br>' +
+        '<strong>Регион</strong>: {{ p.region }}<br>' +
+        '<strong>Адрес</strong>: {{ p.home_address }}<br>' +
+        '<strong>Найден?</strong>:' + is_found + '<br>' +
+        '<strong>Статус</strong>: {{ p.status.name }}<br>',
+        clusterCaption: '<strong>{{ p.full_name }}</strong>'
+    }, {
+        preset: 'islands#icon',
+        {% if not p.is_found and not p.status.value == constants.in_hospital[0] %}
+        iconColor: 'red'
+        {% elif p.is_found and not p.status.value == constants.in_hospital[0] and not p.status.value == constants.is_home[0] %}
+        iconColor: 'yellow'
+        {% else %}
+        iconColor: 'green'
+        {% endif %}            
+    }))
+    {% endfor %}
+
+    clusterer.add(geoObjects);
+    myMap.geoObjects.add(clusterer);     
 
 }
 new Chart(document.getElementById("not-found"), {

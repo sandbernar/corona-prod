@@ -30,7 +30,7 @@ def register_blueprints(app):
 
 def configure_database(app):
     def add_hospitals():
-        from app.home.models import Hospital, Region, Hospital_Type, Hospital_Nomenklatura, PatientStatus, Foreign_Country, Infected_Country_Category
+        from app.home.models import Hospital, Region, Hospital_Type, Hospital_Nomenklatura, PatientStatus, Foreign_Country, Infected_Country_Category, ContactedPersons
         # Clean the tables
         Region.query.delete()
         Hospital_Type.query.delete()
@@ -39,6 +39,7 @@ def configure_database(app):
 
         Infected_Country_Category.query.delete()
         Foreign_Country.query.delete()
+        ContactedPersons.query.delete()
 
         db.session.commit()
 

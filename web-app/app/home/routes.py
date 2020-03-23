@@ -10,7 +10,7 @@ from flask_login import login_required, current_user
 from app import login_manager, db
 from app import constants as c
 from jinja2 import TemplateNotFound
-from app.home.models import Patient, Hospital, Region, Hospital_Type, Hospital_Nomenklatura, PatientStatus, Foreign_Country, Infected_Country_Category
+from app.home.models import Patient, Hospital, Region, Hospital_Type, Hospital_Nomenklatura, PatientStatus, Foreign_Country, Infected_Country_Category, ContactedPersons
 from datetime import datetime
 from flask_uploads import UploadSet
 import pandas as pd
@@ -132,7 +132,8 @@ def add_patient():
         new_dict['arrival_date'] = datetime.strptime(request.form['arrival_date'], '%Y-%m-%d')
         new_dict['dob'] = datetime.strptime(request.form['dob'], '%Y-%m-%d')
 
-        new_dict['status_id'] = PatientStatus.query.filter_by(value=request.form["patient_status"]).first().id
+        status = request.form.get("patient_status", c.no_status[0])
+        new_dict['status_id'] = PatientStatus.query.filter_by(value=status).first().id
         new_dict['is_found'] = int(new_dict['is_found'][0]) == 1
 
         # patient = Patient.query.filter_by(iin=new_dict["iin"][0]).first()
@@ -147,6 +148,7 @@ def add_patient():
 
         # # else we can create the user
         patient = Patient(**new_dict)
+        patient.is_contacted_person = False
         
         lat_lng = get_lat_lng([patient])[0]
 
@@ -245,7 +247,6 @@ def add_data():
         regions = Region.query.all()
 
         created_patients = []
-
 
         def create_patient(row):
             patient = Patient()
@@ -417,7 +418,15 @@ def delete_patient():
 
     if len(request.form):
         if "delete" in request.form:
-            Patient.query.filter(Patient.id == request.form["delete"]).delete()
+            patient_id = request.form["delete"]
+            patient = Patient.query.filter(Patient.id == patient_id)
+            
+            if patient.first().is_contacted_person:
+                ContactedPersons.query.filter_by(person_id=patient_id).delete()
+            # else:
+
+
+            patient.delete()
             db.session.commit()
 
     return redirect(url_for('home_blueprint.patients'))
@@ -700,24 +709,6 @@ def hospital_profile():
             updated = False
             patients = []
 
-            # if len(request.form):
-            #     if "hospital" in request.form:
-            #         patient.hospital = request.form["hospital"]
-                
-            #     patient.is_found = "is_found" in request.form 
-            #     patient.in_hospital = "in_hospital" in request.form 
-            #     db.session.add(patient)
-            #     db.session.commit()
-            #     updated = True
-            
-            # form.hospital.default = patient.hospital
-
-            # if patient.is_found:
-            #     form.is_found.default = 'checked'
-            
-            # if patient.in_hospital:
-            #     form.in_hospital.default='checked'
-
             q = Patient.query.filter_by(hospital_id=hospital.id)
 
             page = 1
@@ -747,3 +738,111 @@ def countries_categories():
     categories = Infected_Country_Category.query.all()
 
     return route_template('countries_categories', categories=categories)
+
+
+@blueprint.route('/contacted_persons', methods=['GET', 'POST'])
+@login_required
+def contacted_persons():
+    if not current_user.is_authenticated:
+        return redirect(url_for('base_blueprint.login'))
+
+    form = TableSearchForm()
+    regions = Region.query.all()
+
+    if not form.region.choices:
+        form.region.choices = [ (-1, c.all_regions) ] + [(r.id, r.name) for r in regions]
+
+    patients = []
+    filt = dict()
+
+    if "id" in request.args:
+        # region = request.args["region"]
+        # if region != -1:
+            # filt["region_id"] = region
+            # form.region.default = region
+
+    # if "not_found" in request.args:
+    #     filt["is_found"] = False
+    #     form.not_found.default='checked'
+        q = ContactedPersons.query.filter_by(patient_id=request.args["id"])
+        patient = Patient.query.filter_by(id = request.args["id"]).first()
+
+    # if "not_in_hospital" in request.args:
+    #     in_hospital_id = PatientStatus.query.filter_by(value=c.in_hospital[0]).first().id
+    #     q = Patient.query.filter(Patient.status_id != in_hospital_id).filter_by(**filt)
+
+    #     form.not_in_hospital.default='checked'
+
+        page = 1
+        per_page = 5
+        if "page" in request.args:
+            page = int(request.args["page"][0])
+
+        total_len = q.count()
+
+        for p in q.offset((page-1)*per_page).limit(per_page).all():
+            patients.append(Patient.query.filter_by(id=p.person_id).first())
+
+        max_page = math.ceil(total_len/per_page)
+
+        form.process()
+        return route_template('contacted_persons', patients=patients, form=form, page=page, 
+                                        max_page=max_page, total = total_len, constants=c, patient=patient)
+
+    return render_template('error-500.html'), 500
+
+
+@blueprint.route('/add_contacted_person', methods=['GET', 'POST'])
+def add_contacted_person():
+    if not current_user.is_authenticated:
+        return redirect(url_for('base_blueprint.login'))
+
+    patient_form = PatientForm()
+    regions = Region.query.all()
+
+    if not patient_form.region_id.choices:
+        patient_form.region_id.choices = [(r.id, r.name) for r in regions]
+        patient_form.hospital_region_id.choices = [(r.id, r.name) for r in regions]
+
+    hospitals = Hospital.query.all()
+    if not patient_form.hospital_id.choices:
+        patient_form.hospital_id.choices = [ (-1, c.no_hospital) ] + [(h.id, h.name) for h in hospitals]
+
+    patient_statuses = PatientStatus.query.all()
+    if not patient_form.patient_status.choices:
+        patient_form.patient_status.choices = [(s.value, s.name) for s in patient_statuses]
+
+    hospital_types = Hospital_Type.query.all()
+    hospital_types = [(h.id, h.name) for h in hospital_types]
+
+    if 'create' in request.form and "id" in request.args:
+        new_dict = request.form.to_dict(flat=False)
+
+        new_dict['dob'] = datetime.strptime(request.form['dob'], '%Y-%m-%d')
+
+        status = request.form.get("patient_status", c.no_status[0])
+        new_dict['status_id'] = PatientStatus.query.filter_by(value=status).first().id
+        new_dict['is_found'] = int(new_dict['is_found'][0]) == 1
+
+        # else we can create the user
+        patient = Patient(**new_dict)
+        patient.is_contacted_person = True
+        
+        lat_lng = get_lat_lng([patient])[0]
+
+        patient.address_lat = lat_lng[0]
+        patient.address_lng = lat_lng[1]
+
+        db.session.add(patient)
+        db.session.commit()
+
+        contacted = ContactedPersons(patient_id=request.args["id"], person_id=patient.id)
+        db.session.add(contacted)
+        db.session.commit()
+
+        return redirect("/contacted_persons?id={}".format(request.args["id"]))
+
+        return route_template( 'add_contacted_person', form=patient_form, added=True, error_msg=None)
+        # return render_template( 'login/register.html', success='User created please <a href="/login">login</a>', form=patient_form)
+    else:
+        return route_template( 'add_contacted_person', form=patient_form, hospital_types=hospital_types, added=False, error_msg=None)

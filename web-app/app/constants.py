@@ -4,11 +4,12 @@ all_hospital_types = "Все Типы"
 all_hospital_nomenklatura = "Все Номенклатуры"
 no_hospital = "Не Госпитализирован"
 
+no_status = ("no_status", "Нет Статуса")
 in_hospital = ("in_hospital", "Госпитализирован")
 is_home = ("is_home", "Домашний Карантин")
 is_transit = ("is_transit", "Транзит")
 
-patient_statuses = [in_hospital, is_home, is_transit]
+patient_statuses = [no_status, in_hospital, is_home, is_transit]
 
 country_category = ["1a", "1b", "2", "3", "4"]
 

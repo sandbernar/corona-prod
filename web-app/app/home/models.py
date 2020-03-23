@@ -26,6 +26,7 @@ class Patient(db.Model):
     arrival_date = Column(Date, unique=False)
     flight_code = Column(String, unique=False)
     visited_country = Column(String, unique=False)
+    is_contacted_person = Column(Boolean, unique=False)
     
     region_id = Column(Integer, ForeignKey('Region.id'))
     region = db.relationship('Region')
@@ -53,6 +54,27 @@ class Patient(db.Model):
 
     def __repr__(self):
         return str(self.id)
+
+class ContactedPersons(db.Model):
+    __tablename__ = 'ContactedPersons'
+
+    id = Column(Integer, primary_key=True)
+    
+    person_id = Column(Integer, ForeignKey('Patient.id'))
+    # person = db.relationship('Patient')
+
+    patient_id = Column(Integer, ForeignKey('Patient.id'))
+    # patient = db.relationship('Patient')
+
+    def __init__(self, **kwargs):
+        for property, value in kwargs.items():
+            if hasattr(value, '__iter__') and not isinstance(value, str):
+                value = value[0]
+                
+            setattr(self, property, value)
+
+    def __repr__(self):
+        return str(self.id)    
 
 class PatientStatus(db.Model):
 
