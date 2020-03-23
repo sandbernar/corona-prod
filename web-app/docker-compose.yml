@@ -4,8 +4,7 @@ services:
     restart: always
     network_mode: "host"
     env_file: .env
-    # build: .
-    image: demo
+    build: .
     ports:
       - "5005:5005"
     volumes:
