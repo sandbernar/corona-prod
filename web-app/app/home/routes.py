@@ -170,20 +170,20 @@ def get_lat_lng(patients):
         lat = None
         lng = None
 
-        if not pd.isnull(patient.home_address):
-            patient.home_address = patient.home_address.replace(".", ". ")
-            region_name = Region.query.filter_by(id=patient.region_id).first().name
+        if not pd.isnull(patient[0]):
+            home_address = patient[0].replace(".", ". ")
+            region_name = patient[1]
 
-            address_query = patient.home_address
+            address_query = home_address
 
             params = dict(
                 apiKey='S25QEDJvW3PCpRvVMoFmIJBHL01xokVyinW8F5Fj0pw',
             )
 
-            patient.home_address = re.sub(r"([0-9]+(\.[0-9]+)?)",r" \1 ", patient.home_address).strip()
+            home_address = re.sub(r"([0-9]+(\.[0-9]+)?)",r" \1 ", home_address).strip()
             # parsed_address = {k: v for (v, k) in parse_address(patient.home_address)}
 
-            address_query = patient.home_address
+            address_query = home_address
             # if "city" not in parsed_address:
             #     city = region_name if "city" not in parsed_address else parsed_address["city"]
             #     country = "Kazakhstan" if "country" not in parsed_address else parsed_address["country"]
@@ -344,9 +344,13 @@ def add_data():
         patients.apply(lambda row: create_patient(row), axis=1)
         added = len(patients)
 
+        lat_lng_data = []
+        for p in created_patients:
+            lat_lng_data.append((p.home_address, Region.query.filter_by(id=p.region_id).first().name))
+
         p_num = 16
         pool = threadpool(processes = p_num)
-        lat_lng = pool.map(get_lat_lng, np.array_split(created_patients, p_num))
+        lat_lng = pool.map(get_lat_lng, np.array_split(lat_lng_data, p_num))
         pool.close()
         pool.join()
 
