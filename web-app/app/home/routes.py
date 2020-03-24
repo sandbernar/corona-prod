@@ -387,13 +387,18 @@ def patients():
 
     if "region" in request.args:
         region = request.args["region"]
-        if region != -1:
+        if region != '-1':
             filt["region_id"] = region
             form.region.default = region
 
     if "not_found" in request.args:
         filt["is_found"] = False
         form.not_found.default='checked'
+
+    if "is_infected" in request.args:
+        filt["is_infected"] = True
+        form.is_infected.default='checked'
+
     q = Patient.query.filter_by(**filt)
 
     if "not_in_hospital" in request.args:

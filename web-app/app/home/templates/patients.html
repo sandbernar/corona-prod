@@ -37,8 +37,12 @@
                   <div class="custom-control custom-checkbox">
                     {{ form.not_in_hospital(class="custom-control-input", onchange="this.form.submit()") }}                    
                     <label class="custom-control-label" for="not_in_hospital">Не госпитализирован</label>
-                  </div>
+                  </div>               
                 </div>
+                <div class="custom-control custom-checkbox">
+                  {{ form.is_infected(class="custom-control-input", onchange="this.form.submit()") }}                    
+                  <label class="custom-control-label" for="is_infected">Инфицирован</label>
+                </div>   
               </div>
             </div>
           </form>
