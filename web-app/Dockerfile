@@ -17,4 +17,4 @@ ENV LISTEN_PORT 5005
 EXPOSE 5005
 
 ENV STATIC_URL /static
-ENV STATIC_PATH /app/base/static
+ENV STATIC_PATH /app/app/base/static
