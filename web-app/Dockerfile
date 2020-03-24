@@ -14,5 +14,7 @@ COPY requirements.txt ./
 RUN pip install -r requirements.txt
 
 ENV LISTEN_PORT 5005
-ENV STATIC_PATH /app/base/static
 EXPOSE 5005
+
+ENV STATIC_URL /static
+ENV STATIC_PATH /app/base/static
