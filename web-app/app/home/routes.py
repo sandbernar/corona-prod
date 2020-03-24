@@ -151,7 +151,7 @@ def add_patient():
         patient = Patient(**new_dict)
         patient.is_contacted_person = False
         
-        lat_lng = get_lat_lng([(patient.home_address, Region.query.filter_by(id=patient.region_id).filter().name)])[0]
+        lat_lng = get_lat_lng([(patient.home_address, Region.query.filter_by(id=patient.region_id).first().name)])[0]
 
         patient.address_lat = lat_lng[0]
         patient.address_lng = lat_lng[1]
@@ -848,7 +848,7 @@ def add_contacted_person():
         patient = Patient(**new_dict)
         patient.is_contacted_person = True
         
-        lat_lng = get_lat_lng([(patient.home_address, Region.query.filter_by(id=patient.region_id).filter().name)])[0]
+        lat_lng = get_lat_lng([(patient.home_address, Region.query.filter_by(id=patient.region_id).first().name)])[0]
 
         patient.address_lat = lat_lng[0]
         patient.address_lng = lat_lng[1]
