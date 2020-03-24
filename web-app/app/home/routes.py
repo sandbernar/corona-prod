@@ -261,7 +261,7 @@ def add_data():
                 if not isinstance(row["Дата рождения"], datetime):
                     try:
                         patient.dob = dateutil.parser.parse(row["Дата рождения"])
-                    except TypeError:
+                    except TypeError, ValueError:
                         patient.dob = datetime(1000, 1, 1)
                 else:
                     patient.dob = row["Дата рождения"]
