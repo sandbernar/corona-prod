@@ -481,10 +481,8 @@ def patient_profile():
                     patient.hospital = request.form["hospital"]
                 
                 status = None
-                if "is_found" in request.form:
-                    patient.is_found = True
-                else:
-                    patient.is_found = False
+                patient.is_found = "is_found" in request.form
+                patient.is_infected = "is_infected" in request.form
 
                 print(request.form)
                 if "in_hospital" in request.form:
@@ -493,6 +491,8 @@ def patient_profile():
                     status = c.is_home
                 elif "is_transit" in request.form:
                     status = c.is_transit
+                else:
+                    status = c.no_status
 
                 if status:
                     patient.status_id = PatientStatus.query.filter_by(value=status[0]).first().id

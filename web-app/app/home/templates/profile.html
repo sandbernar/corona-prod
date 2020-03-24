@@ -342,6 +342,7 @@ $("#hospital_type").on("change", function(){
 });
 
 window.onload = function() {
+    found_changed($("#is_found_checkbox").prop('checked'))
     // alert('{{ patient.hospital.hospital_nomenklatura_id }}')
     // $("#hospital_region_id").val('{{ patient.hospital.region_id }}')
     disable_hospital_choice($("#in_hospital_checkbox").prop('checked'))
