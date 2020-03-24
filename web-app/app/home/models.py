@@ -24,10 +24,12 @@ class Patient(db.Model):
     pass_num = Column(String, unique=False)
     telephone = Column(String, unique=False)
     arrival_date = Column(Date, unique=False)
-    flight_code = Column(String, unique=False)
     visited_country = Column(String, unique=False)
     
     is_contacted_person = Column(Boolean, unique=False)
+
+    flight_code_id = Column(Integer, ForeignKey('FlightCode.id'))
+    flight_code = db.relationship('FlightCode')
 
     region_id = Column(Integer, ForeignKey('Region.id'))
     region = db.relationship('Region')
@@ -76,7 +78,24 @@ class ContactedPersons(db.Model):
             setattr(self, property, value)
 
     def __repr__(self):
-        return str(self.id)    
+        return str(self.id)
+
+class FlightCode(db.Model):
+
+    __tablename__ = 'FlightCode'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String, unique=True)
+
+    def __init__(self, **kwargs):
+        for property, value in kwargs.items():
+            if hasattr(value, '__iter__') and not isinstance(value, str):
+                value = value[0]
+                
+            setattr(self, property, value)
+
+    def __repr__(self):
+        return str(self.name)       
 
 class PatientStatus(db.Model):
 

@@ -49,6 +49,7 @@ class TableSearchForm(FlaskForm):
     not_found = BooleanField(id="not_found")
     is_infected = BooleanField(id="is_infected")
     not_in_hospital = BooleanField(id="not_in_hospital")
+    flight_code = TextField(id='myInput')
 
 class UpdateProfileForm(FlaskForm):
     is_found = BooleanField(id="is_found")

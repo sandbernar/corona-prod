@@ -10,7 +10,7 @@ from flask_login import login_required, current_user
 from app import login_manager, db
 from app import constants as c
 from jinja2 import TemplateNotFound
-from app.home.models import Patient, Hospital, Region, Hospital_Type, Hospital_Nomenklatura, PatientStatus, Foreign_Country, Infected_Country_Category, ContactedPersons
+from app.home.models import Patient, Hospital, Region, Hospital_Type, Hospital_Nomenklatura, PatientStatus, Foreign_Country, Infected_Country_Category, ContactedPersons, FlightCode
 from datetime import datetime
 from flask_uploads import UploadSet
 import pandas as pd
@@ -45,16 +45,14 @@ def index():
     for p in Patient.query.all():
         if p.address_lat:
             coordinates_patients.append(p)
-            # print(p.address_lat)
 
-    patients = [ p for p in Patient.query.filter_by().all()]
+    patients = [ p for p in Patient.query.all()]
     regions = dict()
     for p in patients:
         found_hospital = regions.get(p.region, (0, 0))
         in_hospital_id = PatientStatus.query.filter_by(value=c.in_hospital[0]).first().id
 
         regions[p.region] = (found_hospital[0] + (1 - int(p.is_found)), found_hospital[1] + (1 - int(p.status_id == in_hospital_id)))
-    print(coordinates_patients)
 
     return route_template('index', last_five_patients=last_five_patients, coordinates_patients=coordinates_patients, regions=regions, constants=c)
 
@@ -251,7 +249,6 @@ def add_data():
 
         def create_patient(row):
             patient = Patient()
-            # print(row)
             patient.full_name = row["ФИО"]
             patient.iin = row["ИИН"]
 
@@ -275,7 +272,15 @@ def add_data():
             except TypeError:
                 patient.arrival_date = datetime(1000, 1, 1)           
 
-            patient.flight_code = row["рейс"]
+            flight_code = FlightCode.query.filter_by(name=row["рейс"]).first()
+            if flight_code:
+                patient.flight_code_id = flight_code.id
+            else:
+                fc = FlightCode(name=row["рейс"])
+                db.session.add(fc)
+                db.session.commit()
+                patient.flight_code_id = fc.id
+
             patient.visited_country = row["Место и сроки пребывания в последние 14 дней до прибытия в Казахстан (укажите страну, область, штат и т.д.)"]
             
             region_name = ""
@@ -391,6 +396,16 @@ def patients():
             filt["region_id"] = region
             form.region.default = region
 
+    if "flight_code" in request.args:
+        flight_code = request.args["flight_code"]
+        if flight_code != '' and flight_code != c.all_flight_codes:
+            fc = FlightCode.query.filter_by(name=flight_code).first()
+            if fc:
+                filt["flight_code_id"] = fc.id
+                form.flight_code.default = fc.name
+        else:
+            form.flight_code.default = c.all_flight_codes
+
     if "not_found" in request.args:
         filt["is_found"] = False
         form.not_found.default='checked'
@@ -429,8 +444,10 @@ def patients():
 
     max_page = math.ceil(total_len/per_page)
 
+    flight_codes_list = [c.all_flight_codes] + [ code.name for code in FlightCode.query.all() ]
+
     form.process()
-    return route_template('patients', patients=patients, form=form, page=page, max_page=max_page, total = total_len, constants=c)
+    return route_template('patients', patients=patients, form=form, page=page, max_page=max_page, total = total_len, constants=c, flight_codes_list=flight_codes_list)
 
 @blueprint.route('/delete_patient', methods=['POST'])
 @login_required
@@ -484,7 +501,6 @@ def patient_profile():
                 patient.is_found = "is_found" in request.form
                 patient.is_infected = "is_infected" in request.form
 
-                print(request.form)
                 if "in_hospital" in request.form:
                     status = c.in_hospital
                 elif "is_home" in request.form:
@@ -578,7 +594,6 @@ def all_hospitals():
 
     nomenklatura_ids = q.with_entities(Hospital.hospital_nomenklatura_id).all()
     nomenklatura_ids = np.unique([n.hospital_nomenklatura_id for n in nomenklatura_ids])
-    print(nomenklatura_ids)
     choices = [(-1, c.all_hospital_nomenklatura)]
 
     if not form.nomenklatura.choices:
@@ -687,7 +702,6 @@ def add_hospitals_csv():
                 return l[index]
             except IndexError:
                 return default_val
-        print(data_form.region)
         for index, row in hospitals.iterrows():
             hospital = Hospital()
 

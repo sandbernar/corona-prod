@@ -4,6 +4,8 @@ all_hospital_types = "Все Типы"
 all_hospital_nomenklatura = "Все Номенклатуры"
 no_hospital = "Не Госпитализирован"
 
+all_flight_codes = "Все Рейсы"
+
 no_status = ("no_status", "Нет Статуса")
 in_hospital = ("in_hospital", "Госпитализирован")
 is_home = ("is_home", "Домашний Карантин")
