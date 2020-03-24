@@ -344,7 +344,7 @@ def add_data():
         patients.apply(lambda row: create_patient(row), axis=1)
         added = len(patients)
 
-        p_num = mp.cpu_count() - 1
+        p_num = 16
         pool = threadpool(processes = p_num)
         lat_lng = pool.map(get_lat_lng, np.array_split(created_patients, p_num))
         pool.close()
