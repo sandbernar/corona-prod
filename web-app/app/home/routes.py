@@ -25,7 +25,7 @@ import dateutil.parser
 # from postal.parser import parse_address
 import re
 import requests
-import multiprocessing as mp
+from multiprocessing.pool import ThreadPool as threadpool
 import itertools
 
 key = '6670b10323b541bdbbf3e39bf07b7e46'
@@ -345,7 +345,7 @@ def add_data():
         added = len(patients)
 
         p_num = mp.cpu_count() - 1
-        pool = mp.Pool(processes = p_num)
+        pool = threadpool(processes = p_num)
         lat_lng = pool.map(get_lat_lng, np.array_split(created_patients, p_num))
         pool.close()
         pool.join()
