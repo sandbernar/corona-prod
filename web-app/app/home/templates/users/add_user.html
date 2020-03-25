@@ -1,0 +1,170 @@
+{% extends "base_site.html" %}
+
+{% block title %} Icons {% endblock title %}
+
+{% block stylesheets %}
+{{ super() }}
+{% endblock stylesheets %}
+
+{% block content %}
+
+{% include "site_template/navigation.html" %}
+
+{% with stats=stats %}
+{% include "site_template/top-stats.html" %}
+{% endwith %}
+
+<div class="container-fluid mt--7">
+  {% if added %}
+  <div class="alert alert-success alert-dismissible fade show" role="alert">
+    <span class="alert-icon"><i class="ni ni-like-2"></i></span>
+    <span class="alert-text">Пользователь создан</span>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  {% endif %}
+  {% if error_msg %}
+  <div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <span class="alert-icon"><i class="fas fa-exclamation-circle"></i></span>
+    <span class="alert-text">{{ error_msg }}</span>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  {% endif %}
+
+  <!-- Table -->
+  <div class="row">
+    <div class="col">
+      <div class="card shadow">
+        <div class="card-header bg-transparent">
+          <h3 class="mb-0">Добавить Пользователя</h3>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col">
+              <form id="add-patients" role="form" method="post" action="">
+                {{ form.hidden_tag() }}
+                <div class="row">
+                  <div class="col">
+                    <div class="card shadow">
+                      <div class="card-header bg-transparent">
+                        <div class="form-group">
+                          <label for="name-input" class="form-control-label">Логин</label>
+                          {{ form.username(placeholder="user1234",class="form-control", type="text") }}
+                        </div>
+                        <div class="form-group">
+                          <label for="npass-input" class="form-control-label">Пароль</label>
+                          {{ form.password(placeholder="Пароль", class="form-control", type="text") }}
+                        </div>
+                        <div class="form-group">
+                          <label for="npass-input" class="form-control-label">Электронная Почта</label>
+                          {{ form.email(placeholder="E-Mail", class="form-control", type="text") }}
+                        </div>                                                  
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col">
+                    <div class="card shadow">
+                      <div class="card-header bg-transparent">
+                        <div class="form-group">
+                          <label for="region-input" class="form-control-label">Регион</label>
+                          {{ form.region_id(class="form-control", id="region_id") }}                          
+                        </div>
+                        <div class="form-group">
+                          <label for="phone-input" class="form-control-label">Телефон</label>
+                          {{ form.telephone(placeholder="77017123456", class="form-control", type="tel") }}
+                        </div>                                          
+                      </div>
+                    </div>
+                    <button type="submit" name="create" class="btn btn-primary mt-4" type="button" style="width:100%">
+                        Создать Пользователя
+                      </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  {% include "site_template/footer.html" %}
+
+</div>        
+
+{% endblock content %}
+
+{% block javascripts %}
+{{ super()}}
+<script type="text/javascript">
+  disable_hospital_choice(0)
+  update_hospitals_list()
+  disable_status($("#hospital_select").val())
+
+  function disable_status(value) {
+    disable = true
+    if (value == 1) {
+      disable = false
+    } else {
+      $('#patient_status').prop('selectedIndex', 0).change();
+      // document.getElementById('in_hospital-0').checked = false;
+      // document.getElementById('in_hospital-1').checked = false;
+      // disable_hospital_choice(value)
+    }
+
+    document.getElementById('patient_status').disabled = disable;
+    // document.getElementById('in_hospital-1').disabled = disable;    
+  }
+
+  function disable_in_hospital(value) {
+    disable = true
+    if (value == 1) {
+      disable = false
+    } else {
+      document.getElementById('in_hospital-0').checked = false;
+      document.getElementById('in_hospital-1').checked = false;
+      disable_hospital_choice(value)
+    }
+
+    document.getElementById('in_hospital-0').disabled = disable;
+    document.getElementById('in_hospital-1').disabled = disable;
+  }
+
+  function disable_hospital_choice(value) {
+    disable = true;
+    if (value == 1) {
+      disable = false;
+    }
+
+    document.getElementById('hospital_region_id').disabled = disable;
+    document.getElementById('hospital_type').disabled = disable;
+    document.getElementById('hospital_select').disabled = disable;
+  }
+
+  function update_hospitals_list(){
+    $.ajax({
+      type: 'POST',
+      url: "/get_hospital_by_region",
+      data: {region_id: $("#hospital_region_id").val(), hospital_type_id: $("#hospital_type").val()},
+      dataType: "text",
+      success: function(data){
+        document.getElementById("hospital_select").innerHTML = data.toString();
+      }
+    });
+  };
+
+// $("#hospital_region_id").on("click", update_hospitals_list());
+$("#hospital_region_id").on("change", function(){
+  update_hospitals_list();
+});
+$("#hospital_type").on("change", function(){
+  update_hospitals_list();
+});
+
+</script>
+
+{% endblock javascripts %}

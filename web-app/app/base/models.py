@@ -16,13 +16,14 @@ class User(db.Model, UserMixin):
 
     id = Column(Integer, primary_key=True)
     username = Column(String, unique=True)
-    email = Column(String, unique=True)
+    email = Column(String, unique=False)
     password = Column(Binary)
 
     region_id = Column(Integer, ForeignKey('Region.id'))
     region = db.relationship('Region')
 
     telephone = Column(String)
+    is_admin = Column(Boolean, default=True)
 
     def __init__(self, **kwargs):
         for property, value in kwargs.items():
@@ -35,6 +36,9 @@ class User(db.Model, UserMixin):
 
             if property == 'password':
                 value = hash_pass( value ) # we need bytes here (not plain str)
+
+            if property == 'region_id':
+                setattr(self, 'is_admin', value == None)
                 
             setattr(self, property, value)
 

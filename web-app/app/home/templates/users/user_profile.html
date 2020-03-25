@@ -1,0 +1,159 @@
+{% extends "base_site.html" %}
+
+{% block title %} Profile {% endblock title %}
+
+{% block stylesheets %}
+{{ super() }}
+{% endblock stylesheets %}
+
+{% block content %}
+
+{% include "site_template/navigation.html" %}
+
+<!-- Header -->
+{% include "site_template/top-stats.html" %}
+
+<!-- Page content -->
+<div class="container-fluid mt--7">
+    {% if updated %}
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <span class="alert-icon"><i class="ni ni-like-2"></i></span>
+        <span class="alert-text">Данные успешно обновлены</span>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    {% endif %}
+
+    <div class="row">
+        <div class="col-xl-4 order-xl-2 mb-5 mb-xl-0">         
+            <div class="card card-profile shadow">
+                <div class="row justify-content-center">
+                    <div class="col-lg-3 order-lg-2">
+                <div class="card-header text-center border-0 pt-8 pt-md-4 pb-0 pb-md-4">
+                </div>
+                <div class="card-body pt-0 pt-md-1">
+
+                    <div class="text-center">
+                        <h3>
+                            {{ user.username }}<span class="font-weight-light"></span>
+                        </h3>
+                        <div class="h3">
+                        </div>
+                        <hr class="my-4" />
+                        <form method="POST">            
+                            <div class="col">
+                              <div class="row">
+                                <div class="col-mt">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row  mt-3">
+                            <div class="col">
+                                <input class="btn btn-primary" id="submit" name="submit" type="submit" value="Обновить">
+                            </div>                         
+                        </div>
+                    </div>
+                </form>
+        </div>
+                    </div>
+                </div>
+    </div>
+</div>
+<div class="col-xl-8 order-xl-1">
+    <div class="card bg-secondary shadow mt-2">
+        <div class="card-body">
+            <form>
+                <!-- Address -->
+                <h6 class="heading-small text-muted mb-4">Контактная Информация</h6>
+                <div class="pl-lg-4">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="row">
+                                <div class="col">
+                            <div class="form-group">
+                                <label class="form-control-label" for="input-home_address">Логин</label>
+                                {{ form.username(placeholder="user1234",class="form-control", type="text") }}
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                              <label for="region-input" class="form-control-label">Регион</label>
+                              {{ form.region_id(class="form-control", id="region_id") }}                          
+                            </div>       
+                            </div>    
+                            </div>                 
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-4">
+                            <div class="form-group">
+                                <label class="form-control-label" for="input-region">Регион</label>
+                                <input type="text" id="input-region" class="form-control form-control-alternative" disabled value="">
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label class="form-control-label" for="input-job">Адрес</label>
+                                <input type="text" id="input-job" class="form-control form-control-alternative" disabled value="">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <hr class="my-4" />
+                <h6 class="heading-small text-muted mb-4">Тип</h6>
+                <div class="pl-lg-4">
+                    <div class="row">
+                        <div class="col-lg-4">
+                            <div class="form-group">
+                                <label class="form-control-label" for="input-region">Тип</label>
+                                <input type="text" id="input-region" class="form-control form-control-alternative" disabled value="">
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label class="form-control-label" for="input-job">Номенклатура</label>
+                                <input type="text" id="input-job" class="form-control form-control-alternative" disabled value="">
+                            </div>
+                        </div>
+                    </div>
+                </div>                
+            </form>
+        </div>
+    </div>
+</div>
+</div>
+
+{% include "site_template/footer.html" %}
+
+</div>    
+
+{% endblock content %}
+
+{% block javascripts %}
+{{ super()}}
+<script type="text/javascript">
+  var setSearchParam = function(key, value) {
+    if (!window.history.pushState) {
+      return;
+    }
+
+    if (!key) {
+      return;
+    }
+
+    var url = new URL(window.location.href);
+    var params = new window.URLSearchParams(window.location.search);
+    if (value === undefined || value === null) {
+      params.delete(key);
+    } else {
+      params.set(key, value);
+    }
+
+    url.search = params;
+    url = url.toString();
+    window.history.replaceState({url: url}, null, url);
+    window.location.href = window.location.href
+  }
+</script>
+{% endblock javascripts %}

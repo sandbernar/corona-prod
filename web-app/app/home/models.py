@@ -27,7 +27,7 @@ class Patient(db.Model):
     
     is_contacted_person = Column(Boolean, unique=False)
 
-    flight_code_id = Column(Integer, ForeignKey('FlightCode.id'))
+    flight_code_id = Column(Integer, ForeignKey('FlightCode.id'), nullable=True)
     flight_code = db.relationship('FlightCode')
 
     region_id = Column(Integer, ForeignKey('Region.id'))

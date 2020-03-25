@@ -18,16 +18,16 @@ from opencage.geocoder import OpenCageGeocode
 import numpy as np
 from wtforms import SelectField
 import math
-from app.home.forms import PatientForm, UploadDataForm, TableSearchForm, UpdateProfileForm, AddHospitalsDataForm, HospitalSearchForm, UpdateHospitalProfileForm
+from app.home.forms import PatientForm, UploadDataForm, TableSearchForm, UpdateProfileForm, AddHospitalsDataForm, HospitalSearchForm, UpdateHospitalProfileForm, CreateUserForm
 import json
 import nltk
 import dateutil.parser
-# from postal.parser import parse_address
 import re
 import requests
 from multiprocessing.pool import ThreadPool as threadpool
 import itertools
 from app.base.models import User
+from app.home.util import get_regions, get_regions_choices, get_flight_code
 
 key = '6670b10323b541bdbbf3e39bf07b7e46'
 geocoder = OpenCageGeocode(key)
@@ -38,16 +38,21 @@ def index():
     if not current_user.is_authenticated:
         return redirect(url_for('base_blueprint.login'))
 
+    q = Patient.query
+    
+    if not current_user.is_admin:
+        q = q.filter_by(region_id=current_user.region_id)
+
     last_five_patients = []
-    for p in Patient.query.order_by(Patient.id.desc()).limit(5).all():
+    for p in q.order_by(Patient.id.desc()).limit(5).all():
         last_five_patients.append(p)
 
     coordinates_patients = []
-    for p in Patient.query.all():
+    for p in q.all():
         if p.address_lat:
             coordinates_patients.append(p)
 
-    patients = [ p for p in Patient.query.all()]
+    patients = q.all()
     regions = dict()
     for p in patients:
         found_hospital = regions.get(p.region, (0, 0))
@@ -61,28 +66,31 @@ def index():
 def route_template(template, **kwargs):
     if not current_user.is_authenticated:
         return redirect(url_for('base_blueprint.login'))
-
     try:
-        total = len(Patient.query.filter_by().all())
+        q = Patient.query
+    
+        if not current_user.is_admin:
+            q = q.filter_by(region_id=current_user.region_id)        
 
-        is_found = len(Patient.query.filter_by(is_found=True).all())
+        total = len(q.filter_by().all())
+
+        is_found = len(q.filter_by(is_found=True).all())
 
         ratio = 0 if total == 0 else is_found/total
         is_found_str  = str("{}/{} ({}%)".format(is_found, total, format(ratio*100, '.2f')))
         
-
         in_hospital_status_id = PatientStatus.query.filter_by(value=c.in_hospital[0]).first().id
-        in_hospital = len(Patient.query.filter_by(status_id=in_hospital_status_id).all())
+        in_hospital = len(q.filter_by(status_id=in_hospital_status_id).all())
         # in_hospital = 1
         ratio = 0 if is_found == 0 else in_hospital/is_found
         in_hospital_str = str("{}/{} ({}%)".format(in_hospital, is_found, format(ratio*100, '.2f')))
 
-        regions = len(Region.query.all())
+        regions = "Весь РК" if current_user.region_id == None else Region.query.filter_by(id=current_user.region_id).first().name
 
         return render_template(template + '.html', stats = [str(total), is_found_str, in_hospital_str, regions], **kwargs)
 
     except TemplateNotFound:
-        return render_template('error-404.html'), 404
+        return render_template('errors/error-404.html'), 404
     
     # except:
         # return render_template('error-500.html'), 500
@@ -108,11 +116,10 @@ def add_patient():
         return redirect(url_for('base_blueprint.login'))
 
     patient_form = PatientForm()
-    regions = Region.query.all()
 
     if not patient_form.region_id.choices:
-        patient_form.region_id.choices = [(r.id, r.name) for r in regions]
-        patient_form.hospital_region_id.choices = [(r.id, r.name) for r in regions]
+        patient_form.region_id.choices = get_regions_choices(current_user)
+        patient_form.hospital_region_id.choices = get_regions_choices(current_user)
 
     hospitals = Hospital.query.all()
     if not patient_form.hospital_id.choices:
@@ -136,6 +143,9 @@ def add_patient():
         new_dict['is_found'] = int(new_dict['is_found'][0]) == 1
         new_dict['is_infected'] = int(new_dict['is_infected'][0]) == 1
 
+        new_dict['flight_code_id'] = get_flight_code(new_dict['flight_code'][0])
+        del new_dict['flight_code']
+
         # patient = Patient.query.filter_by(iin=new_dict["iin"][0]).first()
         # if patient:
         #     msg = 'Пациент с ИИН {} уже есть в базе'.format(new_dict["iin"][0])
@@ -158,10 +168,10 @@ def add_patient():
         db.session.add(patient)
         db.session.commit()
 
-        return route_template( 'add_person', form=patient_form, added=True, error_msg=None)
+        return route_template( 'patients/add_person', form=patient_form, added=True, error_msg=None)
         # return render_template( 'login/register.html', success='User created please <a href="/login">login</a>', form=patient_form)
     else:
-        return route_template( 'add_person', form=patient_form, hospital_types=hospital_types, added=False, error_msg=None)
+        return route_template( 'patients/add_person', form=patient_form, hospital_types=hospital_types, added=False, error_msg=None)
 
 def get_lat_lng(patients):
     lat_lng = []
@@ -244,7 +254,7 @@ def add_data():
 
         patients = pd.read_excel(docs.path(filename))
         added = 0
-        regions = Region.query.all()
+        regions = get_regions(current_user)
 
         created_patients = []
 
@@ -273,14 +283,7 @@ def add_data():
             except TypeError:
                 patient.arrival_date = datetime(1000, 1, 1)           
 
-            flight_code = FlightCode.query.filter_by(name=row["рейс"]).first()
-            if flight_code:
-                patient.flight_code_id = flight_code.id
-            else:
-                fc = FlightCode(name=row["рейс"])
-                db.session.add(fc)
-                db.session.commit()
-                patient.flight_code_id = fc.id
+            patient.flight_code_id = get_flight_code(row["рейс"])
 
             patient.visited_country = row["Место и сроки пребывания в последние 14 дней до прибытия в Казахстан (укажите страну, область, штат и т.д.)"]
             
@@ -371,10 +374,10 @@ def add_data():
         db.session.commit()      
 
         # else we can create the user
-        return route_template( 'add_data', form=data_form, added=added)
+        return route_template( 'patients/add_data', form=data_form, added=added)
         # return render_template( 'login/register.html', success='User created please <a href="/login">login</a>', form=patient_form)
     else:
-        return route_template( 'add_data', form=data_form, added=-1)
+        return route_template( 'patients/add_data', form=data_form, added=-1)
 
 @blueprint.route('/patients')
 @login_required
@@ -383,19 +386,21 @@ def patients():
         return redirect(url_for('base_blueprint.login'))
 
     form = TableSearchForm()
-    regions = Region.query.all()
 
     if not form.region.choices:
-        form.region.choices = [ (-1, c.all_regions) ] + [(r.id, r.name) for r in regions]
+        form.region.choices = get_regions_choices(current_user)
 
     patients = []
     filt = dict()
 
-    if "region" in request.args:
-        region = request.args["region"]
-        if region != '-1':
-            filt["region_id"] = region
-            form.region.default = region
+    if not current_user.is_admin:
+        filt["region_id"] = current_user.region_id
+    else:
+        if "region" in request.args:
+            region = request.args["region"]
+            if region != '-1':
+                filt["region_id"] = region
+                form.region.default = region
 
     if "flight_code" in request.args:
         flight_code = request.args["flight_code"]
@@ -448,13 +453,15 @@ def patients():
     flight_codes_list = [c.all_flight_codes] + [ code.name for code in FlightCode.query.all() ]
 
     form.process()
-    return route_template('patients', patients=patients, form=form, page=page, max_page=max_page, total = total_len, constants=c, flight_codes_list=flight_codes_list)
+    return route_template('patients/patients', patients=patients, form=form, page=page, max_page=max_page, total = total_len, constants=c, flight_codes_list=flight_codes_list)
 
 @blueprint.route('/delete_patient', methods=['POST'])
 @login_required
 def delete_patient():
     if not current_user.is_authenticated:
         return redirect(url_for('base_blueprint.login'))
+    
+    return_url = url_for('home_blueprint.patients')
 
     if len(request.form):
         if "delete" in request.form:
@@ -462,14 +469,14 @@ def delete_patient():
             patient = Patient.query.filter(Patient.id == patient_id)
             
             if patient.first().is_contacted_person:
-                ContactedPersons.query.filter_by(person_id=patient_id).delete()
-            # else:
-
+                q = ContactedPersons.query.filter_by(person_id=patient_id)
+                return_url = "{}?id={}".format(url_for('home_blueprint.contacted_persons'), q.first().patient_id)
+                q.delete()
 
             patient.delete()
             db.session.commit()
 
-    return redirect(url_for('home_blueprint.patients'))
+    return redirect(return_url)
 
 @blueprint.route('/patient_profile', methods=['GET', 'POST'])
 @login_required
@@ -481,12 +488,12 @@ def patient_profile():
         patient = Patient.query.filter_by(id=request.args["id"]).first()
       
         if not patient:
-            return render_template('error-404.html'), 404
+            return render_template('errors/error-404.html'), 404
         else:
             form = UpdateProfileForm(request.form)
             updated = False
 
-            regions = Region.query.all()
+            regions = get_regions(current_user)
 
             if not form.hospital_region_id.choices:
                 form.hospital_region_id.choices = [(r.id, r.name) for r in regions]
@@ -561,9 +568,9 @@ def patient_profile():
             age =  today.year - patient.dob.year - ((today.month, today.day) < (patient.dob.month, patient.dob.day))
 
             form.process()
-            return route_template('profile', patient=patient, age=age, hospital_name=hospital_name, form = form, updated = updated)
+            return route_template('patients/profile', patient=patient, age=age, hospital_name=hospital_name, form = form, updated = updated)
     else:    
-        return render_template('error-500.html'), 500
+        return render_template('errors/error-500.html'), 500
 
 # Hospitals
 
@@ -574,19 +581,22 @@ def all_hospitals():
         return redirect(url_for('base_blueprint.login'))
     
     form = HospitalSearchForm(request.form)
-    regions = Region.query.all()
 
     if not form.region.choices:
-        form.region.choices = [ (-1, c.all_regions) ] + [(r.id, r.name) for r in regions]
+        form.region.choices = get_regions_choices(current_user)
     
     filt = dict()
 
     q = Hospital.query
     region = request.args.get("region", '-1')
-    if region != str(-1):
-        filt["region_id"] = region
-        form.region.default = region
-        q = Hospital.query.filter_by(region_id = filt["region_id"])
+    
+    if not current_user.is_admin:
+        filt["region_id"] = current_user.region_id
+    else:
+        if region != str(-1):
+            filt["region_id"] = region
+            form.region.default = region
+            q = Hospital.query.filter_by(region_id = filt["region_id"])
 
     hospital_type = Hospital_Type.query.all()
 
@@ -633,7 +643,7 @@ def all_hospitals():
 
     form.process()    
 
-    return route_template('hospitals', hospitals=hospitals, form=form, page=page, max_page=max_page, total = total_len)
+    return route_template('hospitals/hospitals', hospitals=hospitals, form=form, page=page, max_page=max_page, total = total_len)
 
 
 @blueprint.route('/add_hospital', methods=['GET', 'POST'])
@@ -678,10 +688,10 @@ def add_hospital():
         db.session.add(patient)
         db.session.commit()
 
-        return route_template( 'add_person', form=patient_form, added=True, error_msg=None)
+        return route_template( 'hospitals/add_hospital', form=patient_form, added=True, error_msg=None)
         # return render_template( 'login/register.html', success='User created please <a href="/login">login</a>', form=patient_form)
     else:
-        return route_template( 'add_person', form=patient_form, added=False, error_msg=None)
+        return route_template( 'hospitals/add_hospital', form=patient_form, added=False, error_msg=None)
 
 @blueprint.route('/add_hospitals_csv', methods=['GET', 'POST'])
 def add_hospitals_csv():
@@ -727,10 +737,10 @@ def add_hospitals_csv():
             added += 1
 
         # # else we can create the user
-        return route_template( 'add_hospitals_csv', form=data_form, added=added)
+        return route_template( 'hospitals/add_hospitals_csv', form=data_form, added=added)
         # return render_template( 'login/register.html', success='User created please <a href="/login">login</a>', form=patient_form)
     else:
-        return route_template( 'add_hospitals_csv', form=data_form, added=-1)
+        return route_template( 'hospitals/add_hospitals_csv', form=data_form, added=-1)
 
 
 @blueprint.route('/hospital_profile', methods=['GET', 'POST'])
@@ -743,7 +753,7 @@ def hospital_profile():
         hospital = Hospital.query.filter_by(id=request.args["id"]).first()
         
         if not hospital:
-            return render_template('error-404.html'), 404
+            return render_template('errors/error-404.html'), 404
         else:
             form = UpdateHospitalProfileForm()
             updated = False
@@ -764,10 +774,10 @@ def hospital_profile():
 
             max_page = math.ceil(total_len/per_page)            
             # form.process()
-            return route_template('hospital_profile', hospital=hospital, form = form, updated = updated, 
+            return route_template('hospitals/hospital_profile', hospital=hospital, form = form, updated = updated, 
                                                     patients=patients, total_patients=total_len, max_page=max_page, page=page)
     else:    
-        return render_template('error-500.html'), 500
+        return render_template('errors/error-500.html'), 500
 
 @blueprint.route('/countries_categories')
 @login_required
@@ -787,7 +797,7 @@ def contacted_persons():
         return redirect(url_for('base_blueprint.login'))
 
     form = TableSearchForm()
-    regions = Region.query.all()
+    regions = get_regions(current_user)
 
     if not form.region.choices:
         form.region.choices = [ (-1, c.all_regions) ] + [(r.id, r.name) for r in regions]
@@ -826,10 +836,10 @@ def contacted_persons():
         max_page = math.ceil(total_len/per_page)
 
         form.process()
-        return route_template('contacted_persons', patients=patients, form=form, page=page, 
+        return route_template('patients/contacted_persons', patients=patients, form=form, page=page, 
                                         max_page=max_page, total = total_len, constants=c, patient=patient)
 
-    return render_template('error-500.html'), 500
+    return render_template('errors/error-500.html'), 500
 
 
 @blueprint.route('/add_contacted_person', methods=['GET', 'POST'])
@@ -838,7 +848,7 @@ def add_contacted_person():
         return redirect(url_for('base_blueprint.login'))
 
     patient_form = PatientForm()
-    regions = Region.query.all()
+    regions = get_regions(current_user)
 
     if not patient_form.region_id.choices:
         patient_form.region_id.choices = [(r.id, r.name) for r in regions]
@@ -854,8 +864,17 @@ def add_contacted_person():
 
     hospital_types = Hospital_Type.query.all()
     hospital_types = [(h.id, h.name) for h in hospital_types]
+    
+    if not request.args.get("id", False):
+        return route_template("errors/error-500.html")
 
-    if 'create' in request.form and "id" in request.args:
+    main_patient_id = Patient.query.filter_by(id=request.args["id"]).first()
+    if main_patient_id == None:
+        return route_template("errors/error-500.html")
+    else:
+        main_patient_id = main_patient_id.id
+
+    if 'create' in request.form:
         new_dict = request.form.to_dict(flat=False)
 
         new_dict['dob'] = datetime.strptime(request.form['dob'], '%Y-%m-%d')
@@ -876,25 +895,25 @@ def add_contacted_person():
         db.session.add(patient)
         db.session.commit()
 
-        contacted = ContactedPersons(patient_id=request.args["id"], person_id=patient.id)
+        contacted = ContactedPersons(patient_id=main_patient_id, person_id=patient.id)
         db.session.add(contacted)
         db.session.commit()
 
         return redirect("/contacted_persons?id={}".format(request.args["id"]))
-
-        return route_template( 'add_contacted_person', form=patient_form, added=True, error_msg=None)
-        # return render_template( 'login/register.html', success='User created please <a href="/login">login</a>', form=patient_form)
     else:
-        return route_template( 'add_contacted_person', form=patient_form, hospital_types=hospital_types, added=False, error_msg=None)
+        return route_template( 'patients/add_contacted_person', form=patient_form, hospital_types=hospital_types, added=False, error_msg=None)
 
-@blueprint.route('/users', methods=['GET', 'POST'])
+@blueprint.route('/users', methods=['GET'])
 @login_required
 def users():
     if not current_user.is_authenticated:
         return redirect(url_for('base_blueprint.login'))
 
+    if not current_user.is_admin:
+        return render_template('errors/error-500.html'), 500
+
     form = TableSearchForm()
-    regions = Region.query.all()
+    regions = get_regions(current_user)
 
     if not form.region.choices:
         form.region.choices = [ (-1, c.all_regions) ] + [(r.id, r.name) for r in regions]
@@ -917,5 +936,60 @@ def users():
     max_page = math.ceil(total_len/per_page)
 
     form.process()
-    return route_template('users', users=users, form=form, page=page, 
+    return route_template('users/users', users=users, form=form, page=page, 
                                     max_page=max_page, total = total_len, constants=c)
+
+@blueprint.route('/add_user', methods=['GET', 'POST'])
+def add_user():
+    if not current_user.is_authenticated:
+        return redirect(url_for('base_blueprint.login'))
+
+    patient_form = CreateUserForm()
+    regions = get_regions(current_user)
+
+    if not patient_form.region_id.choices:
+        patient_form.region_id.choices = [(r.id, r.name) for r in regions]
+
+    if 'create' in request.form:
+        new_dict = request.form.to_dict(flat=False)
+        
+        user = User.query.filter_by(username=new_dict['username'][0]).first()
+        if user:
+            return route_template( 'users/add_user', error_msg='Имя пользователя уже зарегистрировано', form=patient_form, added=False)
+
+        user = User(**new_dict)
+        
+        db.session.add(user)
+        db.session.commit()
+
+        return route_template( 'users/add_user', form=patient_form, added=True, error_msg=None)
+    else:
+        return route_template( 'users/add_user', form=patient_form, added=False, error_msg=None)
+
+
+@blueprint.route('/user_profile', methods=['GET', 'POST'])
+@login_required
+def user_profile():
+    if not current_user.is_authenticated:
+        return redirect(url_for('base_blueprint.login'))
+
+    if "id" in request.args:
+        user = User.query.filter_by(id=request.args["id"]).first()
+        
+        if not user:
+            return render_template('errors/error-404.html'), 404
+        else:
+            form = CreateUserForm()
+            form.username.default = user.username
+
+            form.password.default = user.password
+            
+            form.region_id.choices = get_regions_choices(current_user)
+            form.region_id.default = user.region_id
+
+            updated = False
+  
+            form.process()
+            return route_template('users/user_profile', form = form, user=user)
+    else:    
+        return render_template('errors/error-500.html'), 500

@@ -38,7 +38,15 @@ class PatientForm(FlaskForm):
     is_found = RadioField("Is Found", id="is_found", choices=[(1, "Да"),(0,"Нет")], default=0, validators=[DataRequired()])
     is_infected = RadioField("Is Infected", id="is_infected", choices=[(1, "Да"),(0,"Нет")], default=0, validators=[DataRequired()])
     hospital = TextField('Hospital', id='hospital')
-	
+
+class CreateUserForm(FlaskForm):
+    username = TextField('Username'     , id='username_create' , validators=[DataRequired()])
+    email    = TextField('Email'        , id='email_create'    )
+    telephone    = TextField('Telephone'        , id='tel_create'    )
+    password = TextField('Password' , id='pwd_create'      , validators=[DataRequired()])
+
+    region_id = SelectField('Region', id='region', validators=[DataRequired()])
+
 class UploadDataForm(FlaskForm):
     docs = UploadSet('documents', ['xls', 'xlsx', 'csv'])
     file = FileField    (validators=[FileAllowed(docs, 'Только файлы с расширением .xls, .xlsx и .csv!'), FileRequired('Файл пуст!')])
@@ -62,6 +70,7 @@ class UpdateProfileForm(FlaskForm):
     hospital_type = SelectField('Hospital Type', id='hospital_type' , validators=[DataRequired()])
 
     hospital_id = SelectField('Hospital_id', id='hospital_id' , validators=[DataRequired()])
+
 
 class AddHospitalsDataForm(UploadDataForm):
 	region = TextField('Region', id='region'   , validators=[DataRequired()])

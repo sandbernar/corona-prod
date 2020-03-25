@@ -1,0 +1,240 @@
+{% extends "base_site.html" %}
+
+{% block title %} Tables {% endblock title %}
+
+{% block stylesheets %}
+{{ super() }}
+{% endblock stylesheets %}
+
+{% block content %}
+
+{% include "site_template/navigation.html" %}
+
+{% include "site_template/top-stats.html" %}
+
+<div class="container-fluid mt--7">
+
+  <!-- Table -->
+  <div class="row">
+    <div class="col">
+      <div class="card shadow">
+        <div class="card-header bg-transparent">
+          <div class="row align-items-center">
+            <div class="col">
+              <h2 class="mb-0">Карта Контактных Лиц</h2>
+            </div>
+          </div>
+        </div>
+        <div id="map" style="width:100%; height:500px"></div>
+      </div>
+      <div class="card shadow mt-4">
+        <div class="card-header border-0">
+          <div class="row">
+            <div class="col">
+              <h3 class="mb-0">Найдено {{total}}, показано {{ patients|length }} контактов</h3>
+            </div>
+            <div class="col-md-auto">
+              <a href="/add_contacted_person?id={{ patient.id }}" class="btn btn-sm btn-primary" style="width:100%;">Добавить Контактное Лицо</a>
+            </div>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="table align-items-center table-flush">
+            <thead class="thead-light">
+              <tr>
+                <th scope="col">ФИО</th>
+                <th scope="col">Телефон</th>
+                <th scope="col">Дата Въезда</th>
+                <th scope="col">Регион</th>
+                <th scope="col">Найден</th>
+                <th scope="col">Госпитализирован</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for patient in patients %}
+              <tr>
+                <th scope="row">
+                  <div class="media align-items-center">
+                    <div class="media-body">
+                      <span class="mb-0 text-sm"><a href="/patient_profile?id={{patient.id}}">{{ patient.full_name }}</a></span>
+                    </div>
+                  </div>
+                </th>
+                <td>
+                  {{ patient.telephone }}
+                </td>
+                <td>
+                  {{ patient.arrival_date }}
+                </td>
+                <td>
+                  {{ patient.region }}
+                </td>
+                <td>
+                  {% if patient.is_found %}
+                  <font color="green">Да</font>
+                  {% else %}
+                  <font color="red">Нет</font>
+                {% endif %}                        </td>
+                <td>
+                  {% if patient.status.value == constants.in_hospital[0] %}
+                  <font color="green">Да</font>
+                  {% else %}
+                  <font color="red">Нет</font>
+                {% endif %}                        </td>
+              </tr>
+              {% endfor %}
+
+            </tbody>
+          </table>
+        </div>
+        {% if max_page > 1%}
+        <div class="card-footer py-4">
+          <nav aria-label="...">
+            <ul class="pagination justify-content-end mb-0">
+              <li class="page-item {% if page == 1%}disabled{%endif%}">
+                <a class="page-link" onclick="setSearchParam('page', {{ page - 1 }})">
+                  <i class="fas fa-angle-left"></i>
+                  <span class="sr-only">Previous</span>
+                </a>
+              </li>
+              <li class="page-item"><div class="page-link" style="cursor: default;"> {{ page }}</div></li>
+              <li class="page-item {% if page == max_page %}disabled{%endif%}">
+                <a class="page-link" onclick="setSearchParam('page', {{ page + 1 }})" >
+                  <i class="fas fa-angle-right"></i>
+                  <span class="sr-only">Next</span>
+                </a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+        {% endif %}        
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+
+
+
+  {% include "site_template/footer.html" %}
+
+</div>        
+
+{% endblock content %}
+
+{% block javascripts %}
+<script type="text/javascript">
+  ymaps.ready(init);
+
+function init() {
+    var myMap = new ymaps.Map("map", {
+            center: ['{{ patient.address_lat }}', '{{ patient.address_lng }}'],
+            zoom: 12,
+            controls: ['zoomControl']
+        }, {
+            searchControlProvider: 'yandex#search'
+        })
+
+    clusterer = new ymaps.Clusterer({
+            preset: 'islands#invertedVioletClusterIcons',
+            clusterHideIconOnBalloonOpen: false,
+            geoObjectHideIconOnBalloonOpen: false
+        })
+
+    clusterer.events
+        // Можно слушать сразу несколько событий, указывая их имена в массиве.
+        .add(['mouseenter', 'mouseleave'], function (e) {
+            var target = e.get('target'),
+                type = e.get('type');
+            if (typeof target.getGeoObjects != 'undefined') {
+                // Событие произошло на кластере.
+                if (type == 'mouseenter') {
+                    target.options.set('preset', 'islands#invertedPinkClusterIcons');
+                } else {
+                    target.options.set('preset', 'islands#invertedVioletClusterIcons');
+                }
+            }
+        });    
+
+    geoObjects = []
+    {% for p in patients + [patient]  %}
+
+    is_found = "Нет"
+    if ('{{ p.is_found }}' == 'True') {
+      is_found = "Да"
+    }
+    geoObjects.push(new ymaps.Placemark(['{{ p.address_lat }}', '{{ p.address_lng }}' ], {
+        balloonContentBody: 
+        '<a href="/patient_profile?id={{p.id}}">Профиль Пациента</a><br>' +
+        '<strong>Регион</strong>: {{ p.region }}<br>' +
+        '<strong>Адрес</strong>: {{ p.home_address }}<br>' +
+        '<strong>Найден</strong>:' + is_found + '<br>' +
+        '<strong>Статус</strong>: {{ p.status.name }}<br>',
+        clusterCaption: '<strong>{{ p.full_name }}</strong>'
+    }, {
+        {% if p == patient %}
+        preset: 'islands#redCircleDotIcon',
+        {% else %}
+        preset: 'islands#icon',
+        {% endif %}
+        {% if not p.is_found and not p.status.value == constants.in_hospital[0] %}
+        iconColor: 'red'
+        {% elif p.is_found and not p.status.value == constants.in_hospital[0] and not p.status.value == constants.is_home[0] %}
+        iconColor: 'yellow'
+        {% else %}
+        iconColor: 'green'
+        {% endif %}            
+    }))
+    {% endfor %}
+
+    clusterer.add(geoObjects);
+    myMap.geoObjects.add(clusterer);
+
+    myMap.geoObjects
+        {% for p in patients %}
+        .add(new ymaps.GeoObject({
+          geometry: {
+                // Тип геометрии - "Ломаная линия".
+                type: "LineString",
+                // Указываем координаты вершин ломаной.
+                coordinates: [
+                    ['{{ patient.address_lat }}', '{{ patient.address_lng }}'],
+                    ['{{ p.address_lat }}', '{{ p.address_lng }}']
+                ]
+            },
+            properties:{
+                // Содержимое хинта.
+                balloonContent: "<a href='/patient_profile?id={{p.id}}'>{{ p.full_name }}</a>"
+            }},
+            {
+            strokeColor: "#ff0000",
+            strokeWidth: 5
+        }))
+        {% endfor %}
+}
+
+  var setSearchParam = function(key, value) {
+    if (!window.history.pushState) {
+      return;
+    }
+
+    if (!key) {
+      return;
+    }
+
+    var url = new URL(window.location.href);
+    var params = new window.URLSearchParams(window.location.search);
+    if (value === undefined || value === null) {
+      params.delete(key);
+    } else {
+      params.set(key, value);
+    }
+
+    url.search = params;
+    url = url.toString();
+    window.history.replaceState({url: url}, null, url);
+    window.location.href = window.location.href
+  }
+</script>
+{{ super()}}
+{% endblock javascripts %}
