@@ -484,7 +484,7 @@ def patient_profile():
             form = UpdateProfileForm(request.form)
             updated = False
 
-            regions = get_regions(current_user)
+            regions = Region.query.all()
 
             if not form.hospital_region_id.choices:
                 form.region_id.choices = [(r.id, r.name) for r in regions]
@@ -977,16 +977,16 @@ def add_user():
         
         user = User.query.filter_by(username=new_dict['username'][0]).first()
         if user:
-            return route_template( 'users/add_user', error_msg='Имя пользователя уже зарегистрировано', form=patient_form, added=False)
+            return route_template( 'users/add_user', error_msg='Имя пользователя уже зарегистрировано', form=patient_form, change=None)
 
         user = User(**new_dict)
         
         db.session.add(user)
         db.session.commit()
 
-        return route_template( 'users/add_user', form=patient_form, added=True, error_msg=None)
+        return route_template( 'users/add_user', form=patient_form, change="Пользователь был успешно добавлен", error_msg=None)
     else:
-        return route_template( 'users/add_user', form=patient_form, added=False, error_msg=None)
+        return route_template( 'users/add_user', form=patient_form, change=None, error_msg=None)
 
 
 @blueprint.route('/user_profile', methods=['GET', 'POST'])
