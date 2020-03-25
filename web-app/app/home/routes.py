@@ -807,38 +807,32 @@ def contacted_persons():
     filt = dict()
 
     if "id" in request.args:
-        # region = request.args["region"]
-        # if region != -1:
-            # filt["region_id"] = region
-            # form.region.default = region
+        patient = Patient.query.filter_by(id=request.args["id"]).first()
 
-    # if "not_found" in request.args:
-    #     filt["is_found"] = False
-    #     form.not_found.default='checked'
-        q = ContactedPersons.query.filter_by(patient_id=request.args["id"])
-        patient = Patient.query.filter_by(id = request.args["id"]).first()
+        if patient:
+            if patient.is_contacted_person:
+                q = ContactedPersons.query.filter_by(person_id=request.args["id"])
+            else:
+                q = ContactedPersons.query.filter_by(patient_id=request.args["id"])
 
-    # if "not_in_hospital" in request.args:
-    #     in_hospital_id = PatientStatus.query.filter_by(value=c.in_hospital[0]).first().id
-    #     q = Patient.query.filter(Patient.status_id != in_hospital_id).filter_by(**filt)
+            page = 1
+            per_page = 5
+            if "page" in request.args:
+                page = int(request.args["page"][0])
 
-    #     form.not_in_hospital.default='checked'
+            total_len = q.count()
 
-        page = 1
-        per_page = 5
-        if "page" in request.args:
-            page = int(request.args["page"][0])
+            for contact in q.offset((page-1)*per_page).limit(per_page).all():
+                p_id = contact.patient_id if patient.is_contacted_person else contact.person_id
+                patients.append(Patient.query.filter_by(id=p_id).first())
 
-        total_len = q.count()
+            max_page = math.ceil(total_len/per_page)
 
-        for p in q.offset((page-1)*per_page).limit(per_page).all():
-            patients.append(Patient.query.filter_by(id=p.person_id).first())
-
-        max_page = math.ceil(total_len/per_page)
-
-        form.process()
-        return route_template('patients/contacted_persons', patients=patients, form=form, page=page, 
-                                        max_page=max_page, total = total_len, constants=c, patient=patient)
+            form.process()
+            return route_template('patients/contacted_persons', patients=patients, form=form, page=page, 
+                                            max_page=max_page, total = total_len, constants=c, patient=patient)
+        else:
+            return render_template('errors/error-404.html'), 404
 
     return render_template('errors/error-500.html'), 500
 

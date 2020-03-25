@@ -52,42 +52,42 @@
 
     <div class="row">
         <div class="col-xl-4 order-xl-2 mb-5 mb-xl-0">
-        {% if patient.address_lat %}
-          <div class="card shadow">
-             <div id="map" style="width:100%; height:220px"></div>
-         </div>
+            {% if patient.address_lat %}
+            <div class="card shadow">
+               <div id="map" style="width:100%; height:220px"></div>
+           </div>
 
-        <a href="/contacted_persons?id={{ patient.id }}" class="btn btn-primary mt-3" style="width:100%;">Контактные Лица</a>
-        <!-- <button class="btn btn-primary mt-2" id="submit" name="submit" type="submit" value="Обновить">Обновить</button> -->
+           <a href="/contacted_persons?id={{ patient.id }}" class="btn btn-primary mt-3" style="width:100%;">Контактные Лица</a>
+           <!-- <button class="btn btn-primary mt-2" id="submit" name="submit" type="submit" value="Обновить">Обновить</button> -->
 
-         <div class="card card-profile shadow mt-3">
-        {% else %}
-        <div class="card card-profile shadow mt-0">
-        {% endif %} 
-            <div class="row justify-content-center">
-                <div class="col-lg-3 order-lg-2">
+           <div class="card card-profile shadow mt-3">
+            {% else %}
+            <div class="card card-profile shadow mt-0">
+                {% endif %} 
+                <div class="row justify-content-center">
+                    <div class="col-lg-3 order-lg-2">
 
+                    </div>
                 </div>
-            </div>
-            <div class="card-body pt-0 pt-md-4">
-                <div class="text-center">
-                    <h3>
-                        {{ patient.full_name }} | {{ age }} лет<span class="font-weight-light"></span>
-                    </h3>
-                    <form method="POST">            
-                      <div class="row">
+                <div class="card-body pt-0 pt-md-4">
+                    <div class="text-center">
+                        <h3>
+                            {{ patient.full_name }} | {{ age }} лет<span class="font-weight-light"></span>
+                        </h3>
+                        <form method="POST">            
+                          <div class="row">
+                            <div class="col">
+                              <div class="custom-control custom-checkbox">
+                                {{ form.is_found(class="custom-control-input", id="is_found_checkbox", onchange="found_changed($(this).prop('checked'))") }}
+                                <label class="custom-control-label" for="is_found_checkbox">Найден</label>
+                            </div>
+                        </div>
                         <div class="col">
                           <div class="custom-control custom-checkbox">
-                            {{ form.is_found(class="custom-control-input", id="is_found_checkbox", onchange="found_changed($(this).prop('checked'))") }}
-                            <label class="custom-control-label" for="is_found_checkbox">Найден</label>
+                            {{ form.is_infected(class="custom-control-input", id="is_infected_checkbox") }}
+                            <label class="custom-control-label" for="is_infected_checkbox">Инфицирован</label>
                         </div>
-                    </div>
-                    <div class="col">
-                      <div class="custom-control custom-checkbox">
-                        {{ form.is_infected(class="custom-control-input", id="is_infected_checkbox") }}
-                        <label class="custom-control-label" for="is_infected_checkbox">Инфицирован</label>
-                    </div>
-                </div>                    
+                    </div>                    
                 </div>
                 <hr class="my-4" />
                 <div class="row">
@@ -218,23 +218,25 @@
                 <hr class="my-4" />
                 <!-- Description -->
                 <h6 class="heading-small text-muted mb-4">Информация о Въезде</h6>
-                <div class="row">
-                    <div class="col-lg-4">
-                        <div class="form-group">
-                            <label class="form-control-label" for="input-arrival-date">Дата Въезда</label>
-                            <input type="text" id="input-arrival-date" class="form-control form-control-alternative" disabled value="{{ patient.arrival_date }}">
+                <div class="pl-lg-4">
+                    <div class="row">
+                        <div class="col-lg-4">
+                            <div class="form-group">
+                                <label class="form-control-label" for="input-arrival-date">Дата Въезда</label>
+                                <input type="text" id="input-arrival-date" class="form-control form-control-alternative" disabled value="{{ patient.arrival_date }}">
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-lg-4">
-                        <div class="form-group">
-                            <label class="form-control-label" for="input-flight-code">Номер Рейса</label>
-                            <input type="text" id="input-flight-code" class="form-control form-control-alternative" disabled value="{{ patient.flight_code }}">
+                        <div class="col-lg-4">
+                            <div class="form-group">
+                                <label class="form-control-label" for="input-flight-code">Номер Рейса</label>
+                                <input type="text" id="input-flight-code" class="form-control form-control-alternative" disabled value="{{ patient.flight_code }}">
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-lg-4">
-                        <div class="form-group">
-                            <label class="form-control-label" for="input-visited-country">Из Страны</label>
-                            <input type="text" id="input-visited-country" class="form-control form-control-alternative" disabled value="{{ patient.visited_country }}">
+                        <div class="col-lg-4">
+                            <div class="form-group">
+                                <label class="form-control-label" for="input-visited-country">Из Страны</label>
+                                <input type="text" id="input-visited-country" class="form-control form-control-alternative" disabled value="{{ patient.visited_country }}">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -258,7 +260,7 @@
         ymaps.ready(init);
 
         function init() {
-        var myMap = new ymaps.Map("map", {
+            var myMap = new ymaps.Map("map", {
                 center: [{{ patient.address_lat }}, {{ patient.address_lng }}],
                 zoom: 12,
                 controls: ['zoomControl']
@@ -266,7 +268,7 @@
                 searchControlProvider: 'yandex#search'
             })
 
-        myMap.geoObjects
+            myMap.geoObjects
             .add(new ymaps.Placemark([{{ patient.address_lat }}, {{ patient.address_lng }} ], {
                 balloonContent: '{{ patient.full_name }}</a>'
             }, {
