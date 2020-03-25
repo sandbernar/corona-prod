@@ -47,6 +47,14 @@ class CreateUserForm(FlaskForm):
 
     region_id = SelectField('Region', id='region', validators=[DataRequired()])
 
+class UpdateUserForm(FlaskForm):
+    username = TextField('Username'     , id='username_create')
+    email    = TextField('Email'        , id='email_create'    )
+    telephone    = TextField('Telephone'        , id='tel_create'    )
+    password = TextField('Password' , id='pwd_create'      )
+
+    region_id = SelectField('Region', id='region', validators=[DataRequired()])
+
 class UploadDataForm(FlaskForm):
     docs = UploadSet('documents', ['xls', 'xlsx', 'csv'])
     file = FileField    (validators=[FileAllowed(docs, 'Только файлы с расширением .xls, .xlsx и .csv!'), FileRequired('Файл пуст!')])

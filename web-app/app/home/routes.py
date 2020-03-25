@@ -18,7 +18,7 @@ from opencage.geocoder import OpenCageGeocode
 import numpy as np
 from wtforms import SelectField
 import math
-from app.home.forms import PatientForm, UploadDataForm, TableSearchForm, UpdateProfileForm, AddHospitalsDataForm, HospitalSearchForm, UpdateHospitalProfileForm, CreateUserForm
+from app.home.forms import PatientForm, UploadDataForm, TableSearchForm, UpdateProfileForm, AddHospitalsDataForm, HospitalSearchForm, UpdateHospitalProfileForm, CreateUserForm, UpdateUserForm
 import json
 import nltk
 import dateutil.parser
@@ -28,6 +28,7 @@ from multiprocessing.pool import ThreadPool as threadpool
 import itertools
 from app.base.models import User
 from app.home.util import get_regions, get_regions_choices, get_flight_code
+from app.base.util import hash_pass
 
 key = '6670b10323b541bdbbf3e39bf07b7e46'
 geocoder = OpenCageGeocode(key)
@@ -944,6 +945,9 @@ def add_user():
     if not current_user.is_authenticated:
         return redirect(url_for('base_blueprint.login'))
 
+    if not current_user.is_admin:
+        return render_template('errors/error-500.html'), 500        
+
     patient_form = CreateUserForm()
     regions = get_regions(current_user)
 
@@ -973,23 +977,75 @@ def user_profile():
     if not current_user.is_authenticated:
         return redirect(url_for('base_blueprint.login'))
 
+    if not current_user.is_admin:
+        return render_template('errors/error-500.html'), 500        
+
     if "id" in request.args:
         user = User.query.filter_by(id=request.args["id"]).first()
         
         if not user:
             return render_template('errors/error-404.html'), 404
         else:
-            form = CreateUserForm()
+            form = UpdateUserForm()
+            
+            change = None
+            error_msg = None
+            
+            if 'update' in request.form:
+                if request.form['username']:
+                    new_username = request.form['username']
+                    
+                    if not new_username == user.username:  
+                        if not User.query.filter_by(username = new_username).count():
+                            user.username = new_username
+                        else:
+                            error_msg = "Пользователь с таким логином уже существует"
+
+                if not error_msg:
+                    if request.form['password']:
+                        password = request.form['password']
+
+                        user.password = hash_pass(password)
+
+                    user.telephone = request.form['telephone']
+                    user.email = request.form['email']
+
+                    db.session.add(user)
+                    db.session.commit()
+
+                    change = "Данные обновлены"
+
             form.username.default = user.username
 
-            form.password.default = user.password
+            form.email.default = user.email
+            form.telephone.default = user.telephone
             
             form.region_id.choices = get_regions_choices(current_user)
             form.region_id.default = user.region_id
-
-            updated = False
   
             form.process()
-            return route_template('users/user_profile', form = form, user=user)
+            return route_template('users/user_profile', form = form, user=user, change=change, error_msg=error_msg)
     else:    
         return render_template('errors/error-500.html'), 500
+
+@blueprint.route('/delete_user', methods=['POST'])
+@login_required
+def delete_user():
+    if not current_user.is_authenticated:
+        return redirect(url_for('base_blueprint.login'))
+
+    if not current_user.is_admin:
+        return render_template('errors/error-500.html'), 500        
+    
+    return_url = url_for('home_blueprint.users')
+
+    if len(request.form):
+        if "delete" in request.form:
+            user_id = request.form["delete"]
+            user = User.query.filter(User.id == user_id)
+
+            if user:
+                user.delete()
+                db.session.commit()
+
+    return redirect(return_url)
