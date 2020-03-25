@@ -11,7 +11,6 @@ from app import db
 
 from app.base.util import hash_pass
 
-
 class Patient(db.Model):
 
     __tablename__ = 'Patient'

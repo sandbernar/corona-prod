@@ -27,6 +27,7 @@ import re
 import requests
 from multiprocessing.pool import ThreadPool as threadpool
 import itertools
+from app.base.models import User
 
 key = '6670b10323b541bdbbf3e39bf07b7e46'
 geocoder = OpenCageGeocode(key)
@@ -885,3 +886,36 @@ def add_contacted_person():
         # return render_template( 'login/register.html', success='User created please <a href="/login">login</a>', form=patient_form)
     else:
         return route_template( 'add_contacted_person', form=patient_form, hospital_types=hospital_types, added=False, error_msg=None)
+
+@blueprint.route('/users', methods=['GET', 'POST'])
+@login_required
+def users():
+    if not current_user.is_authenticated:
+        return redirect(url_for('base_blueprint.login'))
+
+    form = TableSearchForm()
+    regions = Region.query.all()
+
+    if not form.region.choices:
+        form.region.choices = [ (-1, c.all_regions) ] + [(r.id, r.name) for r in regions]
+
+    users = []
+    filt = dict()
+
+    q = User.query
+    # patient = Patient.query.filter_by(id = request.args["id"]).first()
+
+    page = 1
+    per_page = 5
+    if "page" in request.args:
+        page = int(request.args["page"][0])
+
+    total_len = q.count()
+
+    users = q.offset((page-1)*per_page).limit(per_page).all()
+
+    max_page = math.ceil(total_len/per_page)
+
+    form.process()
+    return route_template('users', users=users, form=form, page=page, 
+                                    max_page=max_page, total = total_len, constants=c)
