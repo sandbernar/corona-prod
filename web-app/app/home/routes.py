@@ -147,17 +147,7 @@ def add_patient():
         new_dict['flight_code_id'] = get_flight_code(new_dict['flight_code'][0])
         del new_dict['flight_code']
 
-        # patient = Patient.query.filter_by(iin=new_dict["iin"][0]).first()
-        # if patient:
-        #     msg = 'Пациент с ИИН {} уже есть в базе'.format(new_dict["iin"][0])
-        #     return route_template( 'add_person', form=PatientForm(request.form), added=False, error_msg=msg)
-
-        # patient = Patient.query.filter_by(pass_num=new_dict["pass_num"][0]).first()
-        # if patient:
-        #     msg = 'Пациент с Номером Паспорта {} уже есть в базе'.format(new_dict["pass_num"][0])
-        #     return route_template( 'add_person', form=PatientForm(request.form), added=False, error_msg=msg)
-
-        # # else we can create the user
+        # else we can create the user
         patient = Patient(**new_dict)
         patient.is_contacted_person = False
         
@@ -430,9 +420,9 @@ def patients():
         form.not_in_hospital.default='checked'
 
     page = 1
-    per_page = 5
+    per_page = 10
     if "page" in request.args:
-        page = int(request.args["page"][0])
+        page = int(request.args["page"])
 
     total_len = q.count()
 
@@ -448,12 +438,12 @@ def patients():
 
         patients.append(p)
 
-
     max_page = math.ceil(total_len/per_page)
 
     flight_codes_list = [c.all_flight_codes] + [ code.name for code in FlightCode.query.all() ]
 
     form.process()
+    print(page)
     return route_template('patients/patients', patients=patients, form=form, page=page, max_page=max_page, total = total_len, constants=c, flight_codes_list=flight_codes_list)
 
 @blueprint.route('/delete_patient', methods=['POST'])
@@ -497,10 +487,12 @@ def patient_profile():
             regions = get_regions(current_user)
 
             if not form.hospital_region_id.choices:
+                form.region_id.choices = [(r.id, r.name) for r in regions]
                 form.hospital_region_id.choices = [(r.id, r.name) for r in regions]
 
             hospital_types = Hospital_Type.query.all()
             form.hospital_type.choices = [(h.id, h.name) for h in hospital_types]
+            form.flight_code_id.choices = [ (code.id, code.name) for code in FlightCode.query.all() ]
 
             if len(request.form):
                 if "hospital" in request.form:
@@ -528,16 +520,47 @@ def patient_profile():
                     if patient_hospital:
                         patient.hospital_id = patient_hospital.id
 
+                # Update parameters
+                if request.form['full_name']:
+                    patient.full_name = request.form['full_name']
+
+                if request.form['iin']:
+                    patient.iin = str(request.form['iin'])
+
+                if request.form['dob']:
+                    patient.dob = request.form['dob']
+
+                if request.form['citizenship']:
+                    patient.citizenship = request.form['citizenship']
+
+                patient.region_id = request.form['region_id']
+
+                if request.form['home_address']:
+                    if patient.home_address != request.form['home_address']:
+                        patient.home_address = request.form['home_address']
+
+                        lat_lng = get_lat_lng([(patient.home_address, Region.query.filter_by(id=patient.region_id).first().name)])[0]
+
+                        patient.address_lat = lat_lng[0]
+                        patient.address_lng = lat_lng[1]
+
+                patient.flight_code_id = int(request.form['flight_code_id'])
+
+                patient.visited_country = request.form['visited_country']
+
                 db.session.add(patient)
                 db.session.commit()
                 updated = True
-            
+
             hospital_region_id = patient.region_id
             hospital_type_id = hospital_types[0].id
 
             if patient.hospital:
                 hospital_region_id = patient.hospital.region_id
                 hospital_type_id = patient.hospital.hospital_type_id
+
+            form.region_id.default = patient.region_id
+            form.flight_code_id.default = patient.flight_code_id
 
             form.hospital_region_id.default = hospital_region_id
             form.hospital_type.default = hospital_type_id
@@ -569,6 +592,7 @@ def patient_profile():
             age =  today.year - patient.dob.year - ((today.month, today.day) < (patient.dob.month, patient.dob.day))
 
             form.process()
+
             return route_template('patients/profile', patient=patient, age=age, hospital_name=hospital_name, form = form, updated = updated)
     else:    
         return render_template('errors/error-500.html'), 500
@@ -630,7 +654,7 @@ def all_hospitals():
     page = 1
     per_page = 10
     if "page" in request.args:
-        page = int(request.args["page"][0])
+        page = int(request.args["page"])
 
     q = q.filter_by(**filt)
     
@@ -766,7 +790,7 @@ def hospital_profile():
             per_page = 5
 
             if "page" in request.args:
-                page = int(request.args["page"][0])
+                page = int(request.args["page"])
 
             total_len = q.count()
 
@@ -818,7 +842,7 @@ def contacted_persons():
             page = 1
             per_page = 5
             if "page" in request.args:
-                page = int(request.args["page"][0])
+                page = int(request.args["page"])
 
             total_len = q.count()
 
@@ -922,7 +946,7 @@ def users():
     page = 1
     per_page = 5
     if "page" in request.args:
-        page = int(request.args["page"][0])
+        page = int(request.args["page"])
 
     total_len = q.count()
 

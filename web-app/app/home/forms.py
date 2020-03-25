@@ -39,6 +39,20 @@ class PatientForm(FlaskForm):
     is_infected = RadioField("Is Infected", id="is_infected", choices=[(1, "Да"),(0,"Нет")], default=0, validators=[DataRequired()])
     hospital = TextField('Hospital', id='hospital')
 
+class UpdateProfileForm(PatientForm):
+    is_found = BooleanField(id="is_found")
+    is_infected = BooleanField(id="is_infected")
+    in_hospital = BooleanField(id="in_hospital")
+    is_home = BooleanField(id="is_home")
+    is_transit = BooleanField(id="is_transit")
+    citizenship = TextField('Citizenship', id='citizenship', validators=[DataRequired()])
+    flight_code_id = SelectField('Flight Code', id='flight_code_id', validators=[DataRequired()])
+
+    hospital_region_id = SelectField('Hospital Region', id='hospital_region' , validators=[DataRequired()])
+    hospital_type = SelectField('Hospital Type', id='hospital_type' , validators=[DataRequired()])
+
+    hospital_id = SelectField('Hospital_id', id='hospital_id' , validators=[DataRequired()])
+
 class CreateUserForm(FlaskForm):
     username = TextField('Username'     , id='username_create' , validators=[DataRequired()])
     email    = TextField('Email'        , id='email_create'    )
@@ -66,18 +80,6 @@ class TableSearchForm(FlaskForm):
     is_infected = BooleanField(id="is_infected")
     not_in_hospital = BooleanField(id="not_in_hospital")
     flight_code = TextField(id='myInput')
-
-class UpdateProfileForm(FlaskForm):
-    is_found = BooleanField(id="is_found")
-    is_infected = BooleanField(id="is_infected")
-    in_hospital = BooleanField(id="in_hospital")
-    is_home = BooleanField(id="is_home")
-    is_transit = BooleanField(id="is_transit")
-
-    hospital_region_id = SelectField('Hospital Region', id='hospital_region' , validators=[DataRequired()])
-    hospital_type = SelectField('Hospital Type', id='hospital_type' , validators=[DataRequired()])
-
-    hospital_id = SelectField('Hospital_id', id='hospital_id' , validators=[DataRequired()])
 
 
 class AddHospitalsDataForm(UploadDataForm):
