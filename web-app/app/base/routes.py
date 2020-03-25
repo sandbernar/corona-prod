@@ -55,33 +55,33 @@ def login():
                                 form=login_form)
     return redirect(url_for('home_blueprint.index'))
 
-@blueprint.route('/create_user', methods=['GET', 'POST'])
-def create_user():
-    login_form = LoginForm(request.form)
-    create_account_form = CreateAccountForm(request.form)
-    if 'register' in request.form:
+# @blueprint.route('/create_user', methods=['GET', 'POST'])
+# def create_user():
+#     login_form = LoginForm(request.form)
+#     create_account_form = CreateAccountForm(request.form)
+#     if 'register' in request.form:
 
-        username  = request.form['username']
-        email     = request.form['email'   ]
+#         username  = request.form['username']
+#         email     = request.form['email'   ]
 
 
-        user = User.query.filter_by(username=username).first()
-        if user:
-            return render_template( 'login/register.html', msg='Имя пользователя уже зарегистрировано', form=create_account_form)
+#         user = User.query.filter_by(username=username).first()
+#         if user:
+#             return render_template( 'login/register.html', msg='Имя пользователя уже зарегистрировано', form=create_account_form)
 
-        user = User.query.filter_by(email=email).first()
-        if user:
-            return render_template( 'login/register.html', msg='Данный Email уже зарегистрирован', form=create_account_form)
+#         user = User.query.filter_by(email=email).first()
+#         if user:
+#             return render_template( 'login/register.html', msg='Данный Email уже зарегистрирован', form=create_account_form)
 
-        # else we can create the user
-        user = User(**request.form)
-        db.session.add(user)
-        db.session.commit()
+#         # else we can create the user
+#         user = User(**request.form)
+#         db.session.add(user)
+#         db.session.commit()
 
-        return render_template( 'login/register.html', success='Ваш аккаунт зарегистрирован. Пожалуйста, <a href="/login">авторизуйтесь</a>', form=create_account_form)
+#         return render_template( 'login/register.html', success='Ваш аккаунт зарегистрирован. Пожалуйста, <a href="/login">авторизуйтесь</a>', form=create_account_form)
 
-    else:
-        return render_template( 'login/register.html', form=create_account_form)
+#     else:
+#         return render_template( 'login/register.html', form=create_account_form)
 
 @blueprint.route('/logout')
 @login_required
