@@ -328,8 +328,9 @@ def add_data():
                         for h in hospitals:
                             hospital_distances.append(nltk.edit_distance(hospital_name, h.name, True))
 
-                        hospital = hospitals[np.argmin(hospital_distances)]
-                        patient.hospital_id = hospital.id
+                        if len(hospital_distances):
+                            hospital = hospitals[np.argmin(hospital_distances)]
+                            patient.hospital_id = hospital.id
                 else:
                     status = c.no_status
                 
