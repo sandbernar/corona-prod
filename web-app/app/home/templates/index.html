@@ -193,7 +193,7 @@ function init() {
     }
     geoObjects.push(new ymaps.Placemark(['{{ p.address_lat }}', '{{ p.address_lng }}' ], {
         balloonContentBody: 
-        '<a href="/patient_profile?id={{p.id}}">Профиль Пациента</a><br>' +
+        '<a href="/patient_profile?id={{p.id}}">{{ p.full_name }}</a><br>' +
         '<strong>Регион</strong>: {{ p.region }}<br>' +
         '<strong>Адрес</strong>: {{ p.home_address }}<br>' +
         '<strong>Найден?</strong>:' + is_found + '<br>' +

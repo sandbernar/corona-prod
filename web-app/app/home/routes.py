@@ -166,7 +166,7 @@ def add_patient():
         db.session.add(patient)
         db.session.commit()
 
-        return redirect("/patient_profile?id={}".format(patient.id))
+        return redirect("/patient_profile?id={}&success".format(patient.id))
     else:
         return route_template( 'patients/add_person', form=patient_form, hospital_types=hospital_types, added=False, error_msg=None)
 
@@ -462,8 +462,15 @@ def patients():
 
     flight_codes_list = [c.all_flight_codes] + [ code.name for code in FlightCode.query.all() ]
 
+    change = None
+    error_msg = None
+
+    if "delete" in request.args:
+        change = "Пользователь успешно удален"
+
     form.process()
-    return route_template('patients/patients', patients=patients, form=form, page=page, max_page=max_page, total = total_len, constants=c, flight_codes_list=flight_codes_list)
+    return route_template('patients/patients', patients=patients, form=form, page=page, max_page=max_page, total = total_len, 
+                            constants=c, flight_codes_list=flight_codes_list, change=change, error_msg=error_msg)
 
 @blueprint.route('/delete_patient', methods=['POST'])
 @login_required
@@ -471,7 +478,7 @@ def delete_patient():
     if not current_user.is_authenticated:
         return redirect(url_for('base_blueprint.login'))
     
-    return_url = url_for('home_blueprint.patients')
+    return_url = "{}?delete".format(url_for('home_blueprint.patients'))
 
     if len(request.form):
         if "delete" in request.form:
@@ -616,6 +623,9 @@ def patient_profile():
 
             today = datetime.today()
             age =  today.year - patient.dob.year - ((today.month, today.day) < (patient.dob.month, patient.dob.day))
+
+            if "success" in request.args:
+                change = "Пользователь {} успешно добавлен".format(patient.full_name)
 
             form.process()
 

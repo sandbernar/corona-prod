@@ -13,6 +13,9 @@
 {% include "site_template/top-stats.html" %}
 
 <div class="container-fluid mt--7">
+    {% with change=change, error_msg=error_msg %}
+    {% include "site_template/change_notification.html" %}
+    {% endwith %}
   <div class="row">
     <div class="col">
       <div class="card shadow">
