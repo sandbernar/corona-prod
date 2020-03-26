@@ -215,6 +215,10 @@ function init() {
     myMap.geoObjects.add(clusterer);     
 
 }
+
+colors = ["#3e95cd", "#8e5ea2", "#3cba9f", "#e8c3b9", "#b8860b", "#c45850", "#ff4500", "#f00f30", "#0000cd", 
+          "#7cfc00", "#00fa9a", "#000fff", "#f08080", "#d8bfd8", "#ff00ff", "#1e90ff", "#ff1493", "#ee82ee"]
+
 new Chart(document.getElementById("not-found"), {
     type: 'pie',
     data: {    
@@ -225,7 +229,7 @@ new Chart(document.getElementById("not-found"), {
       ],
       datasets: [{
         label: "Не найдены",
-        backgroundColor: ["#3e95cd", "#8e5ea2","#3cba9f","#e8c3b9","#c45850"],
+        backgroundColor: colors,
         data: [
         {% for region in regions %}
                 {{ regions[region][0] }}, 
@@ -251,7 +255,7 @@ new Chart(document.getElementById("not-in-hospital"), {
       ],
       datasets: [{
         label: "Не найдены",
-        backgroundColor: ["#3e95cd", "#8e5ea2","#3cba9f","#e8c3b9","#c45850"],
+        backgroundColor: colors,
         data: [
         {% for region in regions %}
                 {{ regions[region][1] }}, 
