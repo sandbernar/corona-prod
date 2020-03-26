@@ -24,7 +24,7 @@ class PatientForm(FlaskForm):
     pass_num = TextField('Pass No.', id='pass_num'   , validators=[DataRequired()])
     telephone = TextField('Telephone', id='telephone'   , validators=[DataRequired()])
     arrival_date = DateField('Arrival', id='arrival_date'        , validators=[DataRequired()])
-    flight_code = TextField('Flight Code', id='flight_code'   , validators=[DataRequired()])
+    flight_code = TextField('Flight Code', id='flight_code'   )
     visited_country = TextField('Visited Country', id='visited_country'   , validators=[DataRequired()])
     
     region_id = SelectField('Region', id='region', validators=[DataRequired()])

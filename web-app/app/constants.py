@@ -17,7 +17,7 @@ patient_statuses = [no_status, in_hospital, is_home, is_transit]
 
 # Travel Type
 railway_type = ("railway_type", "Поезд")
-auto_type = ("auto_type", "Транзит")
+auto_type = ("auto_type", "Авто")
 flight_type = ("flight_type", "Самолет")
 
 travel_types = [railway_type, auto_type, flight_type]
