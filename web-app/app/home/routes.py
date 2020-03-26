@@ -10,7 +10,8 @@ from flask_login import login_required, current_user
 from app import login_manager, db
 from app import constants as c
 from jinja2 import TemplateNotFound
-from app.home.models import Patient, Hospital, Region, Hospital_Type, Hospital_Nomenklatura, PatientStatus, Foreign_Country, Infected_Country_Category, ContactedPersons, FlightCode
+from app.home.models import (Patient, Hospital, Region, Hospital_Type, Hospital_Nomenklatura, PatientStatus, Foreign_Country, 
+    Infected_Country_Category, ContactedPersons, FlightCode, TravelType)
 from datetime import datetime
 from flask_uploads import UploadSet
 import pandas as pd
@@ -18,7 +19,8 @@ from opencage.geocoder import OpenCageGeocode
 import numpy as np
 from wtforms import SelectField
 import math
-from app.home.forms import PatientForm, UploadDataForm, TableSearchForm, UpdateProfileForm, AddHospitalsDataForm, HospitalSearchForm, UpdateHospitalProfileForm, CreateUserForm, UpdateUserForm
+from app.home.forms import (PatientForm, UploadDataForm, TableSearchForm, UpdateProfileForm, AddHospitalsDataForm, HospitalSearchForm, 
+    UpdateHospitalProfileForm, CreateUserForm, UpdateUserForm)
 import json
 import nltk
 import dateutil.parser
@@ -121,6 +123,9 @@ def add_patient():
     if not patient_form.region_id.choices:
         patient_form.region_id.choices = get_regions_choices(current_user)
         patient_form.hospital_region_id.choices = get_regions_choices(current_user)
+
+    if not patient_form.travel_type_id.choices:
+        patient_form.travel_type_id.choices = [ (typ.id, typ.name) for typ in TravelType.query.all() ]
 
     hospitals = Hospital.query.all()
     if not patient_form.hospital_id.choices:
@@ -275,6 +280,7 @@ def add_data():
                 patient.arrival_date = datetime(1000, 1, 1)           
 
             patient.flight_code_id = get_flight_code(row["рейс"])
+            patient.travel_type_id = TravelType.query.filter_by(value = c.flight_type[0]).first().id
 
             patient.visited_country = row["Место и сроки пребывания в последние 14 дней до прибытия в Казахстан (укажите страну, область, штат и т.д.)"]
             
@@ -337,7 +343,7 @@ def add_data():
                 if status != None:
                     patient.status_id = PatientStatus.query.filter_by(value=status[0]).first().id
             else:
-                patient.status_id = PatientStatus.query.filter_by(value=c.no_status[0]).first().id    
+                patient.status_id = PatientStatus.query.filter_by(value=c.no_status[0]).first().id
 
 
             created_patients.append(patient)
@@ -491,6 +497,9 @@ def patient_profile():
                 form.region_id.choices = [(r.id, r.name) for r in regions]
                 form.hospital_region_id.choices = [(r.id, r.name) for r in regions]
 
+            if not form.travel_type_id.choices:
+                form.travel_type_id.choices = [ (typ.id, typ.name) for typ in TravelType.query.all() ]            
+
             hospital_types = Hospital_Type.query.all()
             form.hospital_type.choices = [(h.id, h.name) for h in hospital_types]
             form.flight_code_id.choices = [ (code.id, code.name) for code in FlightCode.query.all() ]
@@ -535,6 +544,7 @@ def patient_profile():
                     patient.citizenship = request.form['citizenship']
 
                 patient.region_id = request.form['region_id']
+                patient.travel_type_id = request.form['travel_type_id']
 
                 if request.form['home_address']:
                     if patient.home_address != request.form['home_address']:
@@ -562,6 +572,8 @@ def patient_profile():
 
             form.region_id.default = patient.region_id
             form.flight_code_id.default = patient.flight_code_id
+
+            form.travel_type_id.default = patient.travel_type_id
 
             form.hospital_region_id.default = hospital_region_id
             form.hospital_type.default = hospital_type_id

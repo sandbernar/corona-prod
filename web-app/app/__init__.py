@@ -30,8 +30,11 @@ def register_blueprints(app):
 
 def configure_database(app):
     def add_hospitals():
-        from app.home.models import Hospital, Region, Hospital_Type, Hospital_Nomenklatura, PatientStatus, Foreign_Country, Infected_Country_Category, ContactedPersons
+        from app.home.models import ( Hospital, Region, Hospital_Type, Hospital_Nomenklatura, PatientStatus, 
+            Foreign_Country, Infected_Country_Category, ContactedPersons, TravelType)
+       
         # Clean the tables
+        TravelType.query.delete()
         Region.query.delete()
         Hospital_Type.query.delete()
         Hospital_Nomenklatura.query.delete()
@@ -45,6 +48,10 @@ def configure_database(app):
 
         df = pd.read_excel(C.hospitals_list_xlsx)
         df = df.drop_duplicates()
+
+        for typ in C.travel_types:
+            travel_type = TravelType(value=typ[0], name=typ[1])
+            db.session.add(travel_type)        
 
         for cat in C.country_category:
             country_cat = Infected_Country_Category(name=cat)

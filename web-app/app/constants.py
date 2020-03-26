@@ -4,8 +4,10 @@ all_hospital_types = "Все Типы"
 all_hospital_nomenklatura = "Все Номенклатуры"
 no_hospital = "Не Госпитализирован"
 
+# Flight Code
 all_flight_codes = "Все Рейсы"
 
+# Statuses
 no_status = ("no_status", "Нет Статуса")
 in_hospital = ("in_hospital", "Госпитализирован")
 is_home = ("is_home", "Домашний Карантин")
@@ -13,6 +15,14 @@ is_transit = ("is_transit", "Транзит")
 
 patient_statuses = [no_status, in_hospital, is_home, is_transit]
 
+# Travel Type
+railway_type = ("railway_type", "Поезд")
+auto_type = ("auto_type", "Транзит")
+flight_type = ("flight_type", "Самолет")
+
+travel_types = [railway_type, auto_type, flight_type]
+
+# Countries
 country_category = ["1a", "1b", "2", "3", "4"]
 
 code_country_list = [("AU", "Австралия"),
