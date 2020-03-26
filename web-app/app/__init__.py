@@ -5,7 +5,6 @@ Copyright (c) 2019 - present AppSeed.us
 """
 
 from flask import Flask, url_for
-from flask_babel import Babel, gettext
 from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
 from importlib import import_module
@@ -174,7 +173,6 @@ def apply_themes(app):
 
 def create_app(config, selenium=False):
     app = Flask(__name__, static_folder='base/static')
-    babel = Babel(app)
     app.config.from_object(config)
     if selenium:
         app.config['LOGIN_DISABLED'] = True
