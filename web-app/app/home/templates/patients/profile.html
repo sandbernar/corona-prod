@@ -40,15 +40,9 @@
 
 <!-- Page content -->
 <div class="container-fluid mt--7">
-    {% if updated %}
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <span class="alert-icon"><i class="ni ni-like-2"></i></span>
-        <span class="alert-text">Данные успешно обновлены</span>
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-        </button>
-    </div>
-    {% endif %}
+    {% with change=change, error_msg=error_msg %}
+    {% include "site_template/change_notification.html" %}
+    {% endwith %}
     <form method="POST"> 
         {{ form.hidden_tag() }}        
         <div class="row">
@@ -61,9 +55,11 @@
                 <div class="col">
                    <a href="/contacted_persons?id={{ patient.id }}" class="btn btn-primary mt-3" style="width:100%;">Контактные Лица</a>
                </div>
+            {% if patient.flight_code_id %}
                <div class="col">
                 <a href="/patients?flight_code={{ patient.flight_code }}&region=-1" class="btn btn-primary mt-3" style="width:100%;">Прибывшие Вместе</a>
                </div>
+            {% endif %}
            </div>
              <!-- <button class="btn btn-primary mt-2" id="submit" name="submit" type="submit" value="Обновить">Обновить</button> -->
 

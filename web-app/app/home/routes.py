@@ -31,9 +31,7 @@ import itertools
 from app.base.models import User
 from app.home.util import get_regions, get_regions_choices, get_flight_code
 from app.base.util import hash_pass
-
-key = '6670b10323b541bdbbf3e39bf07b7e46'
-geocoder = OpenCageGeocode(key)
+from sqlalchemy import func
 
 @blueprint.route('/index', methods=['GET'])
 @login_required
@@ -121,8 +119,8 @@ def add_patient():
     patient_form = PatientForm()
 
     if not patient_form.region_id.choices:
-        patient_form.region_id.choices = get_regions_choices(current_user)
-        patient_form.hospital_region_id.choices = get_regions_choices(current_user)
+        patient_form.region_id.choices = get_regions_choices(current_user, False)
+        patient_form.hospital_region_id.choices = get_regions_choices(current_user, False)
 
     if not patient_form.travel_type_id.choices:
         patient_form.travel_type_id.choices = [ (typ.id, typ.name) for typ in TravelType.query.all() ]
@@ -149,7 +147,11 @@ def add_patient():
         new_dict['is_found'] = int(new_dict['is_found'][0]) == 1
         new_dict['is_infected'] = int(new_dict['is_infected'][0]) == 1
 
-        new_dict['flight_code_id'] = get_flight_code(new_dict['flight_code'][0])
+        if new_dict['flight_code'][0]:
+            new_dict['flight_code_id'] = get_flight_code(new_dict['flight_code'][0])
+        else:
+            new_dict['flight_code_id'] = None
+
         del new_dict['flight_code']
 
         # else we can create the user
@@ -164,8 +166,7 @@ def add_patient():
         db.session.add(patient)
         db.session.commit()
 
-        return route_template( 'patients/add_person', form=patient_form, added=True, error_msg=None)
-        # return render_template( 'login/register.html', success='User created please <a href="/login">login</a>', form=patient_form)
+        return redirect("/patient_profile?id={}".format(patient.id))
     else:
         return route_template( 'patients/add_person', form=patient_form, hospital_types=hospital_types, added=False, error_msg=None)
 
@@ -426,6 +427,18 @@ def patients():
 
         form.not_in_hospital.default='checked'
 
+    if "full_name" in request.args:
+        q = q.filter(func.lower(Patient.full_name).contains(request.args["full_name"].lower()))
+        form.full_name.default = request.args["full_name"]
+
+    if "iin" in request.args:
+        q = q.filter(Patient.iin.contains(request.args["iin"]))
+        form.iin.default = request.args["iin"]
+
+    if "telephone" in request.args:
+        q = q.filter(Patient.telephone.contains(request.args["telephone"]))
+        form.telephone.default = request.args["telephone"]        
+
     page = 1
     per_page = 10
     if "page" in request.args:
@@ -450,7 +463,6 @@ def patients():
     flight_codes_list = [c.all_flight_codes] + [ code.name for code in FlightCode.query.all() ]
 
     form.process()
-    print(page)
     return route_template('patients/patients', patients=patients, form=form, page=page, max_page=max_page, total = total_len, constants=c, flight_codes_list=flight_codes_list)
 
 @blueprint.route('/delete_patient', methods=['POST'])
@@ -489,7 +501,7 @@ def patient_profile():
             return render_template('errors/error-404.html'), 404
         else:
             form = UpdateProfileForm(request.form)
-            updated = False
+            change = None
 
             regions = Region.query.all()
 
@@ -555,13 +567,14 @@ def patient_profile():
                         patient.address_lat = lat_lng[0]
                         patient.address_lng = lat_lng[1]
 
-                patient.flight_code_id = int(request.form['flight_code_id'])
+                if request.form.get('flight_code_id', None):
+                    patient.flight_code_id = int(request.form['flight_code_id'])
 
                 patient.visited_country = request.form['visited_country']
 
                 db.session.add(patient)
                 db.session.commit()
-                updated = True
+                change = "Профиль успешно обновлен"
 
             hospital_region_id = patient.region_id
             hospital_type_id = hospital_types[0].id
@@ -606,7 +619,7 @@ def patient_profile():
 
             form.process()
 
-            return route_template('patients/profile', patient=patient, age=age, hospital_name=hospital_name, form = form, updated = updated)
+            return route_template('patients/profile', patient=patient, age=age, hospital_name=hospital_name, form = form, change = change)
     else:    
         return render_template('errors/error-500.html'), 500
 

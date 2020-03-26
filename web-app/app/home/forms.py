@@ -48,7 +48,7 @@ class UpdateProfileForm(PatientForm):
     is_home = BooleanField(id="is_home")
     is_transit = BooleanField(id="is_transit")
     citizenship = TextField('Citizenship', id='citizenship', validators=[DataRequired()])
-    flight_code_id = SelectField('Flight Code', id='flight_code_id', validators=[DataRequired()])
+    flight_code_id = SelectField('Flight Code', id='flight_code_id')
 
     hospital_region_id = SelectField('Hospital Region', id='hospital_region' , validators=[DataRequired()])
     hospital_type = SelectField('Hospital Type', id='hospital_type' , validators=[DataRequired()])
@@ -82,6 +82,10 @@ class TableSearchForm(FlaskForm):
     is_infected = BooleanField(id="is_infected")
     not_in_hospital = BooleanField(id="not_in_hospital")
     flight_code = TextField(id='myInput')
+
+    full_name = TextField(id='full_name')
+    iin = TextField(id='iin')
+    telephone = TextField(id='telephone')
 
 
 class AddHospitalsDataForm(UploadDataForm):

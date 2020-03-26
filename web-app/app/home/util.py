@@ -8,9 +8,9 @@ def get_regions(current_user):
 
     return Region.query.all()
 
-def get_regions_choices(current_user):
+def get_regions_choices(current_user, with_all_regions = True):
     regions = get_regions(current_user)
-    choices = [ (-1, c.all_regions) ] if current_user.region_id == None else []
+    choices = [ (-1, c.all_regions) ] if current_user.region_id == None and with_all_regions else []
     choices += [(r.id, r.name) for r in regions]
 
     return choices
