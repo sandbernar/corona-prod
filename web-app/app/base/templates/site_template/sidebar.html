@@ -84,22 +84,22 @@
         <ul class="navbar-nav">
           <li class="nav-item">
             <a class="nav-link" href="/">
-              <i class="ni ni-tv-2 text-primary"></i> Главная Панель
+              <i class="ni ni-tv-2 text-primary"></i>{{ _('Главная Панель') }}
             </a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="/add_data">
-              <i class="ni ni-bullet-list-67 text-blue"></i> Добавить Данные
+              <i class="ni ni-bullet-list-67 text-blue"></i>{{ _('Добавить Данные') }}
             </a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="/add_person">
-              <i class="ni ni-fat-add text-blue"></i> Добавить Пациента
+              <i class="ni ni-fat-add text-blue"></i> {{ _('Добавить Пациента') }}
             </a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="/patients">
-              <i class="ni ni-bullet-list-67 text-blue"></i> Все Пациенты
+              <i class="ni ni-bullet-list-67 text-blue"></i> {{ _('Все Пациенты') }}
             </a>
           </li>       
         </ul>
@@ -107,7 +107,7 @@
         <ul class="navbar-nav">
           <li class="nav-item">
             <a class="nav-link" href="/hospitals">
-              <i class="ni ni-ambulance text-blue"></i> Все Больницы
+              <i class="ni ni-ambulance text-blue"></i> {{ _('Все Больницы') }}
             </a>
           </li>
 <!--           <li class="nav-item">
@@ -121,7 +121,7 @@
         <ul class="navbar-nav">
           <li class="nav-item">
             <a class="nav-link" href="/countries_categories">
-              <i class="fas fa-globe text-blue"></i> Категории Стран
+              <i class="fas fa-globe text-blue"></i> {{ _('Категории Стран') }}
             </a>
           </li>
         </ul>
@@ -130,7 +130,7 @@
         <ul class="navbar-nav">
           <li class="nav-item">
             <a class="nav-link" href="/users">
-              <i class="fas fa-users text-blue"></i> Управление Аккаунтами
+              <i class="fas fa-users text-blue"></i> {{ _('Управление Аккаунтами') }}
             </a>
           </li>
         </ul>
@@ -140,7 +140,7 @@
         <ul class="navbar-nav">
             <li class="nav-item">
               <a class="nav-link" href={{ url_for('base_blueprint.logout') }}>
-                <i class="ni ni-user-run text-red"></i> Выйти
+                <i class="ni ni-user-run text-red"></i> {{ _('Выйти') }}
               </a>
             </li>
         </ul>

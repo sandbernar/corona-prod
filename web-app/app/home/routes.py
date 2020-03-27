@@ -32,6 +32,7 @@ from app.base.models import User
 from app.home.util import get_regions, get_regions_choices, get_flight_code
 from app.base.util import hash_pass
 from sqlalchemy import func
+from flask_babel import _
 
 @blueprint.route('/index', methods=['GET'])
 @login_required
@@ -467,7 +468,7 @@ def patients():
     error_msg = None
 
     if "delete" in request.args:
-        change = "Пользователь успешно удален"
+        change = _("Пользователь успешно удален")
 
     form.process()
     return route_template('patients/patients', patients=patients, form=form, page=page, max_page=max_page, total = total_len, 
@@ -607,7 +608,7 @@ def patient_profile():
 
                 db.session.add(patient)
                 db.session.commit()
-                change = "Профиль успешно обновлен"
+                change = _("Профиль успешно обновлен")
 
             hospital_region_id = patient.region_id
             hospital_type_id = hospital_types[0].id
@@ -651,7 +652,7 @@ def patient_profile():
             age =  today.year - patient.dob.year - ((today.month, today.day) < (patient.dob.month, patient.dob.day))
 
             if "success" in request.args:
-                change = "Пользователь {} успешно добавлен".format(patient.full_name)
+                change = _("Пользователь %(full_name) успешно добавлен", full_name=patient.full_name)
 
             form.process()
 
@@ -751,16 +752,6 @@ def add_hospital():
 
         new_dict['is_found'] = int(new_dict['is_found'][0]) == 1
         new_dict['in_hospital'] = int(new_dict['in_hospital'][0]) == 1
-
-        patient = Patient.query.filter_by(iin=new_dict["iin"][0]).first()
-        if patient:
-            msg = 'Пациент с ИИН {} уже есть в базе'.format(new_dict["iin"][0])
-            return route_template( 'add_person', form=PatientForm(request.form), added=False, error_msg=msg)
-
-        patient = Patient.query.filter_by(pass_num=new_dict["pass_num"][0]).first()
-        if patient:
-            msg = 'Пациент с Номером Паспорта {} уже есть в базе'.format(new_dict["pass_num"][0])
-            return route_template( 'add_person', form=PatientForm(request.form), added=False, error_msg=msg)
 
         # # else we can create the user
         patient = Patient(**new_dict)
@@ -1039,14 +1030,14 @@ def add_user():
         
         user = User.query.filter_by(username=new_dict['username'][0]).first()
         if user:
-            return route_template( 'users/add_user', error_msg='Имя пользователя уже зарегистрировано', form=patient_form, change=None)
+            return route_template( 'users/add_user', error_msg=_('Имя пользователя уже зарегистрировано'), form=patient_form, change=None)
 
         user = User(**new_dict)
         
         db.session.add(user)
         db.session.commit()
 
-        return route_template( 'users/add_user', form=patient_form, change="Пользователь был успешно добавлен", error_msg=None)
+        return route_template( 'users/add_user', form=patient_form, change=_("Пользователь был успешно добавлен"), error_msg=None)
     else:
         return route_template( 'users/add_user', form=patient_form, change=None, error_msg=None)
 
@@ -1079,7 +1070,7 @@ def user_profile():
                         if not User.query.filter_by(username = new_username).count():
                             user.username = new_username
                         else:
-                            error_msg = "Пользователь с таким логином уже существует"
+                            error_msg = _("Пользователь с таким логином уже существует")
 
                 if not error_msg:
                     if request.form['password']:
@@ -1093,7 +1084,7 @@ def user_profile():
                     db.session.add(user)
                     db.session.commit()
 
-                    change = "Данные обновлены"
+                    change = _("Данные обновлены")
 
             form.username.default = user.username
 

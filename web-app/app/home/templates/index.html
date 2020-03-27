@@ -21,7 +21,7 @@
                       <div class="card-header bg-transparent">
             <div class="row align-items-center">
               <div class="col">
-                <h2 class="mb-0">Карта Пациентов</h2>
+                <h2 class="mb-0">{{ _('Карта Пациентов') }}</h2>
               </div>
             </div>
           </div>
@@ -34,8 +34,8 @@
           <div class="card-header bg-transparent">
             <div class="row align-items-center">
               <div class="col">
-                <h6 class="text-uppercase text-muted ls-1 mb-1">Статистика</h6>
-                <h2 class="mb-0">Не Найдены</h2>
+                <h6 class="text-uppercase text-muted ls-1 mb-1">{{ _('Статистика') }}</h6>
+                <h2 class="mb-0">{{ _('Не Найдены') }}</h2>
               </div>
             </div>
           </div>
@@ -57,10 +57,10 @@
           <div class="card-header border-0">
             <div class="row align-items-center">
               <div class="col">
-                <h3 class="mb-0">Новые пациенты</h3>
+                <h3 class="mb-0">{{ _('Новые пациенты') }}</h3>
               </div>
               <div class="col text-right">
-                <a href="/patients" class="btn btn-sm btn-primary">Все Пациенты</a>
+                <a href="/patients" class="btn btn-sm btn-primary">{{ _('Все Пациенты') }}</a>
               </div>
             </div>
           </div>
@@ -69,11 +69,11 @@
             <table class="table align-items-center table-flush">
               <thead class="thead-light">
                 <tr>
-                  <th scope="col">ФИО</th>
-                  <th scope="col">Найден</th>
-                  <th scope="col">Госпитализирован</th>
-                  <th scope="col">Место госпитализации</th>
-                  <th scope="col">Прилетел из</th>
+                  <th scope="col">{{ _('ФИО') }}</th>
+                  <th scope="col">{{ _('Найден') }}</th>
+                  <th scope="col">{{ _('Госпитализирован') }}</th>
+                  <th scope="col">{{ _('Место госпитализации') }}</th>
+                  <th scope="col">{{ _('Прилетел из') }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -86,16 +86,16 @@
                   </th>
                   <td>
                     {% if patient.is_found %}
-                      <font color="green">Да</font>
+                      <font color="green">{{ _('Да') }}</font>
                     {% else %}
-                      <font color="red">Нет</font>
+                      <font color="red">{{ _('Нет') }}</font>
                     {% endif %}
                   </td>
                   <td>
                     {% if patient.status.value == constants.in_hospital[0] %}
-                      <font color="green">Да</font>
+                      <font color="green">{{ _('Да') }}</font>
                     {% else %}
-                      <font color="red">Нет</font>
+                      <font color="red">{{ _('Нет') }}</font>
                     {% endif %}
                   </td>
                   <td>
@@ -117,8 +117,8 @@
           <div class="card-header bg-transparent">
             <div class="row align-items-center">
               <div class="col">
-                <h6 class="text-uppercase text-muted ls-1 mb-1">Статистика</h6>
-                <h2 class="mb-0">Не Госпитализированы</h2>
+                <h6 class="text-uppercase text-muted ls-1 mb-1">{{ _('Статистика') }}</h6>
+                <h2 class="mb-0">{{ _('Не Госпитализированы') }}</h2>
               </div>
             </div>
           </div>
@@ -187,17 +187,17 @@ function init() {
     geoObjects = []
     {% for p in coordinates_patients %}
 
-    is_found = "Нет"
+    is_found = {{ _("Нет") }}
     if ('{{ p.is_found }}' == 'True') {
-      is_found = "Да"
+      is_found = {{ _("Да") }}
     }
     geoObjects.push(new ymaps.Placemark(['{{ p.address_lat }}', '{{ p.address_lng }}' ], {
         balloonContentBody: 
         '<a href="/patient_profile?id={{p.id}}">{{ p.full_name }}</a><br>' +
-        '<strong>Регион</strong>: {{ p.region }}<br>' +
-        '<strong>Адрес</strong>: {{ p.home_address }}<br>' +
-        '<strong>Найден?</strong>:' + is_found + '<br>' +
-        '<strong>Статус</strong>: {{ p.status.name }}<br>',
+        '<strong>{{ _("Регион") }}</strong>: {{ p.region }}<br>' +
+        '<strong>{{ _("Адрес") }}</strong>: {{ p.home_address }}<br>' +
+        '<strong>{{ _("Найден?") }}</strong>:' + is_found + '<br>' +
+        '<strong>{{ _("Статус") }}</strong>: {{ p.status.name }}<br>',
         clusterCaption: '<strong>{{ p.full_name }}</strong>'
     }, {
         preset: 'islands#icon',
@@ -228,7 +228,7 @@ new Chart(document.getElementById("not-found"), {
         {% endfor %}
       ],
       datasets: [{
-        label: "Не найдены",
+        label: '{{ _("Не найдены") }}',
         backgroundColor: colors,
         data: [
         {% for region in regions %}
@@ -240,7 +240,7 @@ new Chart(document.getElementById("not-found"), {
     options: {
       title: {
         display: true,
-        text: 'Не найдены (по регионам)'
+        text: '{{ _("Не найдены (по регионам)") }}'
       }
     }
 });
@@ -254,7 +254,7 @@ new Chart(document.getElementById("not-in-hospital"), {
         {% endfor %}
       ],
       datasets: [{
-        label: "Не найдены",
+        label: '{{ _("Не найдены") }}',
         backgroundColor: colors,
         data: [
         {% for region in regions %}
@@ -266,7 +266,7 @@ new Chart(document.getElementById("not-in-hospital"), {
     options: {
       title: {
         display: true,
-        text: 'Не найдены (по регионам)'
+        text: '{{ _("Не найдены (по регионам)") }}'
       }
     }
 });

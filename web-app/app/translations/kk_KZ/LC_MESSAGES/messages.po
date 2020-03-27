@@ -1,0 +1,203 @@
+# Kazakh (Kazakhstan) translations for PROJECT.
+# Copyright (C) 2020 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2020.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2020-03-27 21:33+0600\n"
+"PO-Revision-Date: 2020-03-27 21:34+0600\n"
+"Last-Translator: \n"
+"Language: kk_KZ\n"
+"Language-Team: kk_KZ <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.4.0\n"
+"X-Generator: Poedit 2.0.6\n"
+
+#: app/base/templates/site_template/navigation.html:15
+msgid "Выбор Языка"
+msgstr "Тіл Таңдау"
+
+#: app/base/templates/site_template/navigation.html:43
+msgid "Здравствуйте!"
+msgstr "Сәлеметсіздер ме!"
+
+#: app/base/templates/site_template/navigation.html:47
+#: app/base/templates/site_template/sidebar.html:143
+msgid "Выйти"
+msgstr "Шығу"
+
+#: app/base/templates/site_template/sidebar.html:87
+msgid "Главная Панель"
+msgstr "Бас Меню"
+
+#: app/base/templates/site_template/sidebar.html:92
+msgid "Добавить Данные"
+msgstr "Деректерді Қосу"
+
+#: app/base/templates/site_template/sidebar.html:97
+msgid "Добавить Пациента"
+msgstr "Пациентті Қосу"
+
+#: app/base/templates/site_template/sidebar.html:102
+#: app/home/templates/index.html:63
+msgid "Все Пациенты"
+msgstr "Барлық Науқастар"
+
+#: app/base/templates/site_template/sidebar.html:110
+msgid "Все Больницы"
+msgstr "Барлық Ауруханалар"
+
+#: app/base/templates/site_template/sidebar.html:124
+msgid "Категории Стран"
+msgstr "Елдердің Категориялары"
+
+#: app/base/templates/site_template/sidebar.html:133
+msgid "Управление Аккаунтами"
+msgstr "Аккаунттер басқару"
+
+#: app/base/templates/site_template/top-stats.html:13
+msgid "Всего Прибывших"
+msgstr "Пациенттер Саны"
+
+#: app/base/templates/site_template/top-stats.html:30
+#: app/home/templates/patients/patients.html:52
+msgid "Найдено"
+msgstr "Тапты"
+
+#: app/base/templates/site_template/top-stats.html:47
+msgid "Госпитализировано"
+msgstr "Ауруханада"
+
+#: app/base/templates/site_template/top-stats.html:64
+msgid "Показываются Регионы"
+msgstr "Аймақтар"
+
+#: app/home/routes.py:471
+msgid "Пользователь успешно удален"
+msgstr ""
+
+#: app/home/routes.py:611
+msgid "Профиль успешно обновлен"
+msgstr ""
+
+#: app/home/routes.py:655
+msgid "Пользователь %(full_name) успешно добавлен"
+msgstr ""
+
+#: app/home/routes.py:1033
+msgid "Имя пользователя уже зарегистрировано"
+msgstr ""
+
+#: app/home/routes.py:1040
+msgid "Пользователь был успешно добавлен"
+msgstr ""
+
+#: app/home/routes.py:1073
+msgid "Пользователь с таким логином уже существует"
+msgstr ""
+
+#: app/home/routes.py:1087
+msgid "Данные обновлены"
+msgstr ""
+
+#: app/home/templates/index.html:24
+msgid "Карта Пациентов"
+msgstr "Пациенттердің Картасы"
+
+#: app/home/templates/index.html:37 app/home/templates/index.html:120
+msgid "Статистика"
+msgstr "Статистика"
+
+#: app/home/templates/index.html:38
+msgid "Не Найдены"
+msgstr "Табылмады"
+
+#: app/home/templates/index.html:60
+msgid "Новые пациенты"
+msgstr "Жаңа Пациенттер"
+
+#: app/home/templates/index.html:72
+#: app/home/templates/patients/patients.html:29
+msgid "ФИО"
+msgstr "Аты-жөні"
+
+#: app/home/templates/index.html:73
+msgid "Найден"
+msgstr "Тапты"
+
+#: app/home/templates/index.html:74
+msgid "Госпитализирован"
+msgstr "Ауруханада"
+
+#: app/home/templates/index.html:75
+msgid "Место госпитализации"
+msgstr "Аурухана"
+
+#: app/home/templates/index.html:76
+msgid "Прилетел из"
+msgstr "Бастап Ұшты"
+
+#: app/home/templates/index.html:89 app/home/templates/index.html:96
+#: app/home/templates/index.html:192
+msgid "Да"
+msgstr "Иә"
+
+#: app/home/templates/index.html:91 app/home/templates/index.html:98
+#: app/home/templates/index.html:190
+msgid "Нет"
+msgstr "Жоқ"
+
+#: app/home/templates/index.html:121
+msgid "Не Госпитализированы"
+msgstr "Ауруханада жоқ"
+
+#: app/home/templates/index.html:197
+msgid "Регион"
+msgstr "Аймақ"
+
+#: app/home/templates/index.html:198
+msgid "Адрес"
+msgstr "Мекенжай"
+
+#: app/home/templates/index.html:199
+msgid "Найден?"
+msgstr "Таптың ба?"
+
+#: app/home/templates/index.html:200
+msgid "Статус"
+msgstr "Мәртебе"
+
+#: app/home/templates/index.html:231 app/home/templates/index.html:257
+msgid "Не найдены"
+msgstr "Табылмады"
+
+#: app/home/templates/index.html:243 app/home/templates/index.html:269
+msgid "Не найдены (по регионам)"
+msgstr "Табылмады (аймақтар бойынша)"
+
+#: app/home/templates/patients/patients.html:26
+#: app/home/templates/patients/patients.html:38
+msgid "Поиск"
+msgstr "Іздеу"
+
+#: app/home/templates/patients/patients.html:32
+msgid "ИИН"
+msgstr "ЖСН"
+
+#: app/home/templates/patients/patients.html:35
+msgid "Телефон"
+msgstr "Телефон"
+
+#: app/home/templates/patients/patients.html:52
+msgid "показано"
+msgstr ""
+
+#: app/home/templates/patients/patients.html:52
+msgid "пациентов"
+msgstr "пациенттер"

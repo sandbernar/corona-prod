@@ -12,15 +12,18 @@
               <div class="media align-items-center">
                  <i class="fas fa-globe text-white"></i>
                 <div class="media-body ml-2 d-none d-lg-block">
-                  <span class="mb-0 text-sm  font-weight-bold">Выбор Языка</span>
+                  <span class="mb-0 text-sm  font-weight-bold">{{ _('Выбор Языка') }}</span>
                 </div>
               </div>
             </a>
             <div class="dropdown-menu dropdown-menu-arrow dropdown-menu-right">
-
-              <a href="/logout" class="dropdown-item">
+              <a href="#" onclick="setSearchParam('lang', 'ru_RU')" class="dropdown-item">
                 <b class="text-black">RU</b>
                 <span>Русский</span>
+              </a>
+              <a href="#" onclick="setSearchParam('lang', 'kk_KZ')" class="dropdown-item">
+                <b class="text-black">KZ</b>
+                <span>Қазақ Тілі</span>
               </a>
             </div>
           </li>          
@@ -37,11 +40,11 @@
             </a>
             <div class="dropdown-menu dropdown-menu-arrow dropdown-menu-right">
               <div class=" dropdown-header noti-title">
-                <h6 class="text-overflow m-0">Здравствуйте!</h6>
+                <h6 class="text-overflow m-0">{{ _('Здравствуйте!') }}</h6>
               </div>
               <a href="/logout" class="dropdown-item">
                 <i class="ni ni-user-run text-red"></i>
-                <span>Выйти</span>
+                <span>{{ _('Выйти') }}</span>
               </a>
             </div>
           </li>

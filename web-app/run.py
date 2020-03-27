@@ -8,6 +8,8 @@ from flask_migrate import Migrate
 from os import environ
 from sys import exit
 from flask_uploads import UploadSet, configure_uploads
+from flask_babelex import Babel
+from flask import request, session
 
 from config import config_dict
 from app import create_app, db
@@ -22,6 +24,13 @@ except KeyError:
 
 app = create_app(config_mode) 
 Migrate(app, db)
+babel = Babel(app)
+
+@babel.localeselector
+def get_locale():
+    if request.args.get('lang'):
+        session['lang'] = request.args.get('lang')
+    return session.get('lang', 'en')
 
 docs = UploadSet('documents', ['xls', 'xlsx', 'csv'])
 configure_uploads(app, docs)

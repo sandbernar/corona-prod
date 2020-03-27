@@ -12,6 +12,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 class Config(object):
 
     basedir    = os.path.abspath(os.path.dirname(__file__))
+    LANGUAGES = ['ru_RU', 'kk_KZ']
 
     SECRET_KEY = 'S3cretKey_7655'
 
