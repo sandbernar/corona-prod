@@ -551,28 +551,28 @@ def patient_profile():
                         patient.hospital_id = patient_hospital.id
 
                 # Update parameters
-                if request.form['full_name']:
+                if "full_name" in request.form:
                     patient.full_name = request.form['full_name']
 
-                if request.form['iin']:
+                if "iin" in request.form:
                     patient.iin = str(request.form['iin'])
 
-                if request.form['dob']:
+                if "dob" in request.form:
                     patient.dob = request.form['dob']
 
-                if request.form['citizenship']:
+                if "citizenship" in request.form:
                     patient.citizenship = request.form['citizenship']
 
-                if request.form['pass_num']:
+                if "pass_num" in request.form:
                     patient.pass_num = request.form['pass_num']
 
-                if request.form['arrival_date']:
+                if "arrival_date" in request.form:
                     patient.arrival_date = request.form['arrival_date']
 
-                if request.form['telephone']:
+                if "telephone" in request.form:
                     patient.telephone = request.form['telephone']
 
-                if request.form['job']:
+                if "job" in request.form:
                     patient.job = request.form['job']                    
 
                 patient.region_id = request.form['region_id']
@@ -584,7 +584,7 @@ def patient_profile():
 
                     patient.travel_type_id = travel_type_id
 
-                if request.form['home_address']:
+                if "home_address" in request.form:
                     if patient.home_address != request.form['home_address']:
                         patient.home_address = request.form['home_address']
 
