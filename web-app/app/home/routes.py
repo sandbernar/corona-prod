@@ -448,14 +448,14 @@ def patients():
 
     for p in q.offset((page-1)*per_page).limit(per_page).all():
         contacted = ContactedPersons.query.filter_by(patient_id=p.id).all()
-        if len(contacted):
-            p.contacted_count = len(contacted)
-            p.contacted_found_count = 0
 
-            for contact in contacted:
-                p = Patient.query.filter_by(id=contact.person_id).first()
-                if p and p.is_found:
-                    p.contacted_found_count += 1
+        p.contacted_count = len(contacted)
+        p.contacted_found_count = 0
+
+        for contact in contacted:
+            contacted_person = Patient.query.filter_by(id=contact.person_id).first()
+            if contacted_person and contacted_person.is_found:
+                p.contacted_found_count += 1
 
         patients.append(p)
 
