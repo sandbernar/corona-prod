@@ -578,7 +578,11 @@ def patient_profile():
                 patient.region_id = request.form['region_id']
                 
                 if "travel_type_id" in request.form:
-                    patient.travel_type_id = request.form['travel_type_id']
+                    travel_type_id = request.form['travel_type_id']
+                    if travel_type_id == "None":
+                        travel_type_id = None                    
+
+                    patient.travel_type_id = travel_type_id
 
                 if request.form['home_address']:
                     if patient.home_address != request.form['home_address']:
@@ -590,7 +594,13 @@ def patient_profile():
                         patient.address_lng = lat_lng[1]
 
                 if "flight_code_id" in request.form:
-                    patient.flight_code_id = int(request.form['flight_code_id'])
+                    flight_code = request.form['flight_code_id']
+                    if flight_code != "None":
+                        flight_code = int(flight_code)
+                    else:
+                        flight_code = None
+
+                    patient.flight_code_id = flight_code
 
                 if "visited_country" in request.form:
                     patient.visited_country = request.form['visited_country']
