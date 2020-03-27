@@ -563,6 +563,18 @@ def patient_profile():
                 if request.form['citizenship']:
                     patient.citizenship = request.form['citizenship']
 
+                if request.form['pass_num']:
+                    patient.pass_num = request.form['pass_num']
+
+                if request.form['arrival_date']:
+                    patient.arrival_date = request.form['arrival_date']
+
+                if request.form['telephone']:
+                    patient.telephone = request.form['telephone']
+
+                if request.form['job']:
+                    patient.job = request.form['job']                    
+
                 patient.region_id = request.form['region_id']
                 
                 if "travel_type_id" in request.form:
