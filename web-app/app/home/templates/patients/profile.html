@@ -219,6 +219,7 @@
                     </div>
                 </div>
             </div>
+            {% if not patient.is_contacted_person %}
             <hr class="my-4" />
             <!-- Description -->
             <h6 class="heading-small text-muted mb-4">Информация о Въезде</h6>
@@ -252,6 +253,7 @@
                     </div>
                 </div>
             </div>
+            {% endif %}
         </div>
     </div>
 </div>

@@ -22,6 +22,8 @@ flight_type = ("flight_type", "Самолет")
 
 travel_types = [railway_type, auto_type, flight_type]
 
+unknown = (None, "Неизвестно")
+
 # Countries
 country_category = ["1a", "1b", "2", "3", "4"]
 

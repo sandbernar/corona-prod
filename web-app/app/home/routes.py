@@ -448,13 +448,14 @@ def patients():
 
     for p in q.offset((page-1)*per_page).limit(per_page).all():
         contacted = ContactedPersons.query.filter_by(patient_id=p.id).all()
-        p.contacted_count = len(contacted)
-        p.contacted_found_count = 0
+        if len(contacted):
+            p.contacted_count = len(contacted)
+            p.contacted_found_count = 0
 
-        for contact in contacted:
-            p = Patient.query.filter_by(id=contact.person_id).first()
-            if p and p.is_found:
-                p.contacted_found_count += 1
+            for contact in contacted:
+                p = Patient.query.filter_by(id=contact.person_id).first()
+                if p and p.is_found:
+                    p.contacted_found_count += 1
 
         patients.append(p)
 
@@ -517,11 +518,11 @@ def patient_profile():
                 form.hospital_region_id.choices = [(r.id, r.name) for r in regions]
 
             if not form.travel_type_id.choices:
-                form.travel_type_id.choices = [ (typ.id, typ.name) for typ in TravelType.query.all() ]            
+                form.travel_type_id.choices = [c.unknown] + [ (typ.id, typ.name) for typ in TravelType.query.all() ]            
 
             hospital_types = Hospital_Type.query.all()
             form.hospital_type.choices = [(h.id, h.name) for h in hospital_types]
-            form.flight_code_id.choices = [ (code.id, code.name) for code in FlightCode.query.all() ]
+            form.flight_code_id.choices = [c.unknown] + [ (code.id, code.name) for code in FlightCode.query.all() ]
 
             if len(request.form):
                 if "hospital" in request.form:
@@ -563,7 +564,9 @@ def patient_profile():
                     patient.citizenship = request.form['citizenship']
 
                 patient.region_id = request.form['region_id']
-                patient.travel_type_id = request.form['travel_type_id']
+                
+                if "travel_type_id" in request.form:
+                    patient.travel_type_id = request.form['travel_type_id']
 
                 if request.form['home_address']:
                     if patient.home_address != request.form['home_address']:
@@ -574,10 +577,11 @@ def patient_profile():
                         patient.address_lat = lat_lng[0]
                         patient.address_lng = lat_lng[1]
 
-                if request.form.get('flight_code_id', None):
+                if "flight_code_id" in request.form:
                     patient.flight_code_id = int(request.form['flight_code_id'])
 
-                patient.visited_country = request.form['visited_country']
+                if "visited_country" in request.form:
+                    patient.visited_country = request.form['visited_country']
 
                 db.session.add(patient)
                 db.session.commit()

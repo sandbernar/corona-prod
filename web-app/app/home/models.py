@@ -28,7 +28,7 @@ class Patient(db.Model):
     
     is_contacted_person = Column(Boolean, unique=False)
 
-    travel_type_id = Column(Integer, ForeignKey('TravelType.id'))
+    travel_type_id = Column(Integer, ForeignKey('TravelType.id'), nullable=True, default=None)
     travel_type = db.relationship('TravelType')    
 
     flight_code_id = Column(Integer, ForeignKey('FlightCode.id'), nullable=True, default=None)
