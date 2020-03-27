@@ -32,7 +32,7 @@ from app.base.models import User
 from app.home.util import get_regions, get_regions_choices, get_flight_code
 from app.base.util import hash_pass
 from sqlalchemy import func
-from flask_babel import _
+from flask_babelex import _
 
 @blueprint.route('/index', methods=['GET'])
 @login_required
