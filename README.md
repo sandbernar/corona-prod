@@ -42,6 +42,7 @@
 * ``pybabel extract -F babel.cfg -k _l -o messages.pot .``
 * ``pybabel init -i messages.pot -d app/translations -l '*your locale code (e.g. kk_KZ)*'``
 * Используйте Poedit для перевода .po файла
+* ``pybabel update -i messages.pot -d app/translations`` для обновления файла локализации
 
 
   ## Обо Мне
