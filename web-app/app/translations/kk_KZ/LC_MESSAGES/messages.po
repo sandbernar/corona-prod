@@ -80,31 +80,31 @@ msgstr "Аймақтар"
 
 #: app/home/routes.py:471
 msgid "Пользователь успешно удален"
-msgstr ""
+msgstr "Пайдаланушы сәтті жойылған"
 
 #: app/home/routes.py:611
 msgid "Профиль успешно обновлен"
-msgstr ""
+msgstr "Профилі сәтті жаңартылды"
 
 #: app/home/routes.py:655
 msgid "Пользователь %(full_name) успешно добавлен"
-msgstr ""
+msgstr "Пайдаланушы %(full_name) сәтті қосылды"
 
 #: app/home/routes.py:1033
 msgid "Имя пользователя уже зарегистрировано"
-msgstr ""
+msgstr "Пайдаланушы аты тіркелген"
 
 #: app/home/routes.py:1040
 msgid "Пользователь был успешно добавлен"
-msgstr ""
+msgstr "Пайдаланушы сәтті қосылды"
 
 #: app/home/routes.py:1073
 msgid "Пользователь с таким логином уже существует"
-msgstr ""
+msgstr "Мұндай логині бар пайдаланушы бар"
 
 #: app/home/routes.py:1087
 msgid "Данные обновлены"
-msgstr ""
+msgstr "Деректер жаңартылды"
 
 #: app/home/templates/index.html:24
 msgid "Карта Пациентов"
@@ -196,7 +196,7 @@ msgstr "Телефон"
 
 #: app/home/templates/patients/patients.html:52
 msgid "показано"
-msgstr ""
+msgstr "көрсетілген"
 
 #: app/home/templates/patients/patients.html:52
 msgid "пациентов"
