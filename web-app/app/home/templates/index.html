@@ -187,9 +187,9 @@ function init() {
     geoObjects = []
     {% for p in coordinates_patients %}
 
-    is_found = {{ _("Нет") }}
+    is_found = '{{ _("Нет") }}'
     if ('{{ p.is_found }}' == 'True') {
-      is_found = {{ _("Да") }}
+      is_found = '{{ _("Да") }}'
     }
     geoObjects.push(new ymaps.Placemark(['{{ p.address_lat }}', '{{ p.address_lng }}' ], {
         balloonContentBody: 

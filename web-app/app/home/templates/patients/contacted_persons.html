@@ -21,7 +21,7 @@
         <div class="card-header bg-transparent">
           <div class="row align-items-center">
             <div class="col">
-              <h2 class="mb-0">Карта Контактных Лиц</h2>
+              <h2 class="mb-0">{{ _('Карта Контактных Лиц') }}</h2>
             </div>
           </div>
         </div>
@@ -31,13 +31,13 @@
         <div class="card-header border-0">
           <div class="row">
             <div class="col">
-              <h3 class="mb-0">Найдено {{total}}, показано {{ patients|length }} контактов</h3>
+              <h3 class="mb-0">{{ _('Найдено') }} {{total}}, {{ _('показано') }} {{ patients|length }} {{ _('контактов') }}</h3>
             </div>
 <!--             <div class="col-md-auto">
               <a href="/choose_contacted_person?id={{ patient.id }}" class="btn btn-sm btn-primary" style="width:100%;">Выбрать Контактное Лицо</a>
             </div>   -->          
             <div class="col-md-auto">
-              <a href="/add_contacted_person?id={{ patient.id }}" class="btn btn-sm btn-primary" style="width:100%;">Добавить Контактное Лицо</a>
+              <a href="/add_contacted_person?id={{ patient.id }}" class="btn btn-sm btn-primary" style="width:100%;">{{ _("Добавить Контактное Лицо") }}</a>
             </div>
           </div>
         </div>
@@ -45,12 +45,12 @@
           <table class="table align-items-center table-flush">
             <thead class="thead-light">
               <tr>
-                <th scope="col">ФИО</th>
-                <th scope="col">Телефон</th>
-                <th scope="col">Дата Въезда</th>
-                <th scope="col">Регион</th>
-                <th scope="col">Найден</th>
-                <th scope="col">Госпитализирован</th>
+                <th scope="col">{{ _("ФИО") }}</th>
+                <th scope="col">{{ _("Телефон") }}</th>
+                <th scope="col">{{ _("Дата Въезда") }}</th>
+                <th scope="col">{{ _("Регион") }}</th>
+                <th scope="col">{{ _("Найден") }}</th>
+                <th scope="col">{{ _("Госпитализирован") }}</th>
               </tr>
             </thead>
             <tbody>
@@ -74,15 +74,15 @@
                 </td>
                 <td>
                   {% if patient.is_found %}
-                  <font color="green">Да</font>
+                  <font color="green">{{ _("Да") }}</font>
                   {% else %}
-                  <font color="red">Нет</font>
+                  <font color="red">{{ _("Нет") }}</font>
                 {% endif %}                        </td>
                 <td>
                   {% if patient.status.value == constants.in_hospital[0] %}
-                  <font color="green">Да</font>
+                  <font color="green">{{ _("Да") }}</font>
                   {% else %}
-                  <font color="red">Нет</font>
+                  <font color="red">{{ _("Нет") }}</font>
                 {% endif %}                        </td>
               </tr>
               {% endfor %}

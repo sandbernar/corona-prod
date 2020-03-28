@@ -18,7 +18,7 @@
   {% if added %}
   <div class="alert alert-success alert-dismissible fade show" role="alert">
     <span class="alert-icon"><i class="ni ni-like-2"></i></span>
-    <span class="alert-text">Пациент добавлен в базу данных</span>
+    <span class="alert-text">{{ _("Пациент добавлен в базу данных") }}</span>
     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
       <span aria-hidden="true">&times;</span>
     </button>
@@ -39,7 +39,7 @@
     <div class="col">
       <div class="card shadow">
         <div class="card-header bg-transparent">
-          <h3 class="mb-0">Добавить Пациента Вручную</h3>
+          <h3 class="mb-0">{{ _("Добавить Пациента Вручную") }}</h3>
         </div>
         <div class="card-body">
           <div class="row">
@@ -51,28 +51,28 @@
                     <div class="card shadow">
                       <div class="card-header bg-transparent">
                         <div class="form-group">
-                          <label for="name-input" class="form-control-label">ФИО</label>
-                          {{ form.full_name(placeholder="Иванов Иван",class="form-control", type="text") }}
+                          <label for="name-input" class="form-control-label">{{ _("ФИО") }}</label>
+                          {{ form.full_name(placeholder=_("Иванов Иван"),class="form-control", type="text") }}
                         </div>
                         <div class="form-group">
-                          <label for="iin-input" class="form-control-label">ИИН</label>
-                          {{ form.iin(placeholder="12 Цифр",class="form-control", type="text", onkeyup="this.value=this.value.replace(/[^0-9]/g,'');") }}
+                          <label for="iin-input" class="form-control-label">{{ _("ИИН") }}</label>
+                          {{ form.iin(placeholder=_("12 Цифр"),class="form-control", type="text", onkeyup="this.value=this.value.replace(/[^0-9]/g,'');") }}
                         </div>
                         <div class="form-group">
-                          <label for="dob-input" class="form-control-label">Дата Рождения</label>
+                          <label for="dob-input" class="form-control-label">{{ _("Дата Рождения") }}</label>
                           {{ form.dob(class="form-control", type="date") }}
                         </div>
                         <div class="form-group">
-                          <label for="citizenship-input" class="form-control-label">Гражданство</label>
+                          <label for="citizenship-input" class="form-control-label">{{ _("Гражданство") }}</label>
                           {{ form.citizenship(class="form-control") }}
                         </div>
                         <div class="form-group">
-                          <label for="npass-input" class="form-control-label">Номер Паспорта</label>
-                          {{ form.pass_num(placeholder="N12345678", class="form-control", type="text") }}
+                          <label for="npass-input" class="form-control-label">{{ _("Номер Паспорта") }}</label>
+                          {{ form.pass_num(placeholder=_("N12345678"), class="form-control", type="text") }}
                         </div>
                         <div class="form-group">
-                          <label for="phone-input" class="form-control-label">Телефон</label>
-                          {{ form.telephone(placeholder="77017123456", class="form-control", type="tel") }}
+                          <label for="phone-input" class="form-control-label">{{ _("Телефон") }}</label>
+                          {{ form.telephone(placeholder=_("77017123456"), class="form-control", type="tel") }}
                         </div>
                       </div>
                     </div>
@@ -81,32 +81,32 @@
                     <div class="card shadow">
                       <div class="card-header bg-transparent">
                         <div class="form-group">
-                          <label for="arrival-date-input" class="form-control-label">Дата Въезда</label>
+                          <label for="arrival-date-input" class="form-control-label">{{ _("Дата Въезда") }}</label>
                           {{ form.arrival_date(class="form-control", type="date") }}
                         </div>
                         <div class="form-group">
-                          <label for="flight-no-input" class="form-control-label">Тип Въезда в Страну</label>
+                          <label for="flight-no-input" class="form-control-label">{{ _("Тип Въезда в Страну") }}</label>
                           {{ form.travel_type_id(class="form-control", id="travel_type_id") }}
                         </div>
                         <div class="form-group">
-                          <label for="flight-no-input" class="form-control-label">Номер Рейса</label>
+                          <label for="flight-no-input" class="form-control-label">{{ _("Номер Рейса") }}</label>
                           {{ form.flight_code(class="form-control", type="text", placeholder="SU1951") }}
                         </div>
                         <div class="form-group">
-                          <label for="14days-place-input" class="form-control-label">Место и сроки пребывания в последние 14 дней</label>
-                          {{ form.visited_country(class="form-control", type="text", placeholder="Италия") }}
+                          <label for="14days-place-input" class="form-control-label">{{ _("Место и сроки пребывания в последние 14 дней") }}</label>
+                          {{ form.visited_country(class="form-control", type="text", placeholder=_("Италия") ) }}
                         </div>
                         <div class="form-group">
-                          <label for="region-input" class="form-control-label">Регион</label>
+                          <label for="region-input" class="form-control-label">{{ _("Регион") }}</label>
                                 {{ form.region_id(class="form-control", id="region_id") }}                          
                         </div>
                         <div class="form-group">
-                          <label for="home-input" class="form-control-label">Место жительства / возможное место проживания</label>
-                          {{ form.home_address(class="form-control", type="text", placeholder="Алматы") }}
+                          <label for="home-input" class="form-control-label">{{ _("Место жительства / возможное место проживания") }}</label>
+                          {{ form.home_address(class="form-control", type="text", placeholder=_("Алматы") ) }}
                         </div>
                         <div class="form-group">
-                          <label for="job-input" class="form-control-label">Место Работы</label>
-                          {{ form.job(class="form-control", type="text", placeholder="Алматы") }}
+                          <label for="job-input" class="form-control-label">{{ _("Место Работы") }}</label>
+                          {{ form.job(class="form-control", type="text", placeholder=_("Алматы") ) }}
                         </div>
                       </div>
                     </div>
@@ -120,7 +120,7 @@
                           <div class="row">
                             <div class="col">
                               <div class="form-group">
-                                <label class="form-control-label">Найден?</label><br>
+                                <label class="form-control-label">{{ _("Найден?") }}</label><br>
                                 {% for subfield in form.is_found %}
                                 <div class="custom-control custom-radio custom-control-inline">
                                   {{ subfield(type="radio", id=subfield.id, class="custom-control-input", onchange="disable_status(value)" ) }}
@@ -131,7 +131,7 @@
                             </div>
                             <div class="col">
                               <div class="form-group">
-                                <label class="form-control-label">Инфицирован?</label><br>
+                                <label class="form-control-label">{{ _("Инфицирован?") }}</label><br>
                                 {% for subfield in form.is_infected %}
                                 <div class="custom-control custom-radio custom-control-inline">
                                   {{ subfield(type="radio", id=subfield.id, class="custom-control-input") }}
@@ -142,7 +142,7 @@
                             </div>                            
                             <div class="col">
                               <div class="form-group">
-                                <label class="form-control-label">Статус Нахождения</label><br>
+                                <label class="form-control-label">{{ _("Статус Нахождения") }}</label><br>
                                 {{ form.patient_status(class="form-control", id="patient_status", onchange="disable_hospital_choice($(this).val() === 'in_hospital')") }}
                               </div>
                             </div>                            
@@ -158,13 +158,13 @@
                           <div class="row">
                             <div class="col">
                               <div class="form-group">
-                                <label for="job-input" class="form-control-label">Регион Госпитализации</label>
+                                <label for="job-input" class="form-control-label">{{ _("Регион Госпитализации") }}</label>
                                 {{ form.hospital_region_id(class="form-control", id="hospital_region_id") }}
                               </div>
                             </div>
                             <div class="col">
                               <div class="form-group">
-                                <label for="job-input" class="form-control-label">Тип Больницы</label>
+                                <label for="job-input" class="form-control-label">{{ _("Тип Больницы") }}</label>
                                 <select class="form-control" id="hospital_type" name="hospital_region_id" required="">
                                   {% for subfield in hospital_types %}
                                   <option value={{ subfield[0] }}>{{ subfield[1] }}</option>
@@ -174,7 +174,7 @@
                             </div>                            
                             <div class="col">
                               <div class="form-group">
-                                <label for="job-input" class="form-control-label">Место Госпитализации</label>
+                                <label for="job-input" class="form-control-label">{{ _("Место Госпитализации") }}</label>
                                 {{ form.hospital_id(class="form-control", id="hospital_select") }}
                               </div>
                             </div>
@@ -185,7 +185,7 @@
                   </div>                  
                   <div>
                     <button type="submit" name="create" class="btn btn-primary" type="button" style="height:100%">
-                      Отправить
+                      {{ _("Отправить") }}
                     </button>
                   </div>
                 </div>

@@ -55,7 +55,7 @@
                 <div class="row">
                   <div class="col">
                     <div class="autocomplete" style="width:300px;">
-                      {{ form.flight_code(class="form-control", placeholder="Номер Рейса", id="myInput", autocomplete="off", type="search") }}
+                      {{ form.flight_code(class="form-control", placeholder=_('Номер Рейса'), id="myInput", autocomplete="off", type="search") }}
                     </div>
                   </div>                
                   <div class="col">
@@ -64,16 +64,16 @@
                   <div class="col-mt">
                     <div class="custom-control custom-checkbox">
                       {{ form.not_found(class="custom-control-input", onchange="this.form.submit()") }}
-                      <label class="custom-control-label" for="not_found">Не найден</label>
+                      <label class="custom-control-label" for="not_found">{{ _("Не найден") }}</label>
                     </div>
                     <div class="custom-control custom-checkbox">
                       {{ form.not_in_hospital(class="custom-control-input", onchange="this.form.submit()") }}                    
-                      <label class="custom-control-label" for="not_in_hospital">Не госпитализирован</label>
+                      <label class="custom-control-label" for="not_in_hospital">{{ _("Не госпитализирован") }}</label>
                     </div>               
                   </div>
                   <div class="custom-control custom-checkbox">
                     {{ form.is_infected(class="custom-control-input", onchange="this.form.submit()") }}                    
-                    <label class="custom-control-label" for="is_infected">Инфицирован</label>
+                    <label class="custom-control-label" for="is_infected">{{ _("Инфицирован") }}</label>
                   </div>   
                 </div>
               </div>
@@ -84,13 +84,13 @@
           <table class="table align-items-center table-flush">
             <thead class="thead-light">
               <tr>
-                <th scope="col">ФИО</th>
-                <th scope="col">Телефон</th>
-                <th scope="col">Регион</th>
-                <th scope="col">Найден</th>
-                <th scope="col">Госпитализирован</th>
-                <th scope="col">Инфицирован</th>
-                <th scope="col">Контактов (найдено/всего)</th>
+                <th scope="col">{{ _("ФИО") }}</th>
+                <th scope="col">{{ _("Телефон") }}</th>
+                <th scope="col">{{ _("Регион") }}</th>
+                <th scope="col">{{ _("Найден") }}</th>
+                <th scope="col">{{ _("Госпитализирован") }}</th>
+                <th scope="col">{{ _("Инфицирован") }}</th>
+                <th scope="col">{{ _("Контактов (найдено/всего)") }}</th>
               </tr>
             </thead>
             <tbody>
@@ -111,23 +111,23 @@
                 </td>
                 <td>
                   {% if patient.is_found %}
-                  <font color="green">Да</font>
+                  <font color="green">{{ _("Да") }}</font>
                   {% else %}
-                  <font color="red">Нет</font>
+                  <font color="red">{{ _("Нет") }}</font>
                   {% endif %}                        
                 </td>
                 <td>
                   {% if patient.status.value == constants.in_hospital[0] %}
-                  <font color="green">Да</font>
+                  <font color="green">{{ _("Да") }}</font>
                   {% else %}
-                  <font color="red">Нет</font>
+                  <font color="red">{{ _("Нет") }}</font>
                   {% endif %}                        
                 </td>
                 <td>
                   {% if patient.is_infected %}
-                  <font color="red">Да</font>
+                  <font color="red">{{ _("Да") }}</font>
                   {% else %}
-                  <font color="green">Нет</font>
+                  <font color="green">{{ _("Нет") }}</font>
                   {% endif %}                        
                 </td>              
                 <td>

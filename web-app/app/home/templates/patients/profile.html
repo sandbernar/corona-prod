@@ -18,21 +18,21 @@
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">Удалить пациента?</h5>
+        <h5 class="modal-title" id="exampleModalLabel">{{ _("Удалить пациента?") }}</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true"></span>
       </button>
   </div>
   <div class="modal-body">
-    Вы уверены, что хотите удалить пациента <bold> {{patient.full_name}} </bold>?
+    {{ _("Вы уверены, что хотите удалить пациента") }} <bold> {{patient.full_name}} </bold>?
 </div>
 <div class="modal-footer">
     <form action="/delete_patient" method="POST">
         {{ form.hidden_tag() }}
         <input type="hidden" name="delete" value='{{ patient.id }}'>
-        <button type="submit" class="btn btn-primary">Да</button>
+        <button type="submit" class="btn btn-primary">{{ _("Да") }}</button>
     </form>
-    <button type="button" class="btn btn-secondary" data-dismiss="modal">Нет</button>
+    <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ _("Нет") }}</button>
 </div>
 </div>
 </div>
@@ -53,11 +53,11 @@
              </div>
              <div class="row">
                 <div class="col">
-                   <a href="/contacted_persons?id={{ patient.id }}" class="btn btn-primary mt-3" style="width:100%;">Контактные Лица</a>
+                   <a href="/contacted_persons?id={{ patient.id }}" class="btn btn-primary mt-3" style="width:100%;">{{ _("Контактные Лица") }}</a>
                </div>
             {% if patient.flight_code_id %}
                <div class="col">
-                <a href="/patients?flight_code={{ patient.flight_code }}&region=-1" class="btn btn-primary mt-3" style="width:100%;">Прибывшие Вместе</a>
+                <a href="/patients?flight_code={{ patient.flight_code }}&region=-1" class="btn btn-primary mt-3" style="width:100%;">{{ _("Прибывшие Вместе") }}</a>
                </div>
             {% endif %}
            </div>
@@ -75,23 +75,23 @@
                     <div class="card-body pt-0 pt-md-4">
                         <div class="text-center">
                             <div class="form-group">
-                                <h3>Имя</h3>
+                                <h3>{{ _("Имя") }}</h3>
                                 {{ form.full_name(placeholder="Иванов Иван",class="form-control form-control-alternative", type="text", value=patient.full_name, style="font-weight: bold;") }}
                             </div>                        
                             <h3>
-                                Возраст {{ age }}<span class="font-weight-light"></span>
+                                {{ _("Возраст") }} {{ age }}<span class="font-weight-light"></span>
                             </h3>
                             <div class="row">
                                 <div class="col">
                                   <div class="custom-control custom-checkbox">
                                     {{ form.is_found(class="custom-control-input", id="is_found_checkbox", onchange="found_changed($(this).prop('checked'))") }}
-                                    <label class="custom-control-label" for="is_found_checkbox">Найден</label>
+                                    <label class="custom-control-label" for="is_found_checkbox">{{ _("Найден") }}</label>
                                 </div>
                             </div>
                             <div class="col">
                               <div class="custom-control custom-checkbox">
                                 {{ form.is_infected(class="custom-control-input", id="is_infected_checkbox") }}
-                                <label class="custom-control-label" for="is_infected_checkbox">Инфицирован</label>
+                                <label class="custom-control-label" for="is_infected_checkbox">{{ _("Инфицирован") }}</label>
                             </div>
                         </div>                    
                     </div>
@@ -100,44 +100,44 @@
                         <div class="col">
                             <div class="custom-control custom-checkbox">
                                 {{ form.in_hospital(class="custom-control-input", id="in_hospital_checkbox") }}                    
-                                <label class="custom-control-label" for="in_hospital_checkbox">Госпитализирован</label>
+                                <label class="custom-control-label" for="in_hospital_checkbox">{{ _("Госпитализирован") }}</label>
                             </div>
                         </div>
                         <div class="col">
                             <div class="custom-control custom-checkbox">
                                 {{ form.is_home(class="custom-control-input", id="is_home", onchange="status_exclusive_checkbox($(this))") }}
-                                <label class="custom-control-label" for="is_home">Домашний Карантин</label>
+                                <label class="custom-control-label" for="is_home">{{ _("Домашний Карантин") }}</label>
                             </div>
                         </div>
                         <div class="col">
                             <div class="custom-control custom-checkbox">
                                 {{ form.is_transit(class="custom-control-input", id="is_transit", onchange="status_exclusive_checkbox($(this))") }}
-                                <label class="custom-control-label" for="is_transit">Транзит</label>
+                                <label class="custom-control-label" for="is_transit">{{ _("Транзит") }}</label>
                             </div>
                         </div>                    
                     </div>                    
                     <hr class="my-4" />
                     <div class="col mt-3">
                       <div class="form-group">
-                        <label for="job-input" class="form-control-label">Регион Госпитализации</label>
+                        <label for="job-input" class="form-control-label">{{ _("Регион Госпитализации") }}</label>
                         {{ form.hospital_region_id(class="form-control", id="hospital_region_id") }}
                     </div>
                     <div class="form-group">
-                        <label for="job-input" class="form-control-label">Тип Больницы</label>
+                        <label for="job-input" class="form-control-label">{{ _("Тип Больницы") }}</label>
                         {{ form.hospital_type(class="form-control", id="hospital_type") }}
                     </div>
                     <div class="form-group">
-                        <label for="job-input" class="form-control-label"><a href="/hospital_profile?id={{ patient.hospital_id }}">Место Госпитализации</a></label>
+                        <label for="job-input" class="form-control-label"><a href="/hospital_profile?id={{ patient.hospital_id }}">{{ _("Место Госпитализации") }}</a></label>
                         {{ form.hospital_id(class="form-control", id="hospital_select") }}
                     </div>
                     <hr class="my-4" />                    
                 </div>
                 <div class="row  mt-3">
                     <div class="col">
-                        <input class="btn btn-primary" id="submit" name="submit" type="submit" value="Сохранить">
+                        <input class="btn btn-primary" id="submit" name="submit" type="submit" value={{ _("Сохранить") }}>
                     </div>
                     <div class="col">
-                        <input class="btn btn-danger" data-toggle="modal" data-target="#deletePatientModal" value="Удалить Пациента">
+                        <input class="btn btn-danger" data-toggle="modal" data-target="#deletePatientModal" value={{ _("Удалить Пациента") }}>
                     </div>                            
                 </div>
             </div>
@@ -155,18 +155,18 @@
             </div>
         </div>
         <div class="card-body">
-            <h6 class="heading-small text-muted mb-4">Личные Данные</h6>
+            <h6 class="heading-small text-muted mb-4">{{ _("Личные Данные") }}</h6>
             <div class="pl-lg-4">
                 <div class="row">
                     <div class="col-lg-6">
                         <div class="form-group">
-                            <label class="form-control-label" for="input-iin">ИИН</label>
-                            {{ form.iin(placeholder="12 Цифр",class="form-control form-control-alternative", type="text", onkeyup="this.value=this.value.replace(/[^0-9]/g,'');", value=patient.iin) }}                                
+                            <label class="form-control-label" for="input-iin">{{ _("ИИН") }}</label>
+                            {{ form.iin(placeholder=_("12 Цифр"),class="form-control form-control-alternative", type="text", onkeyup="this.value=this.value.replace(/[^0-9]/g,'');", value=patient.iin) }}                                
                         </div>
                     </div>
                     <div class="col-lg-6">
                         <div class="form-group">
-                            <label class="form-control-label" for="input-dob">Дата Рождения</label>
+                            <label class="form-control-label" for="input-dob">{{ _("Дата Рождения") }}</label>
                             {{ form.dob(class="form-control form-control-alternative", type="date", value=patient.dob) }}
                         </div>
                     </div>
@@ -174,47 +174,47 @@
                 <div class="row">
                     <div class="col-lg-6">
                         <div class="form-group">
-                            <label class="form-control-label" for="input-citizenship">Гражданство</label>
+                            <label class="form-control-label" for="input-citizenship">{{ _("Гражданство") }}</label>
                             {{ form.citizenship(class="form-control form-control-alternative", value=patient.citizenship) }}
                         </div>
                     </div>
                     <div class="col-lg-6">
                         <div class="form-group">
-                            <label class="form-control-label" for="input-pass-num">Номер Паспорта</label>
-                            {{ form.pass_num(placeholder="N12345678", class="form-control", type="text", value=patient.pass_num) }}
+                            <label class="form-control-label" for="input-pass-num">{{ _("Номер Паспорта") }}</label>
+                            {{ form.pass_num(placeholder=_("N12345678"), class="form-control", type="text", value=patient.pass_num) }}
                         </div>
                     </div>
                 </div>
             </div>
             <hr class="my-4" />
             <!-- Address -->
-            <h6 class="heading-small text-muted mb-4">Контактная Информация</h6>
+            <h6 class="heading-small text-muted mb-4">{{ _("Контактная Информация") }}</h6>
             <div class="pl-lg-4">
                 <div class="row">
                     <div class="col-md-12">
                         <div class="form-group">
-                            <label class="form-control-label" for="input-home_address">Место жительства / возможное место проживания</label>
-                            {{ form.home_address(class="form-control", type="text", placeholder="Алматы", value=patient.home_address) }}
+                            <label class="form-control-label" for="input-home_address">{{ _("Место жительства / возможное место проживания") }}</label>
+                            {{ form.home_address(class="form-control", type="text", placeholder=_("Алматы"), value=patient.home_address) }}
                         </div>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-lg-4">
                         <div class="form-group">
-                            <label class="form-control-label" for="input-region">Регион</label>
+                            <label class="form-control-label" for="input-region">{{ _("Регион") }}</label>
                             {{ form.region_id(class="form-control", id="region_id") }}
                         </div>
                     </div>
                     <div class="col-lg-4">
                         <div class="form-group">
-                            <label class="form-control-label" for="input-job">Место Работы</label>
-                            {{ form.job(class="form-control", type="text", placeholder="Алматы", value=patient.job) }}
+                            <label class="form-control-label" for="input-job">{{ _("Место Работы") }}</label>
+                            {{ form.job(class="form-control", type="text", placeholder=_("Алматы"), value=patient.job) }}
                         </div>
                     </div>
                     <div class="col-lg-4">
                         <div class="form-group">
-                            <label class="form-control-label" for="input-telephone">Телефон</label>
-                            {{ form.telephone(placeholder="77017123456", class="form-control", type="tel", value=patient.telephone) }}
+                            <label class="form-control-label" for="input-telephone">{{ _("Телефон") }}</label>
+                            {{ form.telephone(placeholder=_("77017123456"), class="form-control", type="tel", value=patient.telephone) }}
                         </div>
                     </div>
                 </div>
@@ -222,18 +222,18 @@
             {% if not patient.is_contacted_person %}
             <hr class="my-4" />
             <!-- Description -->
-            <h6 class="heading-small text-muted mb-4">Информация о Въезде</h6>
+            <h6 class="heading-small text-muted mb-4">{{ _("Информация о Въезде") }}</h6>
             <div class="pl-lg-4">
                 <div class="row">
                     <div class="col-lg">
                         <div class="form-group">
-                            <label class="form-control-label" for="input-arrival-date">Дата Въезда</label>
+                            <label class="form-control-label" for="input-arrival-date">{{ _("Дата Въезда") }}</label>
                             {{ form.arrival_date(class="form-control", type="date", value=patient.arrival_date) }}
                         </div>
                     </div>
                     <div class="col-lg">
                         <div class="form-group">
-                            <label class="form-control-label" for="input-region">Тип Въезда</label>
+                            <label class="form-control-label" for="input-region">{{ _("Тип Въезда") }}</label>
                             {{ form.travel_type_id(class="form-control", id="travel_type_id") }}
                         </div>
                     </div>
@@ -241,14 +241,14 @@
                 <div class="row">
                     <div class="col-lg">
                         <div class="form-group">
-                            <label class="form-control-label" for="input-flight-code">Номер Рейса</label>
+                            <label class="form-control-label" for="input-flight-code">{{ _("Номер Рейса") }}</label>
                             {{ form.flight_code_id(class="form-control", id="flight_code_id") }}
                         </div>
                     </div>
                     <div class="col-lg">
                         <div class="form-group">
-                            <label class="form-control-label" for="input-visited-country">Из Страны</label>
-                            {{ form.visited_country(class="form-control", type="text", placeholder="Италия", value=patient.visited_country) }}
+                            <label class="form-control-label" for="input-visited-country">{{ _("Из Страны") }}</label>
+                            {{ form.visited_country(class="form-control", type="text", placeholder=_("Италия"), value=patient.visited_country) }}
                         </div>
                     </div>
                 </div>

@@ -7,17 +7,46 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2020-03-27 21:33+0600\n"
+"POT-Creation-Date: 2020-03-28 12:42+0600\n"
 "PO-Revision-Date: 2020-03-27 21:34+0600\n"
 "Last-Translator: \n"
 "Language: kk_KZ\n"
 "Language-Team: kk_KZ <LL@li.org>\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.4.0\n"
-"X-Generator: Poedit 2.0.6\n"
+
+#: app/base/templates/login/login.html:35
+#: app/home/templates/users/add_user.html:39
+#: app/home/templates/users/user_profile.html:90
+#: app/home/templates/users/users.html:35
+msgid "Логин"
+msgstr ""
+
+#: app/base/templates/login/login.html:43
+#: app/home/templates/users/add_user.html:43
+#: app/home/templates/users/add_user.html:44
+#: app/home/templates/users/user_profile.html:96
+msgid "Пароль"
+msgstr ""
+
+#: app/base/templates/login/login.html:48
+msgid "Войти"
+msgstr ""
+
+#: app/base/templates/site_template/footer.html:7
+msgid "Сделано с помощью"
+msgstr ""
+
+#: app/base/templates/site_template/footer.html:13
+msgid "Дизайн от"
+msgstr ""
+
+#: app/base/templates/site_template/footer.html:13
+msgid "Разработано"
+msgstr ""
 
 #: app/base/templates/site_template/navigation.html:15
 msgid "Выбор Языка"
@@ -66,7 +95,11 @@ msgid "Всего Прибывших"
 msgstr "Пациенттер Саны"
 
 #: app/base/templates/site_template/top-stats.html:30
+#: app/home/templates/hospitals/hospitals.html:24
+#: app/home/templates/patients/choose_contacted_person.html:24
+#: app/home/templates/patients/contacted_persons.html:34
 #: app/home/templates/patients/patients.html:52
+#: app/home/templates/users/users.html:24
 msgid "Найдено"
 msgstr "Тапты"
 
@@ -122,16 +155,32 @@ msgstr "Табылмады"
 msgid "Новые пациенты"
 msgstr "Жаңа Пациенттер"
 
+#: app/home/templates/hospitals/hospital_profile.html:97
 #: app/home/templates/index.html:72
+#: app/home/templates/patients/add_contacted_person.html:54
+#: app/home/templates/patients/add_person.html:54
+#: app/home/templates/patients/choose_contacted_person.html:60
+#: app/home/templates/patients/contacted_persons.html:48
 #: app/home/templates/patients/patients.html:29
+#: app/home/templates/patients/patients.html:87
 msgid "ФИО"
 msgstr "Аты-жөні"
 
+#: app/home/templates/hospitals/hospital_profile.html:60
 #: app/home/templates/index.html:73
+#: app/home/templates/patients/choose_contacted_person.html:63
+#: app/home/templates/patients/contacted_persons.html:52
+#: app/home/templates/patients/patients.html:90
+#: app/home/templates/patients/profile.html:88
 msgid "Найден"
 msgstr "Тапты"
 
+#: app/home/templates/hospitals/hospital_profile.html:64
 #: app/home/templates/index.html:74
+#: app/home/templates/patients/choose_contacted_person.html:64
+#: app/home/templates/patients/contacted_persons.html:53
+#: app/home/templates/patients/patients.html:91
+#: app/home/templates/patients/profile.html:103
 msgid "Госпитализирован"
 msgstr "Ауруханада"
 
@@ -145,11 +194,31 @@ msgstr "Бастап Ұшты"
 
 #: app/home/templates/index.html:89 app/home/templates/index.html:96
 #: app/home/templates/index.html:192
+#: app/home/templates/patients/choose_contacted_person.html:87
+#: app/home/templates/patients/choose_contacted_person.html:94
+#: app/home/templates/patients/choose_contacted_person.html:101
+#: app/home/templates/patients/contacted_persons.html:77
+#: app/home/templates/patients/contacted_persons.html:83
+#: app/home/templates/patients/patients.html:114
+#: app/home/templates/patients/patients.html:121
+#: app/home/templates/patients/patients.html:128
+#: app/home/templates/patients/profile.html:33
+#: app/home/templates/users/user_profile.html:33
 msgid "Да"
 msgstr "Иә"
 
 #: app/home/templates/index.html:91 app/home/templates/index.html:98
 #: app/home/templates/index.html:190
+#: app/home/templates/patients/choose_contacted_person.html:89
+#: app/home/templates/patients/choose_contacted_person.html:96
+#: app/home/templates/patients/choose_contacted_person.html:103
+#: app/home/templates/patients/contacted_persons.html:79
+#: app/home/templates/patients/contacted_persons.html:85
+#: app/home/templates/patients/patients.html:116
+#: app/home/templates/patients/patients.html:123
+#: app/home/templates/patients/patients.html:130
+#: app/home/templates/patients/profile.html:35
+#: app/home/templates/users/user_profile.html:35
 msgid "Нет"
 msgstr "Жоқ"
 
@@ -157,15 +226,29 @@ msgstr "Жоқ"
 msgid "Не Госпитализированы"
 msgstr "Ауруханада жоқ"
 
+#: app/home/templates/hospitals/hospital_profile.html:174
+#: app/home/templates/hospitals/hospitals.html:47
 #: app/home/templates/index.html:197
+#: app/home/templates/patients/add_contacted_person.html:80
+#: app/home/templates/patients/add_person.html:100
+#: app/home/templates/patients/choose_contacted_person.html:62
+#: app/home/templates/patients/contacted_persons.html:51
+#: app/home/templates/patients/patients.html:89
+#: app/home/templates/patients/profile.html:204
+#: app/home/templates/users/add_user.html:57
+#: app/home/templates/users/user_profile.html:58
+#: app/home/templates/users/users.html:37
 msgid "Регион"
 msgstr "Аймақ"
 
+#: app/home/templates/hospitals/hospital_profile.html:180
 #: app/home/templates/index.html:198
 msgid "Адрес"
 msgstr "Мекенжай"
 
 #: app/home/templates/index.html:199
+#: app/home/templates/patients/add_contacted_person.html:108
+#: app/home/templates/patients/add_person.html:123
 msgid "Найден?"
 msgstr "Таптың ба?"
 
@@ -181,23 +264,398 @@ msgstr "Табылмады"
 msgid "Не найдены (по регионам)"
 msgstr "Табылмады (аймақтар бойынша)"
 
+#: app/home/templates/hospitals/hospital_profile.html:21
+msgid "Данные успешно обновлены"
+msgstr ""
+
+#: app/home/templates/hospitals/hospital_profile.html:55
+msgid "Госпиталь"
+msgstr ""
+
+#: app/home/templates/hospitals/hospital_profile.html:70
+msgid "Обновить"
+msgstr ""
+
+#: app/home/templates/hospitals/hospital_profile.html:85
+msgid "Всего"
+msgstr ""
+
+#: app/home/templates/hospitals/hospital_profile.html:85
+#: app/home/templates/hospitals/hospitals.html:24
+#: app/home/templates/patients/choose_contacted_person.html:24
+#: app/home/templates/patients/contacted_persons.html:34
+#: app/home/templates/patients/patients.html:52
+#: app/home/templates/users/users.html:24
+msgid "показано"
+msgstr ""
+
+#: app/home/templates/hospitals/hospital_profile.html:85
+#: app/home/templates/hospitals/hospital_profile.html:87
+#: app/home/templates/patients/choose_contacted_person.html:24
+#: app/home/templates/patients/patients.html:52
+msgid "пациентов"
+msgstr "пациенттер"
+
+#: app/home/templates/hospitals/hospital_profile.html:98
+#: app/home/templates/patients/add_contacted_person.html:93
+#: app/home/templates/patients/add_person.html:74
+#: app/home/templates/patients/choose_contacted_person.html:61
+#: app/home/templates/patients/contacted_persons.html:49
+#: app/home/templates/patients/patients.html:35
+#: app/home/templates/patients/patients.html:88
+#: app/home/templates/patients/profile.html:216
+#: app/home/templates/users/add_user.html:61
+#: app/home/templates/users/user_profile.html:117
+#: app/home/templates/users/users.html:38
+msgid "Телефон"
+msgstr "Телефон"
+
+#: app/home/templates/hospitals/hospital_profile.html:99
+#: app/home/templates/patients/add_person.html:84
+#: app/home/templates/patients/contacted_persons.html:50
+#: app/home/templates/patients/profile.html:230
+msgid "Дата Въезда"
+msgstr ""
+
+#: app/home/templates/hospitals/hospital_profile.html:161
+#: app/home/templates/patients/profile.html:191
+#: app/home/templates/users/user_profile.html:106
+msgid "Контактная Информация"
+msgstr ""
+
+#: app/home/templates/hospitals/hospital_profile.html:166
+msgid "Полное Название"
+msgstr ""
+
+#: app/home/templates/hospitals/hospital_profile.html:187
+#: app/home/templates/hospitals/hospital_profile.html:192
+#: app/home/templates/hospitals/hospitals.html:50
+msgid "Тип"
+msgstr ""
+
+#: app/home/templates/hospitals/hospital_profile.html:198
+#: app/home/templates/hospitals/hospitals.html:49
+msgid "Номенклатура"
+msgstr ""
+
+#: app/home/templates/hospitals/hospitals.html:24
+msgid "больниц"
+msgstr ""
+
+#: app/home/templates/hospitals/hospitals.html:48
+msgid "Название"
+msgstr ""
+
+#: app/home/templates/hospitals/hospitals.html:51
+msgid "Кол-во. пациентов"
+msgstr ""
+
+#: app/home/templates/hospitals/hospitals.html:52
+msgid "Мед. Защита"
+msgstr ""
+
+#: app/home/templates/hospitals/hospitals.html:53
+msgid "Тесты"
+msgstr ""
+
+#: app/home/templates/patients/add_contacted_person.html:21
+#: app/home/templates/patients/add_person.html:21
+msgid "Пациент добавлен в базу данных"
+msgstr ""
+
+#: app/home/templates/patients/add_contacted_person.html:42
+#: app/home/templates/patients/contacted_persons.html:40
+msgid "Добавить Контактное Лицо"
+msgstr ""
+
+#: app/home/templates/patients/add_contacted_person.html:55
+#: app/home/templates/patients/add_person.html:55
+msgid "Иванов Иван"
+msgstr ""
+
+#: app/home/templates/patients/add_contacted_person.html:58
+#: app/home/templates/patients/add_person.html:58
+#: app/home/templates/patients/patients.html:32
+#: app/home/templates/patients/profile.html:163
+msgid "ИИН"
+msgstr "ЖСН"
+
+#: app/home/templates/patients/add_contacted_person.html:59
+#: app/home/templates/patients/add_person.html:59
+#: app/home/templates/patients/profile.html:164
+msgid "12 Цифр"
+msgstr ""
+
+#: app/home/templates/patients/add_contacted_person.html:62
+#: app/home/templates/patients/add_person.html:62
+#: app/home/templates/patients/profile.html:169
+msgid "Дата Рождения"
+msgstr ""
+
+#: app/home/templates/patients/add_contacted_person.html:66
+#: app/home/templates/patients/add_person.html:66
+#: app/home/templates/patients/profile.html:177
+msgid "Гражданство"
+msgstr ""
+
+#: app/home/templates/patients/add_contacted_person.html:70
+#: app/home/templates/patients/add_person.html:70
+#: app/home/templates/patients/profile.html:183
+msgid "Номер Паспорта"
+msgstr ""
+
+#: app/home/templates/patients/add_contacted_person.html:71
+#: app/home/templates/patients/add_person.html:71
+#: app/home/templates/patients/profile.html:184
+msgid "N12345678"
+msgstr ""
+
+#: app/home/templates/patients/add_contacted_person.html:84
+#: app/home/templates/patients/add_person.html:104
+#: app/home/templates/patients/profile.html:196
+msgid "Место жительства / возможное место проживания"
+msgstr ""
+
+#: app/home/templates/patients/add_contacted_person.html:85
+#: app/home/templates/patients/add_contacted_person.html:89
+#: app/home/templates/patients/add_person.html:105
+#: app/home/templates/patients/add_person.html:109
+#: app/home/templates/patients/profile.html:197
+#: app/home/templates/patients/profile.html:211
+msgid "Алматы"
+msgstr ""
+
+#: app/home/templates/patients/add_contacted_person.html:88
+#: app/home/templates/patients/add_person.html:108
+#: app/home/templates/patients/profile.html:210
+msgid "Место Работы"
+msgstr ""
+
+#: app/home/templates/patients/add_contacted_person.html:94
+#: app/home/templates/patients/add_person.html:75
+#: app/home/templates/patients/profile.html:217
+msgid "77017123456"
+msgstr ""
+
+#: app/home/templates/patients/add_contacted_person.html:119
+#: app/home/templates/patients/add_person.html:145
+msgid "Статус Нахождения"
+msgstr ""
+
+#: app/home/templates/patients/add_contacted_person.html:135
+#: app/home/templates/patients/add_person.html:161
+#: app/home/templates/patients/profile.html:122
+msgid "Регион Госпитализации"
+msgstr ""
+
+#: app/home/templates/patients/add_contacted_person.html:141
+#: app/home/templates/patients/add_person.html:167
+#: app/home/templates/patients/profile.html:126
+msgid "Тип Больницы"
+msgstr ""
+
+#: app/home/templates/patients/add_contacted_person.html:151
+#: app/home/templates/patients/add_person.html:177
+#: app/home/templates/patients/profile.html:130
+msgid "Место Госпитализации"
+msgstr ""
+
+#: app/home/templates/patients/add_contacted_person.html:162
+#: app/home/templates/patients/add_person.html:188
+msgid "Отправить"
+msgstr ""
+
+#: app/home/templates/patients/add_data.html:21
+msgid "пациентов было добавлено в базу данных"
+msgstr ""
+
+#: app/home/templates/patients/add_data.html:31
+msgid "Инструкция"
+msgstr ""
+
+#: app/home/templates/patients/add_data.html:35
+msgid "Ваш Excel файл должен быть формата:"
+msgstr ""
+
+#: app/home/templates/patients/add_data.html:39
+msgid "Пример таблицы"
+msgstr ""
+
+#: app/home/templates/patients/add_data.html:50
+msgid "Добавить через Excel"
+msgstr ""
+
+#: app/home/templates/patients/add_data.html:63
+msgid "Загрузить"
+msgstr ""
+
+#: app/home/templates/patients/add_person.html:42
+msgid "Добавить Пациента Вручную"
+msgstr ""
+
+#: app/home/templates/patients/add_person.html:88
+msgid "Тип Въезда в Страну"
+msgstr ""
+
+#: app/home/templates/patients/add_person.html:92
+#: app/home/templates/patients/choose_contacted_person.html:31
+#: app/home/templates/patients/patients.html:58
+#: app/home/templates/patients/profile.html:244
+msgid "Номер Рейса"
+msgstr ""
+
+#: app/home/templates/patients/add_person.html:96
+msgid "Место и сроки пребывания в последние 14 дней"
+msgstr ""
+
+#: app/home/templates/patients/add_person.html:97
+#: app/home/templates/patients/profile.html:251
+msgid "Италия"
+msgstr ""
+
+#: app/home/templates/patients/add_person.html:134
+msgid "Инфицирован?"
+msgstr ""
+
+#: app/home/templates/patients/choose_contacted_person.html:40
+#: app/home/templates/patients/patients.html:67
+msgid "Не найден"
+msgstr ""
+
+#: app/home/templates/patients/choose_contacted_person.html:44
+#: app/home/templates/patients/patients.html:71
+msgid "Не госпитализирован"
+msgstr ""
+
+#: app/home/templates/patients/choose_contacted_person.html:49
+#: app/home/templates/patients/choose_contacted_person.html:65
+#: app/home/templates/patients/patients.html:76
+#: app/home/templates/patients/patients.html:92
+#: app/home/templates/patients/profile.html:94
+msgid "Инфицирован"
+msgstr ""
+
+#: app/home/templates/patients/choose_contacted_person.html:66
+#: app/home/templates/patients/patients.html:93
+msgid "Контактов (найдено/всего)"
+msgstr ""
+
+#: app/home/templates/patients/contacted_persons.html:24
+msgid "Карта Контактных Лиц"
+msgstr ""
+
+#: app/home/templates/patients/contacted_persons.html:34
+msgid "контактов"
+msgstr ""
+
 #: app/home/templates/patients/patients.html:26
 #: app/home/templates/patients/patients.html:38
 msgid "Поиск"
 msgstr "Іздеу"
 
-#: app/home/templates/patients/patients.html:32
-msgid "ИИН"
-msgstr "ЖСН"
-
-#: app/home/templates/patients/patients.html:35
-msgid "Телефон"
-msgstr "Телефон"
-
-#: app/home/templates/patients/patients.html:52
-msgid "показано"
+#: app/home/templates/patients/profile.html:21
+msgid "Удалить пациента?"
 msgstr ""
 
-#: app/home/templates/patients/patients.html:52
-msgid "пациентов"
-msgstr "пациенттер"
+#: app/home/templates/patients/profile.html:27
+msgid "Вы уверены, что хотите удалить пациента"
+msgstr ""
+
+#: app/home/templates/patients/profile.html:56
+msgid "Контактные Лица"
+msgstr ""
+
+#: app/home/templates/patients/profile.html:60
+msgid "Прибывшие Вместе"
+msgstr ""
+
+#: app/home/templates/patients/profile.html:78
+msgid "Имя"
+msgstr ""
+
+#: app/home/templates/patients/profile.html:82
+msgid "Возраст"
+msgstr ""
+
+#: app/home/templates/patients/profile.html:109
+msgid "Домашний Карантин"
+msgstr ""
+
+#: app/home/templates/patients/profile.html:115
+msgid "Транзит"
+msgstr ""
+
+#: app/home/templates/patients/profile.html:137
+#: app/home/templates/users/user_profile.html:70
+msgid "Сохранить"
+msgstr ""
+
+#: app/home/templates/patients/profile.html:140
+msgid "Удалить Пациента"
+msgstr ""
+
+#: app/home/templates/patients/profile.html:158
+msgid "Личные Данные"
+msgstr ""
+
+#: app/home/templates/patients/profile.html:225
+msgid "Информация о Въезде"
+msgstr ""
+
+#: app/home/templates/patients/profile.html:236
+msgid "Тип Въезда"
+msgstr ""
+
+#: app/home/templates/patients/profile.html:250
+msgid "Из Страны"
+msgstr ""
+
+#: app/home/templates/users/add_user.html:27
+#: app/home/templates/users/users.html:27
+msgid "Добавить Пользователя"
+msgstr ""
+
+#: app/home/templates/users/add_user.html:47
+msgid "Электронная Почта"
+msgstr ""
+
+#: app/home/templates/users/add_user.html:67
+msgid "Создать Пользователя"
+msgstr ""
+
+#: app/home/templates/users/user_profile.html:21
+msgid "Удалить пользователя?"
+msgstr ""
+
+#: app/home/templates/users/user_profile.html:27
+msgid "Вы уверены, что хотите удалить пользователя"
+msgstr ""
+
+#: app/home/templates/users/user_profile.html:74
+msgid "Удалить Пользователя"
+msgstr ""
+
+#: app/home/templates/users/user_profile.html:83
+msgid "Об Аккаунте"
+msgstr ""
+
+#: app/home/templates/users/user_profile.html:112
+msgid "test@test.kz"
+msgstr ""
+
+#: app/home/templates/users/user_profile.html:118
+msgid "87017773344"
+msgstr ""
+
+#: app/home/templates/users/users.html:24
+msgid "пользователей"
+msgstr ""
+
+#: app/home/templates/users/users.html:36
+msgid "E-Mail"
+msgstr ""
+
+#: app/home/templates/users/users.html:56
+msgid "Администратор"
+msgstr ""
+

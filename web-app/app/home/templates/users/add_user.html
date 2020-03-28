@@ -24,7 +24,7 @@
     <div class="col">
       <div class="card shadow">
         <div class="card-header bg-transparent">
-          <h3 class="mb-0">Добавить Пользователя</h3>
+          <h3 class="mb-0">{{ _("Добавить Пользователя") }}</h3>
         </div>
         <div class="card-body">
           <div class="row">
@@ -36,15 +36,15 @@
                     <div class="card shadow">
                       <div class="card-header bg-transparent">
                         <div class="form-group">
-                          <label for="name-input" class="form-control-label">Логин</label>
+                          <label for="name-input" class="form-control-label">{{ _("Логин") }}</label>
                           {{ form.username(placeholder="user1234",class="form-control", type="text") }}
                         </div>
                         <div class="form-group">
-                          <label for="npass-input" class="form-control-label">Пароль</label>
-                          {{ form.password(placeholder="Пароль", class="form-control", type="text") }}
+                          <label for="npass-input" class="form-control-label">{{ _("Пароль") }}</label>
+                          {{ form.password(placeholder=_("Пароль"), class="form-control", type="text") }}
                         </div>
                         <div class="form-group">
-                          <label for="npass-input" class="form-control-label">Электронная Почта</label>
+                          <label for="npass-input" class="form-control-label">{{ _("Электронная Почта") }}</label>
                           {{ form.email(placeholder="E-Mail", class="form-control", type="text") }}
                         </div>                                                  
                       </div>
@@ -54,17 +54,17 @@
                     <div class="card shadow">
                       <div class="card-header bg-transparent">
                         <div class="form-group">
-                          <label for="region-input" class="form-control-label">Регион</label>
+                          <label for="region-input" class="form-control-label">{{ _("Регион") }}</label>
                           {{ form.region_id(class="form-control", id="region_id") }}                          
                         </div>
                         <div class="form-group">
-                          <label for="phone-input" class="form-control-label">Телефон</label>
+                          <label for="phone-input" class="form-control-label">{{ _("Телефон") }}</label>
                           {{ form.telephone(placeholder="77017123456", class="form-control", type="tel") }}
                         </div>                                          
                       </div>
                     </div>
                     <button type="submit" name="create" class="btn btn-primary mt-4" type="button" style="width:100%">
-                        Создать Пользователя
+                        {{ _("Создать Пользователя") }}
                       </button>
                   </div>
                 </div>
