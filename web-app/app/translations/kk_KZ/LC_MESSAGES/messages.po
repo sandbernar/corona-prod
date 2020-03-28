@@ -23,30 +23,30 @@ msgstr ""
 #: app/home/templates/users/user_profile.html:90
 #: app/home/templates/users/users.html:35
 msgid "Логин"
-msgstr ""
+msgstr "Логин"
 
 #: app/base/templates/login/login.html:43
 #: app/home/templates/users/add_user.html:43
 #: app/home/templates/users/add_user.html:44
 #: app/home/templates/users/user_profile.html:96
 msgid "Пароль"
-msgstr ""
+msgstr "Пароль"
 
 #: app/base/templates/login/login.html:48
 msgid "Войти"
-msgstr ""
+msgstr "Кіру"
 
 #: app/base/templates/site_template/footer.html:7
 msgid "Сделано с помощью"
-msgstr ""
+msgstr "Көмегімен жасалған"
 
 #: app/base/templates/site_template/footer.html:13
 msgid "Дизайн от"
-msgstr ""
+msgstr "Дизайн"
 
 #: app/base/templates/site_template/footer.html:13
 msgid "Разработано"
-msgstr ""
+msgstr "Әзірленген"
 
 #: app/base/templates/site_template/navigation.html:15
 msgid "Выбор Языка"
@@ -54,7 +54,7 @@ msgstr "Тіл Таңдау"
 
 #: app/base/templates/site_template/navigation.html:43
 msgid "Здравствуйте!"
-msgstr "Сәлеметсіздер ме!"
+msgstr "Сәлеметсізбе!"
 
 #: app/base/templates/site_template/navigation.html:47
 #: app/base/templates/site_template/sidebar.html:143
@@ -67,32 +67,32 @@ msgstr "Бас Меню"
 
 #: app/base/templates/site_template/sidebar.html:92
 msgid "Добавить Данные"
-msgstr "Деректерді Қосу"
+msgstr "Деректерді қосу"
 
 #: app/base/templates/site_template/sidebar.html:97
 msgid "Добавить Пациента"
-msgstr "Пациентті Қосу"
+msgstr "Пациентті қосу"
 
 #: app/base/templates/site_template/sidebar.html:102
 #: app/home/templates/index.html:63
 msgid "Все Пациенты"
-msgstr "Барлық Науқастар"
+msgstr "Барлық пациенттер"
 
 #: app/base/templates/site_template/sidebar.html:110
 msgid "Все Больницы"
-msgstr "Барлық Ауруханалар"
+msgstr "Барлық ауруханалар"
 
 #: app/base/templates/site_template/sidebar.html:124
 msgid "Категории Стран"
-msgstr "Елдердің Категориялары"
+msgstr "Елдердің категориялары"
 
 #: app/base/templates/site_template/sidebar.html:133
 msgid "Управление Аккаунтами"
-msgstr "Аккаунттер басқару"
+msgstr "Аккаунттерді басқару"
 
 #: app/base/templates/site_template/top-stats.html:13
 msgid "Всего Прибывших"
-msgstr "Пациенттер Саны"
+msgstr "Келгендердің саны"
 
 #: app/base/templates/site_template/top-stats.html:30
 #: app/home/templates/hospitals/hospitals.html:24
@@ -101,19 +101,19 @@ msgstr "Пациенттер Саны"
 #: app/home/templates/patients/patients.html:52
 #: app/home/templates/users/users.html:24
 msgid "Найдено"
-msgstr "Тапты"
+msgstr "Табылды"
 
 #: app/base/templates/site_template/top-stats.html:47
 msgid "Госпитализировано"
-msgstr "Ауруханада"
+msgstr "Науқастанды"
 
 #: app/base/templates/site_template/top-stats.html:64
 msgid "Показываются Регионы"
-msgstr "Аймақтар"
+msgstr "Аймақтарды көрсету"
 
 #: app/home/routes.py:471
 msgid "Пользователь успешно удален"
-msgstr "Пайдаланушы сәтті жойылған"
+msgstr "Пайдаланушы сәтті өшірілді"
 
 #: app/home/routes.py:611
 msgid "Профиль успешно обновлен"
@@ -125,7 +125,7 @@ msgstr "Пайдаланушы %(full_name) сәтті қосылды"
 
 #: app/home/routes.py:1033
 msgid "Имя пользователя уже зарегистрировано"
-msgstr "Пайдаланушы аты тіркелген"
+msgstr "Пайдаланушының аты тіркелді"
 
 #: app/home/routes.py:1040
 msgid "Пользователь был успешно добавлен"
@@ -133,7 +133,7 @@ msgstr "Пайдаланушы сәтті қосылды"
 
 #: app/home/routes.py:1073
 msgid "Пользователь с таким логином уже существует"
-msgstr "Мұндай логині бар пайдаланушы бар"
+msgstr "Бұл логині бар пайдаланушы тіркелген"
 
 #: app/home/routes.py:1087
 msgid "Данные обновлены"
@@ -141,7 +141,7 @@ msgstr "Деректер жаңартылды"
 
 #: app/home/templates/index.html:24
 msgid "Карта Пациентов"
-msgstr "Пациенттердің Картасы"
+msgstr "Пациенттердің картасы"
 
 #: app/home/templates/index.html:37 app/home/templates/index.html:120
 msgid "Статистика"
@@ -153,7 +153,7 @@ msgstr "Табылмады"
 
 #: app/home/templates/index.html:60
 msgid "Новые пациенты"
-msgstr "Жаңа Пациенттер"
+msgstr "Жаңа пациенттер"
 
 #: app/home/templates/hospitals/hospital_profile.html:97
 #: app/home/templates/index.html:72
@@ -173,7 +173,7 @@ msgstr "Аты-жөні"
 #: app/home/templates/patients/patients.html:90
 #: app/home/templates/patients/profile.html:88
 msgid "Найден"
-msgstr "Тапты"
+msgstr "Табылды"
 
 #: app/home/templates/hospitals/hospital_profile.html:64
 #: app/home/templates/index.html:74
@@ -182,15 +182,15 @@ msgstr "Тапты"
 #: app/home/templates/patients/patients.html:91
 #: app/home/templates/patients/profile.html:103
 msgid "Госпитализирован"
-msgstr "Ауруханада"
+msgstr "Ауруханаға жатқызылды"
 
 #: app/home/templates/index.html:75
 msgid "Место госпитализации"
-msgstr "Аурухана"
+msgstr "Аурухананың орны"
 
 #: app/home/templates/index.html:76
 msgid "Прилетел из"
-msgstr "Бастап Ұшты"
+msgstr "Ұшып келді"
 
 #: app/home/templates/index.html:89 app/home/templates/index.html:96
 #: app/home/templates/index.html:192
@@ -224,7 +224,7 @@ msgstr "Жоқ"
 
 #: app/home/templates/index.html:121
 msgid "Не Госпитализированы"
-msgstr "Ауруханада жоқ"
+msgstr "Ауруханаға жатқызылған жоқ"
 
 #: app/home/templates/hospitals/hospital_profile.html:174
 #: app/home/templates/hospitals/hospitals.html:47
@@ -244,13 +244,13 @@ msgstr "Аймақ"
 #: app/home/templates/hospitals/hospital_profile.html:180
 #: app/home/templates/index.html:198
 msgid "Адрес"
-msgstr "Мекенжай"
+msgstr "Мекен-жай"
 
 #: app/home/templates/index.html:199
 #: app/home/templates/patients/add_contacted_person.html:108
 #: app/home/templates/patients/add_person.html:123
 msgid "Найден?"
-msgstr "Таптың ба?"
+msgstr "Табылды ма?"
 
 #: app/home/templates/index.html:200
 msgid "Статус"
@@ -266,19 +266,19 @@ msgstr "Табылмады (аймақтар бойынша)"
 
 #: app/home/templates/hospitals/hospital_profile.html:21
 msgid "Данные успешно обновлены"
-msgstr ""
+msgstr "Деректер сәтті жаңартылды"
 
 #: app/home/templates/hospitals/hospital_profile.html:55
 msgid "Госпиталь"
-msgstr ""
+msgstr "Аурухана"
 
 #: app/home/templates/hospitals/hospital_profile.html:70
 msgid "Обновить"
-msgstr ""
+msgstr "Жаңарту"
 
 #: app/home/templates/hospitals/hospital_profile.html:85
 msgid "Всего"
-msgstr ""
+msgstr "Барлығы"
 
 #: app/home/templates/hospitals/hospital_profile.html:85
 #: app/home/templates/hospitals/hospitals.html:24
@@ -315,63 +315,63 @@ msgstr "Телефон"
 #: app/home/templates/patients/contacted_persons.html:50
 #: app/home/templates/patients/profile.html:230
 msgid "Дата Въезда"
-msgstr ""
+msgstr "Келу күні"
 
 #: app/home/templates/hospitals/hospital_profile.html:161
 #: app/home/templates/patients/profile.html:191
 #: app/home/templates/users/user_profile.html:106
 msgid "Контактная Информация"
-msgstr ""
+msgstr "Байланыс ақпараты"
 
 #: app/home/templates/hospitals/hospital_profile.html:166
 msgid "Полное Название"
-msgstr ""
+msgstr "Толық атауы"
 
 #: app/home/templates/hospitals/hospital_profile.html:187
 #: app/home/templates/hospitals/hospital_profile.html:192
 #: app/home/templates/hospitals/hospitals.html:50
 msgid "Тип"
-msgstr ""
+msgstr "Түрі"
 
 #: app/home/templates/hospitals/hospital_profile.html:198
 #: app/home/templates/hospitals/hospitals.html:49
 msgid "Номенклатура"
-msgstr ""
+msgstr "Номенклатура"
 
 #: app/home/templates/hospitals/hospitals.html:24
 msgid "больниц"
-msgstr ""
+msgstr "аурухана"
 
 #: app/home/templates/hospitals/hospitals.html:48
 msgid "Название"
-msgstr ""
+msgstr "Атауы"
 
 #: app/home/templates/hospitals/hospitals.html:51
 msgid "Кол-во. пациентов"
-msgstr ""
+msgstr "Пациенттердің саны"
 
 #: app/home/templates/hospitals/hospitals.html:52
 msgid "Мед. Защита"
-msgstr ""
+msgstr "Медициналық қорғау"
 
 #: app/home/templates/hospitals/hospitals.html:53
 msgid "Тесты"
-msgstr ""
+msgstr "Тесттер"
 
 #: app/home/templates/patients/add_contacted_person.html:21
 #: app/home/templates/patients/add_person.html:21
 msgid "Пациент добавлен в базу данных"
-msgstr ""
+msgstr "Пациент деректер базасына қосылды"
 
 #: app/home/templates/patients/add_contacted_person.html:42
 #: app/home/templates/patients/contacted_persons.html:40
 msgid "Добавить Контактное Лицо"
-msgstr ""
+msgstr "Байланыстағы тұлғаны қосу"
 
 #: app/home/templates/patients/add_contacted_person.html:55
 #: app/home/templates/patients/add_person.html:55
 msgid "Иванов Иван"
-msgstr ""
+msgstr "Серик Ахметов"
 
 #: app/home/templates/patients/add_contacted_person.html:58
 #: app/home/templates/patients/add_person.html:58
@@ -384,37 +384,37 @@ msgstr "ЖСН"
 #: app/home/templates/patients/add_person.html:59
 #: app/home/templates/patients/profile.html:164
 msgid "12 Цифр"
-msgstr ""
+msgstr "12 Сан"
 
 #: app/home/templates/patients/add_contacted_person.html:62
 #: app/home/templates/patients/add_person.html:62
 #: app/home/templates/patients/profile.html:169
 msgid "Дата Рождения"
-msgstr ""
+msgstr "Туған Күні"
 
 #: app/home/templates/patients/add_contacted_person.html:66
 #: app/home/templates/patients/add_person.html:66
 #: app/home/templates/patients/profile.html:177
 msgid "Гражданство"
-msgstr ""
+msgstr "Азаматтығы"
 
 #: app/home/templates/patients/add_contacted_person.html:70
 #: app/home/templates/patients/add_person.html:70
 #: app/home/templates/patients/profile.html:183
 msgid "Номер Паспорта"
-msgstr ""
+msgstr "Паспорттың нөмірі"
 
 #: app/home/templates/patients/add_contacted_person.html:71
 #: app/home/templates/patients/add_person.html:71
 #: app/home/templates/patients/profile.html:184
 msgid "N12345678"
-msgstr ""
+msgstr "N12345678"
 
 #: app/home/templates/patients/add_contacted_person.html:84
 #: app/home/templates/patients/add_person.html:104
 #: app/home/templates/patients/profile.html:196
 msgid "Место жительства / возможное место проживания"
-msgstr ""
+msgstr "Тұрғылықты жері / ықтимал тұратын жері"
 
 #: app/home/templates/patients/add_contacted_person.html:85
 #: app/home/templates/patients/add_contacted_person.html:89
@@ -423,109 +423,109 @@ msgstr ""
 #: app/home/templates/patients/profile.html:197
 #: app/home/templates/patients/profile.html:211
 msgid "Алматы"
-msgstr ""
+msgstr "Алматы"
 
 #: app/home/templates/patients/add_contacted_person.html:88
 #: app/home/templates/patients/add_person.html:108
 #: app/home/templates/patients/profile.html:210
 msgid "Место Работы"
-msgstr ""
+msgstr "Жұмыс орны"
 
 #: app/home/templates/patients/add_contacted_person.html:94
 #: app/home/templates/patients/add_person.html:75
 #: app/home/templates/patients/profile.html:217
 msgid "77017123456"
-msgstr ""
+msgstr "77017123456"
 
 #: app/home/templates/patients/add_contacted_person.html:119
 #: app/home/templates/patients/add_person.html:145
 msgid "Статус Нахождения"
-msgstr ""
+msgstr "Орналасу мәртебесі"
 
 #: app/home/templates/patients/add_contacted_person.html:135
 #: app/home/templates/patients/add_person.html:161
 #: app/home/templates/patients/profile.html:122
 msgid "Регион Госпитализации"
-msgstr ""
+msgstr "Емдеуге жатқан аймағы"
 
 #: app/home/templates/patients/add_contacted_person.html:141
 #: app/home/templates/patients/add_person.html:167
 #: app/home/templates/patients/profile.html:126
 msgid "Тип Больницы"
-msgstr ""
+msgstr "Аурухана түрі"
 
 #: app/home/templates/patients/add_contacted_person.html:151
 #: app/home/templates/patients/add_person.html:177
 #: app/home/templates/patients/profile.html:130
 msgid "Место Госпитализации"
-msgstr ""
+msgstr "Емдеуге жатқызу орны"
 
 #: app/home/templates/patients/add_contacted_person.html:162
 #: app/home/templates/patients/add_person.html:188
 msgid "Отправить"
-msgstr ""
+msgstr "Жіберу"
 
 #: app/home/templates/patients/add_data.html:21
 msgid "пациентов было добавлено в базу данных"
-msgstr ""
+msgstr "пациент деректер базасына қосылды"
 
 #: app/home/templates/patients/add_data.html:31
 msgid "Инструкция"
-msgstr ""
+msgstr "Нұсқаулық"
 
 #: app/home/templates/patients/add_data.html:35
 msgid "Ваш Excel файл должен быть формата:"
-msgstr ""
+msgstr "Excel файл түрінде болуы керек:"
 
 #: app/home/templates/patients/add_data.html:39
 msgid "Пример таблицы"
-msgstr ""
+msgstr "Кесте үлгісі"
 
 #: app/home/templates/patients/add_data.html:50
 msgid "Добавить через Excel"
-msgstr ""
+msgstr "Excel арқылы қосу"
 
 #: app/home/templates/patients/add_data.html:63
 msgid "Загрузить"
-msgstr ""
+msgstr "Жүктеу"
 
 #: app/home/templates/patients/add_person.html:42
 msgid "Добавить Пациента Вручную"
-msgstr ""
+msgstr "Пациентті қолмен қосу"
 
 #: app/home/templates/patients/add_person.html:88
 msgid "Тип Въезда в Страну"
-msgstr ""
+msgstr "Елге кірген түрі"
 
 #: app/home/templates/patients/add_person.html:92
 #: app/home/templates/patients/choose_contacted_person.html:31
 #: app/home/templates/patients/patients.html:58
 #: app/home/templates/patients/profile.html:244
 msgid "Номер Рейса"
-msgstr ""
+msgstr "Рейстін нөмірі"
 
 #: app/home/templates/patients/add_person.html:96
 msgid "Место и сроки пребывания в последние 14 дней"
-msgstr ""
+msgstr "Соңғы 14 күнде болған орындары мен мерзімі"
 
 #: app/home/templates/patients/add_person.html:97
 #: app/home/templates/patients/profile.html:251
 msgid "Италия"
-msgstr ""
+msgstr "Италия"
 
 #: app/home/templates/patients/add_person.html:134
 msgid "Инфицирован?"
-msgstr ""
+msgstr "Жұқтырылған?"
 
 #: app/home/templates/patients/choose_contacted_person.html:40
 #: app/home/templates/patients/patients.html:67
 msgid "Не найден"
-msgstr ""
+msgstr "Табылмады"
 
 #: app/home/templates/patients/choose_contacted_person.html:44
 #: app/home/templates/patients/patients.html:71
 msgid "Не госпитализирован"
-msgstr ""
+msgstr "Ауруханаға жатқызылмаған"
 
 #: app/home/templates/patients/choose_contacted_person.html:49
 #: app/home/templates/patients/choose_contacted_person.html:65
@@ -533,20 +533,20 @@ msgstr ""
 #: app/home/templates/patients/patients.html:92
 #: app/home/templates/patients/profile.html:94
 msgid "Инфицирован"
-msgstr ""
+msgstr "Жұқтырылған"
 
 #: app/home/templates/patients/choose_contacted_person.html:66
 #: app/home/templates/patients/patients.html:93
 msgid "Контактов (найдено/всего)"
-msgstr ""
+msgstr "Контактілер (табылған / барлығы)"
 
 #: app/home/templates/patients/contacted_persons.html:24
 msgid "Карта Контактных Лиц"
-msgstr ""
+msgstr "Жұқтырған адамдармен қатынасқандардың картасы"
 
 #: app/home/templates/patients/contacted_persons.html:34
 msgid "контактов"
-msgstr ""
+msgstr "контактілер"
 
 #: app/home/templates/patients/patients.html:26
 #: app/home/templates/patients/patients.html:38
@@ -555,107 +555,107 @@ msgstr "Іздеу"
 
 #: app/home/templates/patients/profile.html:21
 msgid "Удалить пациента?"
-msgstr ""
+msgstr "Пациентті өшіру?"
 
 #: app/home/templates/patients/profile.html:27
 msgid "Вы уверены, что хотите удалить пациента"
-msgstr ""
+msgstr "Сіз пациентті өшіруді растайсызба"
 
 #: app/home/templates/patients/profile.html:56
 msgid "Контактные Лица"
-msgstr ""
+msgstr "Жұқтырғандармен қатынасқандардың тізімі"
 
 #: app/home/templates/patients/profile.html:60
 msgid "Прибывшие Вместе"
-msgstr ""
+msgstr "Бірге келгендер"
 
 #: app/home/templates/patients/profile.html:78
 msgid "Имя"
-msgstr ""
+msgstr "Аты"
 
 #: app/home/templates/patients/profile.html:82
 msgid "Возраст"
-msgstr ""
+msgstr "Жасы"
 
 #: app/home/templates/patients/profile.html:109
 msgid "Домашний Карантин"
-msgstr ""
+msgstr "Үй карантині"
 
 #: app/home/templates/patients/profile.html:115
 msgid "Транзит"
-msgstr ""
+msgstr "Транзитпен"
 
 #: app/home/templates/patients/profile.html:137
 #: app/home/templates/users/user_profile.html:70
 msgid "Сохранить"
-msgstr ""
+msgstr "Сақтау"
 
 #: app/home/templates/patients/profile.html:140
 msgid "Удалить Пациента"
-msgstr ""
+msgstr "Пациентті өшіру"
 
 #: app/home/templates/patients/profile.html:158
 msgid "Личные Данные"
-msgstr ""
+msgstr "Жеке деректер"
 
 #: app/home/templates/patients/profile.html:225
 msgid "Информация о Въезде"
-msgstr ""
+msgstr "Кіру туралы ақпарат"
 
 #: app/home/templates/patients/profile.html:236
 msgid "Тип Въезда"
-msgstr ""
+msgstr "Кіру түрі"
 
 #: app/home/templates/patients/profile.html:250
 msgid "Из Страны"
-msgstr ""
+msgstr "Қай елден"
 
 #: app/home/templates/users/add_user.html:27
 #: app/home/templates/users/users.html:27
 msgid "Добавить Пользователя"
-msgstr ""
+msgstr "Пайдаланушыны Қосу"
 
 #: app/home/templates/users/add_user.html:47
 msgid "Электронная Почта"
-msgstr ""
+msgstr "Электрондық пошта"
 
 #: app/home/templates/users/add_user.html:67
 msgid "Создать Пользователя"
-msgstr ""
+msgstr "Пайдаланушыны жасау"
 
 #: app/home/templates/users/user_profile.html:21
 msgid "Удалить пользователя?"
-msgstr ""
+msgstr "Пайдаланушыны өшіру"
 
 #: app/home/templates/users/user_profile.html:27
 msgid "Вы уверены, что хотите удалить пользователя"
-msgstr ""
+msgstr "Сіз пайдаланушыны өшіруді растайсызба"
 
 #: app/home/templates/users/user_profile.html:74
 msgid "Удалить Пользователя"
-msgstr ""
+msgstr "Пайдаланушыны өшіру"
 
 #: app/home/templates/users/user_profile.html:83
 msgid "Об Аккаунте"
-msgstr ""
+msgstr "Аккаунт туралы"
 
 #: app/home/templates/users/user_profile.html:112
 msgid "test@test.kz"
-msgstr ""
+msgstr "test@test.kz"
 
 #: app/home/templates/users/user_profile.html:118
 msgid "87017773344"
-msgstr ""
+msgstr "87017773344"
 
 #: app/home/templates/users/users.html:24
 msgid "пользователей"
-msgstr ""
+msgstr "пайдаланушылар"
 
 #: app/home/templates/users/users.html:36
 msgid "E-Mail"
-msgstr ""
+msgstr "E-Mail"
 
 #: app/home/templates/users/users.html:56
 msgid "Администратор"
-msgstr ""
+msgstr "Администратор"
 
