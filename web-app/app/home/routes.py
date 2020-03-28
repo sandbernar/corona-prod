@@ -652,7 +652,7 @@ def patient_profile():
             age =  today.year - patient.dob.year - ((today.month, today.day) < (patient.dob.month, patient.dob.day))
 
             if "success" in request.args:
-                change = _("Пользователь %(full_name) успешно добавлен", full_name=patient.full_name)
+                change = _("Пользователь %(full_name)s успешно добавлен", full_name=patient.full_name)
 
             form.process()
 
