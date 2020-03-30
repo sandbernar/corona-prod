@@ -49,3 +49,28 @@
 * Данный проект был разработан в рамках хакатона "anti-corona" от <a href="http://alem.school">alem.school</a>
 * Команда Fight the Virus, я единственный ее участник. Мой E-Mail afedoskin3@gmail.com
 * Заканчиваю магистратуру по Аналитике Данных в Университете Хильдесхайма (Германия). На данный момент нахожусь дома, в Шымкенте.
+
+  ## Развертывание на сервере
+Репозиторий содержит скрипт `setup.sh`. Данный скрипт устанавливает на сервере c ОС _Ubuntu 18.04_ зависимости этого проекта и запускает его.
+1. Скрипт устанавливает на сервере: nginx, docker, docker-compose, postgresql.
+2. Создает конфигурационный nginx файл.
+3. Cоздает в postgresql UTF8 базу данных и пользователя.
+4. Запускает проект.
+
+Перед запуском следует указать следующие _env variables_:
+```bash
+$> export CRM_ENDPOINT="crm.yourwebsite.kz"
+$> export DATABASE_USER="someuser"
+$> export DATABASE_PASSWORD="somepassword"
+```
+
+Далее
+```bash
+$> sh setup.sh
+```
+
+  ## Перезапуск проекта
+```bash
+$> cd path_to_project/web-app/
+$> docker-compose down && docker-compose up -d
+```
