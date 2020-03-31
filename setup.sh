@@ -17,6 +17,11 @@ if [[ -z "${DATABASE_PASSWORD}" ]]; then
   exit 1
 fi
 
+if [[ -z "${CERTIFICATE_PATH}" ]]; then
+  echo "NO CERTIFICATE_PATH env variable"
+  exit 1
+fi
+
 # exit immediately if a command exits with a non-zero status.
 set -e
 
@@ -30,6 +35,11 @@ sudo apt install nginx
 sudo ufw allow 'Nginx Full'
 
 # setup nginx configuration for CRM endpoint
+sudo mkdir -p /etc/certs/${CRM_ENDPOINT}
+
+sudo openssl pkcs12 -nokeys -in ${CERTIFICATE_PATH} -out /etc/certs/${CRM_ENDPOINT}/fullchain.pem
+sudo openssl pkcs12 -nocerts -nodes -in ${CERTIFICATE_PATH} -out /etc/certs/${CRM_ENDPOINT}/privkey.pem
+
 cat <<EOF >/etc/nginx/sites-available/CRM.conf
 upstream crm {
     server localhost:5005;
@@ -49,6 +59,15 @@ server {
         proxy_set_header Connection "upgrade";
         proxy_read_timeout 950s;
     }
+    listen 443 ssl;
+
+    ssl_certificate /etc/certs/${CRM_ENDPOINT}/fullchain.pem;
+    ssl_certificate_key /etc/certs/${CRM_ENDPOINT}/privkey.pem;
+    
+    ssl_session_cache shared:le_nginx_SSL:10m;
+    ssl_session_timeout 1440m;
+    ssl_session_tickets off;
+    ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
 }
 EOF
 sudo ln -s /etc/nginx/sites-available/CRM.conf /etc/nginx/sites-enabled/CRM.conf
