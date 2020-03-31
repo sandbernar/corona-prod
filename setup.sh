@@ -100,7 +100,7 @@ sudo -i -u postgres psql -c "CREATE DATABASE anti_corona_crm WITH TEMPLATE = tem
 sudo -i -u postgres psql -c "CREATE ROLE ${DATABASE_USER} LOGIN SUPERUSER PASSWORD '${DATABASE_PASSWORD}'"
 
 # setup CRM
-git clone github.com/thelastpolaris/anti-corona-crm ~/anti-corona-crm
+git clone https://github.com/thelastpolaris/anti-corona-crm ~/anti-corona-crm
 touch ~/anti-corona-crm/web-app/.env
 
 cat <<EOF >~/anti-corona-crm/web-app/.env
