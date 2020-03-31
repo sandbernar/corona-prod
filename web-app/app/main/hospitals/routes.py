@@ -10,8 +10,11 @@ from flask_login import login_required, current_user
 from app import login_manager, db
 from app import constants as c
 from jinja2 import TemplateNotFound
+
 from app.main.hospitals.models import Hospital, Hospital_Type, Hospital_Nomenklatura
-from app.main.models import Region, Patient
+from app.main.patients.models import Patient
+from app.main.models import Region
+
 from datetime import datetime
 import pandas as pd
 import numpy as np
