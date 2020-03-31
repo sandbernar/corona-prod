@@ -13,7 +13,6 @@ from os import path
 import pandas as pd
 import re
 
-
 from app import constants as C
 
 db = SQLAlchemy()
@@ -24,13 +23,13 @@ def register_extensions(app):
     login_manager.init_app(app)
 
 def register_blueprints(app):
-    for module_name in ('base', 'home'):
+    for module_name in ('login', 'main'):
         module = import_module('app.{}.routes'.format(module_name))
         app.register_blueprint(module.blueprint)
 
 def configure_database(app):
     def add_hospitals():
-        from app.home.models import ( Hospital, Region, Hospital_Type, Hospital_Nomenklatura, PatientStatus, 
+        from app.main.models import ( Hospital, Region, Hospital_Type, Hospital_Nomenklatura, PatientStatus, 
             Foreign_Country, Infected_Country_Category, ContactedPersons, TravelType)
        
         # Clean the tables
@@ -117,7 +116,7 @@ def configure_database(app):
         db.session.commit()
 
     def initialize_db(db):
-        from app.home.models import Hospital
+        from app.main.models import Hospital
         hospitals = Hospital.query.count()
         
         if hospitals == 0:

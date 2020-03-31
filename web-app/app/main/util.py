@@ -1,4 +1,4 @@
-from app.home.models import Region, FlightCode
+from app.main.models import Region, FlightCode
 from app import constants as c
 from app import db
 

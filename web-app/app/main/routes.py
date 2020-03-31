@@ -4,13 +4,13 @@ License: MIT
 Copyright (c) 2019 - present AppSeed.us
 """
 
-from app.home import blueprint
+from app.main import blueprint
 from flask import render_template, redirect, url_for, request
 from flask_login import login_required, current_user
 from app import login_manager, db
 from app import constants as c
 from jinja2 import TemplateNotFound
-from app.home.models import (Patient, Hospital, Region, Hospital_Type, Hospital_Nomenklatura, PatientStatus, Foreign_Country, 
+from app.main.models import (Patient, Hospital, Region, Hospital_Type, Hospital_Nomenklatura, PatientStatus, Foreign_Country, 
     Infected_Country_Category, ContactedPersons, FlightCode, TravelType)
 from datetime import datetime
 from flask_uploads import UploadSet
@@ -19,7 +19,7 @@ from opencage.geocoder import OpenCageGeocode
 import numpy as np
 from wtforms import SelectField
 import math
-from app.home.forms import (PatientForm, UploadDataForm, TableSearchForm, UpdateProfileForm, AddHospitalsDataForm, HospitalSearchForm, 
+from app.main.forms import (PatientForm, UploadDataForm, TableSearchForm, UpdateProfileForm, AddHospitalsDataForm, HospitalSearchForm, 
     UpdateHospitalProfileForm, CreateUserForm, UpdateUserForm)
 import json
 import nltk
@@ -28,9 +28,9 @@ import re
 import requests
 from multiprocessing.pool import ThreadPool as threadpool
 import itertools
-from app.base.models import User
-from app.home.util import get_regions, get_regions_choices, get_flight_code
-from app.base.util import hash_pass
+from app.login.models import User
+from app.main.util import get_regions, get_regions_choices, get_flight_code
+from app.login.util import hash_pass
 from sqlalchemy import func
 from flask_babelex import _
 
@@ -38,7 +38,7 @@ from flask_babelex import _
 @login_required
 def index():
     if not current_user.is_authenticated:
-        return redirect(url_for('base_blueprint.login'))
+        return redirect(url_for('login_blueprint.login'))
 
     q = Patient.query
     
@@ -67,7 +67,7 @@ def index():
 @blueprint.route('/<template>')
 def route_template(template, **kwargs):
     if not current_user.is_authenticated:
-        return redirect(url_for('base_blueprint.login'))
+        return redirect(url_for('login_blueprint.login'))
     try:
         q = Patient.query
     
@@ -100,7 +100,7 @@ def route_template(template, **kwargs):
 @blueprint.route("/get_hospital_by_region", methods=['POST'])
 def get_hospital_by_region():
     if not current_user.is_authenticated:
-        return redirect(url_for('base_blueprint.login'))
+        return redirect(url_for('login_blueprint.login'))
 
     region_id = request.form.get("region_id")
     hospital_type_id = request.form.get("hospital_type_id")
@@ -115,7 +115,7 @@ def get_hospital_by_region():
 @blueprint.route('/add_person', methods=['GET', 'POST'])
 def add_patient():
     if not current_user.is_authenticated:
-        return redirect(url_for('base_blueprint.login'))
+        return redirect(url_for('login_blueprint.login'))
 
     patient_form = PatientForm()
 
@@ -191,28 +191,6 @@ def get_lat_lng(patients):
             # parsed_address = {k: v for (v, k) in parse_address(patient.home_address)}
 
             address_query = home_address
-            # if "city" not in parsed_address:
-            #     city = region_name if "city" not in parsed_address else parsed_address["city"]
-            #     country = "Kazakhstan" if "country" not in parsed_address else parsed_address["country"]
-
-            #     address_query = "city={};country={}".format(city, country)
-                
-            #     street = None
-
-            #     if "road" in parsed_address:
-            #         street = parsed_address["road"]
-            #     elif "house" in parsed_address:
-            #         street = parsed_address["house"]
-                
-            #     if street:
-            #         address_query += ";street={}".format(street)
-
-            #     if "house_number" in parsed_address:
-            #         address_query += ";houseNumber={}".format(parsed_address["house_number"])
-            #     params['qq'] = address_query
-            # else:
-            #     address_query = address_query.replace(parsed_address["city"], "")
-            #     address_query = "{}, город {}".format(address_query, parsed_address["city"])
             params['q'] = "{}, {}".format(address_query, region_name)
 
             url = "https://geocode.search.hereapi.com/v1/geocode"
@@ -239,7 +217,7 @@ def get_lat_lng(patients):
 @blueprint.route('/add_data', methods=['GET', 'POST'])
 def add_data():
     if not current_user.is_authenticated:
-        return redirect(url_for('base_blueprint.login'))
+        return redirect(url_for('login_blueprint.login'))
 
     data_form = UploadDataForm()
     docs = UploadSet('documents', ['xls', 'xlsx', 'csv'])
@@ -383,7 +361,7 @@ def add_data():
 @login_required
 def patients():
     if not current_user.is_authenticated:
-        return redirect(url_for('base_blueprint.login'))
+        return redirect(url_for('login_blueprint.login'))
 
     form = TableSearchForm()
 
@@ -478,9 +456,9 @@ def patients():
 @login_required
 def delete_patient():
     if not current_user.is_authenticated:
-        return redirect(url_for('base_blueprint.login'))
+        return redirect(url_for('login_blueprint.login'))
     
-    return_url = "{}?delete".format(url_for('home_blueprint.patients'))
+    return_url = "{}?delete".format(url_for('main_blueprint.patients'))
 
     if len(request.form):
         if "delete" in request.form:
@@ -489,7 +467,7 @@ def delete_patient():
             
             if patient.first().is_contacted_person:
                 q = ContactedPersons.query.filter_by(person_id=patient_id)
-                return_url = "{}?id={}".format(url_for('home_blueprint.contacted_persons'), q.first().patient_id)
+                return_url = "{}?id={}".format(url_for('main_blueprint.contacted_persons'), q.first().patient_id)
                 q.delete()
 
             patient.delete()
@@ -501,7 +479,7 @@ def delete_patient():
 @login_required
 def patient_profile():
     if not current_user.is_authenticated:
-        return redirect(url_for('base_blueprint.login'))
+        return redirect(url_for('login_blueprint.login'))
 
     if "id" in request.args:
         patient = Patient.query.filter_by(id=request.args["id"]).first()
@@ -666,7 +644,7 @@ def patient_profile():
 @login_required
 def all_hospitals():
     if not current_user.is_authenticated:
-        return redirect(url_for('base_blueprint.login'))
+        return redirect(url_for('login_blueprint.login'))
     
     form = HospitalSearchForm(request.form)
 
@@ -737,7 +715,7 @@ def all_hospitals():
 @blueprint.route('/add_hospital', methods=['GET', 'POST'])
 def add_hospital():
     if not current_user.is_authenticated:
-        return redirect(url_for('base_blueprint.login'))
+        return redirect(url_for('login_blueprint.login'))
 
     patient_form = PatientForm()
     if 'create' in request.form:
@@ -774,7 +752,7 @@ def add_hospital():
 @blueprint.route('/add_hospitals_csv', methods=['GET', 'POST'])
 def add_hospitals_csv():
     if not current_user.is_authenticated:
-        return redirect(url_for('base_blueprint.login'))
+        return redirect(url_for('login_blueprint.login'))
 
     data_form = AddHospitalsDataForm()
     docs = UploadSet('documents', 'csv')
@@ -825,7 +803,7 @@ def add_hospitals_csv():
 @login_required
 def hospital_profile():
     if not current_user.is_authenticated:
-        return redirect(url_for('base_blueprint.login'))
+        return redirect(url_for('login_blueprint.login'))
 
     if "id" in request.args:
         hospital = Hospital.query.filter_by(id=request.args["id"]).first()
@@ -861,7 +839,7 @@ def hospital_profile():
 @login_required
 def countries_categories():
     if not current_user.is_authenticated:
-        return redirect(url_for('base_blueprint.login'))
+        return redirect(url_for('login_blueprint.login'))
 
     categories = Infected_Country_Category.query.all()
 
@@ -872,7 +850,7 @@ def countries_categories():
 @login_required
 def contacted_persons():
     if not current_user.is_authenticated:
-        return redirect(url_for('base_blueprint.login'))
+        return redirect(url_for('login_blueprint.login'))
 
     form = TableSearchForm()
     regions = get_regions(current_user)
@@ -917,7 +895,7 @@ def contacted_persons():
 @blueprint.route('/add_contacted_person', methods=['GET', 'POST'])
 def add_contacted_person():
     if not current_user.is_authenticated:
-        return redirect(url_for('base_blueprint.login'))
+        return redirect(url_for('login_blueprint.login'))
 
     patient_form = PatientForm()
     regions = get_regions(current_user)
@@ -979,7 +957,7 @@ def add_contacted_person():
 @login_required
 def users():
     if not current_user.is_authenticated:
-        return redirect(url_for('base_blueprint.login'))
+        return redirect(url_for('login_blueprint.login'))
 
     if not current_user.is_admin:
         return render_template('errors/error-500.html'), 500
@@ -1014,7 +992,7 @@ def users():
 @blueprint.route('/add_user', methods=['GET', 'POST'])
 def add_user():
     if not current_user.is_authenticated:
-        return redirect(url_for('base_blueprint.login'))
+        return redirect(url_for('login_blueprint.login'))
 
     if not current_user.is_admin:
         return render_template('errors/error-500.html'), 500        
@@ -1046,7 +1024,7 @@ def add_user():
 @login_required
 def user_profile():
     if not current_user.is_authenticated:
-        return redirect(url_for('base_blueprint.login'))
+        return redirect(url_for('login_blueprint.login'))
 
     if not current_user.is_admin:
         return render_template('errors/error-500.html'), 500        
@@ -1103,12 +1081,12 @@ def user_profile():
 @login_required
 def delete_user():
     if not current_user.is_authenticated:
-        return redirect(url_for('base_blueprint.login'))
+        return redirect(url_for('login_blueprint.login'))
 
     if not current_user.is_admin:
         return render_template('errors/error-500.html'), 500        
     
-    return_url = url_for('home_blueprint.users')
+    return_url = url_for('main_blueprint.users')
 
     if len(request.form):
         if "delete" in request.form:

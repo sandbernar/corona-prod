@@ -13,15 +13,15 @@ from flask_login import (
 )
 
 from app import db, login_manager
-from app.base import blueprint
-from app.base.forms import LoginForm, CreateAccountForm
-from app.base.models import User
+from app.login import blueprint
+from app.login.forms import LoginForm, CreateAccountForm
+from app.login.models import User
 
-from app.base.util import verify_pass
+from app.login.util import verify_pass
 
 @blueprint.route('/')
 def route_default():
-    return redirect(url_for('base_blueprint.login'))
+    return redirect(url_for('login_blueprint.login'))
 
 @blueprint.route('/page_<error>')
 def route_errors(error):
@@ -45,7 +45,7 @@ def login():
         if user and verify_pass( password, user.password):
 
             login_user(user)
-            return redirect(url_for('base_blueprint.route_default'))
+            return redirect(url_for('login_blueprint.route_default'))
 
         # Something (user or pass) is not ok
         return render_template( 'login/login.html', msg='Wrong user or password', form=login_form)
@@ -53,41 +53,13 @@ def login():
     if not current_user.is_authenticated:
         return render_template( 'login/login.html',
                                 form=login_form)
-    return redirect(url_for('home_blueprint.index'))
-
-# @blueprint.route('/create_user', methods=['GET', 'POST'])
-# def create_user():
-#     login_form = LoginForm(request.form)
-#     create_account_form = CreateAccountForm(request.form)
-#     if 'register' in request.form:
-
-#         username  = request.form['username']
-#         email     = request.form['email'   ]
-
-
-#         user = User.query.filter_by(username=username).first()
-#         if user:
-#             return render_template( 'login/register.html', msg='Имя пользователя уже зарегистрировано', form=create_account_form)
-
-#         user = User.query.filter_by(email=email).first()
-#         if user:
-#             return render_template( 'login/register.html', msg='Данный Email уже зарегистрирован', form=create_account_form)
-
-#         # else we can create the user
-#         user = User(**request.form)
-#         db.session.add(user)
-#         db.session.commit()
-
-#         return render_template( 'login/register.html', success='Ваш аккаунт зарегистрирован. Пожалуйста, <a href="/login">авторизуйтесь</a>', form=create_account_form)
-
-#     else:
-#         return render_template( 'login/register.html', form=create_account_form)
+    return redirect(url_for('main_blueprint.index'))
 
 @blueprint.route('/logout')
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for('base_blueprint.login'))
+    return redirect(url_for('login_blueprint.login'))
 
 ## Errors
 

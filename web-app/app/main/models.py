@@ -10,7 +10,7 @@ from sqlalchemy import Column, Integer, String, Date, Boolean, Float, ForeignKey
 from app import db
 from app import constants as c
 
-from app.base.util import hash_pass
+from app.login.util import hash_pass
 
 class Patient(db.Model):
 

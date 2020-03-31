@@ -9,7 +9,7 @@ from sqlalchemy import Binary, Column, Integer, String, Date, Boolean, ForeignKe
 
 from app import db, login_manager
 
-from app.base.util import hash_pass
+from app.login.util import hash_pass
 
 class User(db.Model, UserMixin):
     __tablename__ = 'User'
