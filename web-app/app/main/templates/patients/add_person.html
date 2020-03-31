@@ -34,12 +34,42 @@
   </div>
   {% endif %}
 
-  <!-- Table -->
   <div class="row">
     <div class="col">
       <div class="card shadow">
         <div class="card-header bg-transparent">
-          <h3 class="mb-0">{{ _("Добавить Пациента Вручную") }}</h3>
+          <h3 class="mb-0">{{ _("Выбрать Тип Въезда") }}</h3>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col">
+              <div class="form-group">
+                <label for="arrival-date-input" class="form-control-label">{{ _("Дата Въезда") }}</label>
+                {{ form.arrival_date(class="form-control", type="date") }}
+              </div>
+            </div>  
+            <div class="col">                        
+              <div class="form-group">
+                <label for="flight-no-input" class="form-control-label">{{ _("Тип Въезда в Страну") }}</label>
+                {{ form.travel_type_id(class="form-control", id="travel_type_id") }}
+              </div>
+            </div>
+            <div class="col">                        
+              <div class="form-group">
+                <label for="flight-no-input" class="form-control-label">{{ _("Номер Рейса") }}</label>
+                {{ form.flight_code(class="form-control", type="text", placeholder="SU1951") }}
+              </div>
+            </div>                        
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row mt-3">
+    <div class="col">
+      <div class="card shadow">
+        <div class="card-header bg-transparent">
+          <h3 class="mb-0">{{ _("Информация о Пациенте") }}</h3>
         </div>
         <div class="card-body">
           <div class="row">
@@ -70,35 +100,19 @@
                           <label for="npass-input" class="form-control-label">{{ _("Номер Паспорта") }}</label>
                           {{ form.pass_num(placeholder=_("N12345678"), class="form-control", type="text") }}
                         </div>
-                        <div class="form-group">
-                          <label for="phone-input" class="form-control-label">{{ _("Телефон") }}</label>
-                          {{ form.telephone(placeholder=_("77017123456"), class="form-control", type="tel") }}
-                        </div>
                       </div>
                     </div>
                   </div>
                   <div class="col">
                     <div class="card shadow">
-                      <div class="card-header bg-transparent">
-                        <div class="form-group">
-                          <label for="arrival-date-input" class="form-control-label">{{ _("Дата Въезда") }}</label>
-                          {{ form.arrival_date(class="form-control", type="date") }}
-                        </div>
-                        <div class="form-group">
-                          <label for="flight-no-input" class="form-control-label">{{ _("Тип Въезда в Страну") }}</label>
-                          {{ form.travel_type_id(class="form-control", id="travel_type_id") }}
-                        </div>
-                        <div class="form-group">
-                          <label for="flight-no-input" class="form-control-label">{{ _("Номер Рейса") }}</label>
-                          {{ form.flight_code(class="form-control", type="text", placeholder="SU1951") }}
-                        </div>
+                      <div class="card-header bg-transparent">                      
                         <div class="form-group">
                           <label for="14days-place-input" class="form-control-label">{{ _("Место и сроки пребывания в последние 14 дней") }}</label>
                           {{ form.visited_country(class="form-control", type="text", placeholder=_("Италия") ) }}
                         </div>
                         <div class="form-group">
                           <label for="region-input" class="form-control-label">{{ _("Регион") }}</label>
-                                {{ form.region_id(class="form-control", id="region_id") }}                          
+                          {{ form.region_id(class="form-control", id="region_id") }}                          
                         </div>
                         <div class="form-group">
                           <label for="home-input" class="form-control-label">{{ _("Место жительства / возможное место проживания") }}</label>
@@ -108,6 +122,10 @@
                           <label for="job-input" class="form-control-label">{{ _("Место Работы") }}</label>
                           {{ form.job(class="form-control", type="text", placeholder=_("Алматы") ) }}
                         </div>
+                        <div class="form-group">
+                          <label for="phone-input" class="form-control-label">{{ _("Телефон") }}</label>
+                          {{ form.telephone(placeholder=_("77017123456"), class="form-control", type="tel") }}
+                        </div>                        
                       </div>
                     </div>
                   </div>
@@ -152,9 +170,9 @@
                     </div>
                   </div>
                   <div class="col-lg-7">
-                    <div class="card shadow">
-                      <div class="card-header bg-transparent">
-                        <div class="card-body">
+                    <div class="card shadow" style="height:100%;">
+                      <div class="card-header bg-transparent" style="height:100%;">
+                        <div class="card-body" style="height:100%;">
                           <div class="row">
                             <div class="col">
                               <div class="form-group">
@@ -183,8 +201,8 @@
                       </div>
                     </div>
                   </div>                  
-                  <div>
-                    <button type="submit" name="create" class="btn btn-primary" type="button" style="height:100%">
+                  <div class="col-md-auto">
+                    <button type="submit" name="create" class="btn btn-primary" type="button" style="height:100%; width:100%;">
                       {{ _("Отправить") }}
                     </button>
                   </div>
