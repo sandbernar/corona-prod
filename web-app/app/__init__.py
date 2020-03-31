@@ -34,8 +34,9 @@ def register_blueprints(app):
 
 def configure_database(app):
     def add_hospitals():
-        from app.main.models import (Region, PatientStatus, Foreign_Country, Infected_Country_Category, ContactedPersons, TravelType)
         from app.main.hospitals.models import  Hospital, Hospital_Type, Hospital_Nomenklatura
+        from app.main.patients.models import PatientStatus, ContactedPersons
+        from app.main.models import Region, Foreign_Country, Infected_Country_Category, TravelType
        
         # Clean the tables
         TravelType.query.delete()
