@@ -44,6 +44,7 @@
 $> export CRM_ENDPOINT="crm.yourwebsite.kz"
 $> export DATABASE_USER="someuser"
 $> export DATABASE_PASSWORD="somepassword"
+$> export CERTIFICATE_PATH="path_to_certificate"
 ```
 
 Далее

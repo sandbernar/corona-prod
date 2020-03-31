@@ -17,6 +17,11 @@ if [[ -z "${DATABASE_PASSWORD}" ]]; then
   exit 1
 fi
 
+if [[ -z "${CERTIFICATE_PATH}" ]]; then
+  echo "NO CERTIFICATE_PATH env variable"
+  exit 1
+fi
+
 # exit immediately if a command exits with a non-zero status.
 set -e
 
@@ -30,6 +35,11 @@ sudo apt install nginx
 sudo ufw allow 'Nginx Full'
 
 # setup nginx configuration for CRM endpoint
+sudo mkdir -p /etc/certs/${CRM_ENDPOINT}
+
+sudo openssl pkcs12 -nokeys -in ${CERTIFICATE_PATH} -out /etc/certs/${CRM_ENDPOINT}/fullchain.pem
+sudo openssl pkcs12 -nocerts -nodes -in ${CERTIFICATE_PATH} -out /etc/certs/${CRM_ENDPOINT}/privkey.pem
+
 cat <<EOF >/etc/nginx/sites-available/CRM.conf
 upstream crm {
     server localhost:5005;
@@ -49,6 +59,15 @@ server {
         proxy_set_header Connection "upgrade";
         proxy_read_timeout 950s;
     }
+    listen 443 ssl;
+
+    ssl_certificate /etc/certs/${CRM_ENDPOINT}/fullchain.pem;
+    ssl_certificate_key /etc/certs/${CRM_ENDPOINT}/privkey.pem;
+    
+    ssl_session_cache shared:le_nginx_SSL:10m;
+    ssl_session_timeout 1440m;
+    ssl_session_tickets off;
+    ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
 }
 EOF
 sudo ln -s /etc/nginx/sites-available/CRM.conf /etc/nginx/sites-enabled/CRM.conf
@@ -56,7 +75,7 @@ sudo service nginx reload
 
 # install docker
 sudo apt install apt-transport-https ca-certificates curl software-properties-common
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+curl -fsSLk https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"
 sudo apt update
 sudo apt install docker-ce
@@ -64,7 +83,7 @@ sudo usermod -aG docker ${USER}
 su - ${USER}
 
 # docker-compose
-sudo curl -L https://github.com/docker/compose/releases/download/1.21.2/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
+sudo curl -Lk https://github.com/docker/compose/releases/download/1.21.2/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
 
 # install postgres
@@ -81,7 +100,7 @@ sudo -i -u postgres psql -c "CREATE DATABASE anti_corona_crm WITH TEMPLATE = tem
 sudo -i -u postgres psql -c "CREATE ROLE ${DATABASE_USER} LOGIN SUPERUSER PASSWORD '${DATABASE_PASSWORD}'"
 
 # setup CRM
-git clone github.com/thelastpolaris/anti-corona-crm ~/anti-corona-crm
+git clone https://github.com/thelastpolaris/anti-corona-crm ~/anti-corona-crm
 touch ~/anti-corona-crm/web-app/.env
 
 cat <<EOF >~/anti-corona-crm/web-app/.env
