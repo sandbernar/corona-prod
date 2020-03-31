@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://github.com/thelastpolaris/anti-corona-crm/">
-    <img src="web-app/app/base/static/assets/img/brand/blue.png" alt="Logo" width="400">
+    <img src="web-app/app/main/static/assets/img/brand/blue.png" alt="Logo" width="400">
   </a>
 
   <h3 align="center">COVID-19 | Центр Контроля</h3>
