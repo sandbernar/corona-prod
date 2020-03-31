@@ -27,10 +27,15 @@ def register_blueprints(app):
         module = import_module('app.{}.routes'.format(module_name))
         app.register_blueprint(module.blueprint)
 
+        if module_name == "main":
+            for submodule_name in ["users", "hospitals"]:
+                module = import_module('app.{}.{}.routes'.format(module_name, submodule_name))
+                app.register_blueprint(module.blueprint)            
+
 def configure_database(app):
     def add_hospitals():
-        from app.main.models import ( Hospital, Region, Hospital_Type, Hospital_Nomenklatura, PatientStatus, 
-            Foreign_Country, Infected_Country_Category, ContactedPersons, TravelType)
+        from app.main.models import (Region, PatientStatus, Foreign_Country, Infected_Country_Category, ContactedPersons, TravelType)
+        from app.main.hospitals.models import  Hospital, Hospital_Type, Hospital_Nomenklatura
        
         # Clean the tables
         TravelType.query.delete()
@@ -116,7 +121,7 @@ def configure_database(app):
         db.session.commit()
 
     def initialize_db(db):
-        from app.main.models import Hospital
+        from app.main.hospitals.models import Hospital
         hospitals = Hospital.query.count()
         
         if hospitals == 0:
@@ -171,7 +176,7 @@ def apply_themes(app):
         return url_for(endpoint, **values)
 
 def create_app(config, selenium=False):
-    app = Flask(__name__, static_folder='base/static')
+    app = Flask(__name__, static_folder='main/static')
     app.config.from_object(config)
     if selenium:
         app.config['LOGIN_DISABLED'] = True

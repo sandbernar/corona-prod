@@ -55,22 +55,6 @@ class UpdateProfileForm(PatientForm):
 
     hospital_id = SelectField('Hospital_id', id='hospital_id' , validators=[DataRequired()])
 
-class CreateUserForm(FlaskForm):
-    username = TextField('Username'     , id='username_create' , validators=[DataRequired()])
-    email    = TextField('Email'        , id='email_create'    )
-    telephone    = TextField('Telephone'        , id='tel_create'    )
-    password = TextField('Password' , id='pwd_create'      , validators=[DataRequired()])
-
-    region_id = SelectField('Region', id='region', validators=[DataRequired()])
-
-class UpdateUserForm(FlaskForm):
-    username = TextField('Username'     , id='username_create')
-    email    = TextField('Email'        , id='email_create'    )
-    telephone    = TextField('Telephone'        , id='tel_create'    )
-    password = TextField('Password' , id='pwd_create'      )
-
-    region_id = SelectField('Region', id='region', validators=[DataRequired()])
-
 class UploadDataForm(FlaskForm):
     docs = UploadSet('documents', ['xls', 'xlsx', 'csv'])
     file = FileField    (validators=[FileAllowed(docs, 'Только файлы с расширением .xls, .xlsx и .csv!'), FileRequired('Файл пуст!')])
@@ -86,24 +70,3 @@ class TableSearchForm(FlaskForm):
     full_name = TextField(id='full_name')
     iin = TextField(id='iin')
     telephone = TextField(id='telephone')
-
-
-class AddHospitalsDataForm(UploadDataForm):
-	region = TextField('Region', id='region'   , validators=[DataRequired()])
-	hospital_type = SelectField('Hospital Type', id='hospital_type',
-    	default=0,
-    	choices=[(0, "Больница"),
-    			(1, "Диспансер"),
-    			(2, "Поликлиника")])
-
-class HospitalSearchForm(FlaskForm):
-	region = SelectField(id='region')
-	nomenklatura = SelectField(id='nomenklatura')
-	hospital_type = SelectField(id='hospital_type')
-
-
-class UpdateHospitalProfileForm(FlaskForm):
-	is_found = BooleanField(id="is_found")
-	in_hospital = BooleanField(id="in_hospital")
-
-	hospital = TextField('Hospital', id='hospital'   , validators=[DataRequired()])
