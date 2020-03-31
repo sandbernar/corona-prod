@@ -61,5 +61,6 @@ $> docker-compose down && docker-compose up -d
   ## Обновление проекта
 ```bash
 $> cd path_to_project/web-app/
+$> git pull
 $> docker-compose down && docker-compose build && docker-compose up -d
 ```
