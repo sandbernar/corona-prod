@@ -8,7 +8,7 @@ from wtforms import TextField, SelectField, DateField
 from wtforms.validators import DataRequired
 import app.constants as c
 
-class AddFlightForm(FlaskForm):
+class FlightForm(FlaskForm):
     code = TextField('Code'     , id='flight_code' , validators=[DataRequired()])
     date    = DateField('Date'        , id='arrival_date', validators=[DataRequired()])
 
@@ -26,11 +26,3 @@ class AddFlightForm(FlaskForm):
                                 id='to_country',
                                 validators=[DataRequired()])
     to_city = TextField('To City', id='to_city', validators=[DataRequired()])
-
-# class UpdateUserForm(FlaskForm):
-#     username = TextField('Username'     , id='username_create')
-#     email    = TextField('Email'        , id='email_create'    )
-#     telephone    = TextField('Telephone'        , id='tel_create'    )
-#     password = TextField('Password' , id='pwd_create'      )
-
-#     region_id = SelectField('Region', id='region', validators=[DataRequired()])

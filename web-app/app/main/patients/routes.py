@@ -308,10 +308,10 @@ def patients():
     if "flight_code" in request.args:
         flight_code = request.args["flight_code"]
         if flight_code != '' and flight_code != c.all_flight_codes:
-            fc = FlightCode.query.filter_by(name=flight_code).first()
+            fc = FlightCode.query.filter_by(code=flight_code).first()
             if fc:
                 filt["flight_code_id"] = fc.id
-                form.flight_code.default = fc.name
+                form.flight_code.default = fc.code
         else:
             form.flight_code.default = c.all_flight_codes
 
@@ -365,7 +365,7 @@ def patients():
 
     max_page = math.ceil(total_len/per_page)
 
-    flight_codes_list = [c.all_flight_codes] + [ code.name for code in FlightCode.query.all() ]
+    flight_codes_list = [c.all_flight_codes] + [ code.code for code in FlightCode.query.all() ]
 
     change = None
     error_msg = None

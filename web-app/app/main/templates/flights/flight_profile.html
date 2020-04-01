@@ -1,0 +1,201 @@
+{% extends "base_site.html" %}
+
+{% block title %} Profile {% endblock title %}
+
+{% block stylesheets %}
+{{ super() }}
+{% endblock stylesheets %}
+
+{% block content %}
+
+{% include "site_template/navigation.html" %}
+
+<!-- Header -->
+{% include "site_template/top-stats.html" %}
+
+
+<!-- Page content -->
+<div class="container-fluid mt--7">
+  {% with change=change, error_msg=error_msg %}
+  {% include "site_template/change_notification.html" %}
+  {% endwith %}
+
+    <div class="row">
+      <div class="col-xl-7 order-xl-2 mt-2 mb-xl-0">         
+        <div class="card card-profile shadow">
+          <div class="row justify-content-center mt-2">
+            <div class="col">
+              <div class="card-body pt-0 pt-md-1">
+                <div class="text-center">
+                  <div class="col">
+
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>      
+      </div>
+      <div class="col-xl-5 order-xl-1">
+        <div class="card bg-secondary shadow mt-2">
+          <div class="card-body">
+            <form>
+              <!-- Address -->
+              <h6 class="heading-small text-muted mb-4">{{ _("О Рейсе") }}</h6>
+              <div class="pl-lg-4">
+                <div class="row">
+                  <div class="col-md-12">
+                    <div class="row">
+                     <div class="col">
+                      <div class="form-group">
+                        <label class="form-control-label" for="input-home_address">{{ _("Код Рейса") }}</label>
+                        {{ form.code(placeholder="KC 971",class="form-control", type="text", disabled=True) }}
+                      </div>
+                    </div>
+                    <div class="col">
+                      <div class="form-group">
+                        <label for="region-input" class="form-control-label">{{ _("Дата") }}</label>
+                        {{ form.date(class="form-control", type="date", disabled=True) }}                          
+                      </div>       
+                    </div>
+                  </div>                 
+                </div>
+              </div>
+            </div>
+            <hr class="my-3" />
+            <h6 class="heading-small text-muted mb-4">{{ _("Геоинформация о Полете") }}</h6>
+            <div class="pl-lg-4">
+              <div class="row">
+                <div class="col">
+                  <div class="form-group">
+                    <label for="name-input" class="form-control-label">{{ _("Из Страны") }}</label>
+                    {{ form.from_country(class="form-control", disabled=True) }}
+                  </div>
+                  <div class="form-group">
+                    <label for="iin-input" class="form-control-label">{{ _("Из Города") }}</label>
+                    {{ form.from_city(class="form-control", placeholder="Нур-Султан", type="text", disabled=True) }}
+                  </div>
+                </div>
+                <div class="col">
+                  <div class="form-group">
+                    <label for="name-input" class="form-control-label">{{ _("В Страну") }}</label>
+                    {{ form.to_country(class="form-control", disabled=True) }}
+                  </div>
+                  <div class="form-group">
+                    <label for="iin-input" class="form-control-label">{{ _("В Город") }}</label>
+                    {{ form.to_city(class="form-control", placeholder="Алматы", type="text", disabled=True) }}
+                  </div>                                                  
+                </div>
+              </div>                
+            </div>                
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row-xl mt-3">
+      <div class="card shadow">
+        <div class="card-header border-0">
+          <div class="row">
+            <div class="col">
+              {% if patients %}
+              <h3 class="mb-0">{{ _("Всего") }} - {{total_patients}}, {{ _("показано") }} {{ patients|length }} {{ _("пациентов") }}</h3>
+              {% else %}
+              <h3 class="mb-0">{{total_patients}} {{ _("пациентов") }}</h3>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="table align-items-center table-flush">
+            {% if patients %}
+            <thead class="thead-light">
+              <tr>
+                <th scope="col">{{ _("ФИО") }}</th>
+                <th scope="col">{{ _("Телефон") }}</th>
+                <th scope="col">{{ _("Дата Въезда") }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% endif %}
+              {% for patient in patients %}
+              <tr>
+                <th scope="row">
+                  <div class="media align-items-center">
+                    <div class="media-body">
+                      <span class="mb-0 text-sm"><a href="/patient_profile?id={{patient.id}}">{{ patient.full_name }}</a></span>
+                    </div>
+                  </div>
+                </th>
+                <td>
+                  {{ patient.telephone }}
+                </td>
+                <td>
+                  {{ patient.arrival_date }}
+                </td>
+              </tr>
+              {% endfor %}
+
+            </tbody>
+          </table>
+        </div>
+        {% if max_page > 1%}
+        <form method="GET">                    
+          <div class="card-footer py-4">
+            <nav aria-label="...">
+              <ul class="pagination justify-content-end mb-0">
+                <li class="page-item {% if page == 1%}disabled{%endif%}">
+                  <a class="page-link" onclick="setSearchParam('page', {{ page - 1 }})">
+                    <i class="fas fa-angle-left"></i>
+                    <span class="sr-only">Previous</span>
+                  </a>
+                </li>
+                <li class="page-item"><div class="page-link" style="cursor: default;"> {{ page }}</div></li>
+                <li class="page-item {% if page == max_page %}disabled{%endif%}">
+                  <a class="page-link" onclick="setSearchParam('page', {{ page + 1 }})" >
+                    <i class="fas fa-angle-right"></i>
+                    <span class="sr-only">Next</span>
+                  </a>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        {% endif %}
+
+      </div>   
+    </div>
+</form>
+
+{% include "site_template/footer.html" %}
+
+</div>    
+
+{% endblock content %}
+
+{% block javascripts %}
+{{ super()}}
+<script type="text/javascript">
+  var setSearchParam = function(key, value) {
+    if (!window.history.pushState) {
+      return;
+    }
+
+    if (!key) {
+      return;
+    }
+
+    var url = new URL(window.location.href);
+    var params = new window.URLSearchParams(window.location.search);
+    if (value === undefined || value === null) {
+      params.delete(key);
+    } else {
+      params.set(key, value);
+    }
+
+    url.search = params;
+    url = url.toString();
+    window.history.replaceState({url: url}, null, url);
+    window.location.href = window.location.href
+  }
+</script>
+{% endblock javascripts %}

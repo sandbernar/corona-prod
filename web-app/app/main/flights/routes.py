@@ -10,8 +10,9 @@ from app import login_manager, db
 
 from app.main.models import Region
 from app.main.flights.models import FlightCode, FlightTravel
-from app.main.flights.forms import AddFlightForm
+from app.main.flights.forms import FlightForm
 from app.main.forms import TableSearchForm
+from app.main.patients.models import Patient
 
 import math
 
@@ -67,7 +68,7 @@ def add_flight():
     if not current_user.is_admin:
         return render_template('errors/error-500.html'), 500        
 
-    form = AddFlightForm()
+    form = FlightForm()
     # regions = get_regions(current_user)
 
     if 'create' in request.form:
@@ -88,60 +89,42 @@ def add_flight():
         return route_template( 'flights/add_flight', form=form, change=None, error_msg=None)
 
 
-# @blueprint.route('/user_profile', methods=['GET', 'POST'])
-# @login_required
-# def user_profile():
-#     if not current_user.is_authenticated:
-#         return redirect(url_for('login_blueprint.login'))
+@blueprint.route('/flight_profile', methods=['GET', 'POST'])
+@login_required
+def flight_profile():
+    if not current_user.is_authenticated:
+        return redirect(url_for('login_blueprint.login'))
 
-#     if not current_user.is_admin:
-#         return render_template('errors/error-500.html'), 500        
-
-#     if "id" in request.args:
-#         user = User.query.filter_by(id=request.args["id"]).first()
+    if "id" in request.args:
+        flight = FlightCode.query.filter_by(id=request.args["id"]).first()
         
-#         if not user:
-#             return render_template('errors/error-404.html'), 404
-#         else:
-#             form = UpdateUserForm()
+        if not flight:
+            return render_template('errors/error-404.html'), 404
+        else:
+            form = FlightForm()
             
-#             change = None
-#             error_msg = None
+            change = None
+            error_msg = None
+            patients = []
             
-#             if 'update' in request.form:
-#                 if request.form['username']:
-#                     new_username = request.form['username']
-                    
-#                     if not new_username == user.username:  
-#                         if not User.query.filter_by(username = new_username).count():
-#                             user.username = new_username
-#                         else:
-#                             error_msg = _("Пользователь с таким логином уже существует")
+            q = Patient.query
 
-#                 if not error_msg:
-#                     if request.form['password']:
-#                         password = request.form['password']
+            page = 1
+            per_page = 5
 
-#                         user.password = hash_pass(password)
+            if "page" in request.args:
+                page = int(request.args["page"])
 
-#                     user.telephone = request.form['telephone']
-#                     user.email = request.form['email']
+            total_len = q.count()
 
-#                     db.session.add(user)
-#                     db.session.commit()
+            for p in q.offset((page-1)*per_page).limit(per_page).all():
+                patients.append(p)
 
-#                     change = _("Данные обновлены")
-
-#             form.username.default = user.username
-
-#             form.email.default = user.email
-#             form.telephone.default = user.telephone
-            
-#             form.region_id.choices = get_regions_choices(current_user)
-#             form.region_id.default = user.region_id
+            max_page = math.ceil(total_len/per_page)
   
 #             form.process()
-#             return route_template('users/user_profile', form = form, user=user, change=change, error_msg=error_msg)
+            return route_template('flights/flight_profile', form = form, flight=flight, change=change, error_msg=error_msg,
+            	patients=patients, total_patients=total_len, max_page=max_page, page=page)
 #     else:    
 #         return render_template('errors/error-500.html'), 500
 
