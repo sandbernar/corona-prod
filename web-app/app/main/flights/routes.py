@@ -8,7 +8,7 @@ from flask import render_template, redirect, url_for, request
 from flask_login import login_required, current_user
 from app import login_manager, db
 
-from app.main.models import Region
+from app.main.models import Region, TravelType
 from app.main.flights.models import FlightCode, FlightTravel
 from app.main.flights.forms import FlightForm
 from app.main.forms import TableSearchForm
@@ -102,12 +102,26 @@ def flight_profile():
             return render_template('errors/error-404.html'), 404
         else:
             form = FlightForm()
+
+            form.code.default = flight.code
+            form.date.default = flight.date
+
+            form.from_country.default = flight.from_country
+            form.from_city.default = flight.from_city
+
+            form.to_country.default = flight.to_country
+            form.to_city.default = flight.to_city
             
             change = None
             error_msg = None
             patients = []
             
-            q = Patient.query
+            flight_type_id = TravelType.query.filter_by(value=c.flight_type[0]).first().id
+
+            q = db.session.query(Patient, FlightTravel)
+            q = q.filter(Patient.travel_type_id == flight_type_id)
+            q = q.filter(Patient.travel_id == FlightTravel.id)
+            q = q.filter(FlightTravel.flight_code_id == flight.id)
 
             page = 1
             per_page = 5
@@ -118,11 +132,11 @@ def flight_profile():
             total_len = q.count()
 
             for p in q.offset((page-1)*per_page).limit(per_page).all():
-                patients.append(p)
+                patients.append(p[0])
 
             max_page = math.ceil(total_len/per_page)
   
-#             form.process()
+            form.process()
             return route_template('flights/flight_profile', form = form, flight=flight, change=change, error_msg=error_msg,
             	patients=patients, total_patients=total_len, max_page=max_page, page=page)
 #     else:    

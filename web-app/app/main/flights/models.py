@@ -22,7 +22,7 @@ class FlightTravel(db.Model):
     flight_code_id = Column(Integer, ForeignKey('FlightCode.id'))
     flight_code = db.relationship('FlightCode')
 
-    seat = Column(String, unique=True)
+    seat = Column(String, unique=False, nullable=True)
 
     def __init__(self, **kwargs):
         for property, value in kwargs.items():
@@ -39,15 +39,15 @@ class FlightCode(db.Model):
     __tablename__ = 'FlightCode'
 
     id = Column(Integer, primary_key=True)
-    code = Column(String, unique=True)
+    code = Column(String, unique=False)
 
     date = Column(Date, unique=False)
 
-    from_country = Column(String, unique=True)
-    from_city = Column(String, unique=True)
+    from_country = Column(String, unique=False)
+    from_city = Column(String, unique=False)
 
-    to_country = Column(String, unique=True)
-    to_city = Column(String, unique=True)
+    to_country = Column(String, unique=False)
+    to_city = Column(String, unique=False)
 
     def __init__(self, **kwargs):
         for property, value in kwargs.items():

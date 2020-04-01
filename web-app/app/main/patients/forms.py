@@ -7,6 +7,7 @@ Copyright (c) 2019 - present AppSeed.us
 from flask_wtf import FlaskForm
 from wtforms import TextField, DateField, SelectField, RadioField, BooleanField
 from wtforms.validators import DataRequired
+from app.main.forms import UploadDataForm
 from app import constants as c
 
 class PatientForm(FlaskForm):
@@ -50,3 +51,6 @@ class UpdateProfileForm(PatientForm):
     hospital_type = SelectField('Hospital Type', id='hospital_type' , validators=[DataRequired()])
 
     hospital_id = SelectField('Hospital_id', id='hospital_id' , validators=[DataRequired()])
+
+class AddFlightFromExcel(UploadDataForm):
+    flights_id = SelectField('Flights ID', id='flights_id' , validators=[DataRequired()])

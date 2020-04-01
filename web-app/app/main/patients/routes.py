@@ -17,10 +17,10 @@ from jinja2 import TemplateNotFound
 from app.main.models import Region, Foreign_Country, Infected_Country_Category, TravelType
 from app.main.patients.models import Patient, PatientStatus, ContactedPersons
 from app.main.hospitals.models import Hospital, Hospital_Type, Hospital_Nomenklatura
-from app.main.flights.models import FlightCode
+from app.main.flights.models import FlightCode, FlightTravel
 
-from app.main.patients.forms import PatientForm, UpdateProfileForm
-from app.main.forms import TableSearchForm, UploadDataForm
+from app.main.patients.forms import PatientForm, UpdateProfileForm, AddFlightFromExcel
+from app.main.forms import TableSearchForm
 
 from app.main.routes import route_template
 
@@ -146,8 +146,19 @@ def add_data():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))
 
-    data_form = UploadDataForm()
+    data_form = AddFlightFromExcel()
     docs = UploadSet('documents', ['xls', 'xlsx', 'csv'])
+
+    if not data_form.flights_id.choices:
+        data_form.flights_id.choices = []
+        for flight in FlightCode.query.all():
+            flight_name = "{}, {}, {}-{}".format(flight.date, flight.code, flight.from_city, flight.to_city)
+            data_form.flights_id.choices.append((str(flight.id), flight_name))
+
+        form_dict = request.form.to_dict()
+        if "flights_id" in form_dict:
+            data_form.flights_id.default = form_dict["flights_id"]
+        print(data_form.validate_on_submit())
 
     found_hospitals = dict()
 
@@ -161,7 +172,7 @@ def add_data():
 
         created_patients = []
 
-        def create_patient(row):
+        def create_patient(row, flight_code_id):
             patient = Patient()
             patient.full_name = row["ФИО"]
             patient.iin = row["ИИН"]
@@ -186,8 +197,13 @@ def add_data():
             except TypeError:
                 patient.arrival_date = datetime(1000, 1, 1)           
 
-            patient.flight_code_id = get_flight_code(row["рейс"])
             patient.travel_type_id = TravelType.query.filter_by(value = c.flight_type[0]).first().id
+
+            # Create travel for this user
+            flight_travel = FlightTravel(flight_code_id=flight_code_id, seat=None)
+            db.session.add(flight_travel)
+            db.session.commit()
+            patient.travel_id = flight_travel.id
 
             patient.visited_country = row["Место и сроки пребывания в последние 14 дней до прибытия в Казахстан (укажите страну, область, штат и т.д.)"]
             
@@ -218,7 +234,12 @@ def add_data():
             patient.home_address = row["Место жительство, либо предпологаемое место проживания"]
 
             patient.job = row["Место работы"]
-            patient.is_found = True if row["Найден (да/нет)"].lower() == "да" else False
+            
+            if "Найден (да/нет)" in row.keys():
+                patient.is_found = True if row["Найден (да/нет)"].lower() == "да" else False
+            else:
+                if "Госпитализирован (да/нет)" in row.keys():
+                    patient.is_found = True if row["Госпитализирован (да/нет)"].lower() == "да" else False    
     
             hospitals = Hospital.query.filter_by(region_id=patient.region_id).all()
 
@@ -255,7 +276,7 @@ def add_data():
 
             created_patients.append(patient)
 
-        patients.apply(lambda row: create_patient(row), axis=1)
+        patients.apply(lambda row: create_patient(row, request.form['flights_id'][0]), axis=1)
         added = len(patients)
 
         lat_lng_data = []
@@ -305,16 +326,6 @@ def patients():
                 filt["region_id"] = region
                 form.region.default = region
 
-    if "flight_code" in request.args:
-        flight_code = request.args["flight_code"]
-        if flight_code != '' and flight_code != c.all_flight_codes:
-            fc = FlightCode.query.filter_by(code=flight_code).first()
-            if fc:
-                filt["flight_code_id"] = fc.id
-                form.flight_code.default = fc.code
-        else:
-            form.flight_code.default = c.all_flight_codes
-
     if "not_found" in request.args:
         filt["is_found"] = False
         form.not_found.default='checked'
@@ -323,11 +334,25 @@ def patients():
         filt["is_infected"] = True
         form.is_infected.default='checked'
 
-    q = Patient.query.filter_by(**filt)
+    q = db.session.query(Patient, FlightTravel).filter_by(**filt)
+    q = q.filter(Patient.travel_id == FlightTravel.id)
+
+    if "flight_code" in request.args:
+        flight_code = request.args["flight_code"]
+        if flight_code != '' and flight_code != c.all_flight_codes:
+            fc = FlightCode.query.filter_by(code=flight_code).first()
+            if fc:
+                flight_type_id = TravelType.query.filter_by(value=c.flight_type[0]).first().id
+
+                q = q.filter(Patient.travel_type_id == flight_type_id)
+                q = q.filter(FlightTravel.flight_code_id == fc.id)
+                form.flight_code.default = fc.code
+        else:
+            form.flight_code.default = c.all_flight_codes    
 
     if "not_in_hospital" in request.args:
         in_hospital_id = PatientStatus.query.filter_by(value=c.in_hospital[0]).first().id
-        q = Patient.query.filter(Patient.status_id != in_hospital_id).filter_by(**filt)
+        q = q.filter(Patient.status_id != in_hospital_id)
 
         form.not_in_hospital.default='checked'
 
@@ -350,7 +375,8 @@ def patients():
 
     total_len = q.count()
 
-    for p in q.offset((page-1)*per_page).limit(per_page).all():
+    for result in q.offset((page-1)*per_page).limit(per_page).all():
+        p = result[0]
         contacted = ContactedPersons.query.filter_by(patient_id=p.id).all()
 
         p.contacted_count = len(contacted)
@@ -426,7 +452,7 @@ def patient_profile():
 
             hospital_types = Hospital_Type.query.all()
             form.hospital_type.choices = [(h.id, h.name) for h in hospital_types]
-            form.flight_code_id.choices = [c.unknown] + [ (code.id, code.name) for code in FlightCode.query.all() ]
+            form.flight_code_id.choices = [c.unknown] + [ (code.id, code.code) for code in FlightCode.query.all() ]
 
             if len(request.form):
                 if "hospital" in request.form:
@@ -504,7 +530,7 @@ def patient_profile():
                     else:
                         flight_code = None
 
-                    patient.flight_code_id = flight_code
+                    # patient.flight_code_id = flight_codes
 
                 if "visited_country" in request.form:
                     patient.visited_country = request.form['visited_country']
@@ -521,7 +547,7 @@ def patient_profile():
                 hospital_type_id = patient.hospital.hospital_type_id
 
             form.region_id.default = patient.region_id
-            form.flight_code_id.default = patient.flight_code_id
+            # form.flight_code_id.default = patient.flight_code_id
 
             form.travel_type_id.default = patient.travel_type_id
 

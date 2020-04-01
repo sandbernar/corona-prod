@@ -31,8 +31,7 @@ class Patient(db.Model):
     travel_type_id = Column(Integer, ForeignKey('TravelType.id'), nullable=True, default=None)
     travel_type = db.relationship('TravelType')    
 
-    flight_code_id = Column(Integer, ForeignKey('FlightCode.id'), nullable=True, default=None)
-    flight_code = db.relationship('FlightCode')
+    travel_id = Column(Integer, nullable=True, default=None, unique=False)
 
     region_id = Column(Integer, ForeignKey('Region.id'))
     region = db.relationship('Region')
