@@ -12,23 +12,6 @@ from app import constants as c
 
 from app.login.util import hash_pass
 
-class FlightCode(db.Model):
-
-    __tablename__ = 'FlightCode'
-
-    id = Column(Integer, primary_key=True)
-    name = Column(String, unique=True)
-
-    def __init__(self, **kwargs):
-        for property, value in kwargs.items():
-            if hasattr(value, '__iter__') and not isinstance(value, str):
-                value = value[0]
-                
-            setattr(self, property, value)
-
-    def __repr__(self):
-        return str(self.name)       
-
 class Region(db.Model):
 
     __tablename__ = 'Region'
@@ -53,6 +36,44 @@ class TravelType(db.Model):
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
     value = Column(String, unique=True)
+
+    def __init__(self, **kwargs):
+        for property, value in kwargs.items():
+            if hasattr(value, '__iter__') and not isinstance(value, str):
+                value = value[0]
+                
+            setattr(self, property, value)
+
+    def __repr__(self):
+        return str(self.name)
+
+class FlightTravel(db.Model):
+
+    __tablename__ = 'FlightTravel'
+
+    id = Column(Integer, primary_key=True)
+    
+    flight_code_id = Column(Integer, ForeignKey('FlightCode.id'))
+    flight_code = db.relationship('FlightCode')
+
+    seat = Column(String, unique=True)
+
+    def __init__(self, **kwargs):
+        for property, value in kwargs.items():
+            if hasattr(value, '__iter__') and not isinstance(value, str):
+                value = value[0]
+                
+            setattr(self, property, value)
+
+    def __repr__(self):
+        return str(self.seat)
+
+class FlightCode(db.Model):
+
+    __tablename__ = 'FlightCode'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String, unique=True)
 
     def __init__(self, **kwargs):
         for property, value in kwargs.items():

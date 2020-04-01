@@ -42,18 +42,18 @@
         </div>
         <div class="card-body">
           <div class="row">
+            <div class="col">                        
+              <div class="form-group">
+                <label for="flight-no-input" class="form-control-label">{{ _("Тип Въезда в Страну") }}</label>
+                {{ form.travel_type_id(class="form-control", id="travel_type_id") }}
+              </div>
+            </div>            
             <div class="col">
               <div class="form-group">
                 <label for="arrival-date-input" class="form-control-label">{{ _("Дата Въезда") }}</label>
                 {{ form.arrival_date(class="form-control", type="date") }}
               </div>
             </div>  
-            <div class="col">                        
-              <div class="form-group">
-                <label for="flight-no-input" class="form-control-label">{{ _("Тип Въезда в Страну") }}</label>
-                {{ form.travel_type_id(class="form-control", id="travel_type_id") }}
-              </div>
-            </div>
             <div class="col">                        
               <div class="form-group">
                 <label for="flight-no-input" class="form-control-label">{{ _("Номер Рейса") }}</label>
