@@ -69,6 +69,16 @@ server {
     ssl_session_tickets off;
     ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
 }
+
+server {
+    if ($host = ${CRM_ENDPOINT}) {
+        return 301 https://$host$request_uri;
+    }
+
+    server_name ${CRM_ENDPOINT};
+    listen 80;
+    return 404;
+}
 EOF
 sudo ln -s /etc/nginx/sites-available/CRM.conf /etc/nginx/sites-enabled/CRM.conf
 sudo service nginx reload
