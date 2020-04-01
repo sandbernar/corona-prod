@@ -14,9 +14,10 @@ from app import login_manager, db
 from app import constants as c
 from jinja2 import TemplateNotFound
 
-from app.main.models import Region, Foreign_Country, Infected_Country_Category, FlightCode, TravelType
+from app.main.models import Region, Foreign_Country, Infected_Country_Category, TravelType
 from app.main.patients.models import Patient, PatientStatus, ContactedPersons
 from app.main.hospitals.models import Hospital, Hospital_Type, Hospital_Nomenklatura
+from app.main.flights.models import FlightCode
 
 from app.main.patients.forms import PatientForm, UpdateProfileForm
 from app.main.forms import TableSearchForm, UploadDataForm

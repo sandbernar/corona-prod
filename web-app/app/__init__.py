@@ -28,7 +28,7 @@ def register_blueprints(app):
         app.register_blueprint(module.blueprint)
 
         if module_name == "main":
-            for submodule_name in ["users", "hospitals", "patients"]:
+            for submodule_name in ["users", "hospitals", "patients", "flights"]:
                 module = import_module('app.{}.{}.routes'.format(module_name, submodule_name))
                 app.register_blueprint(module.blueprint)            
 
@@ -37,17 +37,27 @@ def configure_database(app):
         from app.main.models import Region, Foreign_Country, Infected_Country_Category, TravelType
         from app.main.patients.models import PatientStatus, ContactedPersons
         from app.main.hospitals.models import  Hospital, Hospital_Type, Hospital_Nomenklatura
+        from app.main.flights.models import FlightTravel, FlightCode
        
         # Clear the tables
+
+        ## Travel
         TravelType.query.delete()
+        
+        ### Flight
+        FlightTravel.query.delete()
+        FlightCode.query.delete()
+
         Region.query.delete()
+
         Hospital_Type.query.delete()
         Hospital_Nomenklatura.query.delete()
+
         PatientStatus.query.delete()
+        ContactedPersons.query.delete()
 
         Infected_Country_Category.query.delete()
         Foreign_Country.query.delete()
-        ContactedPersons.query.delete()
 
         db.session.commit()
 

@@ -23,7 +23,7 @@ class Patient(db.Model):
     citizenship = Column(String, unique=False)
     pass_num = Column(String, unique=False)
     telephone = Column(String, unique=False)
-    arrival_date = Column(Date, unique=False)
+    
     visited_country = Column(String, unique=False)
     
     is_contacted_person = Column(Boolean, unique=False)
