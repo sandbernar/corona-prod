@@ -26,6 +26,18 @@ travel_types = [railway_type, flight_type, auto_type, by_foot_type, by_sea_type]
 
 unknown = (None, "Неизвестно")
 
+cyrillic_to_ascii = {
+	"Е": "E",
+	"С": "C",
+	"А": "A",
+	"Н": "H",
+	"К": "K",
+	"Х": "X",
+	"М": "M",
+	"В": "B",
+	"Т": "T"
+}
+
 # Countries
 country_category = ["1a", "1b", "2", "3", "4"]
 

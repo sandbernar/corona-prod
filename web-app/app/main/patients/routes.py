@@ -173,6 +173,8 @@ def add_data():
         created_patients = []
 
         def create_patient(row, flight_code_id):
+            print(row.keys())
+
             patient = Patient()
             patient.full_name = row["ФИО"]
             patient.iin = row["ИИН"]
@@ -188,24 +190,26 @@ def add_data():
                 else:
                     patient.dob = row["Дата рождения"]
 
-            patient.citizenship = row["Гражданство"]
+            patient.citizenship = row.get("Гражданство", None)
             patient.pass_num = row["Номер паспорта"]
             patient.telephone = row["Номер мобильного телефона"]
 
-            try:
-                patient.arrival_date = dateutil.parser.parse(row["Дата въезда"])
-            except TypeError:
-                patient.arrival_date = datetime(1000, 1, 1)           
+            # try:
+            #     patient.arrival_date = dateutil.parser.parse(row["Дата въезда"])
+            # except TypeError:
+            #     patient.arrival_date = datetime(1000, 1, 1)           
 
             patient.travel_type_id = TravelType.query.filter_by(value = c.flight_type[0]).first().id
 
             # Create travel for this user
             flight_travel = FlightTravel(flight_code_id=flight_code_id, seat=None)
+            flight_travel.seat = row.get("Место пассажира на борту воздушного судна", None)
+
             db.session.add(flight_travel)
             db.session.commit()
             patient.travel_id = flight_travel.id
 
-            patient.visited_country = row["Место и сроки пребывания в последние 14 дней до прибытия в Казахстан (укажите страну, область, штат и т.д.)"]
+            patient.visited_country = row.get("Место и сроки пребывания в последние 14 дней до прибытия в Казахстан (укажите страну, область, штат и т.д.)", None)
             
             region_name = ""
             if not pd.isnull(row["регион"]):
@@ -232,8 +236,7 @@ def add_data():
                 patient.region_id = Region.query.filter_by(name="Вне РК").first().id
 
             patient.home_address = row["Место жительство, либо предпологаемое место проживания"]
-
-            patient.job = row["Место работы"]
+            patient.job = row.get("Место работы", None)
             
             if "Найден (да/нет)" in row.keys():
                 patient.is_found = True if row["Найден (да/нет)"].lower() == "да" else False
@@ -243,7 +246,7 @@ def add_data():
     
             hospitals = Hospital.query.filter_by(region_id=patient.region_id).all()
 
-            if not pd.isnull(row["Место госпитализации"]):
+            if not pd.isnull(row.get("Место госпитализации", None)):
                 hospital_lower = row["Место госпитализации"].lower()
 
                 status = None
