@@ -159,9 +159,6 @@ def get_lat_lng(patients):
             if len(data["items"]):
                 item = data["items"][0]
 
-                # if "access" in item:
-                    # item = item["access"][0]
-                # else:
                 item = item["position"]
 
                 lat = item["lat"]
