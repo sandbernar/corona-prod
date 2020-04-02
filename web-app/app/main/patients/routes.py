@@ -50,8 +50,8 @@ def add_patient():
         patient_form.region_id.choices = get_regions_choices(current_user, False)
         patient_form.hospital_region_id.choices = get_regions_choices(current_user, False)
 
-    if not patient_form.travel_type_id.choices:
-        patient_form.travel_type_id.choices = [ (typ.id, typ.name) for typ in TravelType.query.all() ]
+    if not patient_form.travel_type.choices:
+        patient_form.travel_type.choices = [ (typ.value, typ.name) for typ in TravelType.query.all() ]
 
     # Flight Travel
     if not patient_form.flight_arrival_date.choices:
@@ -86,17 +86,22 @@ def add_patient():
         new_dict['is_found'] = int(new_dict['is_found']) == 1
         new_dict['is_infected'] = int(new_dict['is_infected']) == 1
 
-        travel_type = TravelType.query.filter_by(id=new_dict['travel_type_id']).first()
-        travel_type = None if travel_type is None else travel_type.value
+        travel_type = TravelType.query.filter_by(value=new_dict['travel_type']).first()
+        travel_type = None if travel_type is None else travel_type
+        
+        del new_dict['travel_type']
 
-        if travel_type == c.flight_type[0]:
-            flight_travel = FlightTravel(flight_code_id=new_dict['flight_code_id'], seat=None)
-            flight_travel.seat = None
+        if travel_type:
+            new_dict['travel_type_id'] = travel_type.id
 
-            db.session.add(flight_travel)
-            db.session.commit()
-            new_dict['travel_id'] = flight_travel.id
-            del new_dict['flight_code_id']
+            if travel_type.value == c.flight_type[0]:
+                flight_travel = FlightTravel(flight_code_id=new_dict['flight_code_id'])
+                flight_travel.seat = new_dict.get('flight_seat', None)
+
+                db.session.add(flight_travel)
+                db.session.commit()
+                new_dict['travel_id'] = flight_travel.id
+                del new_dict['flight_code_id']
 
         # else we can create the user
         patient = Patient(**new_dict)
@@ -112,7 +117,7 @@ def add_patient():
 
         return redirect("/patient_profile?id={}&success".format(patient.id))
     else:
-        return route_template( 'patients/add_person', form=patient_form, hospital_types=hospital_types, added=False, error_msg=None)
+        return route_template( 'patients/add_person', form=patient_form, hospital_types=hospital_types, added=False, error_msg=None, c=c)
 
 def get_lat_lng(patients):
     lat_lng = []
@@ -431,15 +436,22 @@ def delete_patient():
     if len(request.form):
         if "delete" in request.form:
             patient_id = request.form["delete"]
-            patient = Patient.query.filter(Patient.id == patient_id)
-            
-            if patient.first().is_contacted_person:
-                q = ContactedPersons.query.filter_by(person_id=patient_id)
-                return_url = "{}?id={}".format(url_for('main_blueprint.contacted_persons'), q.first().patient_id)
-                q.delete()
+            patient_query = Patient.query.filter(Patient.id == patient_id)
+            patient = patient_query.first()
 
-            patient.delete()
-            db.session.commit()
+            if patient:
+                if patient.is_contacted_person:
+                    q = ContactedPersons.query.filter_by(person_id=patient_id)
+                    return_url = "{}?id={}".format(url_for('main_blueprint.contacted_persons'), q.first().patient_id)
+                    q.delete()
+
+                travel_type = TravelType.query.filter_by(id=patient.travel_type_id).first()
+                if travel_type.value == c.flight_type[0]:
+                    q = FlightTravel.query.filter_by(id=patient.travel_id)
+                    q.delete()
+
+                patient_query.delete()
+                db.session.commit()
 
     return redirect(return_url)
 
@@ -464,8 +476,8 @@ def patient_profile():
                 form.region_id.choices = [(r.id, r.name) for r in regions]
                 form.hospital_region_id.choices = [(r.id, r.name) for r in regions]
 
-            if not form.travel_type_id.choices:
-                form.travel_type_id.choices = [c.unknown] + [ (typ.id, typ.name) for typ in TravelType.query.all() ]            
+            # if not form.travel_type_id.choices:
+                # form.travel_type_id.choices = [c.unknown] + [ (typ.id, typ.name) for typ in TravelType.query.all() ]            
 
             hospital_types = Hospital_Type.query.all()
             form.hospital_type.choices = [(h.id, h.name) for h in hospital_types]
@@ -566,7 +578,7 @@ def patient_profile():
             form.region_id.default = patient.region_id
             # form.flight_code_id.default = patient.flight_code_id
 
-            form.travel_type_id.default = patient.travel_type_id
+            # form.travel_type_id.default = patient.travel_type_id
 
             form.hospital_region_id.default = hospital_region_id
             form.hospital_type.default = hospital_type_id

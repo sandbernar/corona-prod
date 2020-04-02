@@ -174,7 +174,7 @@ def flight_profile():
                         seat = "{}{}".format(k, s)
                         patients_seat[seat] = new_seats[k][s]
 
-                for row in range(1, seat_num):
+                for row in range(1, seat_num + 1):
                     row_string = ""
                     row_s = []
                     row_seats = new_seats.get(row, {}).keys()
@@ -189,9 +189,11 @@ def flight_profile():
 
                     if len(row_s) == 7:                        
                         row_string = "{}{}_{}{}{}_{}{}"
-                    else:
+                    elif len(row_s) == 6:
                         row_string = "{}{}{}_{}{}{}"
-
+                    else:
+                        row_string = "{}"*len(row_s)
+                    print(new_seats)
                     row_string = row_string.format(*row_s)
 
                     seatmap.append(row_string)

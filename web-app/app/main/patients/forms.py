@@ -24,10 +24,11 @@ class PatientForm(FlaskForm):
     
     region_id = SelectField('Region', id='region', validators=[DataRequired()])
 
-    travel_type_id = SelectField('Travel Type', id='travel_type_id', validators=[DataRequired()])
+    travel_type = SelectField('Travel Type', id='travel_type', validators=[DataRequired()])
     
     flight_arrival_date = SelectField('Flight Arrival Date', id='flight_arrival_date'        , validators=[DataRequired()])
     flight_code_id = SelectField('Flight Code', id='flight_code_id', validators=[DataRequired()])
+    flight_seat = TextField('Flight Seat', id='flight_seat')
 
     hospital_region_id = SelectField('Hospital Region', id='hospital_region' , validators=[DataRequired()])
     hospital_id = SelectField('Hospital', id='hospital' , validators=[DataRequired()])
