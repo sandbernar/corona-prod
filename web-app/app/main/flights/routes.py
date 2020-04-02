@@ -90,7 +90,6 @@ def add_flight():
 
     if 'create' in request.form:
         new_dict = request.form.to_dict(flat=True)
-        print(new_dict)
 
         flight = FlightCode.query.filter_by(code=new_dict['code'][0]).filter_by(date=new_dict['date']).first()
         if flight:

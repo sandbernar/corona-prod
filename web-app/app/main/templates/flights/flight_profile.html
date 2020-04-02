@@ -164,8 +164,8 @@
           <div class="col">
             <div class="card-body pt-0 pt-md-1">
               <div class="text-center">
-                <h3 class="mb-0">Экипаж</h3>
-                  <div id="board-map" class="seatCharts-container"></div>
+<!--                 <h3 class="mb-0">Экипаж</h3>
+                  <div id="board-map" class="seatCharts-container"></div> -->
                 <h3 class="mb-0">Пассажиры</h3>
                   <div id="seat-map" class="seatCharts-container"></div>                
               </div>
@@ -219,46 +219,6 @@
     window.history.replaceState({url: url}, null, url);
     window.location.href = window.location.href
   }
-
-    $(document).ready(function() {
-    sc = $('#board-map').seatCharts({
-      map: [
-      'fff_fff',                                                           
-      ],
-      naming : {
-        top : false,
-        getLabel : function (character, row, column) {
-          return row, column;
-        },
-      },
-      click: function () {
-        if (this.status() == 'available') {
-              //let's create a new <li> which we'll add to the cart items
-              $('<li>'+this.data().category+' Seat # '+this.settings.label+': <b>$'+this.data().price+'</b> <a href="#" class="cancel-cart-item">[cancel]</a></li>')
-              .attr('id', 'cart-item-'+this.settings.id)
-              .data('seatId', this.settings.id)
-              .appendTo($cart);
-              return 'selected';
-            } else if (this.status() == 'selected') {
-              //remove the item from our cart
-              $('#cart-item-'+this.settings.id).remove();
-
-              //seat has been vacated
-              return 'available';
-            } else if (this.status() == 'unavailable') {
-              //seat has been already booked
-              return 'unavailable';
-            } else {
-              return this.style();
-            }
-          }
-        });
-        //let's pretend some seats have already been booked
-        sc.get(['1_2', '4_1', '7_1', '7_2']).status('unavailable');
-
-      });
-
-  var firstSeatLabel = 1;
 
   var seatMapPatient = {
   {% for key in patients_seat.keys() %}

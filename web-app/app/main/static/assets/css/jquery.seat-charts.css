@@ -20,16 +20,15 @@ div.seatCharts-seat {
 	-webkit-border-radius: 5px;
 	-moz-border-radius: 5px;
 	border-radius: 5px;
-	cursor: default;
 }
 div.seatCharts-seat:focus {
 	border: none;
 }
-/*
+
 .seatCharts-seat:focus {
 	outline: none;
 }
-*/
+
 
 div.seatCharts-space {
 	background-color: white;
@@ -52,10 +51,12 @@ div.seatCharts-seat.focused {
 
 div.seatCharts-seat.occupied {
 	background-color: green;
+	cursor: pointer;
 }
 
 div.seatCharts-seat.infected {
 	background-color: red;
+	cursor: pointer;
 }
 
 div.seatCharts-seat.empty {
