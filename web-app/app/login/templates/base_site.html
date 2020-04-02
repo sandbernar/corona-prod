@@ -39,11 +39,12 @@
     <!-- CSS Files -->
     <link href="{{ url_for('static', filename='assets/css/argon-dashboard.css') }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='assets/css/argon-custom.css') }}" rel="stylesheet">
+    <!-- Animate CSS -->
+    <link href="{{ url_for('static', filename='assets/css/animate.css') }}" rel="stylesheet">
+    <!-- JS -->
     <script src="https://maps.api.2gis.ru/2.0/loader.js?pkg=full"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
     <script src="https://api-maps.yandex.ru/2.1/?apikey=9e35ffd2-8d05-4f5a-ad8d-26b851cfdbb3&lang=ru_RU" type="text/javascript"></script>
-    
-
   {% endblock stylesheets %}
 
   {% endblock head %}
@@ -69,6 +70,7 @@
     
     <!-- Argon JS -->
     <script src="{{ url_for('static', filename='assets/js/argon-dashboard.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='assets/vendor/bootstrap-notify-3.1.3/bootstrap-notify.js') }}"></script>
 
   {% endblock javascripts %}
 

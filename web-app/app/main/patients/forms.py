@@ -12,13 +12,13 @@ from app import constants as c
 
 class PatientForm(FlaskForm):
     full_name = TextField    ('Full Name', id='full_name'   , validators=[DataRequired()])
-    iin = TextField('IIN', id='iin'   , validators=[DataRequired()])
+    iin = TextField('IIN', id='iin')
     dob = DateField('DoB', id='dob'        , validators=[DataRequired()])
     citizenship = SelectField('Citizenship', id='citizenship',
     	default="KZ",
     	choices=c.code_country_list, 
     	validators=[DataRequired()])
-    pass_num = TextField('Pass No.', id='pass_num'   , validators=[DataRequired()])
+    pass_num = TextField('Pass No.', id='pass_num')
     telephone = TextField('Telephone', id='telephone'   , validators=[DataRequired()])
     visited_country = TextField('Visited Country', id='visited_country'   , validators=[DataRequired()])
     
@@ -34,7 +34,7 @@ class PatientForm(FlaskForm):
     hospital_id = SelectField('Hospital', id='hospital' , validators=[DataRequired()])
 
     home_address = TextField('Home Address', id='home_address'   , validators=[DataRequired()])
-    job = TextField('Job', id='job'   , validators=[DataRequired()])
+    job = TextField('Job', id='job')
     patient_status = SelectField('Patient Status', id='patient_status' , validators=[DataRequired()])
     is_found = RadioField("Is Found", id="is_found", choices=[(1, "Да"),(0,"Нет")], default=0, validators=[DataRequired()])
     is_infected = RadioField("Is Infected", id="is_infected", choices=[(1, "Да"),(0,"Нет")], default=0, validators=[DataRequired()])

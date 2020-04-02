@@ -14,6 +14,27 @@
 {% include "site_template/top-stats.html" %}
 {% endwith %}
 
+<!-- Modal -->
+<div class="modal fade" id="addPatientModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">{{ _("Добавить пациента?") }}</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true"></span>
+      </button>
+  </div>
+  <div class="modal-body" id="add_check_body">
+
+</div>
+<div class="modal-footer">
+    <button class="btn btn-primary" onclick='submit_new_patient()'>{{ _("Да") }}</button>
+    <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ _("Нет") }}</button>
+</div>
+</div>
+</div>
+</div>
+
 <div class="container-fluid mt--7">
   {% if added %}
   <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -33,8 +54,8 @@
     </button>
   </div>
   {% endif %}
-              <form id="add-patients" role="form" method="post" action="">
-
+  
+  <form id="add_patients" role="form" method="post" action="">
   <div class="row">
     <div class="col">
       <div class="card shadow">
@@ -149,7 +170,7 @@
                             <div class="col">
                               <div class="form-group">
                                 <label class="form-control-label">{{ _("Статус Нахождения") }}</label><br>
-                                {{ form.patient_status(class="form-control", id="patient_status", onchange="disable_hospital_choice($(this).val() === 'in_hospital')") }}
+                                {{ form.patient_status(class="form-control", id="patient_status") }}
                               </div>
                             </div>                            
                           </div>
@@ -190,10 +211,11 @@
                     </div>
                   </div>                  
                   <div class="col-md-auto">
-                    <button type="submit" name="create" class="btn btn-primary" type="button" style="height:100%; width:100%;">
+                    <button id="open_modal_add_patient" class="btn btn-primary" data-toggle="modal" data-target="#addPatientModal" class="btn btn-primary" type="button" style="height:100%; width:100%;">
                       {{ _("Отправить") }}
                     </button>
                   </div>
+                  <button type="submit" id="hiddenSubmit" style="display:none;"></button>
                 </div>
               </form>
             </div>
@@ -321,15 +343,77 @@
     }
   }
 
+function submit_new_patient() {
+ // document.getElementById("add_patients").submit()
+   $.post($("#add_patients").attr('action'), $("#add_patients").serialize() + '&create', function(res){
+      // Do something with the response `res`
+      if (res.patient_id !== undefined) {
+        console.log('<a href="\patient_profile?id=' + res.patient_id + '>' + '{{ _("Пациент") }}</a> {{ _("добавлен в базу данных") }}')
+        $.notify({
+          // options
+          icon: 'fa fa-thumbs-up',
+          message: `<a href="\patient_profile?id=${res.patient_id}">{{ _("Пациент") }}</a> {{ _("добавлен в базу данных") }}`
+        },{
+          // settings
+          type: 'info',
+        });
+        reset_add_patient_form()
+        $("#addPatientModal").modal('hide');
+      }
+      // Don't forget to hide the loading indicator!
+  });
+}
+
+function reset_add_patient_form() {
+  var travel_type = $("#travel_type").val()
+  var backup_values = {}
+  if (travel_type === '{{c.flight_type[0]}}') {
+    backup_values["#flight_arrival_date"] = $("#flight_arrival_date").val()
+    backup_values["#flight_code_id"] = $("#flight_code_id").val()
+  }   
+  $("#add_patients")[0].reset();
+
+  $("#travel_type").val(travel_type)
+
+  if (travel_type === '{{c.flight_type[0]}}') {
+    for (var key in backup_values) {
+      if (backup_values.hasOwnProperty(key)) {
+          $(key).val(backup_values[key])
+      }
+    }
+  }
+}
+
+$("#add_patients").on("reset", function(){
+  $("#is_found-0").change()
+  $("#is_found-1").change()
+});
+
 $("#hospital_region_id").on("change", function(){
   update_hospitals_list();
 });
+
 $("#hospital_type").on("change", function(){
   update_hospitals_list();
 });
 
 $("#travel_type").on("change", function(){
   update_travel_form();
+});
+
+$("#patient_status").on("change", function(){
+  disable_hospital_choice($(this).val() === 'in_hospital')
+});
+
+$("#open_modal_add_patient").on("click", function(e){
+   if ($("#add_patients")[0].checkValidity() === false) {
+    e.stopPropagation();
+    $("#hiddenSubmit")[0].click()
+  } else {
+    var addCheckBody = document.getElementById("add_check_body")
+    addCheckBody.innerHTML = `<b>{{ _("ФИО") }}:</b> ` + $("#full_name").val() + `<br>`
+    addCheckBody.innerHTML += `<b>{{ _("Тип Въезда в Страну") }}:</b> ` + $("#travel_type option:selected").text() + `<br>`
+  }
 });
 
 </script>

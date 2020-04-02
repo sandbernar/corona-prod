@@ -2001,7 +2001,7 @@ pre code {
   padding: 0.625rem 0.75rem;
   font-size: 1rem;
   line-height: 1.5;
-  color: #8898aa;
+  color: #444;
   background-color: #fff;
   background-clip: padding-box;
   border: 1px solid #cad1d7;
@@ -2022,7 +2022,7 @@ pre code {
 }
 
 .form-control:focus {
-  color: #8898aa;
+  color: #444;
   background-color: #fff;
   border-color: rgba(50, 151, 211, 0.25);
   outline: 0;

@@ -26,6 +26,7 @@ from app.main.routes import route_template
 
 from datetime import datetime
 from flask_uploads import UploadSet
+from flask import jsonify
 
 import pandas as pd
 import numpy as np
@@ -39,13 +40,7 @@ from app.main.util import get_regions, get_regions_choices, get_flight_code
 from app.login.util import hash_pass
 from sqlalchemy import func
 
-@blueprint.route('/add_person', methods=['GET', 'POST'])
-def add_patient():
-    if not current_user.is_authenticated:
-        return redirect(url_for('login_blueprint.login'))
-
-    patient_form = PatientForm()
-
+def prepare_patient_form(patient_form):
     if not patient_form.region_id.choices:
         patient_form.region_id.choices = get_regions_choices(current_user, False)
         patient_form.hospital_region_id.choices = get_regions_choices(current_user, False)
@@ -65,6 +60,17 @@ def add_patient():
         else:
             patient_form.flight_code_id.choices = []
 
+    return patient_form
+
+@blueprint.route('/add_person', methods=['GET', 'POST'])
+def add_patient():
+    if not current_user.is_authenticated:
+        return redirect(url_for('login_blueprint.login'))
+
+    patient_form = PatientForm()
+
+    patient_form = prepare_patient_form(patient_form)
+
     hospitals = Hospital.query.all()
     if not patient_form.hospital_id.choices:
         patient_form.hospital_id.choices = [ (-1, c.no_hospital) ] + [(h.id, h.name) for h in hospitals]
@@ -75,6 +81,8 @@ def add_patient():
 
     hospital_types = Hospital_Type.query.all()
     hospital_types = [(h.id, h.name) for h in hospital_types]
+
+    print(request.form, request.form.keys())
 
     if 'create' in request.form:
         new_dict = request.form.to_dict(flat=True)
@@ -115,7 +123,7 @@ def add_patient():
         db.session.add(patient)
         db.session.commit()
 
-        return redirect("/patient_profile?id={}&success".format(patient.id))
+        return jsonify({"patient_id": patient.id})
     else:
         return route_template( 'patients/add_person', form=patient_form, hospital_types=hospital_types, added=False, error_msg=None, c=c)
 
@@ -139,6 +147,7 @@ def get_lat_lng(patients):
             # parsed_address = {k: v for (v, k) in parse_address(patient.home_address)}
 
             address_query = home_address
+
             params['q'] = "{}, {}".format(address_query, region_name)
 
             url = "https://geocode.search.hereapi.com/v1/geocode"
@@ -150,10 +159,10 @@ def get_lat_lng(patients):
             if len(data["items"]):
                 item = data["items"][0]
 
-                if "access" in item:
-                    item = item["access"][0]
-                else:
-                    item = item["position"]
+                # if "access" in item:
+                    # item = item["access"][0]
+                # else:
+                item = item["position"]
 
                 lat = item["lat"]
                 lng = item["lng"]
@@ -472,16 +481,11 @@ def patient_profile():
 
             regions = Region.query.all()
 
-            if not form.hospital_region_id.choices:
-                form.region_id.choices = [(r.id, r.name) for r in regions]
-                form.hospital_region_id.choices = [(r.id, r.name) for r in regions]
+            form = prepare_patient_form(form)
 
-            # if not form.travel_type_id.choices:
-                # form.travel_type_id.choices = [c.unknown] + [ (typ.id, typ.name) for typ in TravelType.query.all() ]            
 
             hospital_types = Hospital_Type.query.all()
             form.hospital_type.choices = [(h.id, h.name) for h in hospital_types]
-            form.flight_code_id.choices = [c.unknown] + [ (code.id, code.code) for code in FlightCode.query.all() ]
 
             if len(request.form):
                 if "hospital" in request.form:
@@ -552,14 +556,6 @@ def patient_profile():
                         patient.address_lat = lat_lng[0]
                         patient.address_lng = lat_lng[1]
 
-                if "flight_code_id" in request.form:
-                    flight_code = request.form['flight_code_id']
-                    if flight_code != "None":
-                        flight_code = int(flight_code)
-                    else:
-                        flight_code = None
-
-                    # patient.flight_code_id = flight_codes
 
                 if "visited_country" in request.form:
                     patient.visited_country = request.form['visited_country']
@@ -576,9 +572,6 @@ def patient_profile():
                 hospital_type_id = patient.hospital.hospital_type_id
 
             form.region_id.default = patient.region_id
-            # form.flight_code_id.default = patient.flight_code_id
-
-            # form.travel_type_id.default = patient.travel_type_id
 
             form.hospital_region_id.default = hospital_region_id
             form.hospital_type.default = hospital_type_id
@@ -587,7 +580,12 @@ def patient_profile():
                 form.is_found.default = 'checked'
 
             if patient.is_infected:
-                form.is_infected.default = 'checked'            
+                form.is_infected.default = 'checked'
+
+            travel = None
+            travel_type = TravelType.query.filter_by(id=patient.travel_type_id).first()
+            if travel_type.value == c.flight_type[0]:
+                travel = FlightTravel.query.filter_by(id=patient.travel_id).first()
 
             if patient.status:
                 if patient.status.value == c.in_hospital[0]:
@@ -614,7 +612,7 @@ def patient_profile():
 
             form.process()
 
-            return route_template('patients/profile', patient=patient, age=age, hospital_name=hospital_name, form = form, change = change)
+            return route_template('patients/profile', patient=patient, age=age, hospital_name=hospital_name, form = form, change = change, c=c, travel=travel)
     else:    
         return render_template('errors/error-500.html'), 500
 
