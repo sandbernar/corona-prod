@@ -223,36 +223,7 @@
             <hr class="my-4" />
             <!-- Description -->
             <h6 class="heading-small text-muted mb-4">{{ _("Информация о Въезде") }}</h6>
-            <div class="pl-lg-4">
-                <div class="row">
-                    <div class="col-lg">
-                        <div class="form-group">
-                            <label class="form-control-label" for="input-arrival-date">{{ _("Дата Въезда") }}</label>
-                            {{ form.arrival_date(class="form-control", type="date", value=patient.arrival_date) }}
-                        </div>
-                    </div>
-                    <div class="col-lg">
-                        <div class="form-group">
-                            <label class="form-control-label" for="input-region">{{ _("Тип Въезда") }}</label>
-                            {{ form.travel_type_id(class="form-control", id="travel_type_id") }}
-                        </div>
-                    </div>
-                </div>                    
-                <div class="row">
-                    <div class="col-lg">
-                        <div class="form-group">
-                            <label class="form-control-label" for="input-flight-code">{{ _("Номер Рейса") }}</label>
-                            {{ form.flight_code_id(class="form-control", id="flight_code_id") }}
-                        </div>
-                    </div>
-                    <div class="col-lg">
-                        <div class="form-group">
-                            <label class="form-control-label" for="input-visited-country">{{ _("Из Страны") }}</label>
-                            {{ form.visited_country(class="form-control", type="text", placeholder=_("Италия"), value=patient.visited_country) }}
-                        </div>
-                    </div>
-                </div>
-            </div>
+
             {% endif %}
         </div>
     </div>

@@ -21,8 +21,11 @@ auto_type = ("auto_type", "Авто")
 by_foot_type = ("by_foot", "Пешком")
 by_sea_type = ("by_sea", "Морской Транспорт")
 flight_type = ("flight_type", "Самолет")
+local_type = ("local_type", "Местные")
 
-travel_types = [railway_type, flight_type, auto_type, by_foot_type, by_sea_type]
+board_team = "экипаж"
+
+travel_types = [flight_type, railway_type, auto_type, by_foot_type, by_sea_type, local_type]
 
 unknown = (None, "Неизвестно")
 

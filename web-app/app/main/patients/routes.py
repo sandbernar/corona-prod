@@ -53,6 +53,18 @@ def add_patient():
     if not patient_form.travel_type_id.choices:
         patient_form.travel_type_id.choices = [ (typ.id, typ.name) for typ in TravelType.query.all() ]
 
+    # Flight Travel
+    if not patient_form.flight_arrival_date.choices:
+        patient_form.flight_arrival_date.choices = [(flight.date, flight.date) for flight in FlightCode.query.all()]
+    
+    if not patient_form.flight_code_id.choices:
+        if patient_form.flight_arrival_date.choices:
+            first_date = patient_form.flight_arrival_date.choices[0][0]
+            patient_form.flight_code_id.choices = [(f.id,"{}, {} - {}".format(
+                f.code, f.from_city, f.to_city)) for f in FlightCode.query.filter_by(date=first_date).all()]
+        else:
+            patient_form.flight_code_id.choices = []
+
     hospitals = Hospital.query.all()
     if not patient_form.hospital_id.choices:
         patient_form.hospital_id.choices = [ (-1, c.no_hospital) ] + [(h.id, h.name) for h in hospitals]
@@ -65,22 +77,26 @@ def add_patient():
     hospital_types = [(h.id, h.name) for h in hospital_types]
 
     if 'create' in request.form:
-        new_dict = request.form.to_dict(flat=False)
+        new_dict = request.form.to_dict(flat=True)
 
-        new_dict['arrival_date'] = datetime.strptime(request.form['arrival_date'], '%Y-%m-%d')
         new_dict['dob'] = datetime.strptime(request.form['dob'], '%Y-%m-%d')
 
         status = request.form.get("patient_status", c.no_status[0])
         new_dict['status_id'] = PatientStatus.query.filter_by(value=status).first().id
-        new_dict['is_found'] = int(new_dict['is_found'][0]) == 1
-        new_dict['is_infected'] = int(new_dict['is_infected'][0]) == 1
+        new_dict['is_found'] = int(new_dict['is_found']) == 1
+        new_dict['is_infected'] = int(new_dict['is_infected']) == 1
 
-        if new_dict['flight_code'][0]:
-            new_dict['flight_code_id'] = get_flight_code(new_dict['flight_code'][0])
-        else:
-            new_dict['flight_code_id'] = None
+        travel_type = TravelType.query.filter_by(id=new_dict['travel_type_id']).first()
+        travel_type = None if travel_type is None else travel_type.value
 
-        del new_dict['flight_code']
+        if travel_type == c.flight_type[0]:
+            flight_travel = FlightTravel(flight_code_id=new_dict['flight_code_id'], seat=None)
+            flight_travel.seat = None
+
+            db.session.add(flight_travel)
+            db.session.commit()
+            new_dict['travel_id'] = flight_travel.id
+            del new_dict['flight_code_id']
 
         # else we can create the user
         patient = Patient(**new_dict)
@@ -158,7 +174,6 @@ def add_data():
         form_dict = request.form.to_dict()
         if "flights_id" in form_dict:
             data_form.flights_id.default = form_dict["flights_id"]
-        print(data_form.validate_on_submit())
 
     found_hospitals = dict()
 
@@ -173,7 +188,6 @@ def add_data():
         created_patients = []
 
         def create_patient(row, flight_code_id):
-            print(row.keys())
 
             patient = Patient()
             patient.full_name = row["ФИО"]

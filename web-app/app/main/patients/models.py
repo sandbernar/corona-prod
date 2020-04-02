@@ -39,7 +39,7 @@ class Patient(db.Model):
     status_id = Column(Integer, ForeignKey('PatientStatus.id'))
     status = db.relationship('PatientStatus')
 
-    is_found = Column(Boolean, unique=False)
+    is_found = Column(Boolean, unique=False, default=False)
     is_infected = Column(Boolean, unique=False, default=False)
 
     hospital_id = Column(Integer, ForeignKey('Hospital.id'))

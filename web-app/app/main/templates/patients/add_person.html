@@ -33,6 +33,7 @@
     </button>
   </div>
   {% endif %}
+              <form id="add-patients" role="form" method="post" action="">
 
   <div class="row">
     <div class="col">
@@ -45,19 +46,19 @@
             <div class="col">                        
               <div class="form-group">
                 <label for="flight-no-input" class="form-control-label">{{ _("Тип Въезда в Страну") }}</label>
-                {{ form.travel_type_id(class="form-control", id="travel_type_id") }}
+                {{ form.travel_type_id(class="form-control") }}
               </div>
             </div>            
             <div class="col">
               <div class="form-group">
                 <label for="arrival-date-input" class="form-control-label">{{ _("Дата Въезда") }}</label>
-                {{ form.arrival_date(class="form-control", type="date") }}
+                {{ form.flight_arrival_date(class="form-control", id="flight_arrival_date") }}
               </div>
             </div>  
             <div class="col">                        
               <div class="form-group">
                 <label for="flight-no-input" class="form-control-label">{{ _("Номер Рейса") }}</label>
-                {{ form.flight_code(class="form-control", type="text", placeholder="SU1951") }}
+                {{ form.flight_code_id(class="form-control", id="flight_code_id") }}
               </div>
             </div>                        
           </div>
@@ -74,7 +75,6 @@
         <div class="card-body">
           <div class="row">
             <div class="col">
-              <form id="add-patients" role="form" method="post" action="">
                 {{ form.hidden_tag() }}
                 <div class="row">
                   <div class="col">
@@ -281,12 +281,27 @@
     });
   };
 
-// $("#hospital_region_id").on("click", update_hospitals_list());
+  function get_flights_by_date(){
+    $.ajax({
+      type: 'POST',
+      url: "/get_flights_by_date",
+      data: {date: $("#flight_arrival_date").val()},
+      dataType: "text",
+      success: function(data){
+        document.getElementById("flight_code_id").innerHTML = data.toString();
+      }
+    });
+  };  
+
 $("#hospital_region_id").on("change", function(){
   update_hospitals_list();
 });
 $("#hospital_type").on("change", function(){
   update_hospitals_list();
+});
+
+$("#flight_arrival_date").on("change", function(){
+  get_flights_by_date();
 });
 
 </script>

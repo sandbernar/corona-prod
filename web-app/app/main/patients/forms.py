@@ -20,13 +20,14 @@ class PatientForm(FlaskForm):
     	validators=[DataRequired()])
     pass_num = TextField('Pass No.', id='pass_num'   , validators=[DataRequired()])
     telephone = TextField('Telephone', id='telephone'   , validators=[DataRequired()])
-    arrival_date = DateField('Arrival', id='arrival_date'        , validators=[DataRequired()])
-    flight_code = TextField('Flight Code', id='flight_code'   )
     visited_country = TextField('Visited Country', id='visited_country'   , validators=[DataRequired()])
     
     region_id = SelectField('Region', id='region', validators=[DataRequired()])
 
-    travel_type_id = SelectField('Travel Type', id='travel_type', validators=[DataRequired()])
+    travel_type_id = SelectField('Travel Type', id='travel_type_id', validators=[DataRequired()])
+    
+    flight_arrival_date = SelectField('Flight Arrival Date', id='flight_arrival_date'        , validators=[DataRequired()])
+    flight_code_id = SelectField('Flight Code', id='flight_code_id', validators=[DataRequired()])
 
     hospital_region_id = SelectField('Hospital Region', id='hospital_region' , validators=[DataRequired()])
     hospital_id = SelectField('Hospital', id='hospital' , validators=[DataRequired()])
