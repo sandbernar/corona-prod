@@ -18,11 +18,28 @@ patient_statuses = [no_status, in_hospital, is_home, is_transit]
 # Travel Type
 railway_type = ("railway_type", "Поезд")
 auto_type = ("auto_type", "Авто")
+by_foot_type = ("by_foot", "Пешком")
+by_sea_type = ("by_sea", "Морской Транспорт")
 flight_type = ("flight_type", "Самолет")
+local_type = ("local_type", "Местные")
 
-travel_types = [railway_type, auto_type, flight_type]
+board_team = "экипаж"
+
+travel_types = [flight_type, railway_type, auto_type, by_foot_type, by_sea_type, local_type]
 
 unknown = (None, "Неизвестно")
+
+cyrillic_to_ascii = {
+	"Е": "E",
+	"С": "C",
+	"А": "A",
+	"Н": "H",
+	"К": "K",
+	"Х": "X",
+	"М": "M",
+	"В": "B",
+	"Т": "T"
+}
 
 # Countries
 country_category = ["1a", "1b", "2", "3", "4"]

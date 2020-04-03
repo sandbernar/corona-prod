@@ -12,8 +12,8 @@ from flask_uploads import UploadSet, configure_uploads
 from config import config_dict
 from app import create_app, db
 
-from app.base.models import User
-from app.base.util import hash_pass
+from app.login.models import User
+from app.login.util import hash_pass
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine
 

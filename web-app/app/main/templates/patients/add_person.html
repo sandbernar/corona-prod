@@ -14,6 +14,27 @@
 {% include "site_template/top-stats.html" %}
 {% endwith %}
 
+<!-- Modal -->
+<div class="modal fade" id="addPatientModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">{{ _("Добавить пациента?") }}</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true"></span>
+      </button>
+  </div>
+  <div class="modal-body" id="add_check_body">
+
+</div>
+<div class="modal-footer">
+    <button class="btn btn-primary" onclick='submit_new_patient()'>{{ _("Да") }}</button>
+    <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ _("Нет") }}</button>
+</div>
+</div>
+</div>
+</div>
+
 <div class="container-fluid mt--7">
   {% if added %}
   <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -33,18 +54,36 @@
     </button>
   </div>
   {% endif %}
-
-  <!-- Table -->
+  
+  <form id="add_patients" role="form" method="post" action="">
   <div class="row">
     <div class="col">
       <div class="card shadow">
         <div class="card-header bg-transparent">
-          <h3 class="mb-0">{{ _("Добавить Пациента Вручную") }}</h3>
+          <h3 class="mb-0">{{ _("Выбрать Тип Въезда") }}</h3>
+        </div>
+        <div class="card-body">
+          <div class="row" id="travel_form">
+            <div class="col">                        
+              <div class="form-group">
+                <label for="flight-no-input" class="form-control-label">{{ _("Тип Въезда в Страну") }}</label>
+                {{ form.travel_type(class="form-control") }}
+              </div>
+            </div>                                  
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row mt-3">
+    <div class="col">
+      <div class="card shadow">
+        <div class="card-header bg-transparent">
+          <h3 class="mb-0">{{ _("Информация о Пациенте") }}</h3>
         </div>
         <div class="card-body">
           <div class="row">
             <div class="col">
-              <form id="add-patients" role="form" method="post" action="">
                 {{ form.hidden_tag() }}
                 <div class="row">
                   <div class="col">
@@ -70,35 +109,19 @@
                           <label for="npass-input" class="form-control-label">{{ _("Номер Паспорта") }}</label>
                           {{ form.pass_num(placeholder=_("N12345678"), class="form-control", type="text") }}
                         </div>
-                        <div class="form-group">
-                          <label for="phone-input" class="form-control-label">{{ _("Телефон") }}</label>
-                          {{ form.telephone(placeholder=_("77017123456"), class="form-control", type="tel") }}
-                        </div>
                       </div>
                     </div>
                   </div>
                   <div class="col">
                     <div class="card shadow">
-                      <div class="card-header bg-transparent">
-                        <div class="form-group">
-                          <label for="arrival-date-input" class="form-control-label">{{ _("Дата Въезда") }}</label>
-                          {{ form.arrival_date(class="form-control", type="date") }}
-                        </div>
-                        <div class="form-group">
-                          <label for="flight-no-input" class="form-control-label">{{ _("Тип Въезда в Страну") }}</label>
-                          {{ form.travel_type_id(class="form-control", id="travel_type_id") }}
-                        </div>
-                        <div class="form-group">
-                          <label for="flight-no-input" class="form-control-label">{{ _("Номер Рейса") }}</label>
-                          {{ form.flight_code(class="form-control", type="text", placeholder="SU1951") }}
-                        </div>
+                      <div class="card-header bg-transparent">                      
                         <div class="form-group">
                           <label for="14days-place-input" class="form-control-label">{{ _("Место и сроки пребывания в последние 14 дней") }}</label>
                           {{ form.visited_country(class="form-control", type="text", placeholder=_("Италия") ) }}
                         </div>
                         <div class="form-group">
                           <label for="region-input" class="form-control-label">{{ _("Регион") }}</label>
-                                {{ form.region_id(class="form-control", id="region_id") }}                          
+                          {{ form.region_id(class="form-control", id="region_id") }}                          
                         </div>
                         <div class="form-group">
                           <label for="home-input" class="form-control-label">{{ _("Место жительства / возможное место проживания") }}</label>
@@ -108,6 +131,10 @@
                           <label for="job-input" class="form-control-label">{{ _("Место Работы") }}</label>
                           {{ form.job(class="form-control", type="text", placeholder=_("Алматы") ) }}
                         </div>
+                        <div class="form-group">
+                          <label for="phone-input" class="form-control-label">{{ _("Телефон") }}</label>
+                          {{ form.telephone(placeholder=_("77017123456"), class="form-control", type="tel") }}
+                        </div>                        
                       </div>
                     </div>
                   </div>
@@ -143,7 +170,7 @@
                             <div class="col">
                               <div class="form-group">
                                 <label class="form-control-label">{{ _("Статус Нахождения") }}</label><br>
-                                {{ form.patient_status(class="form-control", id="patient_status", onchange="disable_hospital_choice($(this).val() === 'in_hospital')") }}
+                                {{ form.patient_status(class="form-control", id="patient_status") }}
                               </div>
                             </div>                            
                           </div>
@@ -152,9 +179,9 @@
                     </div>
                   </div>
                   <div class="col-lg-7">
-                    <div class="card shadow">
-                      <div class="card-header bg-transparent">
-                        <div class="card-body">
+                    <div class="card shadow" style="height:100%;">
+                      <div class="card-header bg-transparent" style="height:100%;">
+                        <div class="card-body" style="height:100%;">
                           <div class="row">
                             <div class="col">
                               <div class="form-group">
@@ -183,11 +210,12 @@
                       </div>
                     </div>
                   </div>                  
-                  <div>
-                    <button type="submit" name="create" class="btn btn-primary" type="button" style="height:100%">
+                  <div class="col-md-auto">
+                    <button id="open_modal_add_patient" class="btn btn-primary" data-toggle="modal" data-target="#addPatientModal" class="btn btn-primary" type="button" style="height:100%; width:100%;">
                       {{ _("Отправить") }}
                     </button>
                   </div>
+                  <button type="submit" id="hiddenSubmit" style="display:none;"></button>
                 </div>
               </form>
             </div>
@@ -208,7 +236,10 @@
 {{ super()}}
 <script type="text/javascript">
   disable_hospital_choice(0)
+  
   update_hospitals_list()
+  update_travel_form()
+
   disable_status($("#hospital_select").val())
 
   function disable_status(value) {
@@ -263,12 +294,126 @@
     });
   };
 
-// $("#hospital_region_id").on("click", update_hospitals_list());
+  function get_flights_by_date(){
+    $.ajax({
+      type: 'POST',
+      url: "/get_flights_by_date",
+      data: {date: $("#flight_arrival_date").val()},
+      dataType: "text",
+      success: function(data){
+        document.getElementById("flight_code_id").innerHTML = data.toString();
+      }
+    });
+  };
+
+  function update_travel_form() {
+    var flightForm = `  <div class='col'>
+                          <div class='form-group'>
+                            <label for='arrival-date-input' class='form-control-label'>{{ _('Дата Въезда') }}</label>
+                            {{ form.flight_arrival_date(class='form-control') }}
+                            </div>
+                          </div>  
+                        <div class='col'>                        
+                          <div class='form-group'>
+                            <label for='flight-no-input' class='form-control-label'>{{ _('Номер Рейса') }}</label>
+                            {{ form.flight_code_id(class='form-control') }}
+                          </div>
+                        </div>
+                        <div class='col'>                        
+                          <div class='form-group'>
+                            <label for='flight-no-input' class='form-control-label'>{{ _('Место') }}</label>
+                            {{ form.flight_seat(class='form-control', placeholder=_('Например') + ' 1C') }}
+                          </div>
+                        </div>`;
+
+    var travelForm = document.getElementById("travel_form")
+
+    if (travelForm.children.length !== 1) {
+      while (travelForm.children.length > 1) {
+          travelForm.removeChild(travelForm.lastChild);
+      }
+    }
+
+    if ($("#travel_type").val() === '{{c.flight_type[0]}}') {
+      document.getElementById("travel_form").insertAdjacentHTML('beforeend', flightForm)
+
+      $("#flight_arrival_date").on("change", function(){
+        get_flights_by_date();
+      });
+    }
+  }
+
+function submit_new_patient() {
+ // document.getElementById("add_patients").submit()
+   $.post($("#add_patients").attr('action'), $("#add_patients").serialize() + '&create', function(res){
+      // Do something with the response `res`
+      if (res.patient_id !== undefined) {
+        console.log('<a href="\patient_profile?id=' + res.patient_id + '>' + '{{ _("Пациент") }}</a> {{ _("добавлен в базу данных") }}')
+        $.notify({
+          // options
+          icon: 'fa fa-thumbs-up',
+          message: `<a href="\patient_profile?id=${res.patient_id}">{{ _("Пациент") }}</a> {{ _("добавлен в базу данных") }}`
+        },{
+          // settings
+          type: 'info',
+        });
+        reset_add_patient_form()
+        $("#addPatientModal").modal('hide');
+      }
+      // Don't forget to hide the loading indicator!
+  });
+}
+
+function reset_add_patient_form() {
+  var travel_type = $("#travel_type").val()
+  var backup_values = {}
+  if (travel_type === '{{c.flight_type[0]}}') {
+    backup_values["#flight_arrival_date"] = $("#flight_arrival_date").val()
+    backup_values["#flight_code_id"] = $("#flight_code_id").val()
+  }   
+  $("#add_patients")[0].reset();
+
+  $("#travel_type").val(travel_type)
+
+  if (travel_type === '{{c.flight_type[0]}}') {
+    for (var key in backup_values) {
+      if (backup_values.hasOwnProperty(key)) {
+          $(key).val(backup_values[key])
+      }
+    }
+  }
+}
+
+$("#add_patients").on("reset", function(){
+  $("#is_found-0").change()
+  $("#is_found-1").change()
+});
+
 $("#hospital_region_id").on("change", function(){
   update_hospitals_list();
 });
+
 $("#hospital_type").on("change", function(){
   update_hospitals_list();
+});
+
+$("#travel_type").on("change", function(){
+  update_travel_form();
+});
+
+$("#patient_status").on("change", function(){
+  disable_hospital_choice($(this).val() === 'in_hospital')
+});
+
+$("#open_modal_add_patient").on("click", function(e){
+   if ($("#add_patients")[0].checkValidity() === false) {
+    e.stopPropagation();
+    $("#hiddenSubmit")[0].click()
+  } else {
+    var addCheckBody = document.getElementById("add_check_body")
+    addCheckBody.innerHTML = `<b>{{ _("ФИО") }}:</b> ` + $("#full_name").val() + `<br>`
+    addCheckBody.innerHTML += `<b>{{ _("Тип Въезда в Страну") }}:</b> ` + $("#travel_type option:selected").text() + `<br>`
+  }
 });
 
 </script>

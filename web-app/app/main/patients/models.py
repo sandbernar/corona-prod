@@ -23,7 +23,7 @@ class Patient(db.Model):
     citizenship = Column(String, unique=False)
     pass_num = Column(String, unique=False)
     telephone = Column(String, unique=False)
-    arrival_date = Column(Date, unique=False)
+    
     visited_country = Column(String, unique=False)
     
     is_contacted_person = Column(Boolean, unique=False)
@@ -31,8 +31,7 @@ class Patient(db.Model):
     travel_type_id = Column(Integer, ForeignKey('TravelType.id'), nullable=True, default=None)
     travel_type = db.relationship('TravelType')    
 
-    flight_code_id = Column(Integer, ForeignKey('FlightCode.id'), nullable=True, default=None)
-    flight_code = db.relationship('FlightCode')
+    travel_id = Column(Integer, nullable=True, default=None, unique=False)
 
     region_id = Column(Integer, ForeignKey('Region.id'))
     region = db.relationship('Region')
@@ -40,7 +39,7 @@ class Patient(db.Model):
     status_id = Column(Integer, ForeignKey('PatientStatus.id'))
     status = db.relationship('PatientStatus')
 
-    is_found = Column(Boolean, unique=False)
+    is_found = Column(Boolean, unique=False, default=False)
     is_infected = Column(Boolean, unique=False, default=False)
 
     hospital_id = Column(Integer, ForeignKey('Hospital.id'))
