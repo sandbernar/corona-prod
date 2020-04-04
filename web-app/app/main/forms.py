@@ -23,6 +23,8 @@ class TableSearchForm(FlaskForm):
     not_in_hospital = BooleanField(id="not_in_hospital")
     flight_code = TextField(id='myInput')
 
+    travel_type = SelectField(id='travel_type')
+
     full_name = TextField(id='full_name')
     iin = TextField(id='iin')
     telephone = TextField(id='telephone')
