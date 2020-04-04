@@ -50,7 +50,8 @@ def prepare_patient_form(patient_form):
 
     # Flight Travel
     if not patient_form.flight_arrival_date.choices:
-        patient_form.flight_arrival_date.choices = [(flight.date, flight.date) for flight in FlightCode.query.all()]
+        dates = np.unique([f.date for f in FlightCode.query.all()])
+        patient_form.flight_arrival_date.choices = [(date, date) for date in dates]
     
     if not patient_form.flight_code_id.choices:
         if patient_form.flight_arrival_date.choices:
