@@ -52,9 +52,9 @@
                 <div class="col">
                  <a href="/contacted_persons?id={{ patient.id }}" class="btn btn-primary mt-3" style="width:100%;">{{ _("Контактные Лица") }}</a>
              </div>
-             {% if patient.flight_code_id %}
+             {% if patient.travel_type.value == c.flight_type[0] %}
              <div class="col">
-                <a href="/patients?flight_code={{ patient.flight_code }}&region=-1" class="btn btn-primary mt-3" style="width:100%;">{{ _("Прибывшие Вместе") }}</a>
+                <a href="/patients?flight_code={{ travel.flight_code }}&region=-1" class="btn btn-primary mt-3" style="width:100%;">{{ _("Прилетевшие Вместе") }}</a>
             </div>
             {% endif %}
         </div>
@@ -224,7 +224,7 @@
                 <div class="col-auto">                        
                   <div class="form-group">
                     <label for="flight-no-input" class="form-control-label">{{ _("Тип Въезда в Страну") }}</label>
-                    {{ form.travel_type(class="form-control", disabled="True", default=patient.travel_type.value) }}
+                    {{ form.travel_type(class="form-control", disabled="True") }}
                 </div>
             </div>                                  
         </div>            
@@ -389,14 +389,16 @@
   $("#travel_type").on("change", function(){
       update_travel_form();
   });
-    setup_form()
+    // setup_form()
 
     function setup_form() {
         update_travel_form();
-        $("#flight_arrival_date").val('{{ travel.flight_code.date }}')
-        $("#flight_arrival_date").change()
-        $("#flight_code_id").val('{{ travel.flight_code.id }}')
-        $("#flight_seat").val('{{ travel.seat }}')
+        {% if patient.travel_type.value == c.flight_type[0] %}
+            $("#flight_arrival_date").val('{{ travel.flight_code.date }}')
+            $("#flight_arrival_date").change()
+            $("#flight_code_id").val('{{ travel.flight_code.id }}')
+            $("#flight_seat").val('{{ travel.seat }}')
+        {% endif %}
     }
 
 </script>

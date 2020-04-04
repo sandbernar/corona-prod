@@ -192,7 +192,7 @@ def flight_profile():
                         row_string = "{}{}{}_{}{}{}"
                     else:
                         row_string = "{}"*len(row_s)
-                    print(new_seats)
+
                     row_string = row_string.format(*row_s)
 
                     seatmap.append(row_string)

@@ -54,10 +54,13 @@
               <div class="col">
                 <div class="row">
                   <div class="col">
-                    <div class="autocomplete" style="width:300px;">
+<!--                     <div class="autocomplete" style="width:300px;">
                       {{ form.flight_code(class="form-control", placeholder=_('Номер Рейса'), id="myInput", autocomplete="off", type="search") }}
-                    </div>
-                  </div>                
+                    </div> -->
+                  </div>
+                  <div class="col">
+                    {{ form.travel_type(class="form-control", onchange="this.form.submit()") }}
+                  </div>
                   <div class="col">
                     {{ form.region(class="form-control", onchange="this.form.submit()") }}
                   </div>
@@ -86,6 +89,7 @@
               <tr>
                 <th scope="col">{{ _("ФИО") }}</th>
                 <th scope="col">{{ _("Телефон") }}</th>
+                <th scope="col">{{ _("Тип Въезда") }}</th>
                 <th scope="col">{{ _("Регион") }}</th>
                 <th scope="col">{{ _("Найден") }}</th>
                 <th scope="col">{{ _("Госпитализирован") }}</th>
@@ -106,6 +110,9 @@
                 <td>
                   {{ patient.telephone }}
                 </td>
+                <td>
+                  {{ patient.travel_type.name }}
+                </td>                
                 <td>
                   {{ patient.region }}
                 </td>

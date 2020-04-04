@@ -50,7 +50,8 @@ def prepare_patient_form(patient_form):
 
     # Flight Travel
     if not patient_form.flight_arrival_date.choices:
-        patient_form.flight_arrival_date.choices = [(flight.date, flight.date) for flight in FlightCode.query.all()]
+        dates = np.unique([f.date for f in FlightCode.query.all()])
+        patient_form.flight_arrival_date.choices = [(date, date) for date in dates]
     
     if not patient_form.flight_code_id.choices:
         if patient_form.flight_arrival_date.choices:
@@ -98,6 +99,7 @@ def add_patient():
         travel_type = None if travel_type is None else travel_type
         
         del new_dict['travel_type']
+        new_dict['travel_id'] = None
 
         if travel_type:
             new_dict['travel_type_id'] = travel_type.id
@@ -341,6 +343,9 @@ def patients():
 
     if not form.region.choices:
         form.region.choices = get_regions_choices(current_user)
+    
+    if not form.travel_type.choices:
+        form.travel_type.choices = [(-1, c.all_types)] + [(t.id, t.name) for t in TravelType.query.all()]
 
     patients = []
     filt = dict()
@@ -354,6 +359,12 @@ def patients():
                 filt["region_id"] = region
                 form.region.default = region
 
+    if "travel_type" in request.args:
+        travel_type_id = request.args["travel_type"]
+        if travel_type_id != '-1':
+            filt["travel_type_id"] = travel_type_id
+            form.travel_type.default = travel_type_id
+
     if "not_found" in request.args:
         filt["is_found"] = False
         form.not_found.default='checked'
@@ -362,8 +373,8 @@ def patients():
         filt["is_infected"] = True
         form.is_infected.default='checked'
 
-    q = db.session.query(Patient, FlightTravel).filter_by(**filt)
-    q = q.filter(Patient.travel_id == FlightTravel.id)
+    q = db.session.query(Patient).filter_by(**filt)
+    # q = q.filter(Patient.travel_id == FlightTravel.id)
 
     if "flight_code" in request.args:
         flight_code = request.args["flight_code"]
@@ -404,7 +415,7 @@ def patients():
     total_len = q.count()
 
     for result in q.offset((page-1)*per_page).limit(per_page).all():
-        p = result[0]
+        p = result
         contacted = ContactedPersons.query.filter_by(patient_id=p.id).all()
 
         p.contacted_count = len(contacted)
@@ -479,7 +490,7 @@ def patient_profile():
             regions = Region.query.all()
 
             form = prepare_patient_form(form)
-
+            form.travel_type.default = patient.travel_type.value
 
             hospital_types = Hospital_Type.query.all()
             form.hospital_type.choices = [(h.id, h.name) for h in hospital_types]
