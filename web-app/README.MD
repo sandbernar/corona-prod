@@ -51,7 +51,7 @@ CONFIG_MODE=Production
 DATABASE_USER=${DATABASE_USER}
 DATABASE_PASSWORD=${DATABASE_PASSWORD}
 DATABASE_NAME=anti_corona_crm
-DATABASE_HOST=localhost
+DATABASE_HOST=postgres
 DATABASE_PORT=5432
 EOF
 ```
@@ -63,10 +63,10 @@ $> docker-compose -f docker-compose-mac.yml up -d
 
 Build проека
 ```bash
-docker-compose -f docker-compose-mac.yml build
+$> docker-compose -f docker-compose-mac.yml build
 ```
 
 Перезапуск проекта
 ```bash
-docker-compose -f docker-compose-mac.yml down && docker-compose -f docker-compose-mac.yml up -d
+$> docker-compose -f docker-compose-mac.yml down && docker-compose -f docker-compose-mac.yml up -d
 ```
