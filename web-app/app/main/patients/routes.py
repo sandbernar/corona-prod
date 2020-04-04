@@ -14,7 +14,7 @@ from app import login_manager, db
 from app import constants as c
 from jinja2 import TemplateNotFound
 
-from app.main.models import Region, Foreign_Country, Infected_Country_Category, TravelType
+from app.main.models import Region, Foreign_Country, Infected_Country_Category, TravelType, BorderControl, VariousTravel
 from app.main.patients.models import Patient, PatientStatus, ContactedPersons
 from app.main.hospitals.models import Hospital, Hospital_Type, Hospital_Nomenklatura
 from app.main.flights.models import FlightCode, FlightTravel
@@ -61,6 +61,19 @@ def prepare_patient_form(patient_form):
         else:
             patient_form.flight_code_id.choices = []
 
+    t_ids = {}
+    for typ in TravelType.query.all():
+        t_ids[typ.value] = typ.id
+
+    travel_id_form = [(t_ids[c.by_auto_type[0]], patient_form.auto_border_id),
+                      (t_ids[c.by_foot_type[0]], patient_form.foot_border_id),
+                      (t_ids[c.by_sea_type[0]], patient_form.sea_border_id)]
+    # Various Travel
+    for typ_id, typ_select in travel_id_form:
+        if not typ_select.choices:
+            borders = BorderControl.query.filter_by(travel_type_id = typ_id).all()
+            typ_select.choices =[(b.id, b.name) for b in borders]
+
     return patient_form
 
 @blueprint.route('/add_person', methods=['GET', 'POST'])
@@ -69,7 +82,6 @@ def add_patient():
         return redirect(url_for('login_blueprint.login'))
 
     patient_form = PatientForm()
-
     patient_form = prepare_patient_form(patient_form)
 
     hospitals = Hospital.query.all()
@@ -82,8 +94,6 @@ def add_patient():
 
     hospital_types = Hospital_Type.query.all()
     hospital_types = [(h.id, h.name) for h in hospital_types]
-
-    print(request.form, request.form.keys())
 
     if 'create' in request.form:
         new_dict = request.form.to_dict(flat=True)
@@ -112,6 +122,24 @@ def add_patient():
                 db.session.commit()
                 new_dict['travel_id'] = flight_travel.id
                 del new_dict['flight_code_id']
+            else:
+                border_form_key = None
+
+                if travel_type.value == c.by_auto_type[0]:
+                    border_form_key = 'auto_border_id'
+                elif travel_type.value == c.by_foot_type[0]:
+                    border_form_key = 'foot_border_id'
+                elif travel_type.value == c.by_sea_type[0]:
+                    border_form_key = 'sea_border_id'
+                
+                if border_form_key:
+                    various_travel = VariousTravel(date=new_dict['arrival_date'], 
+                                                    border_control_id=new_dict[border_form_key])
+
+                    db.session.add(various_travel)
+                    db.session.commit()
+
+                    new_dict['travel_id'] = various_travel.id
 
         # else we can create the user
         patient = Patient(**new_dict)
@@ -594,6 +622,8 @@ def patient_profile():
             travel_type = TravelType.query.filter_by(id=patient.travel_type_id).first()
             if travel_type.value == c.flight_type[0]:
                 travel = FlightTravel.query.filter_by(id=patient.travel_id).first()
+            elif travel_type.value != c.local_type[0]:
+                travel = VariousTravel.query.filter_by(id=patient.travel_id).first()
 
             if patient.status:
                 if patient.status.value == c.in_hospital[0]:

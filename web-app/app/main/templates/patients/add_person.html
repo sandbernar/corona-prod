@@ -17,7 +17,8 @@
 <!-- Modal -->
 <div class="modal fade" id="addPatientModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document">
-    <div class="modal-content">
+    <div class="loader" id="submit_loader"></div>
+    <div class="modal-content" style="position:relative;">     
       <div class="modal-header">
         <h5 class="modal-title" id="exampleModalLabel">{{ _("Добавить пациента?") }}</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -28,8 +29,8 @@
 
 </div>
 <div class="modal-footer">
-    <button class="btn btn-primary" onclick='submit_new_patient()'>{{ _("Да") }}</button>
-    <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ _("Нет") }}</button>
+    <button class="btn btn-primary" id="submit_button" onclick='submit_new_patient()'>{{ _("Да") }}</button>
+    <button type="button" class="btn btn-secondary" id="cancel_button" data-dismiss="modal">{{ _("Нет") }}</button>
 </div>
 </div>
 </div>
@@ -234,7 +235,12 @@
 
 {% block javascripts %}
 {{ super()}}
+
 <script type="text/javascript">
+  {% with form=form, c=c %}
+    {% include "js/travel_form.html" %}
+  {% endwith %}
+
   disable_hospital_choice(0)
   
   update_hospitals_list()
@@ -294,61 +300,32 @@
     });
   };
 
-  function get_flights_by_date(){
-    $.ajax({
-      type: 'POST',
-      url: "/get_flights_by_date",
-      data: {date: $("#flight_arrival_date").val()},
-      dataType: "text",
-      success: function(data){
-        document.getElementById("flight_code_id").innerHTML = data.toString();
-      }
-    });
-  };
+  function show_loader(show) {
+    var loader = $("#submit_loader")
+    var submit_button = $("#submit_button")
+    var cancel_button = $("#cancel_button")
+    
+    var z = 0
 
-  function update_travel_form() {
-    var flightForm = `  <div class='col'>
-                          <div class='form-group'>
-                            <label for='arrival-date-input' class='form-control-label'>{{ _('Дата Въезда') }}</label>
-                            {{ form.flight_arrival_date(class='form-control') }}
-                            </div>
-                          </div>  
-                        <div class='col'>                        
-                          <div class='form-group'>
-                            <label for='flight-no-input' class='form-control-label'>{{ _('Номер Рейса') }}</label>
-                            {{ form.flight_code_id(class='form-control') }}
-                          </div>
-                        </div>
-                        <div class='col'>                        
-                          <div class='form-group'>
-                            <label for='flight-no-input' class='form-control-label'>{{ _('Место') }}</label>
-                            {{ form.flight_seat(class='form-control', placeholder=_('Например') + ' 1C') }}
-                          </div>
-                        </div>`;
+    if (show == true) {
+      z = 1
 
-    var travelForm = document.getElementById("travel_form")
-
-    if (travelForm.children.length !== 1) {
-      while (travelForm.children.length > 1) {
-          travelForm.removeChild(travelForm.lastChild);
-      }
+      submit_button.addClass("disabled")
+      cancel_button.addClass("disabled")
+    } else {
+      submit_button.removeClass("disabled")
+      cancel_button.removeClass("disabled")
     }
 
-    if ($("#travel_type").val() === '{{c.flight_type[0]}}') {
-      document.getElementById("travel_form").insertAdjacentHTML('beforeend', flightForm)
-
-      $("#flight_arrival_date").on("change", function(){
-        get_flights_by_date();
-      });
-    }
+    loader.css("z-index", z)
   }
 
 function submit_new_patient() {
- // document.getElementById("add_patients").submit()
+  show_loader(true)
+
    $.post($("#add_patients").attr('action'), $("#add_patients").serialize() + '&create', function(res){
       // Do something with the response `res`
       if (res.patient_id !== undefined) {
-        console.log('<a href="\patient_profile?id=' + res.patient_id + '>' + '{{ _("Пациент") }}</a> {{ _("добавлен в базу данных") }}')
         $.notify({
           // options
           icon: 'fa fa-thumbs-up',
@@ -357,29 +334,46 @@ function submit_new_patient() {
           // settings
           type: 'info',
         });
+        show_loader(false)
         reset_add_patient_form()
         $("#addPatientModal").modal('hide');
       }
-      // Don't forget to hide the loading indicator!
   });
 }
 
 function reset_add_patient_form() {
   var travel_type = $("#travel_type").val()
   var backup_values = {}
+  
   if (travel_type === '{{c.flight_type[0]}}') {
     backup_values["#flight_arrival_date"] = $("#flight_arrival_date").val()
     backup_values["#flight_code_id"] = $("#flight_code_id").val()
-  }   
+  } else {
+    backup_values["#arrival_date"] = $("#arrival_date").val()
+    var border_form_id = null
+    
+    switch(travel_type) {
+      case '{{c.by_auto_type[0]}}':
+        border_form_id = "#auto_border_id"
+        break;
+      case '{{c.by_foot_type[0]}}':
+        border_form_id = "#foot_border_id"
+        break;
+      case '{{c.by_sea_type[0]}}':
+        border_form_id = "#sea_border_id"
+        break;
+    }
+
+    if (border_form_id) backup_values[border_form_id] = $(border_form_id).val()
+  }
+
   $("#add_patients")[0].reset();
 
   $("#travel_type").val(travel_type)
 
-  if (travel_type === '{{c.flight_type[0]}}') {
-    for (var key in backup_values) {
-      if (backup_values.hasOwnProperty(key)) {
-          $(key).val(backup_values[key])
-      }
+  for (var key in backup_values) {
+    if (backup_values.hasOwnProperty(key)) {
+        $(key).val(backup_values[key])
     }
   }
 }

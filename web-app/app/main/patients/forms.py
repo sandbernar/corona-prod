@@ -25,10 +25,17 @@ class PatientForm(FlaskForm):
     region_id = SelectField('Region', id='region', validators=[DataRequired()])
 
     travel_type = SelectField('Travel Type', id='travel_type', validators=[DataRequired()])
-    
-    flight_arrival_date = SelectField('Flight Arrival Date', id='flight_arrival_date'        , validators=[DataRequired()])
+
+    # Flight Travel
+    flight_arrival_date = SelectField('Flight Arrival Date', id='flight_arrival_date', validators=[DataRequired()])
     flight_code_id = SelectField('Flight Code', id='flight_code_id', validators=[DataRequired()])
     flight_seat = TextField('Flight Seat', id='flight_seat')
+
+    # Travel by auto, foot, sea
+    arrival_date = DateField('Arrival Date', validators=[DataRequired()])
+    auto_border_id = SelectField('By Auto Border', validators=[DataRequired()])
+    foot_border_id = SelectField('By Foot Border', id='foot_border_id', validators=[DataRequired()])
+    sea_border_id = SelectField('By Sea Border', validators=[DataRequired()])
 
     hospital_region_id = SelectField('Hospital Region', id='hospital_region' , validators=[DataRequired()])
     hospital_id = SelectField('Hospital', id='hospital' , validators=[DataRequired()])

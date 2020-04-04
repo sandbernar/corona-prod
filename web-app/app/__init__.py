@@ -34,7 +34,8 @@ def register_blueprints(app):
 
 def configure_database(app):
     def add_hospitals():
-        from app.main.models import Region, Foreign_Country, Infected_Country_Category, TravelType
+        from app.main.models import (Region, Foreign_Country, Infected_Country_Category, 
+                                    TravelType, BorderControl, VariousTravel)
         from app.main.patients.models import PatientStatus, ContactedPersons
         from app.main.hospitals.models import  Hospital, Hospital_Type, Hospital_Nomenklatura
         from app.main.flights.models import FlightTravel, FlightCode
@@ -43,6 +44,8 @@ def configure_database(app):
 
         ## Travel
         TravelType.query.delete()
+        BorderControl.query.delete()
+        VariousTravel.query.delete()
         
         ### Flight
         FlightTravel.query.delete()
@@ -96,6 +99,21 @@ def configure_database(app):
             db.session.add(typ)
 
         db.session.commit()
+
+        # We need to get ids of TravelType for by auto and by foot types
+        q = TravelType.query
+        foot_auto_type_ids = [q.filter_by(value = C.by_auto_type[0]).first().id,
+                              q.filter_by(value = C.by_foot_type[0]).first().id]
+        
+        for type_id in foot_auto_type_ids:
+            for border_name in C.by_earth_border:
+                border = BorderControl(travel_type_id = type_id, name = border_name)
+                db.session.add(border)
+
+        sea_type_id = q.filter_by(value = C.by_sea_type[0]).first().id
+        for border_name in C.by_sea_border:
+            border = BorderControl(travel_type_id = sea_type_id, name = border_name)
+            db.session.add(border)
 
         for index, row in df.iterrows():
             hospital = Hospital()

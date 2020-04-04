@@ -1,0 +1,86 @@
+function get_flights_by_date(){
+$.ajax({
+  type: 'POST',
+  url: "/get_flights_by_date",
+  data: {date: $("#flight_arrival_date").val()},
+  dataType: "text",
+  success: function(data){
+    document.getElementById("flight_code_id").innerHTML = data.toString();
+  }
+});
+};
+
+function update_travel_form() {
+var flightForm = `  <div class='col'>
+                      <div class='form-group'>
+                        <label for='arrival-date-input' class='form-control-label'>{{ _('Дата Въезда') }}</label>
+                        {{ form.flight_arrival_date(class='form-control') }}
+                        </div>
+                      </div>  
+                    <div class='col'>                        
+                      <div class='form-group'>
+                        <label for='flight-no-input' class='form-control-label'>{{ _('Номер Рейса') }}</label>
+                        {{ form.flight_code_id(class='form-control') }}
+                      </div>
+                    </div>
+                    <div class='col'>                        
+                      <div class='form-group'>
+                        <label for='flight-no-input' class='form-control-label'>{{ _('Место') }}</label>
+                        {{ form.flight_seat(class='form-control', placeholder=_('Например') + ' 1C') }}
+                      </div>
+                    </div>`;
+
+var borderForm = `  <div class='col'>
+                      <div class='form-group'>
+                        <label for='arrival-date-input' class='form-control-label'>{{ _('Дата Въезда') }}</label>
+                        {{ form.arrival_date(class='form-control', type='date') }}
+                        </div>
+                      </div>  
+                    `;
+
+var formTemplateBegin = `<div class='col'>                        
+                      <div class='form-group'>
+                        <label for='flight-no-input' class='form-control-label'>{{ _('Пункт Пропуска') }}</label>`
+
+var formTemplateEnd = `</div>
+                    </div>`
+
+var autoForm = formTemplateBegin + `{{ form.auto_border_id(class='form-control') }}` + formTemplateEnd
+var footForm = formTemplateBegin + `{{ form.foot_border_id(class='form-control') }}` + formTemplateEnd
+var seaForm = formTemplateBegin + `{{ form.sea_border_id(class='form-control') }}` + formTemplateEnd                                                   
+var travelForm = document.getElementById("travel_form")
+
+function addToTravelForm(html) {
+  document.getElementById("travel_form").insertAdjacentHTML('beforeend', html)
+}
+
+if (travelForm.children.length !== 1) {
+  while (travelForm.children.length > 1) {
+      travelForm.removeChild(travelForm.lastChild);
+  }
+}
+var travel_type = $("#travel_type").val();
+if (travel_type !== '{{c.local_type[0]}}') {
+  if (travel_type === '{{c.flight_type[0]}}') {
+    addToTravelForm(flightForm)
+
+    $("#flight_arrival_date").on("change", function(){
+      get_flights_by_date();
+    });
+  } else {
+    addToTravelForm(borderForm)
+    
+    switch(travel_type) {
+      case '{{c.by_auto_type[0]}}':
+        addToTravelForm(autoForm)
+        break;
+      case '{{c.by_foot_type[0]}}':
+        addToTravelForm(footForm)
+        break;
+      case '{{c.by_sea_type[0]}}':
+        addToTravelForm(seaForm)
+        break;
+    } 
+  }
+}
+}

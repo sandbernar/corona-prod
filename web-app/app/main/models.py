@@ -12,6 +12,13 @@ from app import constants as c
 
 from app.login.util import hash_pass
 
+def set_props(model, kwargs):
+    for property, value in kwargs.items():
+        if hasattr(value, '__iter__') and not isinstance(value, str):
+            value = value[0]
+            
+        setattr(model, property, value)
+
 class Region(db.Model):
 
     __tablename__ = 'Region'
@@ -20,11 +27,7 @@ class Region(db.Model):
     name = Column(String, unique=True)
 
     def __init__(self, **kwargs):
-        for property, value in kwargs.items():
-            if hasattr(value, '__iter__') and not isinstance(value, str):
-                value = value[0]
-                
-            setattr(self, property, value)
+        set_props(self, kwargs)
 
     def __repr__(self):
         return str(self.name)
@@ -38,11 +41,37 @@ class TravelType(db.Model):
     value = Column(String, unique=True)
 
     def __init__(self, **kwargs):
-        for property, value in kwargs.items():
-            if hasattr(value, '__iter__') and not isinstance(value, str):
-                value = value[0]
-                
-            setattr(self, property, value)
+        set_props(self, kwargs)
+
+    def __repr__(self):
+        return str(self.name)
+
+class VariousTravel(db.Model):
+    __tablename__ = 'VariousTravel'
+
+    id = Column(Integer, primary_key=True)
+    date = Column(Date)
+
+    border_control_id = Column(Integer, ForeignKey('BorderControl.id'), nullable=True, default=None)
+    border_control = db.relationship('BorderControl')
+
+    def __init__(self, **kwargs):
+        set_props(self, kwargs)
+
+    def __repr__(self):
+        return str(self.border_control)    
+
+class BorderControl(db.Model):
+    __tablename__ = 'BorderControl'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    
+    travel_type_id = Column(Integer, ForeignKey('TravelType.id'), nullable=True, default=None)
+    travel_type = db.relationship('TravelType')    
+
+    def __init__(self, **kwargs):
+        set_props(self, kwargs)
 
     def __repr__(self):
         return str(self.name)
@@ -55,11 +84,7 @@ class Infected_Country_Category(db.Model):
     name = Column(String, unique=True)
 
     def __init__(self, **kwargs):
-        for property, value in kwargs.items():
-            if hasattr(value, '__iter__') and not isinstance(value, str):
-                value = value[0]
-                
-            setattr(self, property, value)
+        set_props(self, kwargs)
 
     def __repr__(self):
         return str(self.name)
@@ -76,11 +101,7 @@ class Foreign_Country(db.Model):
     category = db.relationship('Infected_Country_Category')
 
     def __init__(self, **kwargs):
-        for property, value in kwargs.items():
-            if hasattr(value, '__iter__') and not isinstance(value, str):
-                value = value[0]
-                
-            setattr(self, property, value)
+        set_props(self, kwargs)
 
     def __repr__(self):
         return str(self.name)
