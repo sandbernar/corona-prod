@@ -70,3 +70,8 @@ docker-compose -f docker-compose-mac.yml build
 ```bash
 docker-compose -f docker-compose-mac.yml down && docker-compose -f docker-compose-mac.yml up -d
 ```
+
+Создание администратора
+```
+docker exec -it web-app_appseed-app_1 python create_admin.py -u adminLogin -p adminPassword
+```
