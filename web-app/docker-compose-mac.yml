@@ -1,0 +1,15 @@
+version: '3'
+networks:
+  default:
+    external:
+      name: postgres
+services:
+  appseed-app:
+    restart: always
+    env_file: .env
+    build: .
+    ports:
+      - "5005:5005"
+    volumes:
+      - .:/app
+      - ./migrations:/migrations
