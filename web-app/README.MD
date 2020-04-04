@@ -33,7 +33,7 @@ docker run -d \
     postgres
 ```
 
-Теперь нужно настроить базу данных для работы с проектом: создать UTF-8 базу данных `anti_corona_ctm` и пользователя который будет 
+Теперь нужно настроить базу данных для работы с проектом: создать UTF-8 базу данных `anti_corona_crm` и пользователя который будет 
 обращаться к этой базе. Их данные далее сохраним в файле `.env`. Создайте перемененные окружения `DATABASE_USER` и `DATABASE_PASSWORD`.
 ```bash
 docker exec -it postgres psql -U postgres -c "update pg_database set datistemplate=false where datname='template1';" && \
@@ -61,7 +61,7 @@ EOF
 docker-compose -f docker-compose-mac.yml up -d
 ```
 
-Build проека
+Build проекта
 ```bash
 docker-compose -f docker-compose-mac.yml build
 ```
