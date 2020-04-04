@@ -50,9 +50,17 @@ def users():
 
     max_page = math.ceil(total_len/per_page)
 
+    change = None
+    error_msg = None
+
+    if "added_user" in request.args:
+        change =_("Пользователь был успешно добавлен")
+    elif "delete_user" in request.args:
+        change =_("Пользователь был успешно удален")
+
     form.process()
-    return route_template('users/users', users=users, form=form, page=page, 
-                                    max_page=max_page, total = total_len, constants=c)
+    return route_template('users/users', users=users, form=form, page=page, max_page=max_page, 
+                                        total = total_len, constants=c, change=change, error_msg=error_msg)
 
 @blueprint.route('/add_user', methods=['GET', 'POST'])
 def add_user():
@@ -80,7 +88,7 @@ def add_user():
         db.session.add(user)
         db.session.commit()
 
-        return route_template( 'users/add_user', form=patient_form, change=_("Пользователь был успешно добавлен"), error_msg=None)
+        return redirect("{}?added_user".format(url_for('main_blueprint.users')))
     else:
         return route_template( 'users/add_user', form=patient_form, change=None, error_msg=None)
 
@@ -95,7 +103,8 @@ def user_profile():
         return render_template('errors/error-500.html'), 500        
 
     if "id" in request.args:
-        user = User.query.filter_by(id=request.args["id"]).first()
+        user_query = User.query.filter_by(id=request.args["id"])
+        user = user_query.first()
         
         if not user:
             return render_template('errors/error-404.html'), 404
@@ -106,8 +115,10 @@ def user_profile():
             error_msg = None
             
             if 'update' in request.form:
-                if request.form['username']:
-                    new_username = request.form['username']
+                values = request.form.to_dict()
+
+                if values['username']:
+                    new_username = values['username']
                     
                     if not new_username == user.username:  
                         if not User.query.filter_by(username = new_username).count():
@@ -116,19 +127,23 @@ def user_profile():
                             error_msg = _("Пользователь с таким логином уже существует")
 
                 if not error_msg:
-                    if request.form['password']:
-                        password = request.form['password']
+                    if values['password']:
+                        password = values['password']
 
                         user.password = hash_pass(password)
 
-                    user.telephone = request.form['telephone']
-                    user.email = request.form['email']
+                    del values["password"]
+                    del values["csrf_token"]
+                    del values["update"]
+                    
+                    user_query.update(values)
 
                     db.session.add(user)
                     db.session.commit()
 
                     change = _("Данные обновлены")
 
+            form.full_name.default = user.full_name
             form.username.default = user.username
 
             form.email.default = user.email
@@ -136,6 +151,7 @@ def user_profile():
             
             form.region_id.choices = get_regions_choices(current_user)
             form.region_id.default = user.region_id
+            form.organization.default = user.organization
   
             form.process()
             return route_template('users/user_profile', form = form, user=user, change=change, error_msg=error_msg)
@@ -151,8 +167,6 @@ def delete_user():
     if not current_user.is_admin:
         return render_template('errors/error-500.html'), 500        
     
-    return_url = url_for('main_blueprint.users')
-
     if len(request.form):
         if "delete" in request.form:
             user_id = request.form["delete"]
@@ -162,4 +176,4 @@ def delete_user():
                 user.delete()
                 db.session.commit()
 
-    return redirect(return_url)
+    return redirect("{}?delete_user".format(url_for('main_blueprint.users')))

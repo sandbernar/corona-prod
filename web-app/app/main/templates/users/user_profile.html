@@ -40,10 +40,6 @@
 
 <!-- Page content -->
 <div class="container-fluid mt--7">
-{% with change=change, error_msg=error_msg %}
-{% include "site_template/change_notification.html" %}
-{% endwith %}
-
     <form method="POST">
         {{ form.hidden_tag() }}
         <div class="row">
@@ -87,6 +83,14 @@
                                     <div class="row">
                                         <div class="col">
                                             <div class="form-group">
+                                                <label class="form-control-label" for="input-home_address">{{ _("ФИО") }}</label>
+                                              {{ form.full_name(placeholder="Иванов Иван Иванович",class="form-control", type="text") }}
+                                            </div>
+                                        </div>                                      
+                                    </div>
+                                    <div class="row">
+                                        <div class="col">
+                                            <div class="form-group">
                                                 <label class="form-control-label" for="input-home_address">{{ _("Логин") }}</label>
                                                 {{ form.username(placeholder="user1234",class="form-control form-control-alternative", type="text") }}
                                             </div>
@@ -97,7 +101,7 @@
                                               {{ form.password(class="form-control form-control-alternative", id="pasword", type="text") }}                          
                                           </div>       
                                       </div>    
-                                  </div>                 
+                                  </div>
                               </div>
                           </div>
 
@@ -118,7 +122,15 @@
                                     {{ form.telephone(placeholder=_("87017773344"), class="form-control form-control-alternative", type="text") }}
                                 </div>
                             </div>                        
-                        </div>                
+                        </div>
+                        <div class="row">
+                              <div class="col">
+                                  <div class="form-group">
+                          <label for="npass-input" class="form-control-label">{{ _("Организация") }}</label>
+                          {{ form.organization(placeholder=_("Организация"), class="form-control", type="text") }}                          
+                                </div>       
+                            </div>                                    
+                        </div>                                        
                     </div>                
                 </form>
             </div>
@@ -159,4 +171,7 @@
   window.location.href = window.location.href
 }
 </script>
+{% with change=change, error_msg=error_msg %}
+{% include "site_template/change_notification.html" %}
+{% endwith %}
 {% endblock javascripts %}

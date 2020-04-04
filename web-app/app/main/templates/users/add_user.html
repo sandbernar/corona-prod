@@ -15,10 +15,6 @@
 {% endwith %}
 
 <div class="container-fluid mt--7">
-{% with change=change, error_msg=error_msg %}
-{% include "site_template/change_notification.html" %}
-{% endwith %}
-
   <!-- Table -->
   <div class="row">
     <div class="col">
@@ -36,17 +32,21 @@
                     <div class="card shadow">
                       <div class="card-header bg-transparent">
                         <div class="form-group">
-                          <label for="name-input" class="form-control-label">{{ _("Логин") }}</label>
+                          <label for="name-input" class="form-control-label">{{ _("ФИО") }}*</label>
+                          {{ form.full_name(placeholder="Иванов Иван Иванович",class="form-control", type="text") }}
+                        </div>                        
+                        <div class="form-group">
+                          <label for="name-input" class="form-control-label">{{ _("Логин") }}*</label>
                           {{ form.username(placeholder="user1234",class="form-control", type="text") }}
                         </div>
                         <div class="form-group">
-                          <label for="npass-input" class="form-control-label">{{ _("Пароль") }}</label>
+                          <label for="npass-input" class="form-control-label">{{ _("Пароль") }}*</label>
                           {{ form.password(placeholder=_("Пароль"), class="form-control", type="text") }}
                         </div>
                         <div class="form-group">
                           <label for="npass-input" class="form-control-label">{{ _("Электронная Почта") }}</label>
                           {{ form.email(placeholder="E-Mail", class="form-control", type="text") }}
-                        </div>                                                  
+                        </div>                                                                     
                       </div>
                     </div>
                   </div>
@@ -54,13 +54,17 @@
                     <div class="card shadow">
                       <div class="card-header bg-transparent">
                         <div class="form-group">
-                          <label for="region-input" class="form-control-label">{{ _("Регион") }}</label>
+                          <label for="region-input" class="form-control-label">{{ _("Регион") }}*</label>
                           {{ form.region_id(class="form-control", id="region_id") }}                          
                         </div>
                         <div class="form-group">
-                          <label for="phone-input" class="form-control-label">{{ _("Телефон") }}</label>
+                          <label for="phone-input" class="form-control-label">{{ _("Телефон") }}*</label>
                           {{ form.telephone(placeholder="77017123456", class="form-control", type="tel") }}
-                        </div>                                          
+                        </div>
+                        <div class="form-group">
+                          <label for="npass-input" class="form-control-label">{{ _("Организация") }}*</label>
+                          {{ form.organization(placeholder=_("Организация"), class="form-control", type="text") }}
+                        </div>                        
                       </div>
                     </div>
                     <button type="submit" name="create" class="btn btn-primary mt-4" type="button" style="width:100%">
@@ -76,7 +80,6 @@
     </div>
   </div>
 
-
   {% include "site_template/footer.html" %}
 
 </div>        
@@ -85,71 +88,9 @@
 
 {% block javascripts %}
 {{ super()}}
-<script type="text/javascript">
-  disable_hospital_choice(0)
-  update_hospitals_list()
-  disable_status($("#hospital_select").val())
 
-  function disable_status(value) {
-    disable = true
-    if (value == 1) {
-      disable = false
-    } else {
-      $('#patient_status').prop('selectedIndex', 0).change();
-      // document.getElementById('in_hospital-0').checked = false;
-      // document.getElementById('in_hospital-1').checked = false;
-      // disable_hospital_choice(value)
-    }
-
-    document.getElementById('patient_status').disabled = disable;
-    // document.getElementById('in_hospital-1').disabled = disable;    
-  }
-
-  function disable_in_hospital(value) {
-    disable = true
-    if (value == 1) {
-      disable = false
-    } else {
-      document.getElementById('in_hospital-0').checked = false;
-      document.getElementById('in_hospital-1').checked = false;
-      disable_hospital_choice(value)
-    }
-
-    document.getElementById('in_hospital-0').disabled = disable;
-    document.getElementById('in_hospital-1').disabled = disable;
-  }
-
-  function disable_hospital_choice(value) {
-    disable = true;
-    if (value == 1) {
-      disable = false;
-    }
-
-    document.getElementById('hospital_region_id').disabled = disable;
-    document.getElementById('hospital_type').disabled = disable;
-    document.getElementById('hospital_select').disabled = disable;
-  }
-
-  function update_hospitals_list(){
-    $.ajax({
-      type: 'POST',
-      url: "/get_hospital_by_region",
-      data: {region_id: $("#hospital_region_id").val(), hospital_type_id: $("#hospital_type").val()},
-      dataType: "text",
-      success: function(data){
-        document.getElementById("hospital_select").innerHTML = data.toString();
-      }
-    });
-  };
-
-// $("#hospital_region_id").on("click", update_hospitals_list());
-$("#hospital_region_id").on("change", function(){
-  update_hospitals_list();
-});
-$("#hospital_type").on("change", function(){
-  update_hospitals_list();
-});
-
-</script>
+{% with change=change, error_msg=error_msg %}
+{% include "site_template/change_notification.html" %}
+{% endwith %}
 
 {% endblock javascripts %}

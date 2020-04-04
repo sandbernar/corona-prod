@@ -8,17 +8,16 @@ from wtforms import TextField, SelectField
 from wtforms.validators import DataRequired
 
 class CreateUserForm(FlaskForm):
-    username = TextField('Username'     , id='username_create' , validators=[DataRequired()])
-    email    = TextField('Email'        , id='email_create'    )
-    telephone    = TextField('Telephone'        , id='tel_create'    )
-    password = TextField('Password' , id='pwd_create'      , validators=[DataRequired()])
+    full_name = TextField('Full Name', validators=[DataRequired()])
 
-    region_id = SelectField('Region', id='region', validators=[DataRequired()])
+    username = TextField('Username', validators=[DataRequired()])
+    password = TextField('Password', validators=[DataRequired()])
 
-class UpdateUserForm(FlaskForm):
-    username = TextField('Username'     , id='username_create')
-    email    = TextField('Email'        , id='email_create'    )
-    telephone    = TextField('Telephone'        , id='tel_create'    )
-    password = TextField('Password' , id='pwd_create'      )
+    email    = TextField('Email')
+    telephone    = TextField('Telephone')
 
-    region_id = SelectField('Region', id='region', validators=[DataRequired()])
+    region_id = SelectField('Region', validators=[DataRequired()])
+    organization = TextField('Organization', validators=[DataRequired()])
+
+class UpdateUserForm(CreateUserForm):
+    password = TextField('Password', validators=[])

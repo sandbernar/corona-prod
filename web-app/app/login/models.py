@@ -16,13 +16,16 @@ class User(db.Model, UserMixin):
 
     id = Column(Integer, primary_key=True)
     username = Column(String, unique=True)
-    email = Column(String, unique=False)
     password = Column(Binary)
+
+    full_name = Column(String)
+    organization = Column(String)
+    telephone = Column(String)
+    email = Column(String)
 
     region_id = Column(Integer, ForeignKey('Region.id'))
     region = db.relationship('Region')
 
-    telephone = Column(String)
     is_admin = Column(Boolean, default=True)
 
     def __init__(self, **kwargs):

@@ -45,6 +45,11 @@ user = User()
 user.username = args["username"]
 user.password = hash_pass(args["password"])
 
+# user.username = args["username"]
+# user.organization = Column(String)
+# user.telephone = Column(String)
+# user.email = Column(String)
+
 session.add(user)
 session.commit()
 
