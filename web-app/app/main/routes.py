@@ -37,7 +37,7 @@ def index():
 
     coordinates_patients = []
     for p in q.all():
-        if p.address_lat:
+        if p.home_address.lat:
             coordinates_patients.append(p)
 
     patients = q.all()

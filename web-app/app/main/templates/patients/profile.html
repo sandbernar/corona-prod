@@ -24,7 +24,7 @@
       </button>
   </div>
   <div class="modal-body">
-    {{ _("Вы уверены, что хотите удалить пациента") }} <bold> {{patient.full_name}} </bold>?
+    {{ _("Вы уверены, что хотите удалить пациента") }} <bold> {{patient.first_name}} </bold>?
 </div>
 <div class="modal-footer">
     <form action="/delete_patient" method="POST">
@@ -43,8 +43,8 @@
     <form method="POST"> 
         {{ form.hidden_tag() }}        
         <div class="row">
-            <div class="col-xl-4 order-xl-2 mb-5 mb-xl-0">
-                {% if patient.address_lat %}
+            <div class="col-xl-3 order-xl-2 mb-5 mb-xl-0">
+                {% if patient.home_address.lat %}
                 <div class="card shadow">
                    <div id="map" style="width:100%; height:220px"></div>
                </div>
@@ -70,11 +70,7 @@
                     </div>
                 </div>
                 <div class="card-body pt-0 pt-md-4">
-                    <div class="text-center">
-                        <div class="form-group">
-                            <h3>{{ _("Имя") }}</h3>
-                            {{ form.full_name(placeholder="Иванов Иван",class="form-control form-control-alternative", type="text", value=patient.full_name, style="font-weight: bold;") }}
-                        </div>                        
+                    <div class="text-center">                       
                         <h3>
                             {{ _("Возраст") }} {{ age }}<span class="font-weight-light"></span>
                         </h3>
@@ -129,12 +125,12 @@
                 </div>
                 <hr class="my-4" />                    
             </div>
-            <div class="row  mt-3">
+            <div class="row mt-3">
                 <div class="col">
                     <input class="btn btn-primary" id="submit" name="submit" type="submit" value={{ _("Сохранить") }}>
                 </div>
                 <div class="col">
-                    <input class="btn btn-danger" data-toggle="modal" data-target="#deletePatientModal" value={{ _("Удалить Пациента") }}>
+                    <input class="btn btn-danger" data-toggle="modal" type="button" data-target="#deletePatientModal" value={{ _("Удалить") }}>
                 </div>                            
             </div>
         </div>
@@ -142,12 +138,15 @@
 </div>
 
 </div>
-<div class="col-xl-8 order-xl-1">
-    <div class="card bg-secondary shadow">
-        <div class="card-header bg-white border-0">
+<div class="col-xl-9 order-xl-1">
+    {% with form=form %}
+      {% include "patients/modules/travel_form.html" %}
+    {% endwith %} 
+    <div class="card bg-secondary shadow mt-3">
+        <div class="card-header bg-white">
             <div class="row align-items-center">
                 <div class="col-8">
-                    <h3 class="mb-0">{{ patient.full_name }}</h3>
+                    <h3 class="mb-0">{{ patient.first_name }}</h3>
                 </div>
             </div>
         </div>
@@ -155,79 +154,22 @@
             <h6 class="heading-small text-muted mb-4">{{ _("Личные Данные") }}</h6>
             <div class="pl-lg-4">
                 <div class="row">
-                    <div class="col-lg-6">
-                        <div class="form-group">
-                            <label class="form-control-label" for="input-iin">{{ _("ИИН") }}</label>
-                            {{ form.iin(placeholder=_("12 Цифр"),class="form-control form-control-alternative", type="text", onkeyup="this.value=this.value.replace(/[^0-9]/g,'');", value=patient.iin) }}                                
-                        </div>
+                  <div class="col">
+                        {% with form=form %}
+                          {% include "patients/modules/patient_form_left.html" %}
+                        {% endwith %} 
                     </div>
-                    <div class="col-lg-6">
-                        <div class="form-group">
-                            <label class="form-control-label" for="input-dob">{{ _("Дата Рождения") }}</label>
-                            {{ form.dob(class="form-control form-control-alternative", type="date", value=patient.dob) }}
-                        </div>
-                    </div>
+                                      <div class="col">
+                        {% with form=form %}
+                          {% include "patients/modules/patient_form_right.html" %}
+                        {% endwith %}                         
+                  </div>
                 </div>
-                <div class="row">
-                    <div class="col-lg-6">
-                        <div class="form-group">
-                            <label class="form-control-label" for="input-citizenship">{{ _("Гражданство") }}</label>
-                            {{ form.citizenship(class="form-control form-control-alternative", value=patient.citizenship) }}
-                        </div>
-                    </div>
-                    <div class="col-lg-6">
-                        <div class="form-group">
-                            <label class="form-control-label" for="input-pass-num">{{ _("Номер Паспорта") }}</label>
-                            {{ form.pass_num(placeholder=_("N12345678"), class="form-control", type="text", value=patient.pass_num) }}
-                        </div>
-                    </div>
-                </div>
+                
             </div>
-            <hr class="my-4" />
-            <!-- Address -->
-            <h6 class="heading-small text-muted mb-4">{{ _("Контактная Информация") }}</h6>
-            <div class="pl-lg-4">
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="form-group">
-                            <label class="form-control-label" for="input-home_address">{{ _("Место жительства / возможное место проживания") }}</label>
-                            {{ form.home_address(class="form-control", type="text", placeholder=_("Алматы"), value=patient.home_address) }}
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-lg-4">
-                        <div class="form-group">
-                            <label class="form-control-label" for="input-region">{{ _("Регион") }}</label>
-                            {{ form.region_id(class="form-control", id="region_id") }}
-                        </div>
-                    </div>
-                    <div class="col-lg-4">
-                        <div class="form-group">
-                            <label class="form-control-label" for="input-job">{{ _("Место Работы") }}</label>
-                            {{ form.job(class="form-control", type="text", placeholder=_("Алматы"), value=patient.job) }}
-                        </div>
-                    </div>
-                    <div class="col-lg-4">
-                        <div class="form-group">
-                            <label class="form-control-label" for="input-telephone">{{ _("Телефон") }}</label>
-                            {{ form.telephone(placeholder=_("77017123456"), class="form-control", type="tel", value=patient.telephone) }}
-                        </div>
-                    </div>
-                </div>
-            </div>
+
             {% if not patient.is_contacted_person %}
-            <hr class="my-4" />
-            <!-- Description -->
-            <h6 class="heading-small text-muted mb-4">{{ _("Информация о Въезде") }}</h6>
-            <div class="row" id="travel_form">
-                <div class="col-auto">                        
-                  <div class="form-group">
-                    <label for="flight-no-input" class="form-control-label">{{ _("Тип Въезда в Страну") }}</label>
-                    {{ form.travel_type(class="form-control", disabled="True") }}
-                </div>
-            </div>                                  
-        </div>            
+                                 
         {% endif %}
     </div>
 </div>
@@ -250,12 +192,12 @@
     {% endwith %}
     setup_form()
 
-    if ({{ patient.address_lat }}) {
+    {% if patient.home_address.lat %}
         ymaps.ready(init);
 
         function init() {
             var myMap = new ymaps.Map("map", {
-                center: [{{ patient.address_lat }}, {{ patient.address_lng }}],
+                center: [{{ patient.home_address.lat }}, {{ patient.home_address.lng }}],
                 zoom: 12,
                 controls: ['zoomControl']
             }, {
@@ -263,14 +205,14 @@
             })
 
             myMap.geoObjects
-            .add(new ymaps.Placemark([{{ patient.address_lat }}, {{ patient.address_lng }} ], {
-                balloonContent: '{{ patient.full_name }}</a>'
+            .add(new ymaps.Placemark([{{ patient.home_address.lat }}, {{ patient.home_address.lng }} ], {
+                balloonContent: '{{ patient.first_name }}</a>'
             }, {
                 preset: 'islands#icon',
                 iconColor: 'red'
             }))
         }
-    }
+    {% endif %}
 
     $("#in_hospital_checkbox").on("change", function(){
         status_exclusive_checkbox($("#in_hospital_checkbox"))

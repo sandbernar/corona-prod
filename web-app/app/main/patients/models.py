@@ -68,7 +68,7 @@ class Patient(db.Model):
     is_found = Column(Boolean, unique=False, default=False)
     is_infected = Column(Boolean, unique=False, default=False)
 
-    hospital_id = Column(Integer, ForeignKey('Hospital.id'))
+    hospital_id = Column(Integer, ForeignKey('Hospital.id'), nullable=True, default=None)
     hospital = db.relationship('Hospital')
 
     job = Column(String, nullable=True)
@@ -86,7 +86,7 @@ class Patient(db.Model):
             setattr(self, property, value)
 
     def __repr__(self):
-        return str(self.id)
+        return "{} {} {}".format(str(self.first_name), str(self.second_name), str(self.patronymic_name))
 
 class ContactedPersons(db.Model):
     __tablename__ = 'ContactedPersons'
