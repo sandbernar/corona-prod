@@ -34,8 +34,8 @@ def register_blueprints(app):
 
 def configure_database(app):
     def add_hospitals():
-        from app.main.models import (Region, Foreign_Country, Infected_Country_Category, 
-                                    TravelType, BorderControl, VariousTravel)
+        from app.main.models import (Region, Country, Infected_Country_Category, 
+                                    TravelType, BorderControl, VariousTravel, Address)
         from app.main.patients.models import PatientStatus, ContactedPersons
         from app.main.hospitals.models import  Hospital, Hospital_Type, Hospital_Nomenklatura
         from app.main.flights.models import FlightTravel, FlightCode
@@ -60,7 +60,8 @@ def configure_database(app):
         ContactedPersons.query.delete()
 
         Infected_Country_Category.query.delete()
-        Foreign_Country.query.delete()
+        Country.query.delete()
+        Address.query.delete()
 
         db.session.commit()
 
@@ -76,7 +77,7 @@ def configure_database(app):
             db.session.add(country_cat)
 
         for country in C.code_country_list:
-            new_country = Foreign_Country(value=country[0], name=country[1])
+            new_country = Country(code=country[0], name=country[1])
             db.session.add(new_country)
 
         for status in C.patient_statuses:

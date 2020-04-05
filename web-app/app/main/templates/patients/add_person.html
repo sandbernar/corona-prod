@@ -23,17 +23,17 @@
         <h5 class="modal-title" id="exampleModalLabel">{{ _("Добавить пациента?") }}</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true"></span>
-      </button>
-  </div>
-  <div class="modal-body" id="add_check_body">
+        </button>
+      </div>
+      <div class="modal-body" id="add_check_body">
 
-</div>
-<div class="modal-footer">
-    <button class="btn btn-primary" id="submit_button" onclick='submit_new_patient()'>{{ _("Да") }}</button>
-    <button type="button" class="btn btn-secondary" id="cancel_button" data-dismiss="modal">{{ _("Нет") }}</button>
-</div>
-</div>
-</div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" id="submit_button" onclick='submit_new_patient()'>{{ _("Да") }}</button>
+        <button type="button" class="btn btn-secondary" id="cancel_button" data-dismiss="modal">{{ _("Нет") }}</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="container-fluid mt--7">
@@ -57,85 +57,240 @@
   {% endif %}
   
   <form id="add_patients" role="form" method="post" action="">
-  <div class="row">
-    <div class="col">
-      <div class="card shadow">
-        <div class="card-header bg-transparent">
-          <h3 class="mb-0">{{ _("Выбрать Тип Въезда") }}</h3>
-        </div>
-        <div class="card-body">
-          <div class="row" id="travel_form">
-            <div class="col">                        
-              <div class="form-group">
-                <label for="flight-no-input" class="form-control-label">{{ _("Тип Въезда в Страну") }}</label>
-                {{ form.travel_type(class="form-control") }}
-              </div>
-            </div>                                  
+    <div class="row">
+      <div class="col">
+        <div class="card shadow">
+          <div class="card-header bg-transparent">
+            <h3 class="mb-0">{{ _("Выбрать Тип Въезда") }}</h3>
+          </div>
+          <div class="card-body">
+            <div class="row" id="travel_form">
+              <div class="col">                        
+                <div class="form-group">
+                  <label for="flight-no-input" class="form-control-label">{{ _("Тип Въезда в Страну") }}*</label>
+                  {{ form.travel_type(class="form-control") }}
+                </div>
+              </div>                                  
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
-  <div class="row mt-3">
-    <div class="col">
-      <div class="card shadow">
-        <div class="card-header bg-transparent">
-          <h3 class="mb-0">{{ _("Информация о Пациенте") }}</h3>
-        </div>
-        <div class="card-body">
-          <div class="row">
-            <div class="col">
+    <div class="row mt-3">
+      <div class="col">
+        <div class="card shadow">
+          <div class="card-header bg-transparent">
+            <h3 class="mb-2">{{ _("Информация о Пациенте") }}</h3><h5>{{ _("* - обязательная к заполнению информация") }}</h5>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col">
                 {{ form.hidden_tag() }}
                 <div class="row">
                   <div class="col">
                     <div class="card shadow">
                       <div class="card-header bg-transparent">
-                        <div class="form-group">
-                          <label for="name-input" class="form-control-label">{{ _("ФИО") }}</label>
-                          {{ form.full_name(placeholder=_("Иванов Иван"),class="form-control", type="text") }}
+                        <div class="row">
+                          <div class="col">
+                            <div class="form-group">
+                              <label for="name-input" class="form-control-label">{{ _("Имя") }}*</label>
+                              {{ form.first_name(placeholder=_("Иван"),class="form-control", type="text") }}
+                            </div>
+                          </div>
+                          <div class="col">
+                            <div class="form-group">
+                              <label for="name-input" class="form-control-label">{{ _("Фамилия") }}*</label>
+                              {{ form.second_name(placeholder=_("Иванов"),class="form-control", type="text") }}
+                            </div>
+                          </div>
+                          <div class="col">
+                            <div class="form-group">
+                              <label for="name-input" class="form-control-label">{{ _("Отчество") }}</label>
+                              {{ form.patronymic_name(placeholder=_("Иванович"),class="form-control", type="text") }}
+                            </div>
+                          </div>
                         </div>
+                        <div class="row">
+                          <div class="col-md-auto">
+                            <div class="form-group">
+                              <label class="form-control-label">{{ _("Пол") }}*</label><br>
+                              {% for subfield in form.gender %}
+                              <div class="custom-control custom-radio custom-control-inline">
+                                {{ subfield(type="radio", id=subfield.id, class="custom-control-input") }}
+                                <label class="custom-control-label" for='{{ subfield.id }}'>{{ subfield.label }}</label>
+                              </div>
+                              {% endfor %}
+                            </div>
+                          </div>
+                          <div class="col">
+                            <div class="form-group">
+                              <label for="dob-input" class="form-control-label">{{ _("Дата Рождения") }}*</label>
+                              {{ form.dob(class="form-control", type="date") }}
+                            </div>
+                          </div>
+                        </div>                                         
                         <div class="form-group">
                           <label for="iin-input" class="form-control-label">{{ _("ИИН") }}</label>
                           {{ form.iin(placeholder=_("12 Цифр"),class="form-control", type="text", onkeyup="this.value=this.value.replace(/[^0-9]/g,'');") }}
                         </div>
                         <div class="form-group">
-                          <label for="dob-input" class="form-control-label">{{ _("Дата Рождения") }}</label>
-                          {{ form.dob(class="form-control", type="date") }}
-                        </div>
-                        <div class="form-group">
-                          <label for="citizenship-input" class="form-control-label">{{ _("Гражданство") }}</label>
-                          {{ form.citizenship(class="form-control") }}
+                          <label for="citizenship-input" class="form-control-label">{{ _("Гражданство") }}*</label>
+                          {{ form.citizenship_id(class="form-control") }}
                         </div>
                         <div class="form-group">
                           <label for="npass-input" class="form-control-label">{{ _("Номер Паспорта") }}</label>
                           {{ form.pass_num(placeholder=_("N12345678"), class="form-control", type="text") }}
                         </div>
+                        <div class="form-group">
+                          <label for="citizenship-input" class="form-control-label">{{ _("Страна Проживания") }}*</label>
+                          {{ form.country_of_residence_id(class="form-control") }}
+                        </div>
+                        <label for="home-input" class="form-control-label">{{ _("Место жительства / возможное место проживания") }}*</label>
+                        <div class="row">
+                          <div class="col">
+                            <div class="form-group">
+                              <label for="home-input" class="form-control-label">{{ _("Страна") }}*</label>
+                              {{ form.home_address_country_id(class="form-control") }}
+                            </div>
+                          </div>
+                          <div class="col">
+                            <div class="form-group">
+                              <label for="home-input" class="form-control-label">{{ _("Область") }}</label>
+                              {{ form.home_address_state(class="form-control", type="text" ) }}
+                            </div>
+                          </div>
+                          <div class="col">
+                            <div class="form-group">
+                              <label for="home-input" class="form-control-label">{{ _("Город") }}*</label>
+                              {{ form.home_address_city(class="form-control", type="text" ) }}
+                            </div>
+                          </div>
+                        </div>
+                        <div class="row">
+                          <div class="col-xl">
+                            <div class="form-group">
+                              <label for="home-input" class="form-control-label">{{ _("Улица") }}*</label>
+                              {{ form.home_address_street(class="form-control", type="text", placeholder=_("Байтурсынова") ) }}
+                            </div>
+                          </div>
+                          <div class="col-sm-2">
+                            <div class="form-group">
+                              <label for="home-input" class="form-control-label">{{ _("Дом") }}*</label>
+                              {{ form.home_address_house(class="form-control", type="text", placeholder=_("1") ) }}
+                            </div>
+                          </div>
+                          <div class="col-sm-2">
+                            <div class="form-group">
+                              <label for="home-input" class="form-control-label">{{ _("Квартира") }}</label>
+                              {{ form.home_address_flat(class="form-control", type="text", placeholder=_("2") ) }}
+                            </div>
+                          </div>                                                    
+                          <div class="col-sm-2">
+                            <div class="form-group">
+                              <label for="home_address_building" class="form-control-label">{{ _("Корпус") }}</label>
+                              {{ form.home_address_building(class="form-control", type="text", placeholder=_("3") ) }}
+                            </div>
+                          </div>                          
+                        </div>                          
                       </div>
                     </div>
                   </div>
                   <div class="col">
                     <div class="card shadow">
-                      <div class="card-header bg-transparent">                      
-                        <div class="form-group">
-                          <label for="14days-place-input" class="form-control-label">{{ _("Место и сроки пребывания в последние 14 дней") }}</label>
-                          {{ form.visited_country(class="form-control", type="text", placeholder=_("Италия") ) }}
+                      <div class="card-header bg-transparent">
+                        <div class="row">
+                          <div class="col">
+                            <div class="form-group">
+                              <label for="14days-place-input" class="form-control-label">{{ _("Визиты за последние 14 дней") }}</label>
+                              {{ form.visited_country_id(class="form-control") }}
+                            </div>
+                          </div>
+                          <div class="col-md-auto">
+                            <div class="form-group">
+                              <label for="dob-input" class="form-control-label">{{ _("С") }}</label>
+                              {{ form.visited_from_date(class="form-control", type="date") }}
+                            </div>
+                          </div>
+                          <div class="col-md-auto">
+                            <div class="form-group">
+                              <label for="dob-input" class="form-control-label">{{ _("По") }}</label>
+                              {{ form.visited_to_date(class="form-control", type="date") }}
+                            </div>
+                          </div>                          
                         </div>
                         <div class="form-group">
-                          <label for="region-input" class="form-control-label">{{ _("Регион") }}</label>
+                          <label for="region-input" class="form-control-label">{{ _("Регион к Которому Относится Пациент") }}*</label>
                           {{ form.region_id(class="form-control", id="region_id") }}                          
                         </div>
-                        <div class="form-group">
-                          <label for="home-input" class="form-control-label">{{ _("Место жительства / возможное место проживания") }}</label>
-                          {{ form.home_address(class="form-control", type="text", placeholder=_("Алматы") ) }}
+                        <div class="row">
+                          <div class="col">
+                            <div class="form-group">
+                              <label for="job-input" class="form-control-label">{{ _("Место Работы/Учебы") }}*</label>
+                              {{ form.job(class="form-control", type="text", placeholder=_("Школа 20") ) }}
+                            </div>
+                          </div>
+                          <div class="col">
+                            <div class="form-group">
+                              <label for="job-input" class="form-control-label">{{ _("Должность") }}</label>
+                              {{ form.job_position(class="form-control", type="text", placeholder=_("Директор") ) }}
+                            </div>
+                          </div>
+                        </div>                        
+                        <label for="home-input" class="form-control-label">{{ _("Адрес организации/учебного заведения") }}</label>
+                        <div class="row">
+                          <div class="col">
+                            <div class="form-group">
+                              <label for="home-input" class="form-control-label">{{ _("Страна") }}</label>
+                              {{ form.job_address_country_id(class="form-control") }}
+                            </div>
+                          </div>
+                          <div class="col">
+                            <div class="form-group">
+                              <label for="home-input" class="form-control-label">{{ _("Область") }}</label>
+                              {{ form.job_address_state(class="form-control", type="text" ) }}
+                            </div>
+                          </div>
+                          <div class="col">
+                            <div class="form-group">
+                              <label for="home-input" class="form-control-label">{{ _("Город") }}</label>
+                              {{ form.job_address_city(class="form-control", type="text" ) }}
+                            </div>
+                          </div>
                         </div>
+                        <div class="row">
+                          <div class="col-xl">
+                            <div class="form-group">
+                              <label for="home-input" class="form-control-label">{{ _("Улица") }}</label>
+                              {{ form.job_address_street(class="form-control", type="text", placeholder=_("Байтурсынова") ) }}
+                            </div>
+                          </div>
+                          <div class="col-sm-2">
+                            <div class="form-group">
+                              <label for="home-input" class="form-control-label">{{ _("Дом") }}</label>
+                              {{ form.job_address_house(class="form-control", type="text", placeholder=_("1") ) }}
+                            </div>
+                          </div>
+                          <div class="col-sm-2">
+                            <div class="form-group">
+                              <label for="home-input" class="form-control-label">{{ _("Квартира") }}</label>
+                              {{ form.job_address_flat(class="form-control", type="text", placeholder=_("2") ) }}
+                            </div>
+                          </div>                                                    
+                          <div class="col-sm-2">
+                            <div class="form-group">
+                              <label for="home_address_building" class="form-control-label">{{ _("Корпус") }}</label>
+                              {{ form.job_address_building(class="form-control", type="text", placeholder=_("3") ) }}
+                            </div>
+                          </div>                          
+                        </div>                        
                         <div class="form-group">
-                          <label for="job-input" class="form-control-label">{{ _("Место Работы") }}</label>
-                          {{ form.job(class="form-control", type="text", placeholder=_("Алматы") ) }}
-                        </div>
-                        <div class="form-group">
-                          <label for="phone-input" class="form-control-label">{{ _("Телефон") }}</label>
+                          <label for="phone-input" class="form-control-label">{{ _("Телефон") }}*</label>
                           {{ form.telephone(placeholder=_("77017123456"), class="form-control", type="tel") }}
                         </div>                        
+                        <div class="form-group">
+                          <label for="phone-input" class="form-control-label">{{ _("E-Mail") }}</label>
+                          {{ form.email(placeholder=_("test@gmail.com"), class="form-control", type="email") }}
+                        </div>                           
                       </div>
                     </div>
                   </div>
@@ -238,7 +393,7 @@
 
 <script type="text/javascript">
   {% with form=form, c=c %}
-    {% include "js/travel_form.html" %}
+  {% include "js/travel_form.html" %}
   {% endwith %}
 
   disable_hospital_choice(0)
@@ -320,10 +475,10 @@
     loader.css("z-index", z)
   }
 
-function submit_new_patient() {
-  show_loader(true)
+  function submit_new_patient() {
+    show_loader(true)
 
-   $.post($("#add_patients").attr('action'), $("#add_patients").serialize() + '&create', function(res){
+    $.post($("#add_patients").attr('action'), $("#add_patients").serialize() + '&create', function(res){
       // Do something with the response `res`
       if (res.patient_id !== undefined) {
         $.notify({
@@ -338,34 +493,34 @@ function submit_new_patient() {
         reset_add_patient_form()
         $("#addPatientModal").modal('hide');
       }
-  });
-}
+    });
+  }
 
-function reset_add_patient_form() {
-  var travel_type = $("#travel_type").val()
-  var backup_values = {}
-  
-  if (travel_type === '{{c.flight_type[0]}}') {
-    backup_values["#flight_arrival_date"] = $("#flight_arrival_date").val()
-    backup_values["#flight_code_id"] = $("#flight_code_id").val()
-  } else {
-    backup_values["#arrival_date"] = $("#arrival_date").val()
-    var border_form_id = null
-    
-    switch(travel_type) {
-      case '{{c.by_auto_type[0]}}':
+  function reset_add_patient_form() {
+    var travel_type = $("#travel_type").val()
+    var backup_values = {}
+
+    if (travel_type === '{{c.flight_type[0]}}') {
+      backup_values["#flight_arrival_date"] = $("#flight_arrival_date").val()
+      backup_values["#flight_code_id"] = $("#flight_code_id").val()
+    } else {
+      backup_values["#arrival_date"] = $("#arrival_date").val()
+      var border_form_id = null
+
+      switch(travel_type) {
+        case '{{c.by_auto_type[0]}}':
         border_form_id = "#auto_border_id"
         break;
-      case '{{c.by_foot_type[0]}}':
+        case '{{c.by_foot_type[0]}}':
         border_form_id = "#foot_border_id"
         break;
-      case '{{c.by_sea_type[0]}}':
+        case '{{c.by_sea_type[0]}}':
         border_form_id = "#sea_border_id"
         break;
-    }
+      }
 
-    if (border_form_id) backup_values[border_form_id] = $(border_form_id).val()
-  }
+      if (border_form_id) backup_values[border_form_id] = $(border_form_id).val()
+    }
 
   $("#add_patients")[0].reset();
 
@@ -373,7 +528,7 @@ function reset_add_patient_form() {
 
   for (var key in backup_values) {
     if (backup_values.hasOwnProperty(key)) {
-        $(key).val(backup_values[key])
+      $(key).val(backup_values[key])
     }
   }
 }
@@ -400,14 +555,14 @@ $("#patient_status").on("change", function(){
 });
 
 $("#open_modal_add_patient").on("click", function(e){
-   if ($("#add_patients")[0].checkValidity() === false) {
-    e.stopPropagation();
-    $("#hiddenSubmit")[0].click()
-  } else {
-    var addCheckBody = document.getElementById("add_check_body")
-    addCheckBody.innerHTML = `<b>{{ _("ФИО") }}:</b> ` + $("#full_name").val() + `<br>`
-    addCheckBody.innerHTML += `<b>{{ _("Тип Въезда в Страну") }}:</b> ` + $("#travel_type option:selected").text() + `<br>`
-  }
+ if ($("#add_patients")[0].checkValidity() === false) {
+  e.stopPropagation();
+  $("#hiddenSubmit")[0].click()
+} else {
+  var addCheckBody = document.getElementById("add_check_body")
+  addCheckBody.innerHTML = `<b>{{ _("ФИО") }}:</b> ${$("#first_name").val()} ${$("#second_name").val()} ${$("#patronymic_name").val()} <br>`
+  addCheckBody.innerHTML += `<b>{{ _("Тип Въезда в Страну") }}:</b> ` + $("#travel_type option:selected").text() + `<br>`
+}
 });
 
 </script>

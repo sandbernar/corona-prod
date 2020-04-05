@@ -9,21 +9,9 @@ from wtforms import TextField, DateField, SelectField, RadioField, BooleanField
 from wtforms.validators import DataRequired
 from app.main.forms import UploadDataForm
 from app import constants as c
+from flask_babelex import _
 
 class PatientForm(FlaskForm):
-    full_name = TextField    ('Full Name', id='full_name'   , validators=[DataRequired()])
-    iin = TextField('IIN', id='iin')
-    dob = DateField('DoB', id='dob'        , validators=[DataRequired()])
-    citizenship = SelectField('Citizenship', id='citizenship',
-    	default="KZ",
-    	choices=c.code_country_list, 
-    	validators=[DataRequired()])
-    pass_num = TextField('Pass No.', id='pass_num')
-    telephone = TextField('Telephone', id='telephone'   , validators=[DataRequired()])
-    visited_country = TextField('Visited Country', id='visited_country'   , validators=[DataRequired()])
-    
-    region_id = SelectField('Region', id='region', validators=[DataRequired()])
-
     travel_type = SelectField('Travel Type', id='travel_type', validators=[DataRequired()])
 
     # Flight Travel
@@ -37,11 +25,51 @@ class PatientForm(FlaskForm):
     foot_border_id = SelectField('By Foot Border', id='foot_border_id', validators=[DataRequired()])
     sea_border_id = SelectField('By Sea Border', validators=[DataRequired()])
 
-    hospital_region_id = SelectField('Hospital Region', id='hospital_region' , validators=[DataRequired()])
-    hospital_id = SelectField('Hospital', id='hospital' , validators=[DataRequired()])
+    first_name = TextField('First Name', validators=[DataRequired()])
+    second_name = TextField('Second Name', validators=[DataRequired()])
+    patronymic_name = TextField('Patronymic Name')
 
-    home_address = TextField('Home Address', id='home_address'   , validators=[DataRequired()])
-    job = TextField('Job', id='job')
+    gender = RadioField('Gender', choices=[(0, _("Мужчина")), (1, _("Женщина")), (-1, _("Неизвестно"))], 
+                                                                            default = -1, validators=[DataRequired()])
+    dob = DateField('DoB', validators=[DataRequired()])
+    iin = TextField('IIN')
+
+    citizenship_id = SelectField('Citizenship', validators=[DataRequired()])
+    pass_num = TextField('Pass No.', id='pass_num')
+
+    country_of_residence_id = SelectField('Residence Country', validators=[DataRequired()])
+
+    home_address_country_id = SelectField('Home Address Country', validators=[DataRequired()])
+    home_address_state = TextField('Home State')
+    home_address_city = TextField('Home City', validators=[DataRequired()])
+    home_address_street = TextField('Home Street', validators=[DataRequired()])
+    home_address_house = TextField('Home House', validators=[DataRequired()])
+    home_address_flat = TextField('Home Flat')
+    home_address_building = TextField('Home Building')    
+
+    visited_country_id = SelectField('Visited Country', validators=[DataRequired()])
+    visited_from_date = DateField('Visit From Date')
+    visited_to_date = DateField('Visit To Date')
+   
+    region_id = SelectField('Region', id='region', validators=[DataRequired()])
+
+    job = TextField('Job')
+    job_position = TextField('Job Position')
+
+    job_address_country_id = SelectField('Job Address Country')
+    job_address_state = TextField('Job State')
+    job_address_city = TextField('Job City')
+    job_address_street = TextField('Job Street')
+    job_address_house = TextField('Job House')
+    job_address_flat = TextField('Job Flat')
+    job_address_building = TextField('Job Building')
+
+    telephone = TextField('Telephone', id='telephone'   , validators=[DataRequired()])
+    email = TextField('EMail', id='email', validators=[DataRequired()])
+
+    hospital_region_id = SelectField('Hospital Region', id='hospital_region' , validators=[DataRequired()])
+    hospital_id = SelectField('Hospital', id='hospital' , validators=[DataRequired()])  
+
     patient_status = SelectField('Patient Status', id='patient_status' , validators=[DataRequired()])
     is_found = RadioField("Is Found", id="is_found", choices=[(1, "Да"),(0,"Нет")], default=0, validators=[DataRequired()])
     is_infected = RadioField("Is Infected", id="is_infected", choices=[(1, "Да"),(0,"Нет")], default=0, validators=[DataRequired()])

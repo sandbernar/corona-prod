@@ -71,7 +71,6 @@
                 <tr>
                   <th scope="col">{{ _('ФИО') }}</th>
                   <th scope="col">{{ _('Найден') }}</th>
-                  <th scope="col">{{ _('Госпитализирован') }}</th>
                   <th scope="col">{{ _('Место госпитализации') }}</th>
                   <th scope="col">{{ _('Прилетел из') }}</th>
                 </tr>
@@ -97,9 +96,6 @@
                     {% else %}
                       <font color="red">{{ _('Нет') }}</font>
                     {% endif %}
-                  </td>
-                  <td>
-                    {{ patient.hospital }}
                   </td>
                   <td>
                     {{ patient.visited_country }}

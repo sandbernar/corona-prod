@@ -14,7 +14,8 @@ from app import login_manager, db
 from app import constants as c
 from jinja2 import TemplateNotFound
 
-from app.main.models import Region, Foreign_Country, Infected_Country_Category, TravelType, BorderControl, VariousTravel
+from app.main.models import (Region, Country, VisitedCountry, Infected_Country_Category, 
+                            TravelType, BorderControl, VariousTravel, Address)
 from app.main.patients.models import Patient, PatientStatus, ContactedPersons
 from app.main.hospitals.models import Hospital, Hospital_Type, Hospital_Nomenklatura
 from app.main.flights.models import FlightCode, FlightTravel
@@ -74,6 +75,24 @@ def prepare_patient_form(patient_form):
             borders = BorderControl.query.filter_by(travel_type_id = typ_id).all()
             typ_select.choices =[(b.id, b.name) for b in borders]
 
+    # Countries
+    countries = Country.query.all()
+    kz = Country.query.filter_by(code="KZ").first()
+
+    def populate_countries_select(select_input, default, with_unknown = True):
+        if not select_input.choices:
+            select_input.choices = [(-1, c.unknown[1])] if with_unknown else []
+            select_input.choices += [(c.id, c.name) for c in countries]
+            select_input.default = default
+
+    populate_countries_select(patient_form.citizenship_id, kz.id, False)
+    populate_countries_select(patient_form.country_of_residence_id, kz.id)
+
+    populate_countries_select(patient_form.home_address_country_id, kz.id)
+    populate_countries_select(patient_form.job_address_country_id, kz.id)
+
+    populate_countries_select(patient_form.visited_country_id, -1)
+
     return patient_form
 
 @blueprint.route('/add_person', methods=['GET', 'POST'])
@@ -95,31 +114,42 @@ def add_patient():
     hospital_types = Hospital_Type.query.all()
     hospital_types = [(h.id, h.name) for h in hospital_types]
 
+    patient_form.process()
+
     if 'create' in request.form:
-        new_dict = request.form.to_dict(flat=True)
+        old_dict = request.form.to_dict(flat=True)
+        new_dict = {'created_by_id': current_user.id}
+
+        form_val_key = ['region_id', 'first_name', 'second_name', 'patronymic_name', 'dob', 'iin',
+                        'citizenship_id', 'pass_num', 'country_of_residence_id', 'telephone', 'email']
+
+        for key in form_val_key:
+            if key in old_dict:
+                new_dict[key] = old_dict[key]
 
         new_dict['dob'] = datetime.strptime(request.form['dob'], '%Y-%m-%d')
 
         status = request.form.get("patient_status", c.no_status[0])
         new_dict['status_id'] = PatientStatus.query.filter_by(value=status).first().id
-        new_dict['is_found'] = int(new_dict['is_found']) == 1
-        new_dict['is_infected'] = int(new_dict['is_infected']) == 1
+        new_dict['is_found'] = int(old_dict['is_found']) == 1
+        new_dict['is_infected'] = int(old_dict['is_infected']) == 1
+        new_dict['gender'] = None if 'gender' not in old_dict else int(old_dict['gender']) == 1
 
-        travel_type = TravelType.query.filter_by(value=new_dict['travel_type']).first()
+        travel_type = TravelType.query.filter_by(value=old_dict['travel_type']).first()
         travel_type = None if travel_type is None else travel_type
         
-        del new_dict['travel_type']
-        new_dict['travel_id'] = None
+        old_dict['travel_id'] = None
 
         if travel_type:
             new_dict['travel_type_id'] = travel_type.id
 
             if travel_type.value == c.flight_type[0]:
-                flight_travel = FlightTravel(flight_code_id=new_dict['flight_code_id'])
+                flight_travel = FlightTravel(flight_code_id=old_dict['flight_code_id'])
                 flight_travel.seat = new_dict.get('flight_seat', None)
 
                 db.session.add(flight_travel)
                 db.session.commit()
+                
                 new_dict['travel_id'] = flight_travel.id
                 del new_dict['flight_code_id']
             else:
@@ -133,23 +163,78 @@ def add_patient():
                     border_form_key = 'sea_border_id'
                 
                 if border_form_key:
-                    various_travel = VariousTravel(date=new_dict['arrival_date'], 
-                                                    border_control_id=new_dict[border_form_key])
+                    various_travel = VariousTravel(date=old_dict['arrival_date'], 
+                                                    border_control_id=old_dict[border_form_key])
 
                     db.session.add(various_travel)
                     db.session.commit()
 
                     new_dict['travel_id'] = various_travel.id
 
+        visited_country_id = old_dict.get('visited_country_id', None)
+        created_visited_country_id = None
+
+        # Visited Country
+
+        if visited_country_id !='-1' and visited_country_id:
+            visited_country = VisitedCountry(country_id=visited_country_id)
+            
+            from_date = old_dict.get('visited_from_date', None)
+            visited_country.from_date = from_date if from_date else None
+
+            to_date = old_dict.get('visited_from_date', None)
+            visited_country.to_date = to_date if from_date else None            
+
+            db.session.add(visited_country)
+            db.session.commit()
+
+            created_visited_country_id = visited_country.id          
+        else:
+            created_visited_country_id = None
+
+        new_dict['visited_country_id'] = created_visited_country_id
+
+        def process_address(form_prefix='home', lat_lng = True):
+            address = Address()
+            address.country_id = old_dict[form_prefix + '_address_country_id']
+            address.state = old_dict.get(form_prefix + '_address_state', None)
+            address.city = old_dict[form_prefix + '_address_city']
+            address.street = old_dict[form_prefix + '_address_street']
+            address.house = old_dict[form_prefix + '_address_house']
+            address.flat = old_dict.get(form_prefix + '_address_flat', None)
+            address.building = old_dict.get(form_prefix + '_address_building', None)
+
+            db.session.add(address)
+            db.session.commit()
+
+            if lat_lng:
+                lat_lng = get_lat_lng([str(address)])[0]
+
+                address.lat = lat_lng[0]
+                address.lng = lat_lng[1]
+
+                db.session.add(address)
+
+            return address
+
+        # Home Address
+        home_address = process_address()
+        print(home_address.lat)
+
+        new_dict['job'] = old_dict.get('job', None)
+        new_dict['job_position'] = old_dict.get('job_position', None)
+
+        job_address = None
+        if "job_address_city" in old_dict:
+            job_address = process_address("job", False)
+
+        if job_address:
+            new_dict['job_address_id'] = job_address.id
+
         # else we can create the user
         patient = Patient(**new_dict)
         patient.is_contacted_person = False
         
-        lat_lng = get_lat_lng([(patient.home_address, Region.query.filter_by(id=patient.region_id).first().name)])[0]
-
-        patient.address_lat = lat_lng[0]
-        patient.address_lng = lat_lng[1]
-
         db.session.add(patient)
         db.session.commit()
 
@@ -163,25 +248,20 @@ def get_lat_lng(patients):
         lat = None
         lng = None
 
-        if not pd.isnull(patient[0]):
-            home_address = patient[0].replace(".", ". ")
-            region_name = patient[1]
-
-            address_query = home_address
+        if not pd.isnull(patient):
+            home_address = patient.replace(".", ". ")
 
             params = dict(
                 apiKey='S25QEDJvW3PCpRvVMoFmIJBHL01xokVyinW8F5Fj0pw',
             )
 
             home_address = re.sub(r"([0-9]+(\.[0-9]+)?)",r" \1 ", home_address).strip()
+            print(home_address)
             # parsed_address = {k: v for (v, k) in parse_address(patient.home_address)}
-
-            address_query = home_address
-
-            params['q'] = "{}, {}".format(address_query, region_name)
+            
+            params['q'] = home_address
 
             url = "https://geocode.search.hereapi.com/v1/geocode"
-
 
             resp = requests.get(url=url, params=params)
             data = resp.json()

@@ -89,19 +89,75 @@ class Infected_Country_Category(db.Model):
     def __repr__(self):
         return str(self.name)
 
-class Foreign_Country(db.Model):
+class Country(db.Model):
 
-    __tablename__ = 'Foreign_Country'
+    __tablename__ = 'Country'
 
     id = Column(Integer, primary_key=True)
+
+    code = Column(String, unique=True)
     name = Column(String, unique=True)
-    value = Column(String, unique=True)
     
-    category_id = Column(Integer, ForeignKey('Infected_Country_Category.id'))
-    category = db.relationship('Infected_Country_Category')
+    # category_id = Column(Integer, ForeignKey('Infected_Country_Category.id'))
+    # category = db.relationship('Infected_Country_Category')
 
     def __init__(self, **kwargs):
         set_props(self, kwargs)
 
     def __repr__(self):
         return str(self.name)
+
+class VisitedCountry(db.Model):
+
+    __tablename__ = 'VisitedCountry'
+
+    id = Column(Integer, primary_key=True)
+    
+    country_id = Column(Integer, ForeignKey('Country.id'), nullable=False)
+    country = db.relationship('Country')
+
+    from_date = Column(Date, nullable=True)
+    to_date = Column(Date, nullable=True)
+
+    def __init__(self, **kwargs):
+        set_props(self, kwargs)
+
+    def __repr__(self):
+        return str(self.country)        
+
+class Address(db.Model):
+
+    __tablename__ = 'Address'
+
+    id = Column(Integer, primary_key=True)
+
+    country_id = Column(Integer, ForeignKey('Country.id'))
+    country = db.relationship('Country')
+    
+    state = Column(String, nullable=True, default=None)
+
+    city = Column(String, nullable=False)
+
+    street = Column(String, nullable=False)
+    house = Column(String, nullable=False)
+    flat = Column(String, nullable=True, default = None)
+    building = Column(String, nullable=True, default = None)
+
+    lat = Column(Float, nullable=True, default = None)
+    lng = Column(Float, nullable=True, default = None)
+    
+    def __init__(self, **kwargs):
+        set_props(self, kwargs)
+
+    def __repr__(self):
+        display_str = str(self.country.name)
+        
+        if self.state != None:
+            display_str = display_str + ", {}".format(self.state)
+
+        display_str = display_str + ", {}, {}, {}".format(str(self.city), str(self.street), str(self.house))
+
+        if self.building != None:
+            display_str = display_str + ", {}".format(str(self.building))
+
+        return display_str
