@@ -45,6 +45,11 @@ user = User()
 user.username = args["username"]
 user.password = hash_pass(args["password"])
 
+user.full_name = "test1"
+user.organization = "test2"
+user.telephone = "s"
+user.email = "s"
+user.region_id = 1
 # user.username = args["username"]
 # user.organization = Column(String)
 # user.telephone = Column(String)

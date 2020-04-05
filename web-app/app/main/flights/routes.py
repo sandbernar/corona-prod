@@ -26,6 +26,8 @@ from app.main.routes import route_template
 from jinja2 import TemplateNotFound
 from app import constants as c
 
+from sqlalchemy import exc
+
 @blueprint.route("/get_flights_by_date", methods=['POST'])
 def get_flights_by_date():
     if not current_user.is_authenticated:
@@ -112,8 +114,12 @@ def flight_profile():
         return redirect(url_for('login_blueprint.login'))
 
     if "id" in request.args:
-        flight = FlightCode.query.filter_by(id=request.args["id"]).first()
-        
+        flight = None
+        try:
+            flight = FlightCode.query.filter_by(id=request.args["id"]).first()
+        except exc.SQLAlchemyError:
+            pass
+
         if not flight:
             return render_template('errors/error-404.html'), 404
         else:
