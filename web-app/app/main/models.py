@@ -152,8 +152,8 @@ class Address(db.Model):
     def __repr__(self):
         display_str = str(self.country.name)
         
-        if self.state != None:
-            display_str = display_str + ", {}".format(self.state)
+        # if self.state != None:
+            # display_str = display_str + ", {}".format(self.state)
 
         display_str = display_str + ", {}, {}, {}".format(str(self.city), str(self.street), str(self.house))
 

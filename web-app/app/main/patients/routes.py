@@ -95,6 +95,51 @@ def prepare_patient_form(patient_form):
 
     return patient_form
 
+def is_same_address(old_dict, address, form_prefix='home'):
+    is_same = True
+
+    if address.country_id != int(old_dict[form_prefix + '_address_country_id']):
+        is_same = False
+    elif address.state != old_dict.get(form_prefix + '_address_state', None):
+        is_same = False
+    elif address.city != old_dict[form_prefix + '_address_city']:
+        is_same = False
+    elif address.street != old_dict[form_prefix + '_address_street']:
+        is_same = False
+    elif address.house != old_dict[form_prefix + '_address_house']:
+        is_same = False
+    elif address.flat != old_dict.get(form_prefix + '_address_flat', None):
+        is_same = False
+    elif address.building != old_dict.get(form_prefix + '_address_building', None):
+        is_same = False
+
+    return is_same
+
+def process_address(old_dict, form_prefix='home', lat_lng = True, address = None):
+    if address is None:
+        address = Address()
+
+    address.country_id = old_dict[form_prefix + '_address_country_id']
+    address.state = old_dict.get(form_prefix + '_address_state', None)
+    address.city = old_dict[form_prefix + '_address_city']
+    address.street = old_dict[form_prefix + '_address_street']
+    address.house = old_dict[form_prefix + '_address_house']
+    address.flat = old_dict.get(form_prefix + '_address_flat', None)
+    address.building = old_dict.get(form_prefix + '_address_building', None)
+
+    db.session.add(address)
+    db.session.commit()
+
+    if lat_lng:
+        lat_lng = get_lat_lng([str(address)])[0]
+
+        address.lat = lat_lng[0]
+        address.lng = lat_lng[1]
+
+        db.session.add(address)
+
+    return address
+
 def handle_add_update_patient(old_dict, new_dict, update_dict = {}):
     form_val_key = ['region_id', 'first_name', 'second_name', 'patronymic_name', 'dob', 'iin',
                     'citizenship_id', 'pass_num', 'country_of_residence_id', 'telephone', 'email']
@@ -165,31 +210,8 @@ def handle_add_update_patient(old_dict, new_dict, update_dict = {}):
 
     new_dict['visited_country_id'] = created_visited_country_id
 
-    def process_address(form_prefix='home', lat_lng = True):
-        address = Address()
-        address.country_id = old_dict[form_prefix + '_address_country_id']
-        address.state = old_dict.get(form_prefix + '_address_state', None)
-        address.city = old_dict[form_prefix + '_address_city']
-        address.street = old_dict[form_prefix + '_address_street']
-        address.house = old_dict[form_prefix + '_address_house']
-        address.flat = old_dict.get(form_prefix + '_address_flat', None)
-        address.building = old_dict.get(form_prefix + '_address_building', None)
-
-        db.session.add(address)
-        db.session.commit()
-
-        if lat_lng:
-            lat_lng = get_lat_lng([str(address)])[0]
-
-            address.lat = lat_lng[0]
-            address.lng = lat_lng[1]
-
-            db.session.add(address)
-
-        return address
-
     # Home Address
-    home_address = process_address()
+    home_address = process_address(old_dict)
     new_dict['home_address_id'] = home_address.id
 
     new_dict['job'] = old_dict.get('job', None)
@@ -197,7 +219,7 @@ def handle_add_update_patient(old_dict, new_dict, update_dict = {}):
 
     job_address = None
     if "job_address_city" in old_dict:
-        job_address = process_address("job", False)
+        job_address = process_address(old_dict, "job", False)
 
     if job_address:
         new_dict['job_address_id'] = job_address.id
@@ -611,6 +633,8 @@ def patient_profile():
             form.hospital_type.choices = [(h.id, h.name) for h in hospital_types]
 
             if len(request.form):
+                old_dict = request.form.to_dict(flat = True)
+
                 if "hospital" in request.form:
                     patient.hospital = request.form["hospital"]
                 
@@ -672,15 +696,12 @@ def patient_profile():
 
                     patient.travel_type_id = travel_type_id
 
-                if "home_address" in request.form:
-                    if patient.home_address != request.form['home_address']:
-                        patient.home_address = request.form['home_address']
+                if not is_same_address(old_dict, patient.home_address):
+                    process_address(old_dict, address=patient.home_address)
 
-                        lat_lng = get_lat_lng([(patient.home_address, Region.query.filter_by(id=patient.region_id).first().name)])[0]
-
-                        patient.address_lat = lat_lng[0]
-                        patient.address_lng = lat_lng[1]
-
+                if patient.job_address:
+                    if not is_same_address(old_dict, patient.job_address, form_prefix="job"):
+                        process_address(old_dict, lat_lng = False, form_prefix="job", address=patient.job_address)                    
 
                 if "visited_country" in request.form:
                     patient.visited_country = request.form['visited_country']
