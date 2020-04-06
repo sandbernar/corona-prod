@@ -104,7 +104,9 @@ def add_flight():
         db.session.add(flight)
         db.session.commit()
 
-        return_url = "{}?added_flight".format(url_for('main_blueprint.flights'))
+        message = _("Рейс успешно добавлен")
+
+        return_url = "{}?message={}".format(url_for('main_blueprint.flights'), message)
 
         return redirect(return_url)
         # return route_template( 'flights/add_flight', form=form, change=_("Рейс был успешно добавлен"), error_msg=None)
