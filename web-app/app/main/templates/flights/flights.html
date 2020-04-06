@@ -104,4 +104,7 @@
 
 {% block javascripts %}
 {{ super()}}
+  {% with change=change, error_msg=error_msg %}
+  {% include "site_template/change_notification.html" %}
+  {% endwith %}
 {% endblock javascripts %}

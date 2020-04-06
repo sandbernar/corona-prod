@@ -16,9 +16,6 @@
 
 <!-- Page content -->
 <div class="container-fluid mt--7">
-  {% with change=change, error_msg=error_msg %}
-  {% include "site_template/change_notification.html" %}
-  {% endwith %}
   <div class="row">
     <div class="col">
       <div class="col">
@@ -186,6 +183,10 @@
 
 {% block javascripts %}
 {{ super()}}
+  {% with change=change, error_msg=error_msg %}
+    {% include "site_template/change_notification.html" %}
+  {% endwith %}
+
 <script src="{{ url_for('static', filename='assets/js/jquery.seat-charts.min.js') }}"></script>
 <script type="text/javascript">
   $( document ).on( "mousemove", function( event ) {

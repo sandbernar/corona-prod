@@ -73,9 +73,13 @@ def flights():
     for f in flights:
     	flights_count[f.id] = FlightTravel.query.filter_by(flight_code_id=f.id).count()
 
+    change = None
+    if "added_flight" in request.args:
+        change = _("Рейс успешно добавлен")
+
     form.process()
     return route_template('flights/flights', flights=flights, flights_count=flights_count, form=form, page=page, 
-                                    max_page=max_page, total = total_len, constants=c)
+                                    max_page=max_page, total = total_len, constants=c, change=change)
 
 @blueprint.route('/add_flight', methods=['GET', 'POST'])
 def add_flight():
@@ -100,7 +104,10 @@ def add_flight():
         db.session.add(flight)
         db.session.commit()
 
-        return route_template( 'flights/add_flight', form=form, change=_("Рейс был успешно добавлен"), error_msg=None)
+        return_url = "{}?added_flight".format(url_for('main_blueprint.flights'))
+
+        return redirect(return_url)
+        # return route_template( 'flights/add_flight', form=form, change=_("Рейс был успешно добавлен"), error_msg=None)
     else:
         return route_template( 'flights/add_flight', form=form, change=None, error_msg=None)
 
