@@ -24,6 +24,8 @@ from app.main.util import get_regions, get_regions_choices
 from flask_babelex import _
 from app.main.routes import route_template
 
+from sqlalchemy import exc
+
 @blueprint.route('/hospitals')
 @login_required
 def all_hospitals():
@@ -190,7 +192,11 @@ def hospital_profile():
         return redirect(url_for('login_blueprint.login'))
 
     if "id" in request.args:
-        hospital = Hospital.query.filter_by(id=request.args["id"]).first()
+        hospital = None
+        try:
+            hospital = Hospital.query.filter_by(id=request.args["id"]).first()
+        except exc.SQLAlchemyError:
+            return render_template('errors/error-400.html'), 400
         
         if not hospital:
             return render_template('errors/error-404.html'), 404
