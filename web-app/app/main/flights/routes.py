@@ -127,7 +127,7 @@ def flight_profile():
         try:
             flight = FlightCode.query.filter_by(id=request.args["id"]).first()
         except exc.SQLAlchemyError:
-            pass
+            return render_template('errors/error-400.html'), 400
 
         if not flight:
             return render_template('errors/error-404.html'), 404
