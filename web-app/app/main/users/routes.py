@@ -18,6 +18,7 @@ from flask_babelex import _
 from app.main.routes import route_template
 from jinja2 import TemplateNotFound
 from app import constants as c
+from sqlalchemy import exc
 
 @blueprint.route('/users', methods=['GET'])
 @login_required
@@ -170,7 +171,11 @@ def delete_user():
     if len(request.form):
         if "delete" in request.form:
             user_id = request.form["delete"]
-            user = User.query.filter(User.id == user_id)
+            user = None
+            try:
+                user = User.query.filter(User.id == user_id)
+            except exc.SQLAlchemyError:
+                pass
 
             if user:
                 user.delete()

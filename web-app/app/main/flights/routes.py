@@ -26,6 +26,8 @@ from app.main.routes import route_template
 from jinja2 import TemplateNotFound
 from app import constants as c
 
+from sqlalchemy import exc
+
 @blueprint.route("/get_flights_by_date", methods=['POST'])
 def get_flights_by_date():
     if not current_user.is_authenticated:
@@ -113,7 +115,6 @@ def add_flight():
     else:
         return route_template( 'flights/add_flight', form=form, change=None, error_msg=None)
 
-
 @blueprint.route('/flight_profile', methods=['GET', 'POST'])
 @login_required
 def flight_profile():
@@ -121,8 +122,12 @@ def flight_profile():
         return redirect(url_for('login_blueprint.login'))
 
     if "id" in request.args:
-        flight = FlightCode.query.filter_by(id=request.args["id"]).first()
-        
+        flight = None
+        try:
+            flight = FlightCode.query.filter_by(id=request.args["id"]).first()
+        except exc.SQLAlchemyError:
+            return render_template('errors/error-400.html'), 400
+
         if not flight:
             return render_template('errors/error-404.html'), 404
         else:
@@ -237,15 +242,22 @@ def delete_flight():
     if len(request.form):
         if "delete" in request.form:
             flight_id = request.form["delete"]
-            flight_query = FlightCode.query.filter(FlightCode.id == flight_id)
-            flight = flight_query.first()
 
-            if FlightTravel.query.filter_by(flight_code_id = flight.id).count():
-                message = _("Рейс содержит пассажиров")
-            else:
-                if flight:
+            # exception added only for first query
+            flight = None
+            try:
+                flight = FlightCode.query.filter(FlightCode.id == flight_id).first()
+            except exc.SQLAlchemyError:
+                return render_template('errors/error-400.html'), 400
+
+            if flight:
+                if FlightTravel.query.filter_by(flight_code_id = flight.id).count():
+                    message = _("Рейс содержит пассажиров")
+                else:
                     db.session.delete(flight)
                     db.session.commit()
                     message = _("Рейс успешно удален")
+            
+            # add redirect
 
     return redirect("{}?message={}".format(url_for('main_blueprint.flights'), message))
