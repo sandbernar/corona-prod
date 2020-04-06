@@ -104,7 +104,7 @@ def handle_add_update_patient(old_dict, new_dict, update_dict = {}):
             new_dict[key] = old_dict[key]
 
     new_dict['dob'] = datetime.strptime(request.form['dob'], '%Y-%m-%d')    
-    new_dict['gender'] = None if 'gender' not in old_dict else int(old_dict['gender']) == 1
+    new_dict['gender'] = None if int(old_dict['gender']) == -1 else int(old_dict['gender']) == 1
 
     travel_type = TravelType.query.filter_by(value=old_dict['travel_type']).first()
     
@@ -573,9 +573,14 @@ def delete_patient():
                     q.delete()
 
                 travel_type = TravelType.query.filter_by(id=patient.travel_type_id).first()
-                if travel_type.value == c.flight_type[0]:
-                    q = FlightTravel.query.filter_by(id=patient.travel_id)
-                    q.delete()
+                if travel_type:
+                    if travel_type.value == c.flight_type[0]:
+                        q = FlightTravel.query.filter_by(id=patient.travel_id)
+                    else:
+                        q = VariousTravel.query.filter_by(id=patient.travel_id)
+                    
+                    q.delete()               
+
 
                 patient_query.delete()
                 db.session.commit()
@@ -733,7 +738,8 @@ def patient_profile():
                 for k in attrs:
                     param = getattr(form, prefix + k, None)
                     if param:
-                        setattr(param, 'default', attrs[k])
+                        if attrs[k] is not None:
+                            setattr(param, 'default', attrs[k])
 
             populate_form(form, patient.__dict__)
 
@@ -742,7 +748,7 @@ def patient_profile():
             if patient.visited_country is not None:
                 populate_form(form, patient.visited_country.__dict__, prefix='visited_')
 
-            form.gender.default = -1 if not patient.gender else int(patient.gender)
+            form.gender.default = -1 if patient.gender is None else int(patient.gender)
 
             populate_form(form, patient.home_address.__dict__, prefix='home_address_')
             populate_form(form, patient.job_address.__dict__, prefix='job_address_')
