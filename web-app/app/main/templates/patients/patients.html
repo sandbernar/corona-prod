@@ -185,11 +185,10 @@
 {% endblock content %}
 
 {% block javascripts %}
-{% include "js/autocomplete.html" %}
+{{ super()}}
 
 {% with change=change, error_msg=error_msg %}
   {% include "site_template/change_notification.html" %}
 {% endwith %}
 
-{{ super()}}
 {% endblock javascripts %}
