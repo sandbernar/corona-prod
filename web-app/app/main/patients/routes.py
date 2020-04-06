@@ -675,7 +675,11 @@ def patient_profile():
                         patient.hospital_id = None
                 
                 if "hospital_id" in request.form:
-                    patient_hospital = Hospital.query.filter_by(id=request.form['hospital_id']).first()
+                    patient_hospital = None
+                    try:
+                        patient_hospital = Hospital.query.filter_by(id=request.form['hospital_id']).first()
+                    except exc.SQLAlchemyError:
+                        return render_template('errors/error-400.html'), 400
 
                     if patient_hospital:
                         patient.hospital_id = patient_hospital.id
