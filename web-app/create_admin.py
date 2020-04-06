@@ -33,8 +33,8 @@ try:
 except KeyError:
     exit('Error: Invalid CONFIG_MODE environment variable entry.')
 
-app = create_app(config_mode) 
-Migrate(app, db)
+# app = create_app(config_mode) 
+# Migrate(app, db)
 engine = create_engine(config_mode.SQLALCHEMY_DATABASE_URI)
 
 from sqlalchemy.orm import sessionmaker
