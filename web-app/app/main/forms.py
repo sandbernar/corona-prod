@@ -25,6 +25,9 @@ class TableSearchForm(FlaskForm):
 
     travel_type = SelectField(id='travel_type')
 
-    full_name = TextField(id='full_name')
+    first_name = TextField()
+    second_name = TextField()
+    patronymic_name = TextField()
+
     iin = TextField(id='iin')
     telephone = TextField(id='telephone')

@@ -131,7 +131,7 @@
 
 function init() {
     var myMap = new ymaps.Map("map", {
-            center: ['{{ patient.address_lat }}', '{{ patient.address_lng }}'],
+            center: ['{{ patient.home_address.lat }}', '{{ patient.home_address.lng }}'],
             zoom: 12,
             controls: ['zoomControl']
         }, {
@@ -166,7 +166,7 @@ function init() {
     if ('{{ p.is_found }}' == 'True') {
       is_found = "Да"
     }
-    geoObjects.push(new ymaps.Placemark(['{{ p.address_lat }}', '{{ p.address_lng }}' ], {
+    geoObjects.push(new ymaps.Placemark(['{{ p.home_address.lat }}', '{{ p.home_address.lng }}' ], {
         balloonContentBody: 
         '<a href="/patient_profile?id={{p.id}}">{{ p.full_name }}</a><br>' +
         '<strong>Регион</strong>: {{ p.region }}<br>' +
@@ -201,8 +201,8 @@ function init() {
                 type: "LineString",
                 // Указываем координаты вершин ломаной.
                 coordinates: [
-                    ['{{ patient.address_lat }}', '{{ patient.address_lng }}'],
-                    ['{{ p.address_lat }}', '{{ p.address_lng }}']
+                    ['{{ patient.home_address.lat }}', '{{ patient.home_address.lng }}'],
+                    ['{{ p.home_address.lat }}', '{{ p.home_address.lng }}']
                 ]
             },
             properties:{

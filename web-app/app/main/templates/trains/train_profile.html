@@ -16,6 +16,9 @@
 
 <!-- Page content -->
 <div class="container-fluid mt--7">
+  {% with change=change, error_msg=error_msg %}
+  {% include "site_template/change_notification.html" %}
+  {% endwith %}
   <div class="row">
     <div class="col">
       <div class="col">
@@ -68,18 +71,9 @@
                     {{ form.to_city(class="form-control", placeholder="Алматы", type="text", disabled=True) }}
                   </div>                                                  
                 </div>
-              </div>
-           </form>
-           <div class="row mt-3">
-              <div class="col">
-              <form action="/delete_flight" method="POST">
-                  {{ form.hidden_tag() }}
-                  <input type="hidden" name="delete" value='{{ flight.id }}'>
-                  <button class="btn btn-danger" type="submit" style="width:100%;">{{ _('Удалить Рейс') }}</button>
-              </form>                
-              </div>
-            </div>              
+              </div>                
             </div>                
+          </form>
         </div>
       </div>
 
@@ -104,8 +98,7 @@
               <tr>
                 <th scope="col">{{ _("ФИО") }}</th>
                 <th scope="col">{{ _("Телефон") }}</th>
-                <th scope="col">{{ _("Регион") }}</th>
-                <th scope="col">{{ _("Страна последние 14 дней") }}</th>
+                <th scope="col">{{ _("Дата Въезда") }}</th>
               </tr>
             </thead>
             <tbody>
@@ -115,7 +108,7 @@
                 <th scope="row">
                   <div class="media align-items-center">
                     <div class="media-body">
-                      <span class="mb-0 text-sm"><a href="/patient_profile?id={{patient.id}}">{{ patient }}</a></span>
+                      <span class="mb-0 text-sm"><a href="/patient_profile?id={{patient.id}}">{{ patient.full_name }}</a></span>
                     </div>
                   </div>
                 </th>
@@ -123,14 +116,7 @@
                   {{ patient.telephone }}
                 </td>
                 <td>
-                  {{ patient.region }}
-                </td>
-                <td>
-                  {% if patient.visited_country %}
-                    {{ patient.visited_country.country }}
-                  {% else %}
-                    {{ _("Неизвестно") }}
-                  {% endif %}
+                  {{ patient.arrival_date }}
                 </td>
               </tr>
               {% endfor %}
@@ -200,10 +186,6 @@
 
 {% block javascripts %}
 {{ super()}}
-  {% with change=change, error_msg=error_msg %}
-    {% include "site_template/change_notification.html" %}
-  {% endwith %}
-
 <script src="{{ url_for('static', filename='assets/js/jquery.seat-charts.min.js') }}"></script>
 <script type="text/javascript">
   $( document ).on( "mousemove", function( event ) {

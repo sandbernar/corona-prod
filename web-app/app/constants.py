@@ -17,7 +17,7 @@ patient_statuses = [no_status, in_hospital, is_home, is_transit]
 
 # Travel Type
 all_types = "Все Типы"
-railway_type = ("railway_type", "Поезд")
+train_type = ("train_type", "Поезд")
 by_auto_type = ("auto_type", "Авто")
 by_foot_type = ("by_foot", "Пешком")
 by_sea_type = ("by_sea", "Морской Транспорт")
@@ -26,7 +26,7 @@ local_type = ("local_type", "Местные")
 
 board_team = "экипаж"
 
-travel_types = [flight_type, railway_type, by_auto_type, by_foot_type, by_sea_type, local_type]
+travel_types = [flight_type, train_type, by_auto_type, by_foot_type, by_sea_type, local_type]
 
 unknown = (None, "Неизвестно")
 

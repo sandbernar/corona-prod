@@ -23,8 +23,14 @@
               <h3> {{ _('Поиск') }} </h3>
             </div>
               <div class="col">
-                        {{ form.full_name(class="form-control", placeholder=_('ФИО')) }}              
+                        {{ form.second_name(class="form-control", placeholder=_('Фамилия')) }}              
               </div>
+              <div class="col">
+                        {{ form.first_name(class="form-control", placeholder=_('Имя')) }}              
+              </div>
+              <div class="col">
+                        {{ form.patronymic_name(class="form-control", placeholder=_('Отчество')) }}              
+              </div>                            
               <div class="col">
                         {{ form.iin(class="form-control", placeholder=_('ИИН')) }}              
               </div>
@@ -179,11 +185,10 @@
 {% endblock content %}
 
 {% block javascripts %}
-{% include "js/autocomplete.html" %}
+{{ super()}}
 
 {% with change=change, error_msg=error_msg %}
   {% include "site_template/change_notification.html" %}
 {% endwith %}
 
-{{ super()}}
 {% endblock javascripts %}
