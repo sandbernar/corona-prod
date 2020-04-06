@@ -243,8 +243,13 @@ def delete_flight():
     if len(request.form):
         if "delete" in request.form:
             flight_id = request.form["delete"]
-            flight_query = FlightCode.query.filter(FlightCode.id == flight_id)
-            flight = flight_query.first()
+
+            # exception added only for first query
+            flight = None
+            try:
+                flight = FlightCode.query.filter(FlightCode.id == flight_id).first()
+            except exc.SQLAlchemyError:
+                return render_template('errors/error-400.html'), 400
 
             if FlightTravel.query.filter_by(flight_code_id = flight.id).count():
                 message = _("Рейс содержит пассажиров")
