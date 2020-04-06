@@ -200,11 +200,14 @@ def apply_themes(app):
                     values['filename'] = theme_file
         return url_for(endpoint, **values)
 
-def create_app(config, selenium=False):
+def create_app(config, selenium=False, unittest=False):
     app = Flask(__name__, static_folder='main/static')
     app.config.from_object(config)
     if selenium:
         app.config['LOGIN_DISABLED'] = True
+    if unittest:
+        app.config['CSRF_ENABLED'] = False
+    print("unittest haha", unittest)
     register_extensions(app)
     register_blueprints(app)
     configure_database(app)
