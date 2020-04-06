@@ -19,10 +19,10 @@ class User(db.Model, UserMixin):
     username = Column(String, unique=True)
     password = Column(Binary)
 
-    full_name = Column(String)
-    organization = Column(String)
-    telephone = Column(String)
-    email = Column(String)
+    full_name = Column(String, nullable=True, default=None)
+    organization = Column(String, nullable=True, default=None)
+    telephone = Column(String, nullable=True, default=None)
+    email = Column(String, nullable=True, default=None)
 
     region_id = Column(Integer, ForeignKey('Region.id'))
     region = db.relationship('Region')

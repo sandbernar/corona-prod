@@ -4,17 +4,18 @@ License: Commercial
 Copyright (c) 2019 - present AppSeed.us
 """
 
-from flask import Flask
+from flask_migrate import Migrate
 from os import environ
 from sys import exit
+from flask_uploads import UploadSet, configure_uploads
 
-import config
 from config import config_dict
+from app import create_app, db
 
 from app.login.models import User
 from app.login.util import hash_pass
+from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 
 import argparse
 ap = argparse.ArgumentParser()
@@ -32,12 +33,11 @@ try:
 except KeyError:
     exit('Error: Invalid CONFIG_MODE environment variable entry.')
 
-
-app = Flask(__name__, static_folder='main/static')
-app.config.from_object(config)
-
+app = create_app(config_mode) 
+Migrate(app, db)
 engine = create_engine(config_mode.SQLALCHEMY_DATABASE_URI)
 
+from sqlalchemy.orm import sessionmaker
 Session = sessionmaker(bind = engine)
 session = Session()
 
