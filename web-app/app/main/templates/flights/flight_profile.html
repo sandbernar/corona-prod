@@ -68,9 +68,18 @@
                     {{ form.to_city(class="form-control", placeholder="Алматы", type="text", disabled=True) }}
                   </div>                                                  
                 </div>
-              </div>                
+              </div>
+           </form>
+           <div class="row mt-3">
+              <div class="col">
+              <form action="/delete_flight" method="POST">
+                  {{ form.hidden_tag() }}
+                  <input type="hidden" name="delete" value='{{ flight.id }}'>
+                  <button class="btn btn-danger" type="submit" style="width:100%;">{{ _('Удалить Рейс') }}</button>
+              </form>                
+              </div>
+            </div>              
             </div>                
-          </form>
         </div>
       </div>
 

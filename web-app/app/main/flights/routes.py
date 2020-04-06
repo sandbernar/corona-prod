@@ -74,8 +74,8 @@ def flights():
     	flights_count[f.id] = FlightTravel.query.filter_by(flight_code_id=f.id).count()
 
     change = None
-    if "added_flight" in request.args:
-        change = _("Рейс успешно добавлен")
+    if "message" in request.args:
+        change = request.args['message']
 
     form.process()
     return route_template('flights/flights', flights=flights, flights_count=flights_count, form=form, page=page, 
@@ -222,6 +222,31 @@ def flight_profile():
                 patients_seat=patients_seat, error_msg=error_msg, patients=patients, total_patients=total_len, max_page=max_page, page=page)
     else:    
         return render_template('errors/error-500.html'), 500
+
+@blueprint.route('/delete_flight', methods=['POST'])
+@login_required
+def delete_flight():
+    if not current_user.is_authenticated:
+        return redirect(url_for('login_blueprint.login'))
+    
+    message = _("Произошла Ошибка")
+    print(message)
+
+    if len(request.form):
+        if "delete" in request.form:
+            flight_id = request.form["delete"]
+            flight_query = FlightCode.query.filter(FlightCode.id == flight_id)
+            flight = flight_query.first()
+
+            if FlightTravel.query.filter_by(flight_code_id = flight.id).count():
+                message = _("Рейс содержит пассажиров")
+            else:
+                if flight:
+                    db.session.delete(flight)
+                    db.session.commit()
+                    message = _("Рейс успешно удален")
+
+    return redirect("{}?message={}".format(url_for('main_blueprint.flights'), message))
 
 # @blueprint.route('/delete_user', methods=['POST'])
 # @login_required
