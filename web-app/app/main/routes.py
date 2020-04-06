@@ -12,7 +12,7 @@ from jinja2 import TemplateNotFound
 
 from app.main.patients.models import Patient, PatientStatus
 from app.main.models import Region, Infected_Country_Category
-from app.main.hospitals.models import Hospital, Hospital_Type, Hospital_Nomenklatura
+from app.main.hospitals.models import Hospital, Hospital_Type
 
 from datetime import datetime
 from app.main.forms import TableSearchForm

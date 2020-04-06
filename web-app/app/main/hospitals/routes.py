@@ -11,7 +11,7 @@ from app import login_manager, db
 from app import constants as c
 from jinja2 import TemplateNotFound
 
-from app.main.hospitals.models import Hospital, Hospital_Type, Hospital_Nomenklatura
+from app.main.hospitals.models import Hospital, Hospital_Type
 from app.main.patients.models import Patient
 from app.main.models import Region
 
@@ -53,17 +53,6 @@ def all_hospitals():
     if not form.hospital_type.choices:
         form.hospital_type.choices = [ (-1, c.all_hospital_types) ] + [(r.id, r.name) for r in hospital_type]
 
-    nomenklatura_ids = q.with_entities(Hospital.hospital_nomenklatura_id).all()
-    nomenklatura_ids = np.unique([n.hospital_nomenklatura_id for n in nomenklatura_ids])
-    choices = [(-1, c.all_hospital_nomenklatura)]
-
-    if not form.nomenklatura.choices:
-        for i in nomenklatura_ids:
-            choice = Hospital_Nomenklatura.query.filter_by(id = str(i)).first()
-            choices.append((choice.id, choice.name))
-        
-        form.nomenklatura.choices = choices
-
     hospitals = []
 
     hospital_type = request.args.get("hospital_type", '-1')
@@ -71,11 +60,6 @@ def all_hospitals():
         filt["hospital_type_id"] = hospital_type
         form.hospital_type.default = hospital_type
 
-    nomenklatura = request.args.get("nomenklatura", '-1')
-    if nomenklatura != str(-1):
-        filt["hospital_nomenklatura_id"] = nomenklatura
-        form.nomenklatura.default = nomenklatura        
-    
     page = 1
     per_page = 10
     if "page" in request.args:

@@ -24,9 +24,6 @@ class Hospital(db.Model):
     region_id = Column(Integer, ForeignKey('Region.id'))
     region = db.relationship('Region')
 
-    hospital_nomenklatura_id = Column(Integer, ForeignKey('Hospital_Nomenklatura.id'))
-    hospital_nomenklatura = db.relationship('Hospital_Nomenklatura')
-
     hospital_type_id = Column(Integer, ForeignKey('Hospital_Type.id'))
     hospital_type = db.relationship('Hospital_Type')
 
@@ -50,23 +47,6 @@ class Hospital(db.Model):
 class Hospital_Type(db.Model):
 
     __tablename__ = 'Hospital_Type'
-
-    id = Column(Integer, primary_key=True)
-    name = Column(String, unique=True)
-
-    def __init__(self, **kwargs):
-        for property, value in kwargs.items():
-            if hasattr(value, '__iter__') and not isinstance(value, str):
-                value = value[0]
-                
-            setattr(self, property, value)
-
-    def __repr__(self):
-        return str(self.name)
-
-class Hospital_Nomenklatura(db.Model):
-
-    __tablename__ = 'Hospital_Nomenklatura'
 
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)

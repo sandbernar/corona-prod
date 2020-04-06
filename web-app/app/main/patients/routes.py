@@ -17,7 +17,7 @@ from jinja2 import TemplateNotFound
 from app.main.models import (Region, Country, VisitedCountry, Infected_Country_Category, 
                             TravelType, BorderControl, VariousTravel, Address)
 from app.main.patients.models import Patient, PatientStatus, ContactedPersons
-from app.main.hospitals.models import Hospital, Hospital_Type, Hospital_Nomenklatura
+from app.main.hospitals.models import Hospital, Hospital_Type
 from app.main.flights.models import FlightCode, FlightTravel
 
 from app.main.patients.forms import PatientForm, UpdateProfileForm, AddFlightFromExcel

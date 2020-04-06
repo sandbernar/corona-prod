@@ -20,7 +20,6 @@ class AddHospitalsDataForm(UploadDataForm):
 
 class HospitalSearchForm(FlaskForm):
 	region = SelectField(id='region')
-	nomenklatura = SelectField(id='nomenklatura')
 	hospital_type = SelectField(id='hospital_type')
 
 

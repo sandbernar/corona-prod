@@ -39,9 +39,6 @@
 
                     <div class="text-center">
                         <h3>
-                            {{ hospital.hospital_nomenklatura }}<span class="font-weight-light"></span>
-                        </h3>
-                        <h3>
                             {{ hospital.hospital_type }}<span class="font-weight-light"></span>
                         </h3>                        
                         <div class="h3">
@@ -191,12 +188,6 @@
                             <div class="form-group">
                                 <label class="form-control-label" for="input-region">{{ _("Тип") }}</label>
                                 <input type="text" id="input-region" class="form-control form-control-alternative" disabled value="{{ hospital.hospital_type }}">
-                            </div>
-                        </div>
-                        <div class="col">
-                            <div class="form-group">
-                                <label class="form-control-label" for="input-job">{{ _("Номенклатура") }}</label>
-                                <input type="text" id="input-job" class="form-control form-control-alternative" disabled value="{{ hospital.hospital_nomenklatura }}">
                             </div>
                         </div>
                     </div>

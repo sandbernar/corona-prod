@@ -37,7 +37,7 @@ def configure_database(app):
         from app.main.models import (Region, Country, Infected_Country_Category, 
                                     TravelType, BorderControl, VariousTravel, Address, VisitedCountry)
         from app.main.patients.models import PatientStatus, ContactedPersons
-        from app.main.hospitals.models import  Hospital, Hospital_Type, Hospital_Nomenklatura
+        from app.main.hospitals.models import  Hospital, Hospital_Type
         from app.main.flights.models import FlightTravel, FlightCode
        
         # Clear the tables
@@ -54,7 +54,6 @@ def configure_database(app):
         Region.query.delete()
 
         Hospital_Type.query.delete()
-        Hospital_Nomenklatura.query.delete()
 
         PatientStatus.query.delete()
         ContactedPersons.query.delete()
@@ -92,13 +91,10 @@ def configure_database(app):
         region = Region(name="Вне РК")
         db.session.add(region)
 
-        for n in df.Nomenklatura.unique():
-            nomen = Hospital_Nomenklatura(name=n)
-            db.session.add(nomen)
-
         for n in df.TIPMO.unique():
-            typ = Hospital_Type(name=n)
-            db.session.add(typ)
+            if not pd.isna(n):
+                typ = Hospital_Type(name=n)
+                db.session.add(typ)
 
         db.session.commit()
 
@@ -121,33 +117,31 @@ def configure_database(app):
             hospital = Hospital()
 
             full_name = row["Name"]
-            short_name = re.findall('"([^"]*)"', full_name.replace("«", "\"").replace("»", "\""))
-            if not len(short_name):
-                short_name = full_name
-            elif not (len(short_name[0])):
-                short_name = full_name
-            else:
-                short_name = short_name[0]
+            if not pd.isna(full_name):
+                short_name = re.findall('"([^"]*)"', full_name.replace("«", "\"").replace("»", "\""))
+                if not len(short_name):
+                    short_name = full_name
+                elif not (len(short_name[0])):
+                    short_name = full_name
+                else:
+                    short_name = short_name[0]
 
-            hospital.name = short_name
-            hospital.full_name = full_name
-            
-            region = Region.query.filter_by(name=row["region"]).first()
-            hospital.region_id = region.id
-            hospital.address = ", ".join(row["Adres"].split(":")[3:])
+                hospital.name = short_name
+                hospital.full_name = full_name
+                
+                region = Region.query.filter_by(name=row["region"]).first()
+                hospital.region_id = region.id
+                hospital.address = ", ".join(row["Adres"].split(":")[3:])
 
-            hospital_type = Hospital_Type.query.filter_by(name=row["TIPMO"]).first()
-            hospital.hospital_type_id = hospital_type.id
+                hospital_type = Hospital_Type.query.filter_by(name=row["TIPMO"]).first()
+                hospital.hospital_type_id = hospital_type.id
 
-            hospital_nomenklatura = Hospital_Nomenklatura.query.filter_by(name=row["Nomenklatura"]).first()
-            hospital.hospital_nomenklatura_id = hospital_nomenklatura.id
+                hospital.beds_amount = 0
+                hospital.meds_amount = 0
+                hospital.tests_amount = 0
+                hospital.tests_used = 0
 
-            hospital.beds_amount = 0
-            hospital.meds_amount = 0
-            hospital.tests_amount = 0
-            hospital.tests_used = 0
-
-            db.session.add(hospital)
+                db.session.add(hospital)
 
         db.session.commit()
 
