@@ -95,7 +95,8 @@
               <tr>
                 <th scope="col">{{ _("ФИО") }}</th>
                 <th scope="col">{{ _("Телефон") }}</th>
-                <th scope="col">{{ _("Дата Въезда") }}</th>
+                <th scope="col">{{ _("Регион") }}</th>
+                <th scope="col">{{ _("Страна последние 14 дней") }}</th>
               </tr>
             </thead>
             <tbody>
@@ -105,7 +106,7 @@
                 <th scope="row">
                   <div class="media align-items-center">
                     <div class="media-body">
-                      <span class="mb-0 text-sm"><a href="/patient_profile?id={{patient.id}}">{{ patient.full_name }}</a></span>
+                      <span class="mb-0 text-sm"><a href="/patient_profile?id={{patient.id}}">{{ patient }}</a></span>
                     </div>
                   </div>
                 </th>
@@ -113,7 +114,14 @@
                   {{ patient.telephone }}
                 </td>
                 <td>
-                  {{ patient.arrival_date }}
+                  {{ patient.region }}
+                </td>
+                <td>
+                  {% if patient.visited_country %}
+                    {{ patient.visited_country.country }}
+                  {% else %}
+                    {{ _("Неизвестно") }}
+                  {% endif %}
                 </td>
               </tr>
               {% endfor %}
