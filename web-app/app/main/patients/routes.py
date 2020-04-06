@@ -207,13 +207,13 @@ def handle_add_update_patient(request_dict, final_dict, update_dict = {}):
                     db.session.commit()
 
                     final_dict['travel_id'] = v_travel.id
-    
+
+def handle_visited_country_address(request_dict, final_dict, patient, update_dict = {}):
     # 4 Visited Country
     visited_country_id = request_dict.get('visited_country_id', None)
-    created_visited_country_id = None
 
     if visited_country_id !='-1' and visited_country_id:
-        visited_country = VisitedCountry(country_id=visited_country_id)
+        visited_country = VisitedCountry(patient_id = patient.id, country_id=visited_country_id)
         
         from_date = request_dict.get('visited_from_date', None)
         visited_country.from_date = from_date if from_date else None
@@ -223,12 +223,6 @@ def handle_add_update_patient(request_dict, final_dict, update_dict = {}):
 
         db.session.add(visited_country)
         db.session.commit()
-
-        created_visited_country_id = visited_country.id          
-    else:
-        created_visited_country_id = None
-
-    final_dict['visited_country_id'] = created_visited_country_id
 
     # 5
     # Home Address
@@ -268,6 +262,8 @@ def add_patient():
         
         db.session.add(patient)
         db.session.commit()
+
+        handle_visited_country_address(request_dict, final_dict, patient)
 
         return jsonify({"patient_id": patient.id})
     else:
@@ -382,8 +378,8 @@ def patient_profile():
 
             form.travel_type.default = travel_type.value
 
-            if patient.visited_country is not None:
-                populate_form(form, patient.visited_country.__dict__, prefix='visited_')
+            if patient.visited_country:
+                populate_form(form, patient.visited_country[0].__dict__, prefix='visited_')
 
             form.gender.default = -1 if patient.gender is None else int(patient.gender)
 

@@ -113,6 +113,9 @@ class VisitedCountry(db.Model):
 
     id = Column(Integer, primary_key=True)
     
+    patient_id = Column(Integer, ForeignKey('Patient.id', ondelete="CASCADE"))
+    patient = db.relationship('Patient', backref=db.backref('visited_country', passive_deletes=True))
+
     country_id = Column(Integer, ForeignKey('Country.id'), nullable=False)
     country = db.relationship('Country')
 
