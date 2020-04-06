@@ -184,8 +184,6 @@ def handle_add_update_patient(old_dict, new_dict, update_dict = {}):
 
                 new_dict['travel_id'] = various_travel.id
 
-    print(new_dict['travel_id'])
-
     visited_country_id = old_dict.get('visited_country_id', None)
     created_visited_country_id = None
 
@@ -527,9 +525,19 @@ def patients():
 
         form.not_in_hospital.default='checked'
 
-    if "full_name" in request.args:
-        q = q.filter(func.lower(Patient.full_name).contains(request.args["full_name"].lower()))
-        form.full_name.default = request.args["full_name"]
+    def name_search(param, param_str, q):
+        if param_str in request.args:
+            req_str = request.args[param_str]
+            q = q.filter(func.lower(param).contains(req_str.lower()))
+            param = getattr(form, param_str, None)
+            if param:
+                setattr(param, 'default', req_str)
+        
+        return q
+
+    q = name_search(Patient.first_name, "first_name", q)
+    q = name_search(Patient.second_name, "second_name", q)
+    q = name_search(Patient.patronymic_name, "patronymic_name", q)
 
     if "iin" in request.args:
         q = q.filter(Patient.iin.contains(request.args["iin"]))

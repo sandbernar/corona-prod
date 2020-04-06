@@ -120,7 +120,13 @@
                     {{ form.hospital_type(class="form-control", id="hospital_type") }}
                 </div>
                 <div class="form-group">
-                    <label for="job-input" class="form-control-label"><a href="/hospital_profile?id={{ patient.hospital_id }}">{{ _("Место Госпитализации") }}</a></label>
+                    <label for="job-input" class="form-control-label">
+                        {% if patient.hospital_id %} 
+                            <a href="/hospital_profile?id={{ patient.hospital_id }}">{{ _("Место Госпитализации") }}</a>
+                        {% else %}
+                            {{ _("Место Госпитализации") }}
+                        {% endif %}
+                    </label>
                     {{ form.hospital_id(class="form-control", id="hospital_select") }}
                 </div>
                 <hr class="my-4" />                    
