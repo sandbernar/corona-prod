@@ -137,23 +137,19 @@
                             <div class="col">
                               <div class="form-group">
                                 <label for="job-input" class="form-control-label">{{ _("Регион Госпитализации") }}</label>
-                                {{ form.hospital_region_id(class="form-control", id="hospital_region_id") }}
+                                {{ form.hospital_region_id(class="form-control") }}
                               </div>
                             </div>
                             <div class="col">
                               <div class="form-group">
                                 <label for="job-input" class="form-control-label">{{ _("Тип Больницы") }}</label>
-                                <select class="form-control" id="hospital_type" name="hospital_region_id" required="">
-                                  {% for subfield in hospital_types %}
-                                  <option value={{ subfield[0] }}>{{ subfield[1] }}</option>
-                                  {% endfor %}
-                                </select>                                
+                                {{ form.hospital_type_id(class="form-control") }}
                               </div>
                             </div>                            
                             <div class="col">
                               <div class="form-group">
                                 <label for="job-input" class="form-control-label">{{ _("Место Госпитализации") }}</label>
-                                {{ form.hospital_id(class="form-control", id="hospital_select") }}
+                                {{ form.hospital_id(class="form-control") }}
                               </div>
                             </div>
                           </div>
@@ -185,6 +181,7 @@
 
 {% block javascripts %}
 {{ super()}}
+{% include "js/hospital_selection_form.html" %}
 
 <script type="text/javascript">
   {% with form=form, c=c %}
@@ -196,7 +193,7 @@
   update_hospitals_list()
   update_travel_form()
 
-  disable_status($("#hospital_select").val())
+  disable_status($("#hospital_id").val())
 
   function disable_status(value) {
     disable = true
@@ -212,43 +209,6 @@
     document.getElementById('patient_status').disabled = disable;
     // document.getElementById('in_hospital-1').disabled = disable;    
   }
-
-  function disable_in_hospital(value) {
-    disable = true
-    if (value == 1) {
-      disable = false
-    } else {
-      document.getElementById('in_hospital-0').checked = false;
-      document.getElementById('in_hospital-1').checked = false;
-      disable_hospital_choice(value)
-    }
-
-    document.getElementById('in_hospital-0').disabled = disable;
-    document.getElementById('in_hospital-1').disabled = disable;
-  }
-
-  function disable_hospital_choice(value) {
-    disable = true;
-    if (value == 1) {
-      disable = false;
-    }
-
-    document.getElementById('hospital_region_id').disabled = disable;
-    document.getElementById('hospital_type').disabled = disable;
-    document.getElementById('hospital_select').disabled = disable;
-  }
-
-  function update_hospitals_list(){
-    $.ajax({
-      type: 'POST',
-      url: "/get_hospital_by_region",
-      data: {region_id: $("#hospital_region_id").val(), hospital_type_id: $("#hospital_type").val()},
-      dataType: "text",
-      success: function(data){
-        document.getElementById("hospital_select").innerHTML = data.toString();
-      }
-    });
-  };
 
   function show_loader(show) {
     var loader = $("#submit_loader")
@@ -333,13 +293,6 @@ $("#add_patients").on("reset", function(){
   $("#is_found-1").change()
 });
 
-$("#hospital_region_id").on("change", function(){
-  update_hospitals_list();
-});
-
-$("#hospital_type").on("change", function(){
-  update_hospitals_list();
-});
 
 $("#travel_type").on("change", function(){
   update_travel_form();

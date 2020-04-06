@@ -1,0 +1,34 @@
+<script type="text/javascript">
+  function update_hospitals_list(async=true){
+    $.ajax({
+      type: 'POST',
+      url: "/get_hospital_by_region",
+      data: {region_id: $("#hospital_region_id").val(), hospital_type_id: $("#hospital_type_id").val()},
+      dataType: "text",
+      async: async,
+      success: function(data){
+        document.getElementById("hospital_id").innerHTML = data.toString();
+      }
+    });
+  };
+
+  function disable_hospital_choice(value) {
+    disable = true;
+    if (value == 1) {
+      disable = false;
+    }
+
+    document.getElementById('hospital_region_id').disabled = disable;
+    document.getElementById('hospital_type_id').disabled = disable;
+    document.getElementById('hospital_id').disabled = disable;
+  }
+
+$("#hospital_region_id").on("change", function(){
+  update_hospitals_list();
+});
+
+$("#hospital_type_id").on("change", function(){
+  update_hospitals_list();
+});
+
+</script>
