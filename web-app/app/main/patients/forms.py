@@ -65,7 +65,7 @@ class PatientForm(FlaskForm):
     job_address_building = TextField('Job Building')
 
     telephone = TextField('Telephone', id='telephone'   , validators=[DataRequired()])
-    email = TextField('EMail', id='email', validators=[DataRequired()])
+    email = TextField('EMail', id='email')
 
     hospital_region_id = SelectField('Hospital Region', id='hospital_region' , validators=[DataRequired()])
     hospital_id = SelectField('Hospital', id='hospital' , validators=[DataRequired()])  

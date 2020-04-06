@@ -165,7 +165,8 @@ def handle_add_update_patient(old_dict, new_dict, update_dict = {}):
 
     new_dict['visited_country_id'] = created_visited_country_id
 
-    def process_address(form_prefix='home', lat_lng = True, address = Address()):
+    def process_address(form_prefix='home', lat_lng = True):
+        address = Address()
         address.country_id = old_dict[form_prefix + '_address_country_id']
         address.state = old_dict.get(form_prefix + '_address_state', None)
         address.city = old_dict[form_prefix + '_address_city']
@@ -258,7 +259,6 @@ def get_lat_lng(patients):
             )
 
             home_address = re.sub(r"([0-9]+(\.[0-9]+)?)",r" \1 ", home_address).strip()
-            print(home_address)
             # parsed_address = {k: v for (v, k) in parse_address(patient.home_address)}
             
             params['q'] = home_address
@@ -750,8 +750,11 @@ def patient_profile():
 
             form.gender.default = -1 if patient.gender is None else int(patient.gender)
 
-            populate_form(form, patient.home_address.__dict__, prefix='home_address_')
-            populate_form(form, patient.job_address.__dict__, prefix='job_address_')
+            if patient.home_address:
+                populate_form(form, patient.home_address.__dict__, prefix='home_address_')
+            
+            if patient.job_address:
+                populate_form(form, patient.job_address.__dict__, prefix='job_address_')
 
             if "success" in request.args:
                 change = _("Пользователь %(full_name)s успешно добавлен", full_name=patient.full_name)
