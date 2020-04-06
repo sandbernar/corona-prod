@@ -595,7 +595,8 @@ def delete_patient():
             patient_id = request.form["delete"]
             patient = None
             try:
-                patient = Patient.query.filter(Patient.id == patient_id).first()
+                patient_query = Patient.query.filter(Patient.id == patient_id)
+                patient = patient_query.first()
             except exc.SQLAlchemyError:
                 return render_template('errors/error-400.html'), 400
 
@@ -617,6 +618,8 @@ def delete_patient():
 
                 patient_query.delete()
                 db.session.commit()
+            
+            # user does not exist
 
     return redirect(return_url)
 

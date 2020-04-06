@@ -251,13 +251,15 @@ def delete_flight():
             except exc.SQLAlchemyError:
                 return render_template('errors/error-400.html'), 400
 
-            if FlightTravel.query.filter_by(flight_code_id = flight.id).count():
-                message = _("Рейс содержит пассажиров")
-            else:
-                if flight:
+            if flight:
+                if FlightTravel.query.filter_by(flight_code_id = flight.id).count():
+                    message = _("Рейс содержит пассажиров")
+                else:
                     db.session.delete(flight)
                     db.session.commit()
                     message = _("Рейс успешно удален")
+            
+            # add redirect
 
     return redirect("{}?message={}".format(url_for('main_blueprint.flights'), message))
 
