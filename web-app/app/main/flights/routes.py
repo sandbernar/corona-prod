@@ -115,7 +115,6 @@ def add_flight():
     else:
         return route_template( 'flights/add_flight', form=form, change=None, error_msg=None)
 
-
 @blueprint.route('/flight_profile', methods=['GET', 'POST'])
 @login_required
 def flight_profile():

@@ -820,7 +820,11 @@ def contacted_persons():
     filt = dict()
 
     if "id" in request.args:
-        patient = Patient.query.filter_by(id=request.args["id"]).first()
+        patient = None
+        try:
+            patient = Patient.query.filter_by(id=request.args["id"]).first()
+        except exc.SQLAlchemyError:
+            return render_template('errors/error-400.html'), 400
 
         if patient:
             if patient.is_contacted_person:
