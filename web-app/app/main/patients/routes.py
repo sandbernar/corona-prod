@@ -627,8 +627,12 @@ def patient_profile():
         return redirect(url_for('login_blueprint.login'))
 
     if "id" in request.args:
-        patient = Patient.query.filter_by(id=request.args["id"]).first()
-      
+        patient = None
+        try:
+            patient = Patient.query.filter_by(id=request.args["id"]).first()
+        except exc.SQLAlchemyError:
+            return render_template('errors/error-400.html'), 400
+
         if not patient:
             return render_template('errors/error-404.html'), 404
         else:
