@@ -39,7 +39,7 @@ import requests
 from multiprocessing.pool import ThreadPool as threadpool
 from app.main.util import get_regions, get_regions_choices, get_flight_code
 from app.login.util import hash_pass
-from sqlalchemy import func
+from sqlalchemy import func, exc
 
 def prepare_patient_form(patient_form):
     if not patient_form.region_id.choices:
@@ -593,8 +593,12 @@ def delete_patient():
     if len(request.form):
         if "delete" in request.form:
             patient_id = request.form["delete"]
-            patient_query = Patient.query.filter(Patient.id == patient_id)
-            patient = patient_query.first()
+            patient = None
+            try:
+                patient_query = Patient.query.filter(Patient.id == patient_id)
+                patient = patient_query.first()
+            except exc.SQLAlchemyError:
+                return render_template('errors/error-400.html'), 400
 
             if patient:
                 if patient.is_contacted_person:
@@ -614,6 +618,8 @@ def delete_patient():
 
                 patient_query.delete()
                 db.session.commit()
+            
+            # user does not exist
 
     return redirect(return_url)
 
@@ -624,8 +630,12 @@ def patient_profile():
         return redirect(url_for('login_blueprint.login'))
 
     if "id" in request.args:
-        patient = Patient.query.filter_by(id=request.args["id"]).first()
-      
+        patient = None
+        try:
+            patient = Patient.query.filter_by(id=request.args["id"]).first()
+        except exc.SQLAlchemyError:
+            return render_template('errors/error-400.html'), 400
+
         if not patient:
             return render_template('errors/error-404.html'), 404
         else:
@@ -665,7 +675,11 @@ def patient_profile():
                         patient.hospital_id = None
                 
                 if "hospital_id" in request.form:
-                    patient_hospital = Hospital.query.filter_by(id=request.form['hospital_id']).first()
+                    patient_hospital = None
+                    try:
+                        patient_hospital = Hospital.query.filter_by(id=request.form['hospital_id']).first()
+                    except exc.SQLAlchemyError:
+                        return render_template('errors/error-400.html'), 400
 
                     if patient_hospital:
                         patient.hospital_id = patient_hospital.id
@@ -810,7 +824,11 @@ def contacted_persons():
     filt = dict()
 
     if "id" in request.args:
-        patient = Patient.query.filter_by(id=request.args["id"]).first()
+        patient = None
+        try:
+            patient = Patient.query.filter_by(id=request.args["id"]).first()
+        except exc.SQLAlchemyError:
+            return render_template('errors/error-400.html'), 400
 
         if patient:
             if patient.is_contacted_person:
