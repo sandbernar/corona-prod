@@ -12,6 +12,7 @@ from logging import basicConfig, DEBUG, getLogger, StreamHandler
 from os import path
 import pandas as pd
 import re
+# from flask_wtf.csrf import CSRFProtect
 
 from app import constants as C
 
@@ -202,12 +203,14 @@ def apply_themes(app):
 
 def create_app(config, selenium=False, unittest=False):
     app = Flask(__name__, static_folder='main/static')
+    # csrf = CSRFProtect(app)
+
     app.config.from_object(config)
     if selenium:
         app.config['LOGIN_DISABLED'] = True
     if unittest:
         app.config['CSRF_ENABLED'] = False
-    print("unittest haha", unittest)
+        app.config['WTF_CSRF_ENABLED'] = False
     register_extensions(app)
     register_blueprints(app)
     configure_database(app)
