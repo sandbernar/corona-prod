@@ -61,47 +61,53 @@ class TestCase(unittest.TestCase):
         self.assertIn('Login', str(response.data))
     
     def test_login(self):
-        # response = self.login("eror", "s")
-        # self.assertEqual(response.status_code, 200)
-        # print(str(rv.data.decode('utf-8')))
-
         rv = self.login('adm', 'paswd')
         assert 'Dashboard' in str(rv.data)
-        # rv = self.logout()
-        # assert 'Login' in str(rv.data)
-        # rv = self.login('adm', 'Wrong')
-        # assert 'Wrong' in str(rv.data)
-        # rv = self.login('admin', 'paswd')
-        # assert 'Wrong' in str(rv.data)
+        rv = self.logout()
+        assert "Login" in str(rv.data)
+        rv = self.login('adm', 'Wrong')
+        assert 'Wrong' in str(rv.data)
+        rv = self.login('admin', 'paswd')
+        assert 'Wrong' in str(rv.data)
 
     def test_new_patient(self):
-        # travel_type=auto_type&arrival_date=2020-04-08&auto_border_id=1&csrf_token=ImY0MzMzYjAyYzY5ZmI2OWNjNjA0YjA2NWJiNGVmMjYxOWE5OTM2ODUi.XoymRw.f0OpFfPJxUcsO1bp3rzJ8myGTHk&second_name=1&first_name=1&patronymic_name=&gender=-1&dob=2020-04-01&iin=&citizenship_id=75&pass_num=&country_of_residence_id=88&home_address_country_id=88&home_address_state=1&home_address_city=1&home_address_street=12&home_address_house=1&home_address_flat=&home_address_building=&visited_country_id=-1&visited_from_date=&visited_to_date=&region_id=1&job=1&job_position=&job_address_country_id=88&job_address_state=&job_address_city=&job_address_street=&job_address_house=&job_address_flat=&job_address_building=&telephone=1&email=&is_found=0&is_infected=0&create
         self.login("adm","paswd")
+        rv = self.add_post()
+        print(str(rv.data))
+        assert "patient_id" in str(rv.data)
+
+    def test_edit_patient(self):
+        pass
+
+    def test_delete_patient(self):
+        pass
+
+    def add_post(self):
 
         patient = {"travel_type":"auto_type",
-        "arrival_date":"2020-04-08",
+        "arrival_date":"2020-04-10",
         "auto_border_id":1,
-        "second_name":"1",
-        "first_name":"1",
+        "second_name":"str",
+        "first_name":"str",
         "patronymic_name":"",
         "gender":-1,
-        "dob":"2020-04-01",
+        "dob":"2020-04-03",
         "iin":"",
-        "citizenship_id":75,
+        "citizenship_id":88,
         "pass_num":"",
         "country_of_residence_id":88,
         "home_address_country_id":88,
-        "home_address_state":"1",
-        "home_address_city":"1",
-        "home_address_street":"12",
-        "home_address_house":"1",
+        "home_address_state":"",
+        "home_address_city":"str",
+        "home_address_street":"str",
+        "home_address_house":"str",
         "home_address_flat":"",
         "home_address_building":"",
-        "visited_country_id":1,
+        "visited_country_id":-1,
         "visited_from_date":"",
         "visited_to_date":"",
         "region_id":1,
-        "job":1,
+        "job":"str",
         "job_position":"",
         "job_address_country_id":88,
         "job_address_state":"",
@@ -110,60 +116,13 @@ class TestCase(unittest.TestCase):
         "job_address_house":"",
         "job_address_flat":"",
         "job_address_building":"",
-        "telephone":1,
+        "telephone":"str",
         "email":"",
         "is_found":0,
         "is_infected":0,
         "create":""}
-        
-        # patient.travel_type="auto_type"
-        # patient.arrival_date="2020-04-29"
-        # patient.auto_border_id=1
-        # patient.first_name="a"
-        # patient.second_name="a"
-        # patient.patronymic_name="a"
-        # patient.gender="-1"
-        # patient.dob="2020-04-08"
-        # patient.iin="12121212121212"
-        # patient.citizenship_id=88
-        # patient.pass_num="12121212"
-        # patient.country_of_residence_id=88
-        # patient.home_address_country_id=88
-        # patient.home_address_state="2"
-        # patient.home_address_city="2"
-        # patient.home_address_street="12"
-        # patient.home_address_house="12"
-        # patient.home_address_flat="22"
-        # patient.home_address_building="2"
-        # patient.visited_country_id=8
-        # patient.visited_from_date="2020-03-31"
-        # patient.visited_to_date="2020-04-15"
-        # patient.region_id=1
-        # patient.job="12"
-        # patient.job_position="12"
-        # patient.job_address_country_id=88
-        # patient.job_address_state="12"
-        # patient.job_address_city="12"
-        # patient.job_address_street="12"
-        # patient.job_address_house="12"
-        # patient.job_address_flat="12"
-        # patient.job_address_building="112"
-        # patient.telephone="1212"
-        # patient.email="2@gmail.com"
-        # patient.is_found=0
-        # patient.is_infected=0
-        # patient.create=""
 
-        rv = self.app.post("/add_patient", data=patient)
-        print(str(rv.data.decode('utf-8')))
-        pass
-
-    def test_edit_patient(self):
-        pass
-
-    def test_delete_patient(self):
-        pass
-
+        return self.app.post("/add_person", data=patient, follow_redirects=True)
 
     def login(self, username, password):
         return self.app.post('/login', data=dict(
