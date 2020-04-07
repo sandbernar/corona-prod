@@ -36,7 +36,7 @@ def configure_database(app):
     def add_hospitals():
         from app.main.models import (Region, Country, Infected_Country_Category, 
                                     TravelType, BorderControl, VariousTravel, Address, VisitedCountry)
-        from app.main.patients.models import PatientStatus, ContactedPersons
+        from app.main.patients.models import PatientStatus, ContactedPersons, Patient
         from app.main.hospitals.models import  Hospital, Hospital_Type
         from app.main.flights.models import FlightTravel, FlightCode
        
