@@ -19,6 +19,9 @@ class FlightTravel(db.Model):
 
     id = Column(Integer, primary_key=True)
 
+    patient_id = Column(Integer, ForeignKey('Patient.id', ondelete="CASCADE"))
+    patient = db.relationship('Patient', backref=db.backref('flight_travel', passive_deletes=True))
+
     flight_code_id = Column(Integer, ForeignKey('FlightCode.id'))
     flight_code = db.relationship('FlightCode')
 

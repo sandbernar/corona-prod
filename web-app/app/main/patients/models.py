@@ -51,7 +51,7 @@ class Patient(db.Model):
     country_of_residence = db.relationship('Country', foreign_keys=[country_of_residence_id])
 
     home_address_id = Column(Integer, ForeignKey('Address.id'), nullable=False)
-    home_address = db.relationship('Address', foreign_keys=[home_address_id], cascade="all, delete-orphan", single_parent=True)
+    home_address = db.relationship('Address', foreign_keys=[home_address_id], cascade="all,delete", backref="Patient")
 
     telephone = Column(String)
     email = Column(String, nullable=True)
