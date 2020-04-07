@@ -44,7 +44,6 @@ def configure_database(app):
         Patient.query.delete()
 
         ## Travel
-        TravelType.query.delete()
         BorderControl.query.delete()
         VariousTravel.query.delete()
         
@@ -52,6 +51,7 @@ def configure_database(app):
         FlightTravel.query.delete()
         FlightCode.query.delete()
 
+        TravelType.query.delete()
         Region.query.delete()
 
         Hospital_Type.query.delete()
@@ -61,6 +61,7 @@ def configure_database(app):
 
         Infected_Country_Category.query.delete()
         VisitedCountry.query.delete()
+
         Address.query.delete()
         Country.query.delete()
 

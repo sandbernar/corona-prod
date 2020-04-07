@@ -233,6 +233,12 @@
   function submit_new_patient() {
     show_loader(true)
 
+    function close_modal_submit(reset=true) {
+      show_loader(false)
+      if (reset) reset_add_patient_form()
+      $("#addPatientModal").modal('hide');  
+    }
+
     $.post($("#add_patients").attr('action'), $("#add_patients").serialize() + '&create', function(res){
       // Do something with the response `res`
       if (res.patient_id !== undefined) {
@@ -244,7 +250,10 @@
           // settings
           type: 'info',
         });
-      } else {
+        close_modal_submit()
+      }
+    })
+    .fail(function() {
         $.notify({
           // options
           icon: 'fa fa-exclamation-circle',
@@ -253,12 +262,10 @@
           // settings
           type: 'danger',
         });
-      }
-  
-      show_loader(false)
-      reset_add_patient_form()
-      $("#addPatientModal").modal('hide');      
+        close_modal_submit(false)
     });
+
+
   }
 
   function reset_add_patient_form() {

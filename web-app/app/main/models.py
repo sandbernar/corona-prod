@@ -139,10 +139,10 @@ class Address(db.Model):
     
     state = Column(String, nullable=True, default=None)
 
-    city = Column(String, nullable=False)
+    city = Column(String, nullable=False, default = None)
 
-    street = Column(String, nullable=False)
-    house = Column(String, nullable=False)
+    street = Column(String, nullable=True, default = None)
+    house = Column(String, nullable=True, default = None)
     flat = Column(String, nullable=True, default = None)
     building = Column(String, nullable=True, default = None)
 
