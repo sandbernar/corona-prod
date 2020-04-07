@@ -208,6 +208,19 @@ def handle_add_update_patient(request_dict, final_dict, update_dict = {}):
 
                     final_dict['travel_id'] = v_travel.id
 
+
+    # 5
+    # Home Address
+    home_address = process_address(request_dict)
+    final_dict['home_address_id'] = home_address.id
+
+    job_address = None
+    if "job_address_city" in request_dict:
+        job_address = process_address(request_dict, "job", False)
+
+    if job_address:
+        final_dict['job_address_id'] = job_address.id
+
 def handle_visited_country_address(request_dict, final_dict, patient, update_dict = {}):
     # 4 Visited Country
     visited_country_id = request_dict.get('visited_country_id', None)
@@ -223,18 +236,6 @@ def handle_visited_country_address(request_dict, final_dict, patient, update_dic
 
         db.session.add(visited_country)
         db.session.commit()
-
-    # 5
-    # Home Address
-    home_address = process_address(request_dict)
-    final_dict['home_address_id'] = home_address.id
-
-    job_address = None
-    if "job_address_city" in request_dict:
-        job_address = process_address(request_dict, "job", False)
-
-    if job_address:
-        final_dict['job_address_id'] = job_address.id
 
 @blueprint.route('/add_person', methods=['GET', 'POST'])
 def add_patient():

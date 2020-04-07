@@ -50,7 +50,7 @@ class Patient(db.Model):
     country_of_residence_id = Column(Integer, ForeignKey('Country.id'), nullable=True)
     country_of_residence = db.relationship('Country', foreign_keys=[country_of_residence_id])
 
-    home_address_id = Column(Integer, ForeignKey('Address.id', ondelete="CASCADE"))
+    home_address_id = Column(Integer, ForeignKey('Address.id', ondelete="CASCADE"), nullable=False)
     home_address = db.relationship('Address', foreign_keys=[home_address_id])
 
     telephone = Column(String)
