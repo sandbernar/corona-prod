@@ -1,0 +1,2 @@
+
+python initLoggingTrigger.py
