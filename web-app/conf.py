@@ -11,6 +11,8 @@ from app.login.util import hash_pass
 
 from app.login.models import User
 
+from app.main.patients.forms import PatientForm, UpdateProfileForm, AddFlightFromExcel
+
 from flask_migrate import Migrate
 from sqlalchemy import create_engine
 
@@ -73,6 +75,46 @@ class TestCase(unittest.TestCase):
         assert 'Wrong' in str(rv.data)
 
     def test_new_patient(self):
+        patient = PatientForm()
+        patient.travel_type="railway_type"
+        patient.arrival_date="2020-04-29"
+        patient.first_name="a"
+        patient.second_name="a"
+        patient.patronymic_name="a"
+        patient.gender="-1"
+        patient.dob="2020-04-08"
+        patient.iin="12121212121212"
+        patient.citizenship_id=88
+        patient.pass_num="12121212"
+        patient.country_of_residence_id=88
+        patient.home_address_country_id=88
+        patient.home_address_state="2"
+        patient.home_address_city="2"
+        patient.home_address_street="12"
+        patient.home_address_house="12"
+        patient.home_address_flat="22"
+        patient.home_address_building="2"
+        patient.visited_country_id=8
+        patient.visited_from_date="2020-03-31"
+        patient.visited_to_date="2020-04-15"
+        patient.region_id=1
+        patient.job="12"
+        patient.job_position="12"
+        patient.job_address_country_id=88
+        patient.job_address_state="12"
+        patient.job_address_city="12"
+        patient.job_address_street="12"
+        patient.job_address_house="12"
+        patient.job_address_flat="12"
+        patient.job_address_building="112"
+        patient.telephone="1212"
+        patient.email="2@gmail.com"
+        patient.is_found=0
+        patient.is_infected=0
+        patient.create=""
+
+        rv = self.app.post("/add_patient", data=patient, follow_redirect=True)
+        print(str(rv.data.decode('utf-8')))
         pass
 
     def test_edit_patient(self):
