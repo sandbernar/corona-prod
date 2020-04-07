@@ -41,6 +41,7 @@ def configure_database(app):
         from app.main.flights.models import FlightTravel, FlightCode
        
         # Clear the tables
+        Patient.query.delete()
 
         ## Travel
         TravelType.query.delete()
