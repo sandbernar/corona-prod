@@ -24,6 +24,8 @@ by_sea_type = ("by_sea", "Морской Транспорт")
 flight_type = ("flight_type", "Самолет")
 local_type = ("local_type", "Местные")
 
+various_travel_types = [by_auto_type, by_foot_type, by_sea_type]
+
 board_team = "экипаж"
 
 travel_types = [flight_type, train_type, by_auto_type, by_foot_type, by_sea_type, local_type]

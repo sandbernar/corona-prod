@@ -113,6 +113,9 @@ class VisitedCountry(db.Model):
 
     id = Column(Integer, primary_key=True)
     
+    patient_id = Column(Integer, ForeignKey('Patient.id', ondelete="CASCADE"))
+    patient = db.relationship('Patient', backref=db.backref('visited_country', passive_deletes=True))
+
     country_id = Column(Integer, ForeignKey('Country.id'), nullable=False)
     country = db.relationship('Country')
 
@@ -136,10 +139,10 @@ class Address(db.Model):
     
     state = Column(String, nullable=True, default=None)
 
-    city = Column(String, nullable=False)
+    city = Column(String, nullable=False, default = None)
 
-    street = Column(String, nullable=False)
-    house = Column(String, nullable=False)
+    street = Column(String, nullable=True, default = None)
+    house = Column(String, nullable=True, default = None)
     flat = Column(String, nullable=True, default = None)
     building = Column(String, nullable=True, default = None)
 

@@ -37,14 +37,14 @@ def configure_database(app):
     def add_hospitals():
         from app.main.models import (Region, Country, Infected_Country_Category, 
                                     TravelType, BorderControl, VariousTravel, Address, VisitedCountry)
-        from app.main.patients.models import PatientStatus, ContactedPersons
+        from app.main.patients.models import PatientStatus, ContactedPersons, Patient
         from app.main.hospitals.models import  Hospital, Hospital_Type
         from app.main.flights.models import FlightTravel, FlightCode
        
         # Clear the tables
+        Patient.query.delete()
 
         ## Travel
-        TravelType.query.delete()
         BorderControl.query.delete()
         VariousTravel.query.delete()
         
@@ -52,6 +52,7 @@ def configure_database(app):
         FlightTravel.query.delete()
         FlightCode.query.delete()
 
+        TravelType.query.delete()
         Region.query.delete()
 
         Hospital_Type.query.delete()
@@ -61,6 +62,7 @@ def configure_database(app):
 
         Infected_Country_Category.query.delete()
         VisitedCountry.query.delete()
+
         Address.query.delete()
         Country.query.delete()
 
@@ -158,6 +160,28 @@ def configure_database(app):
         db.create_all()
 
         initialize_db(db)
+
+        triggerQueries = [
+            'CREATE TRIGGER "triggerPatient" BEFORE INSERT OR UPDATE OR DELETE ON "Patient" FOR EACH ROW EXECUTE PROCEDURE change_trigger();',
+            'CREATE TRIGGER "triggerContactedPersons" BEFORE INSERT OR UPDATE OR DELETE ON "ContactedPersons" FOR EACH ROW EXECUTE PROCEDURE change_trigger();',
+            'CREATE TRIGGER "triggerRegion" BEFORE INSERT OR UPDATE OR DELETE ON "Region" FOR EACH ROW EXECUTE PROCEDURE change_trigger();',
+            'CREATE TRIGGER "triggerTravelType" BEFORE INSERT OR UPDATE OR DELETE ON "TravelType" FOR EACH ROW EXECUTE PROCEDURE change_trigger();',
+            'CREATE TRIGGER "triggerInfected_Country_Category" BEFORE INSERT OR UPDATE OR DELETE ON "Infected_Country_Category" FOR EACH ROW EXECUTE PROCEDURE change_trigger();',
+            'CREATE TRIGGER "triggerPatientStatus" BEFORE INSERT OR UPDATE OR DELETE ON "PatientStatus" FOR EACH ROW EXECUTE PROCEDURE change_trigger();',
+            'CREATE TRIGGER "triggerCountry" BEFORE INSERT OR UPDATE OR DELETE ON "Country" FOR EACH ROW EXECUTE PROCEDURE change_trigger();',
+            'CREATE TRIGGER "triggerFlightCode" BEFORE INSERT OR UPDATE OR DELETE ON "FlightCode" FOR EACH ROW EXECUTE PROCEDURE change_trigger();',
+            'CREATE TRIGGER "triggerBorderControl" BEFORE INSERT OR UPDATE OR DELETE ON "BorderControl" FOR EACH ROW EXECUTE PROCEDURE change_trigger();',
+            'CREATE TRIGGER "triggerVisitedCountry" BEFORE INSERT OR UPDATE OR DELETE ON "VisitedCountry" FOR EACH ROW EXECUTE PROCEDURE change_trigger();',
+            'CREATE TRIGGER "triggerAddress" BEFORE INSERT OR UPDATE OR DELETE ON "Address" FOR EACH ROW EXECUTE PROCEDURE change_trigger();',
+            'CREATE TRIGGER "triggerUser" BEFORE INSERT OR UPDATE OR DELETE ON "User" FOR EACH ROW EXECUTE PROCEDURE change_trigger();',
+            'CREATE TRIGGER "triggerHospital_Type" BEFORE INSERT OR UPDATE OR DELETE ON "Hospital_Type" FOR EACH ROW EXECUTE PROCEDURE change_trigger();',
+            'CREATE TRIGGER "triggerContactedPerson" BEFORE INSERT OR UPDATE OR DELETE ON "ContactedPerson" FOR EACH ROW EXECUTE PROCEDURE change_trigger();',
+            'CREATE TRIGGER "triggerHospital" BEFORE INSERT OR UPDATE OR DELETE ON "Hospital" FOR EACH ROW EXECUTE PROCEDURE change_trigger();',
+            'CREATE TRIGGER "triggerFlightTravel" BEFORE INSERT OR UPDATE OR DELETE ON "FlightTravel" FOR EACH ROW EXECUTE PROCEDURE change_trigger();',
+            'CREATE TRIGGER "triggerVariousTravel" BEFORE INSERT OR UPDATE OR DELETE ON "VariousTravel" FOR EACH ROW EXECUTE PROCEDURE change_trigger();'
+        ]
+        for triggerQuery in triggerQueries:
+            db.engine.execute(triggerQuery)
 
     @app.teardown_request
     def shutdown_session(exception=None):

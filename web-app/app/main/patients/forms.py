@@ -67,13 +67,13 @@ class PatientForm(FlaskForm):
     telephone = TextField('Telephone', id='telephone'   , validators=[DataRequired()])
     email = TextField('EMail', id='email')
 
-    hospital_region_id = SelectField('Hospital Region', id='hospital_region' , validators=[DataRequired()])
-    hospital_id = SelectField('Hospital', id='hospital' , validators=[DataRequired()])  
+    hospital_region_id = SelectField('Hospital Region' , validators=[DataRequired()])
+    hospital_type_id = SelectField('Hospital Type' , validators=[DataRequired()])
+    hospital_id = SelectField('Hospital', choices = [], validators=[DataRequired()])  
 
     patient_status = SelectField('Patient Status', id='patient_status' , validators=[DataRequired()])
     is_found = RadioField("Is Found", id="is_found", choices=[(1, "Да"),(0,"Нет")], default=0, validators=[DataRequired()])
     is_infected = RadioField("Is Infected", id="is_infected", choices=[(1, "Да"),(0,"Нет")], default=0, validators=[DataRequired()])
-    hospital = TextField('Hospital', id='hospital')
 
 class UpdateProfileForm(PatientForm):
     is_found = BooleanField(id="is_found")
@@ -83,11 +83,6 @@ class UpdateProfileForm(PatientForm):
     is_transit = BooleanField(id="is_transit")
     citizenship = TextField('Citizenship', id='citizenship', validators=[DataRequired()])
     flight_code_id = SelectField('Flight Code', id='flight_code_id')
-
-    hospital_region_id = SelectField('Hospital Region', id='hospital_region' , validators=[DataRequired()])
-    hospital_type = SelectField('Hospital Type', id='hospital_type' , validators=[DataRequired()])
-
-    hospital_id = SelectField('Hospital_id', id='hospital_id' , validators=[DataRequired()])
 
 class AddFlightFromExcel(UploadDataForm):
     flights_id = SelectField('Flights ID', id='flights_id' , validators=[DataRequired()])

@@ -98,7 +98,11 @@
                     {% endif %}
                   </td>
                   <td>
+                    {% if not patient.visited_country %}
+                    {{ constants.unknown[1] }} 
+                    {% else %}
                     {{ patient.visited_country }}
+                    {% endif %}
                   </td>                  
                 </tr>
                 {% endfor %}            
@@ -184,6 +188,7 @@ function init() {
     if ('{{ p.is_found }}' == 'True') {
       is_found = '{{ _("Да") }}'
     }
+    {% if p.home_address %}
     geoObjects.push(new ymaps.Placemark(['{{ p.home_address.lat }}', '{{ p.home_address.lng }}' ], {
         balloonContentBody: 
         '<a href="/patient_profile?id={{p.id}}">{{ p }}</a><br>' +
@@ -202,6 +207,7 @@ function init() {
         iconColor: 'green'
         {% endif %}            
     }))
+    {% endif %}
     {% endfor %}
 
     clusterer.add(geoObjects);

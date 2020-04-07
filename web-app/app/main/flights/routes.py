@@ -261,25 +261,3 @@ def delete_flight():
             # add redirect
 
     return redirect("{}?message={}".format(url_for('main_blueprint.flights'), message))
-
-# @blueprint.route('/delete_user', methods=['POST'])
-# @login_required
-# def delete_user():
-#     if not current_user.is_authenticated:
-#         return redirect(url_for('login_blueprint.login'))
-
-#     if not current_user.is_admin:
-#         return render_template('errors/error-500.html'), 500        
-    
-#     return_url = url_for('main_blueprint.users')
-
-#     if len(request.form):
-#         if "delete" in request.form:
-#             user_id = request.form["delete"]
-#             user = User.query.filter(User.id == user_id)
-
-#             if user:
-#                 user.delete()
-#                 db.session.commit()
-
-#     return redirect(return_url)
