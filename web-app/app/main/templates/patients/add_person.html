@@ -244,10 +244,20 @@
           // settings
           type: 'info',
         });
-        show_loader(false)
-        reset_add_patient_form()
-        $("#addPatientModal").modal('hide');
+      } else {
+        $.notify({
+          // options
+          icon: 'fa fa-exclamation-circle',
+          message: '{{ _("Произошла ошибка. Обратитесь к администратору") }}'
+        },{
+          // settings
+          type: 'danger',
+        });
       }
+  
+      show_loader(false)
+      reset_add_patient_form()
+      $("#addPatientModal").modal('hide');      
     });
   }
 
