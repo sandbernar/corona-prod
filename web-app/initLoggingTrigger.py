@@ -45,6 +45,11 @@ CREATE OR REPLACE FUNCTION change_trigger() RETURNS trigger AS $$
 $$ LANGUAGE 'plpgsql' SECURITY DEFINER;
 """
 
-psqlCursor.execute(createSchemeQuery)
-psqlCursor.execute(createTableQuery)
-psqlCursor.execute(createTriggerQuery)
+try:
+    psqlCursor.execute(createSchemeQuery)
+    psqlCursor.execute(createTableQuery)
+    psqlCursor.execute(createTriggerQuery)
+except Exception as e:
+    print(e)
+
+print("init log done.")
