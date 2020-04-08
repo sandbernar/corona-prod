@@ -72,22 +72,16 @@
                 {{ form.hidden_tag() }}
                 <div class="row">
                   <div class="col">
-                    <div class="card shadow">
-                      <div class="card-header bg-transparent">
+
                         {% with form=form %}
                           {% include "patients/modules/patient_form_left.html" %}
                         {% endwith %}                    
-                      </div>
-                    </div>
+
                   </div>
                   <div class="col">
-                    <div class="card shadow">
-                      <div class="card-header bg-transparent">
                         {% with form=form %}
                           {% include "patients/modules/patient_form_right.html" %}
                         {% endwith %}                         
-                      </div>
-                    </div>
                   </div>
                 </div>
                 <div class="row mt-2">

@@ -20,7 +20,7 @@
             <div class="modal-header">
                 <h5 class="modal-title" id="exampleModalLabel">{{ _("Удалить пациента?") }}</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
                 </button>
             </div>
 
@@ -46,7 +46,7 @@
             <div class="modal-header">
                 <h5 class="modal-title" id="exampleModalLabel">Добавить статус</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
                 </button>
             </div>
 
@@ -84,14 +84,14 @@
             <div class="col-xl-3 order-xl-2 mb-5 mb-xl-0">
                 {% if patient.home_address.lat %}
                 <div class="card shadow">
-                   <div id="map" style="width:100%; height:220px"></div>
-               </div>
-               <div class="row">
-                <div class="col">
-                 <a href="/contacted_persons?id={{ patient.id }}" class="btn btn-primary mt-3" style="width:100%;">{{ _("Контактные Лица") }}</a>
+                 <div id="map" style="width:100%; height:220px"></div>
              </div>
-             {% if patient.travel_type.value == c.flight_type[0] %}
-             <div class="col">
+             <div class="row">
+                <div class="col">
+                   <a href="/contacted_persons?id={{ patient.id }}" class="btn btn-primary mt-3" style="width:100%;">{{ _("Контактные Лица") }}</a>
+               </div>
+               {% if patient.travel_type.value == c.flight_type[0] %}
+               <div class="col">
                 <a href="/flight_profile?id={{ travel.flight_code.id }}" class="btn btn-primary mt-3" style="width:100%;">{{ _("Прилетевшие Вместе") }}</a>
             </div>
             {% endif %}
@@ -160,9 +160,9 @@
                 <div class="form-group">
                     <label for="job-input" class="form-control-label">
                         {% if patient.hospital_id %} 
-                            <a href="/hospital_profile?id={{ patient.hospital_id }}">{{ _("Место Госпитализации") }}</a>
+                        <a href="/hospital_profile?id={{ patient.hospital_id }}">{{ _("Место Госпитализации") }}</a>
                         {% else %}
-                            {{ _("Место Госпитализации") }}
+                        {{ _("Место Госпитализации") }}
                         {% endif %}
                     </label>
                     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -178,14 +178,14 @@
                     <input class="btn btn-danger" data-toggle="modal" type="button" data-target="#deletePatientModal" value={{ _("Удалить") }}>                
                 </div>
             </div>
-        <!-- </div> -->
+            <!-- </div> -->
+        </div>
     </div>
-</div>
 
 </div>
 <div class="col-xl-9 order-xl-1">
     {% with form=form %}
-      {% include "patients/modules/travel_form.html" %}
+    {% include "patients/modules/travel_form.html" %}
     {% endwith %} 
     <div class="card bg-secondary shadow mt-3">
         <div class="card-header bg-white">
@@ -199,54 +199,51 @@
             </div>
         </div>
         <div class="card-body">
-            <h6 class="heading-small text-muted mb-4">{{ _("Личные Данные") }}</h6>
-            <div class="pl-lg-4">
-                <div class="col">
-                  <!-- <div class="col"> -->
-                        {% with form=form %}
-                          {% include "patients/modules/patient_form_left.html" %}
-                        {% endwith %} 
-                    <!-- </div> -->
-                                      <!-- <div class="col"> -->
-                        {% with form=form %}
-                          {% include "patients/modules/patient_form_right.html" %}
-                        {% endwith %}                         
-                  <!-- </div> -->
-                </div>
-                
+            <div class="col">
+              <div class="col">
+                {% with form=form %}
+                {% include "patients/modules/patient_form_left.html" %}
+                {% endwith %} 
             </div>
-
-            {% if not patient.is_contacted_person %}
-                                 
-        {% endif %}
-    </div>
-    </div>
-    <div class="card bg-secondary shadow mt-3">
-        <div class="card-header bg-white">
-            <div class="row align-items-center">
-                <div class="col">
-                    <h3 class="mb-0">История статусов</h3>
-                </div>
+            <div class="col mt-3">
+                {% with form=form %}
+                {% include "patients/modules/patient_form_right.html" %}
+                {% endwith %}                         
             </div>
         </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <div>
-                    <table class="table align-items-center">
-                        <thead class="thead-light">
-                            <tr>
-                                <th scope="col">Статус</th>
-                                <th scope="col">Комметарий</th>
-                                <th scope="col">Дата выявления</th>
-                                <!-- <th scope="col"></th> -->
-                            </tr>
-                        </thead>
-                        <tbody class="list">
-                            <tr>
+
+
+        {% if not patient.is_contacted_person %}
+
+        {% endif %}
+    </div>
+</div>
+<div class="card bg-secondary shadow mt-3">
+    <div class="card-header bg-white">
+        <div class="row align-items-center">
+            <div class="col">
+                <h3 class="mb-0">История статусов</h3>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <div>
+                <table class="table align-items-center">
+                    <thead class="thead-light">
+                        <tr>
+                            <th scope="col">Статус</th>
+                            <th scope="col">Комметарий</th>
+                            <th scope="col">Дата выявления</th>
+                            <!-- <th scope="col"></th> -->
+                        </tr>
+                    </thead>
+                    <tbody class="list">
+                        <tr>
                             {% for state in states %}
-                                <td>{{ state.state.name }} </td>
-                                <td>{{ state.comment }}</td>
-                                <td>{{ state.detection_date }}</td>
+                            <td>{{ state.state.name }} </td>
+                            <td>{{ state.comment }}</td>
+                            <td>{{ state.detection_date }}</td>
                                 <!-- <td class="text-right">
                                     <div class="dropdown">
                                         <a class="btn btn-sm btn-icon-only text-light" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -257,7 +254,7 @@
                                         </div>
                                     </div>
                                 </td> -->
-                            {% endfor %}
+                                {% endfor %}
                             </tr>
                         </tbody>
                     </table>
@@ -283,7 +280,7 @@
 
 <script type="text/javascript">
     {% with form=form, c=c %}
-        {% include "js/travel_form.html" %}
+    {% include "js/travel_form.html" %}
     {% endwith %}
 
     setup_form()
@@ -291,37 +288,37 @@
     window.onload = function() {
         found_changed($("#is_found_checkbox").prop('checked'))
         disable_hospital_choice($("#in_hospital_checkbox").prop('checked'))
-    {% if patient.hospital %}
+        {% if patient.hospital %}
         $("#hospital_type_id").val({{ patient.hospital.hospital_type_id }})
-    {% endif %}
+        {% endif %}
         update_hospitals_list(async = false)
-    {% if patient.hospital %}
+        {% if patient.hospital %}
         $("#hospital_id").val({{ patient.hospital_id }})
-    {% endif %}       
+        {% endif %}       
     }
     // Disable travel type select for profile page
     $("#travel_type").prop('disabled', true);
 
     {% if patient.home_address.lat %}
-        ymaps.ready(init);
+    ymaps.ready(init);
 
-        function init() {
-            var myMap = new ymaps.Map("map", {
-                center: [{{ patient.home_address.lat }}, {{ patient.home_address.lng }}],
-                zoom: 12,
-                controls: ['zoomControl']
-            }, {
-                searchControlProvider: 'yandex#search'
-            })
+    function init() {
+        var myMap = new ymaps.Map("map", {
+            center: [{{ patient.home_address.lat }}, {{ patient.home_address.lng }}],
+            zoom: 12,
+            controls: ['zoomControl']
+        }, {
+            searchControlProvider: 'yandex#search'
+        })
 
-            myMap.geoObjects
-            .add(new ymaps.Placemark([{{ patient.home_address.lat }}, {{ patient.home_address.lng }} ], {
-                balloonContent: '{{ patient }}</a>'
-            }, {
-                preset: 'islands#icon',
-                iconColor: 'red'
-            }))
-        }
+        myMap.geoObjects
+        .add(new ymaps.Placemark([{{ patient.home_address.lat }}, {{ patient.home_address.lng }} ], {
+            balloonContent: '{{ patient }}</a>'
+        }, {
+            preset: 'islands#icon',
+            iconColor: 'red'
+        }))
+    }
     {% endif %}
 
     $("#in_hospital_checkbox").on("change", function(){
@@ -361,45 +358,45 @@
     function setup_form() {
         update_travel_form();
         {% if patient.travel_type.value == c.flight_type[0] %}
-            $("#flight_arrival_date").val('{{ travel.flight_code.date }}')
-            $("#flight_arrival_date").change()
-            $("#flight_code_id").val('{{ travel.flight_code.id }}')
-            {% if travel.seat %}
-                $("#flight_seat").val('{{ travel.seat }}')
-            {% endif %}
-        {% elif patient.travel_type.value == c.train_type[0] %}
-            $("#train_departure_date").val('{{ travel.train.departure_date }}')
-            $("#train_departure_date").change()
-
-            $("#train_arrival_date").val('{{ travel.train.arrival_date }}')
-            $("#train_arrival_date").change()
-
-            $("#train_id").val('{{ travel.train.id }}')
-            {% if travel.wagon %}
-                $("#train_wagon").val('{{ travel.wagon }}')
-            {% endif %}             
-            {% if travel.seat %}
-                $("#train_seat").val('{{ travel.seat }}')
-            {% endif %}            
-        {% else %}
-            $("#arrival_date").val('{{ travel.date }}')
-            var border_form_id = null
-
-            switch('{{ patient.travel_type.value }}') {
-              case '{{c.by_auto_type[0]}}':
-                border_form_id = "#auto_border_id"
-                break;
-              case '{{c.by_foot_type[0]}}':
-                border_form_id = "#foot_border_id"
-                break;
-              case '{{c.by_sea_type[0]}}':
-                border_form_id = "#sea_border_id"
-                break;
-            }
-
-            if (border_form_id) $(border_form_id).val({{ travel.border_control_id }})
+        $("#flight_arrival_date").val('{{ travel.flight_code.date }}')
+        $("#flight_arrival_date").change()
+        $("#flight_code_id").val('{{ travel.flight_code.id }}')
+        {% if travel.seat %}
+        $("#flight_seat").val('{{ travel.seat }}')
         {% endif %}
-    }
+        {% elif patient.travel_type.value == c.train_type[0] %}
+        $("#train_departure_date").val('{{ travel.train.departure_date }}')
+        $("#train_departure_date").change()
+
+        $("#train_arrival_date").val('{{ travel.train.arrival_date }}')
+        $("#train_arrival_date").change()
+
+        $("#train_id").val('{{ travel.train.id }}')
+        {% if travel.wagon %}
+        $("#train_wagon").val('{{ travel.wagon }}')
+        {% endif %}             
+        {% if travel.seat %}
+        $("#train_seat").val('{{ travel.seat }}')
+        {% endif %}            
+        {% else %}
+        $("#arrival_date").val('{{ travel.date }}')
+        var border_form_id = null
+
+        switch('{{ patient.travel_type.value }}') {
+          case '{{c.by_auto_type[0]}}':
+          border_form_id = "#auto_border_id"
+          break;
+          case '{{c.by_foot_type[0]}}':
+          border_form_id = "#foot_border_id"
+          break;
+          case '{{c.by_sea_type[0]}}':
+          border_form_id = "#sea_border_id"
+          break;
+      }
+
+      if (border_form_id) $(border_form_id).val({{ travel.border_control_id }})
+        {% endif %}
+}
 
 </script>
 {% with change=change, error_msg=error_msg %}

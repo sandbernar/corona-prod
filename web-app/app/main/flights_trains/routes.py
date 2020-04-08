@@ -188,7 +188,7 @@ def add_flight():
 
         message = _("Рейс успешно добавлен")
 
-        return_url = "{}?message={}".format(url_for('main_blueprint.flights'), message)
+        return_url = "{}?success={}".format(url_for('main_blueprint.flights'), message)
 
         return redirect(return_url)
     else:
@@ -225,7 +225,7 @@ def add_train():
 
         message = _("Рейс успешно добавлен")
 
-        return_url = "{}?message={}".format(url_for('main_blueprint.trains'), message)
+        return_url = "{}?success={}".format(url_for('main_blueprint.trains'), message)
 
         return redirect(return_url)
     else:
@@ -338,7 +338,7 @@ def flight_profile():
             total_len = q.count()
 
             for p in q.offset((page-1)*per_page).limit(per_page).all():
-                patients.append(p[0])
+                patients.append(p)
 
             max_page = math.ceil(total_len/per_page)
   
@@ -436,7 +436,7 @@ def delete_flight():
             
             # add redirect
 
-    return redirect("{}?message={}".format(url_for('main_blueprint.flights'), message_type, message))
+    return redirect("{}?{}={}".format(url_for('main_blueprint.flights'), message_type, message))
 
 @blueprint.route('/delete_train', methods=['POST'])
 @login_required
