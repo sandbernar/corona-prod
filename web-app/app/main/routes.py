@@ -20,6 +20,7 @@ import json
 import requests
 from flask_babelex import _
 
+
 @blueprint.route('/index', methods=['GET'])
 @login_required
 def index():

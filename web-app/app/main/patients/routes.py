@@ -354,7 +354,6 @@ def patient_profile():
             # Populate the form
 
             form.hospital_region_id.default = patient.region_id if not patient.hospital else patient.hospital.region_id
-
             travel = None
             travel_type = TravelType.query.filter_by(id=patient.travel_type_id).first()
             
@@ -413,6 +412,7 @@ def patient_profile():
                 change = _("Пользователь %(full_name)s успешно добавлен", full_name=patient.full_name)
 
             form.process()
+            print("hospitals", hospital_name)
 
             return route_template('patients/profile', patient=patient, age=age, hospital_name=hospital_name, form = form, change = change, c=c, travel=travel)
     else:    

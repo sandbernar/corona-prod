@@ -19,6 +19,7 @@ from app import constants as C
 
 db = SQLAlchemy()
 login_manager = LoginManager()
+csrf = CSRFProtect()
 
 def register_extensions(app):
     db.init_app(app)
@@ -237,8 +238,7 @@ def create_app(config, selenium=False, unittest=False):
         app.config['LOGIN_DISABLED'] = True
     if unittest:
         app.config['CSRF_ENABLED'] = False
-    print("unittest haha", unittest)
-    csrf = CSRFProtect(app)
+    csrf.init_app(app)
     register_extensions(app)
     register_blueprints(app)
     configure_database(app)

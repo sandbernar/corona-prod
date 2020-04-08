@@ -127,6 +127,7 @@
                             {{ _("Место Госпитализации") }}
                         {% endif %}
                     </label>
+                    <meta name="csrf-token" content="{{ csrf_token() }}">
                     {{ form.hospital_id(class="form-control") }}
                 </div>
                 <hr class="my-4" />                    
