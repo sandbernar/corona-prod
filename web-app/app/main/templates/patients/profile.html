@@ -92,7 +92,7 @@
              </div>
              {% if patient.travel_type.value == c.flight_type[0] %}
              <div class="col">
-                <a href="/patients?flight_code={{ travel.flight_code }}&region=-1" class="btn btn-primary mt-3" style="width:100%;">{{ _("Прилетевшие Вместе") }}</a>
+                <a href="/flight_profile?id={{ travel.flight_code.id }}" class="btn btn-primary mt-3" style="width:100%;">{{ _("Прилетевшие Вместе") }}</a>
             </div>
             {% endif %}
         </div>
@@ -171,9 +171,12 @@
                 <hr class="my-4" />                    
             </div>
             <div class="row mt-3">
+                <div class="col" style="text-align:center;">
                     <input class="btn btn-primary" id="submit" name="submit" type="submit" value={{ _("Сохранить") }}>
-                    <br>
+                </div>
+                <div class="col" style="text-align:center;">
                     <input class="btn btn-danger" data-toggle="modal" type="button" data-target="#deletePatientModal" value={{ _("Удалить") }}>                
+                </div>
             </div>
         <!-- </div> -->
     </div>

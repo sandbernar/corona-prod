@@ -95,12 +95,16 @@ def flights_trains(codeModel, request):
     travels_count = dict()
     
     change = None
-    if "message" in request.args:
-        change = request.args['message']
+    error_msg = None
+
+    if "success" in request.args:
+        change = request.args['success']
+    elif "error" in request.args:
+        error_msg = request.args['error']
 
     form.process()
 
-    return form, travels, page, max_page, total_len, change
+    return form, travels, page, max_page, total_len, change, error_msg
 
 def populate_add_flight_train_form(form):
     default_country = Country.query.filter_by(code="KZ").first().id
@@ -128,7 +132,7 @@ def flights():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))
 
-    form, travels, page, max_page, total, change = flights_trains(FlightCode, request)
+    form, travels, page, max_page, total, change, error_msg = flights_trains(FlightCode, request)
 
     flights_count = dict()
     
@@ -137,7 +141,8 @@ def flights():
 
     form.process()
     return route_template('flights_trains/flights_trains', travels=travels, travels_count=flights_count, form=form, page=page, 
-                                    max_page=max_page, total = total, constants=c, change=change, is_trains = False)
+                                    max_page=max_page, total = total, constants=c, change=change, error_msg=error_msg,
+                                    is_trains = False)
 
 @blueprint.route('/trains', methods=['GET'])
 @login_required
@@ -145,7 +150,7 @@ def trains():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))
 
-    form, travels, page, max_page, total, change = flights_trains(Train, request)
+    form, travels, page, max_page, total, change, error_msg = flights_trains(Train, request)
 
     trains_count = dict()
     
@@ -154,7 +159,8 @@ def trains():
 
     form.process()
     return route_template('flights_trains/flights_trains', travels=travels, travels_count=trains_count, form=form, page=page, 
-                                    max_page=max_page, total = total, constants=c, change=change, is_trains = True)    
+                                    max_page=max_page, total = total, constants=c, change=change, error_msg=error_msg,
+                                    is_trains = True)    
 
 @blueprint.route('/add_flight', methods=['GET', 'POST'])
 def add_flight():
@@ -172,7 +178,8 @@ def add_flight():
 
         flight = FlightCode.query.filter_by(code=new_dict['code'][0]).filter_by(date=new_dict['date']).first()
         if flight:
-            return route_template( 'flights/add_flight', error_msg=_('Рейс уже зарегистрирован'), form=form, change=None)
+            return route_template( 'flights_trains/add_flight_train', error_msg=_('Рейс уже зарегистрирован'), 
+                                    form=form, change=None, is_trains = False)
 
         flight = FlightCode(**new_dict)
         
@@ -208,7 +215,8 @@ def add_train():
         train = train_q.first()
 
         if train:
-            return route_template( 'flights/add_train', error_msg=_('ЖД Рейс уже зарегистрирован'), form=form, change=None)
+            return route_template( 'flights_trains/add_flight_train', error_msg=_('ЖД Рейс уже зарегистрирован'), 
+                                    form=form, change=None, is_trains = True)
 
         train = Train(**new_dict)
         
@@ -384,7 +392,7 @@ def train_profile():
             total_len = q.count()
 
             for p in q.offset((page-1)*per_page).limit(per_page).all():
-                patients.append(p[0])
+                patients.append(p)
 
             max_page = math.ceil(total_len/per_page)
   
@@ -403,6 +411,7 @@ def delete_flight():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))
     
+    message_type = "error"
     message = _("Произошла Ошибка")
 
     if len(request.form):
@@ -422,11 +431,12 @@ def delete_flight():
                 else:
                     db.session.delete(flight)
                     db.session.commit()
+                    message_type = "success"
                     message = _("Рейс успешно удален")
             
             # add redirect
 
-    return redirect("{}?message={}".format(url_for('main_blueprint.flights'), message))
+    return redirect("{}?message={}".format(url_for('main_blueprint.flights'), message_type, message))
 
 @blueprint.route('/delete_train', methods=['POST'])
 @login_required
@@ -434,6 +444,7 @@ def delete_train():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))
     
+    message_type = "error"
     message = _("Произошла Ошибка")
 
     if len(request.form):
@@ -453,8 +464,9 @@ def delete_train():
                 else:
                     db.session.delete(train)
                     db.session.commit()
+                    message_type = "success"
                     message = _("ЖД Рейс успешно удален")
             
             # add redirect
 
-    return redirect("{}?message={}".format(url_for('main_blueprint.trains'), message))
+    return redirect("{}?{}={}".format(url_for('main_blueprint.trains'), message_type, message))

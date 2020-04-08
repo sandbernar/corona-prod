@@ -15623,7 +15623,7 @@ a.btn-icon-only {
 
 @media (min-width: 768px) {
   .navbar-vertical.navbar-expand-md.fixed-left+.main-content {
-    margin-left: 250px;
+    margin-left: 180px;
   }
 
   .navbar-vertical.navbar-expand-md.fixed-right+.main-content {
@@ -17187,7 +17187,7 @@ textarea[resize="horizontal"] {
     top: 0;
     bottom: 0;
     width: 100%;
-    max-width: 250px;
+    max-width: 180px;
     padding-left: 1.5rem;
     padding-right: 1.5rem;
     overflow-y: auto;
@@ -17243,7 +17243,7 @@ textarea[resize="horizontal"] {
   }
 
   .navbar-vertical.navbar-expand-md .navbar-nav .nav-link {
-    padding: 0.65rem 1.5rem;
+    padding: 0.65rem 1rem;
   }
 
   .navbar-vertical.navbar-expand-md .navbar-nav .nav-link.active:before {
