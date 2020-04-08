@@ -12,6 +12,8 @@ from logging import basicConfig, DEBUG, getLogger, StreamHandler
 from os import path
 import pandas as pd
 import re
+from flask_wtf.csrf import CSRFProtect
+
 
 from app import constants as C
 
@@ -236,6 +238,7 @@ def create_app(config, selenium=False, unittest=False):
     if unittest:
         app.config['CSRF_ENABLED'] = False
     print("unittest haha", unittest)
+    csrf = CSRFProtect(app)
     register_extensions(app)
     register_blueprints(app)
     configure_database(app)
