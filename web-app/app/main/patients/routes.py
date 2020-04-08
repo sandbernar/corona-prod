@@ -18,7 +18,7 @@ from app.main.models import (Region, Country, VisitedCountry, Infected_Country_C
                             TravelType, BorderControl, VariousTravel, Address)
 from app.main.patients.models import Patient, PatientStatus, ContactedPersons
 from app.main.hospitals.models import Hospital, Hospital_Type
-from app.main.flights_trains.models import FlightCode, FlightTravel
+from app.main.flights_trains.models import FlightCode, FlightTravel, Train, TrainTravel
 
 from app.main.patients.forms import PatientForm, UpdateProfileForm, AddFlightFromExcel
 from app.main.forms import TableSearchForm
@@ -61,6 +61,8 @@ def prepare_patient_form(patient_form):
                 f.code, f.from_city, f.to_city)) for f in FlightCode.query.filter_by(date=first_date).all()]
         else:
             patient_form.flight_code_id.choices = []
+
+    
 
     t_ids = {}
     for typ in TravelType.query.all():
@@ -179,7 +181,7 @@ def handle_add_update_patient(request_dict, final_dict, update_dict = {}):
     if job_address:
         final_dict['job_address_id'] = job_address.id
 
-def handle_visited_country_address(request_dict, final_dict, patient, update_dict = {}):
+def handle_after_patient(request_dict, final_dict, patient, update_dict = {}):
     travel_type = patient.travel_type
 
     if travel_type:
@@ -195,7 +197,20 @@ def handle_visited_country_address(request_dict, final_dict, patient, update_dic
 
                 db.session.add(f_travel)
                 db.session.commit()
+        elif travel_type.value == c.train_type[0]:
+            t_travel = update_dict.get('train_travel', TrainTravel(patient_id = patient.id))
+            
+            t_id = request_dict['train_id']
+            wagon = request_dict.get('train_wagon', None)
+            seat = request_dict.get('train_seat', None)
+            
+            if t_travel.train_id != t_id or t_travel.seat != seat or t_travel.wagon != wagon:
+                t_travel.train_id = t_id
+                t_travel.seat = seat
+                t_travel.wagon = wagon
 
+                db.session.add(t_travel)
+                db.session.commit()                
         else:
             border_form_key = None
 
@@ -261,7 +276,7 @@ def add_patient():
         db.session.add(patient)
         db.session.commit()
 
-        handle_visited_country_address(request_dict, final_dict, patient)
+        handle_after_patient(request_dict, final_dict, patient)
 
         return jsonify({"patient_id": patient.id})
     else:
@@ -345,6 +360,8 @@ def patient_profile():
             
             if travel_type.value == c.flight_type[0]:
                 travel = FlightTravel.query.filter_by(patient_id=patient.id).first()
+            if travel_type.value == c.train_type[0]:
+                travel = TrainTravel.query.filter_by(patient_id=patient.id).first()
             elif travel_type.value != c.local_type[0]:
                 travel = VariousTravel.query.filter_by(patient_id=patient.id).first()
 

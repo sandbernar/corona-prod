@@ -47,6 +47,28 @@ def get_flights_by_date():
 
     return json.dumps(flights_options, ensure_ascii=False)
 
+@blueprint.route("/get_trains_by_date_range", methods=['POST'])
+def get_trains_by_date_range():
+    if not current_user.is_authenticated:
+        return redirect(url_for('login_blueprint.login'))
+
+    departure_date = request.form.get("departure_date", None)
+    arrival_date = request.form.get("arrival_date", None)
+
+    if departure_date:
+        trains = Train.query
+
+        trains = trains.filter(Train.departure_date >= departure_date)
+        if arrival_date:
+            trains = trains.filter(Train.arrival_date <= arrival_date)
+
+        trains_options = "".join([ "<option value='{}'>{}</option>".format(
+            t.id, "{} - {}, {} - {}".format(t.departure_date, t.arrival_date, t.from_city, t.to_city)) for t in trains ])
+
+        return json.dumps(trains_options, ensure_ascii=False)
+
+    return json.dumps("error")
+
 def flights_trains(codeModel, request):
     form = TableSearchForm()
     regions = get_regions(current_user)

@@ -10,6 +10,18 @@ $.ajax({
 });
 };
 
+function get_trains_by_date_range(){
+$.ajax({
+  type: 'POST',
+  url: "/get_trains_by_date_range",
+  data: {departure_date: $("#train_departure_date").val(), arrival_date: $("#train_arrival_date").val()},
+  dataType: "text",
+  success: function(data){
+    document.getElementById("train_id").innerHTML = data.toString();
+  }
+});
+};
+
 function update_travel_form() {
 var flightForm = `  <div class='col'>
                       <div class='form-group'>
@@ -27,6 +39,37 @@ var flightForm = `  <div class='col'>
                       <div class='form-group'>
                         <label for='flight-no-input' class='form-control-label'>{{ _('Место') }}</label>
                         {{ form.flight_seat(class='form-control', placeholder=_('Например') + ' 1C') }}
+                      </div>
+                    </div>`;
+
+var trainForm = `  <div class='col'>
+                      <div class='form-group'>
+                        <label for='arrival-date-input' class='form-control-label'>{{ _('Дата Отправления') }}</label>
+                        {{ form.train_departure_date(class='form-control', type="date") }}
+                        </div>
+                      </div>
+                    <div class='col'>
+                      <div class='form-group'>
+                        <label for='arrival-date-input' class='form-control-label'>{{ _('Дата Прибытия') }}</label>
+                        {{ form.train_arrival_date(class='form-control', type="date") }}
+                        </div>
+                      </div>    
+                    <div class='col-md-auto'>                        
+                      <div class='form-group'>
+                        <label for='flight-no-input' class='form-control-label'>{{ _('ЖД Рейс') }}</label>
+                        {{ form.train_id(class='form-control') }}
+                      </div>
+                    </div>
+                    <div class='col'>                        
+                      <div class='form-group'>
+                        <label for='flight-no-input' class='form-control-label'>{{ _('Вагон') }}</label>
+                        {{ form.train_wagon(class='form-control', placeholder=_('Например') + ' 32') }}
+                      </div>
+                    </div>                    
+                    <div class='col'>                        
+                      <div class='form-group'>
+                        <label for='flight-no-input' class='form-control-label'>{{ _('Место') }}</label>
+                        {{ form.train_seat(class='form-control', placeholder=_('Например') + ' 4') }}
                       </div>
                     </div>`;
 
@@ -66,6 +109,15 @@ if (travel_type !== '{{c.local_type[0]}}') {
 
     $("#flight_arrival_date").on("change", function(){
       get_flights_by_date();
+    });
+  } else if(travel_type === '{{c.train_type[0]}}') {
+    addToTravelForm(trainForm)
+
+    $("#train_departure_date").on("change", function(){
+      get_trains_by_date_range();
+    });
+    $("#train_arrival_date").on("change", function(){
+      get_trains_by_date_range();
     });
   } else {
     addToTravelForm(borderForm)
