@@ -64,17 +64,18 @@ class TestCase(unittest.TestCase):
         rv = self.login('adm', 'paswd')
         assert 'Dashboard' in str(rv.data)
         rv = self.logout()
+        print(str(rv.data.decode('utf-8')))
         assert "Login" in str(rv.data)
         rv = self.login('adm', 'Wrong')
         assert 'Wrong' in str(rv.data)
         rv = self.login('admin', 'paswd')
         assert 'Wrong' in str(rv.data)
 
-    def test_new_patient(self):
-        self.login("adm","paswd")
-        rv = self.add_post()
-        print(str(rv.data))
-        assert "patient_id" in str(rv.data)
+    # def test_new_patient(self):
+    #     self.login("adm","paswd")
+    #     rv = self.add_post()
+    #     print(str(rv.data))
+    #     assert "patient_id" in str(rv.data)
 
     def test_edit_patient(self):
         pass
@@ -83,7 +84,6 @@ class TestCase(unittest.TestCase):
         pass
 
     def add_post(self):
-
         patient = {"travel_type":"auto_type",
         "arrival_date":"2020-04-10",
         "auto_border_id":1,
