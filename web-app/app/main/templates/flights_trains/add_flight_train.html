@@ -1,0 +1,54 @@
+{% extends "base_site.html" %}
+
+{% block title %} Icons {% endblock title %}
+
+{% block stylesheets %}
+{{ super() }}
+{% endblock stylesheets %}
+
+{% block content %}
+
+{% include "site_template/navigation.html" %}
+
+{% with stats=stats %}
+{% include "site_template/top-stats.html" %}
+{% endwith %}
+
+<div class="container-fluid mt--7">
+  <!-- Table -->
+  <div class="row">
+    <div class="col">
+      <div class="card shadow">
+        <div class="card-header bg-transparent">
+        {% if is_trains %}
+          <h3 class="mb-0">{{ _("Добавить ЖД Рейс") }}</h3>
+        {% else %}
+          <h3 class="mb-0">{{ _("Добавить Рейс") }}</h3>
+        {% endif %}          
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col">
+              <form id="add-patients" role="form" method="post" action="">
+                {{ form.hidden_tag() }}
+                {% with is_trains=is_trains, form=form %}
+                  {% include "flights_trains/modules/travel_form.html" %}
+                {% endwith %}              
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  {% include "site_template/footer.html" %}
+
+</div>        
+
+{% endblock content %}
+
+{% block javascripts %}
+{{ super()}}
+{% endblock javascripts %}
