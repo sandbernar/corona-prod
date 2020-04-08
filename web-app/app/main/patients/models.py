@@ -123,11 +123,11 @@ class ContactedPersons(db.Model):
 
     id = Column(Integer, primary_key=True)
     
-    person_id = Column(Integer, ForeignKey('Patient.id'))
-    # person = db.relationship('Patient')
+    infected_person_id = Column(Integer, ForeignKey('Patient.id'))
+    infected_patient = db.relationship('Patient', foreign_keys=[infected_person_id])
 
-    patient_id = Column(Integer, ForeignKey('Patient.id'))
-    # patient = db.relationship('Patient')
+    contacted_patient_id = Column(Integer, ForeignKey('Patient.id'))
+    contacted_patient = db.relationship('Patient', foreign_keys=[contacted_patient_id])
     
     attrs = Column(JSON, unique=False)
 
@@ -157,30 +157,4 @@ class PatientStatus(db.Model):
             setattr(self, property, value)
 
     def __repr__(self):
-        return str(self.name)      
-
-
-class ContactedPerson(db.Model):
-
-    __tablename__ = 'ContactedPerson'
-
-    id = Column(Integer, primary_key=True)
-    full_name = Column(String, unique=False)
-    iin = Column(String, unique=True)
-    # dob = Column(Date, unique=False)
-    telephone = Column(String, unique=False)
-    
-    region_id = Column(Integer, ForeignKey('Region.id'))
-    region = db.relationship('Region')
-
-    home_address = Column(String, unique=False)
-
-    def __init__(self, **kwargs):
-        for property, value in kwargs.items():
-            if hasattr(value, '__iter__') and not isinstance(value, str):
-                value = value[0]
-                
-            setattr(self, property, value)
-
-    def __repr__(self):
-        return str(self.id)
+        return str(self.name)
