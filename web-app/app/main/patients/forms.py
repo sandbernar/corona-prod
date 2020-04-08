@@ -19,6 +19,13 @@ class PatientForm(FlaskForm):
     flight_code_id = SelectField('Flight Code', id='flight_code_id', validators=[DataRequired()])
     flight_seat = TextField('Flight Seat', id='flight_seat')
 
+    # Train Travel
+    train_departure_date = DateField('Train Departure Date', validators=[DataRequired()])
+    train_arrival_date = DateField('Train Arrival Date')
+    train_id = SelectField('Train', choices=[], validators=[DataRequired()])
+    train_wagon = TextField('Train Wagon')
+    train_seat = TextField('Train Seat')
+
     # Travel by auto, foot, sea
     arrival_date = DateField('Arrival Date', validators=[DataRequired()])
     auto_border_id = SelectField('By Auto Border', validators=[DataRequired()])

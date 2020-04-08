@@ -52,6 +52,9 @@ class VariousTravel(db.Model):
     id = Column(Integer, primary_key=True)
     date = Column(Date)
 
+    patient_id = Column(Integer, ForeignKey('Patient.id', ondelete="CASCADE"))
+    patient = db.relationship('Patient', backref=db.backref('various_travel', passive_deletes=True))    
+
     border_control_id = Column(Integer, ForeignKey('BorderControl.id'), nullable=True, default=None)
     border_control = db.relationship('BorderControl')
 
@@ -137,14 +140,14 @@ class Address(db.Model):
     country_id = Column(Integer, ForeignKey('Country.id'))
     country = db.relationship('Country')
     
-    state = Column(String, nullable=True, default=None)
+    state = Column(String, nullable=True, default = "")
 
-    city = Column(String, nullable=False, default = None)
+    city = Column(String, nullable=False, default = "")
 
-    street = Column(String, nullable=True, default = None)
-    house = Column(String, nullable=True, default = None)
-    flat = Column(String, nullable=True, default = None)
-    building = Column(String, nullable=True, default = None)
+    street = Column(String, nullable=True, default = "")
+    house = Column(String, nullable=True, default = "")
+    flat = Column(String, nullable=True, default = "")
+    building = Column(String, nullable=True, default = "")
 
     lat = Column(Float, nullable=True, default = None)
     lng = Column(Float, nullable=True, default = None)

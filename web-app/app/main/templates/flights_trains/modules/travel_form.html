@@ -1,0 +1,83 @@
+<div class="col">
+  <div class="card shadow">
+    <div class="card-header bg-transparent">
+      <div class="row">
+        <div class="col">
+          <div class="form-group">
+          {% if is_trains %}
+            <label for="name-input" class="form-control-label">{{ _("Дата Отправления") }}</label>
+            {{ form.departure_date(class="form-control", type="date") }}
+          {% else %}
+            <label for="name-input" class="form-control-label">{{ _("Код Рейса") }}</label>
+            {{ form.code(placeholder="KC 971",class="form-control", type="text") }}
+          {% endif %}
+          </div>
+        </div>
+        <div class="col">
+          <div class="form-group">
+          {% if is_trains %}
+            <label for="name-input" class="form-control-label">{{ _("Дата Прибытия") }}</label>
+            {{ form.arrival_date(class="form-control", type="date") }}
+          {% else %}
+            <label for="npass-input" class="form-control-label">{{ _("Дата") }}</label>
+            {{ form.date(class="form-control", type="date") }}
+          {% endif %}                            
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+<div class="col mt-3">
+      <div class="row">
+        <div class="col">
+          <div class="card shadow">
+            <div class="card-header bg-transparent">
+              <div class="form-group">
+                <label for="name-input" class="form-control-label">{{ _("Из Страны") }}</label>
+                {{ form.from_country_id(class="form-control") }}
+              </div>
+              <div class="form-group">
+                <label for="iin-input" class="form-control-label">{{ _("Из Города") }}</label>
+                {{ form.from_city(class="form-control", placeholder="Нур-Султан", type="text") }}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="card shadow">
+            <div class="card-header bg-transparent">                      
+              <div class="form-group">
+                <label for="name-input" class="form-control-label">{{ _("В Страну") }}</label>
+                {{ form.to_country_id(class="form-control") }}
+              </div>
+              <div class="form-group">
+                <label for="iin-input" class="form-control-label">{{ _("В Город") }}</label>
+                {{ form.to_city(class="form-control", placeholder="Алматы", type="text") }}
+              </div>                                                  
+            </div>
+          </div>
+        </div>
+      </div>
+    {% if is_profile %}
+      {% if is_trains %}
+        <form action="/delete_train" method="POST">
+      {% else %}
+        <form action="/delete_flight" method="POST">
+      {% endif %}    
+          {{ form.hidden_tag() }}
+          <input type="hidden" name="delete" value='{{ travel.id }}'>
+          <button class="btn btn-danger mt-3" type="submit" style="width:100%;">{{ _('Удалить Рейс') }}</button>
+      </form>      
+    {% else %}
+      <button type="submit" name="create" class="btn btn-primary mt-4" type="button" style="width:100%">
+      {% if is_trains %}
+        {{ _("Добавить ЖД Рейс") }}
+      {% else %}
+        {{ _("Добавить Рейс") }}
+      {% endif %}
+    {% endif %}
+    </button>                  
+</div>

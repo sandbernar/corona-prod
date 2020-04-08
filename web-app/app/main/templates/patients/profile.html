@@ -279,6 +279,20 @@
             {% if travel.seat %}
                 $("#flight_seat").val('{{ travel.seat }}')
             {% endif %}
+        {% elif patient.travel_type.value == c.train_type[0] %}
+            $("#train_departure_date").val('{{ travel.train.departure_date }}')
+            $("#train_departure_date").change()
+
+            $("#train_arrival_date").val('{{ travel.train.arrival_date }}')
+            $("#train_arrival_date").change()
+
+            $("#train_id").val('{{ travel.train.id }}')
+            {% if travel.wagon %}
+                $("#train_wagon").val('{{ travel.wagon }}')
+            {% endif %}             
+            {% if travel.seat %}
+                $("#train_seat").val('{{ travel.seat }}')
+            {% endif %}            
         {% else %}
             $("#arrival_date").val('{{ travel.date }}')
             var border_form_id = null
