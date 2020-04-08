@@ -141,6 +141,7 @@ class Address(db.Model):
     country = db.relationship('Country')
     
     state = Column(String, nullable=True, default = "")
+    county = Column(String, nullable=True, default = "")
 
     city = Column(String, nullable=False, default = "")
 

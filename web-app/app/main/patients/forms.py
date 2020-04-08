@@ -48,6 +48,7 @@ class PatientForm(FlaskForm):
 
     home_address_country_id = SelectField('Home Address Country', validators=[DataRequired()])
     home_address_state = TextField('Home State')
+    home_address_county = TextField('Home County')    
     home_address_city = TextField('Home City', validators=[DataRequired()])
     home_address_street = TextField('Home Street', validators=[DataRequired()])
     home_address_house = TextField('Home House', validators=[DataRequired()])
@@ -65,6 +66,7 @@ class PatientForm(FlaskForm):
 
     job_address_country_id = SelectField('Job Address Country')
     job_address_state = TextField('Job State')
+    job_address_county = TextField('Job County')
     job_address_city = TextField('Job City')
     job_address_street = TextField('Job Street')
     job_address_house = TextField('Job House')
