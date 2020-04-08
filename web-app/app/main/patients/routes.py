@@ -921,5 +921,6 @@ def add_state():
                 comment=state["comment"])
             db.session.add(patientState)
             db.session.commit()
-
-    return redirect(url_for('main_blueprint.patients'))
+    
+    url = f"/patient_profile?id={request.form['id']}"
+    return redirect(url)
