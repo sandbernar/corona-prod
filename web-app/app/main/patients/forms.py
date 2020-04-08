@@ -48,6 +48,7 @@ class PatientForm(FlaskForm):
 
     home_address_country_id = SelectField('Home Address Country', validators=[DataRequired()])
     home_address_state = TextField('Home State')
+    home_address_county = TextField('Home County')    
     home_address_city = TextField('Home City', validators=[DataRequired()])
     home_address_street = TextField('Home Street', validators=[DataRequired()])
     home_address_house = TextField('Home House', validators=[DataRequired()])
@@ -65,6 +66,7 @@ class PatientForm(FlaskForm):
 
     job_address_country_id = SelectField('Job Address Country')
     job_address_state = TextField('Job State')
+    job_address_county = TextField('Job County')
     job_address_city = TextField('Job City')
     job_address_street = TextField('Job Street')
     job_address_house = TextField('Job House')
@@ -82,6 +84,7 @@ class PatientForm(FlaskForm):
     is_found = RadioField("Is Found", id="is_found", choices=[(1, "Да"),(0,"Нет")], default=0, validators=[DataRequired()])
     is_infected = RadioField("Is Infected", id="is_infected", choices=[(1, "Да"),(0,"Нет")], default=0, validators=[DataRequired()])
 
+
 class UpdateProfileForm(PatientForm):
     is_found = BooleanField(id="is_found")
     is_infected = BooleanField(id="is_infected")
@@ -90,6 +93,11 @@ class UpdateProfileForm(PatientForm):
     is_transit = BooleanField(id="is_transit")
     citizenship = TextField('Citizenship', id='citizenship', validators=[DataRequired()])
     flight_code_id = SelectField('Flight Code', id='flight_code_id')
+
+    state = SelectField('State' , validators=[DataRequired()])
+    stateComment = TextField('State Comment', id='stateComment')
+    stateDetectionDate = DateField('State Detection Date')
+
 
 class AddFlightFromExcel(UploadDataForm):
     flights_id = SelectField('Flights ID', id='flights_id' , validators=[DataRequired()])

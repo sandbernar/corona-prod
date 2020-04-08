@@ -16,7 +16,7 @@ from jinja2 import TemplateNotFound
 
 from app.main.models import (Region, Country, VisitedCountry, Infected_Country_Category, 
                             TravelType, BorderControl, VariousTravel, Address)
-from app.main.patients.models import Patient, PatientStatus, ContactedPersons
+from app.main.patients.models import Patient, PatientStatus, ContactedPersons, State, PatientState
 from app.main.hospitals.models import Hospital, Hospital_Type
 from app.main.flights_trains.models import FlightCode, FlightTravel, Train, TrainTravel
 
@@ -61,8 +61,6 @@ def prepare_patient_form(patient_form):
                 f.code, f.from_city, f.to_city)) for f in FlightCode.query.filter_by(date=first_date).all()]
         else:
             patient_form.flight_code_id.choices = []
-
-    
 
     t_ids = {}
     for typ in TravelType.query.all():
@@ -128,6 +126,7 @@ def process_address(request_dict, form_prefix='home', lat_lng = True, address = 
 
     address.country_id = request_dict[form_prefix + '_address_country_id']
     address.state = request_dict.get(form_prefix + '_address_state', None)
+    address.county = request_dict.get(form_prefix + '_address_county', None)
     address.city = request_dict[form_prefix + '_address_city']
     address.street = request_dict[form_prefix + '_address_street']
     address.house = request_dict[form_prefix + '_address_house']
@@ -305,6 +304,11 @@ def patient_profile():
 
             form = prepare_patient_form(form)
             form.travel_type.default = patient.travel_type.value
+            
+            # States
+            states = State.query.all()
+            states = [(st.id, st.name) for st in states]
+            form.state.choices = states
 
             if len(request.form):
                 request_dict = request.form.to_dict(flat = True)
@@ -359,7 +363,7 @@ def patient_profile():
             
             if travel_type.value == c.flight_type[0]:
                 travel = FlightTravel.query.filter_by(patient_id=patient.id).first()
-            if travel_type.value == c.train_type[0]:
+            elif travel_type.value == c.train_type[0]:
                 travel = TrainTravel.query.filter_by(patient_id=patient.id).first()
             elif travel_type.value != c.local_type[0]:
                 travel = VariousTravel.query.filter_by(patient_id=patient.id).first()
@@ -414,7 +418,9 @@ def patient_profile():
             form.process()
             print("hospitals", hospital_name)
 
-            return route_template('patients/profile', patient=patient, age=age, hospital_name=hospital_name, form = form, change = change, c=c, travel=travel)
+            states = PatientState.query.filter_by(patient_id=patient.id).join(State).all()
+
+            return route_template('patients/profile', states=states, patient=patient, age=age, hospital_name=hospital_name, form = form, change = change, c=c, travel=travel)
     else:    
         return render_template('errors/error-500.html'), 500
 
@@ -432,6 +438,7 @@ def get_lat_lng(patients):
         parsed_address = {}
         parsed_address["country"] = home_address.country.name
         parsed_address["state"] = home_address.state
+        parsed_address["county"] = home_address.county
         parsed_address["city"] = home_address.city
         parsed_address["street"] = home_address.street
         parsed_address["houseNumber"] = home_address.house
@@ -443,6 +450,7 @@ def get_lat_lng(patients):
 
         resp = requests.get(url=url, params=params)
         data = resp.json()
+        print(data)
                    
         if len(data["items"]):
             item = data["items"][0]
@@ -452,7 +460,6 @@ def get_lat_lng(patients):
             lat = item["lat"]
             lng = item["lng"]
 
-            print(lat, lng)
             
         lat_lng.append((lat, lng))
 
@@ -884,3 +891,36 @@ def add_contacted_person():
         return redirect("/contacted_persons?id={}".format(request.args["id"]))
     else:
         return route_template( 'patients/add_contacted_person', form=patient_form, hospital_types=hospital_types, added=False, error_msg=None)
+
+
+@blueprint.route('/add_state', methods=['POST'])
+@login_required
+def add_state():
+    if not current_user.is_authenticated:
+        return redirect(url_for('login_blueprint.login'))
+
+    if len(request.form):
+        patient_id = request.form["id"]
+        patient = None
+        try:
+            patient_query = Patient.query.filter(Patient.id == patient_id)
+            patient = patient_query.first()
+        except exc.SQLAlchemyError:
+            return render_template('errors/error-400.html'), 400
+
+        if patient:
+            state = {
+                "id": request.form["state"],
+                "comment": request.form["stateComment"],
+                "detection_date":request.form["stateDetectionDate"]
+            }
+            patientState = PatientState(
+                patient_id=patient_id, 
+                state_id=state["id"],
+                detection_date=state["detection_date"],
+                comment=state["comment"])
+            db.session.add(patientState)
+            db.session.commit()
+    
+    url = f"/patient_profile?id={request.form['id']}"
+    return redirect(url)

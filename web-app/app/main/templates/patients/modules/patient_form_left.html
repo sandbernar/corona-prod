@@ -57,19 +57,27 @@
                         <div class="row">
                           <div class="col">
                             <div class="form-group">
-                              <label for="home-input" class="form-control-label">{{ _("Страна") }}*</label>
+                              <label for="home-input" class="form-control-label sub-label">{{ _("Страна") }}*</label>
                               {{ form.home_address_country_id(class="form-control") }}
                             </div>
                           </div>
                           <div class="col">
                             <div class="form-group">
-                              <label for="home-input" class="form-control-label">{{ _("Область") }}</label>
+                              <label for="home-input" class="form-control-label sub-label">{{ _("Область") }}</label>
                               {{ form.home_address_state(class="form-control", type="text" ) }}
+                            </div>
+                          </div>
+                        </div>
+                        <div class="row">
+                          <div class="col">
+                            <div class="form-group">
+                              <label for="home-input" class="form-control-label sub-label">{{ _("Район") }}</label>
+                              {{ form.home_address_county(class="form-control", type="text" ) }}
                             </div>
                           </div>
                           <div class="col">
                             <div class="form-group">
-                              <label for="home-input" class="form-control-label">{{ _("Город") }}*</label>
+                              <label for="home-input" class="form-control-label sub-label">{{ _("Город") }}*</label>
                               {{ form.home_address_city(class="form-control", type="text" ) }}
                             </div>
                           </div>
@@ -77,25 +85,25 @@
                         <div class="row">
                           <div class="col-xl">
                             <div class="form-group">
-                              <label for="home-input" class="form-control-label">{{ _("Улица") }}*</label>
+                              <label for="home-input" class="form-control-label sub-label">{{ _("Улица") }}*</label>
                               {{ form.home_address_street(class="form-control", type="text", placeholder=_("Байтурсынова") ) }}
                             </div>
                           </div>
                           <div class="col-sm-2">
                             <div class="form-group">
-                              <label for="home-input" class="form-control-label">{{ _("Дом") }}*</label>
+                              <label for="home-input" class="form-control-label sub-label">{{ _("Дом") }}*</label>
                               {{ form.home_address_house(class="form-control", type="text", placeholder=_("1") ) }}
                             </div>
                           </div>
                           <div class="col-sm-2">
                             <div class="form-group">
-                              <label for="home-input" class="form-control-label">{{ _("Квартира") }}</label>
+                              <label for="home-input" class="form-control-label sub-label">{{ _("Квартира") }}</label>
                               {{ form.home_address_flat(class="form-control", type="text", placeholder=_("2") ) }}
                             </div>
                           </div>                                                    
                           <div class="col-sm-2">
                             <div class="form-group">
-                              <label for="home_address_building" class="form-control-label">{{ _("Корпус") }}</label>
+                              <label for="home_address_building" class="form-control-label sub-label">{{ _("Корпус") }}</label>
                               {{ form.home_address_building(class="form-control", type="text", placeholder=_("3") ) }}
                             </div>
                           </div>                          
