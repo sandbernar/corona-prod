@@ -62,8 +62,6 @@ def prepare_patient_form(patient_form):
         else:
             patient_form.flight_code_id.choices = []
 
-    
-
     t_ids = {}
     for typ in TravelType.query.all():
         t_ids[typ.value] = typ.id
@@ -128,6 +126,7 @@ def process_address(request_dict, form_prefix='home', lat_lng = True, address = 
 
     address.country_id = request_dict[form_prefix + '_address_country_id']
     address.state = request_dict.get(form_prefix + '_address_state', None)
+    address.county = request_dict.get(form_prefix + '_address_county', None)
     address.city = request_dict[form_prefix + '_address_city']
     address.street = request_dict[form_prefix + '_address_street']
     address.house = request_dict[form_prefix + '_address_house']
@@ -365,7 +364,7 @@ def patient_profile():
             
             if travel_type.value == c.flight_type[0]:
                 travel = FlightTravel.query.filter_by(patient_id=patient.id).first()
-            if travel_type.value == c.train_type[0]:
+            elif travel_type.value == c.train_type[0]:
                 travel = TrainTravel.query.filter_by(patient_id=patient.id).first()
             elif travel_type.value != c.local_type[0]:
                 travel = VariousTravel.query.filter_by(patient_id=patient.id).first()
@@ -439,6 +438,7 @@ def get_lat_lng(patients):
         parsed_address = {}
         parsed_address["country"] = home_address.country.name
         parsed_address["state"] = home_address.state
+        parsed_address["county"] = home_address.county
         parsed_address["city"] = home_address.city
         parsed_address["street"] = home_address.street
         parsed_address["houseNumber"] = home_address.house
@@ -450,6 +450,7 @@ def get_lat_lng(patients):
 
         resp = requests.get(url=url, params=params)
         data = resp.json()
+        print(data)
                    
         if len(data["items"]):
             item = data["items"][0]
@@ -459,7 +460,6 @@ def get_lat_lng(patients):
             lat = item["lat"]
             lng = item["lng"]
 
-            print(lat, lng)
             
         lat_lng.append((lat, lng))
 
