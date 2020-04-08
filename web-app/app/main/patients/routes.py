@@ -16,7 +16,7 @@ from jinja2 import TemplateNotFound
 
 from app.main.models import (Region, Country, VisitedCountry, Infected_Country_Category, 
                             TravelType, BorderControl, VariousTravel, Address)
-from app.main.patients.models import Patient, PatientStatus, ContactedPersons
+from app.main.patients.models import Patient, PatientStatus, ContactedPersons, State, PatientState
 from app.main.hospitals.models import Hospital, Hospital_Type
 from app.main.flights.models import FlightCode, FlightTravel
 
@@ -289,6 +289,11 @@ def patient_profile():
 
             form = prepare_patient_form(form)
             form.travel_type.default = patient.travel_type.value
+            
+            # States
+            states = State.query.all()
+            states = [(st.id, st.name) for st in states]
+            form.state.choices = states
 
             if len(request.form):
                 request_dict = request.form.to_dict(flat = True)
@@ -395,7 +400,9 @@ def patient_profile():
 
             form.process()
 
-            return route_template('patients/profile', patient=patient, age=age, hospital_name=hospital_name, form = form, change = change, c=c, travel=travel)
+            states = PatientState.query.filter_by(patient_id=patient.id).join(State).all()
+
+            return route_template('patients/profile', states=states, patient=patient, age=age, hospital_name=hospital_name, form = form, change = change, c=c, travel=travel)
     else:    
         return render_template('errors/error-500.html'), 500
 
@@ -867,3 +874,35 @@ def add_contacted_person():
         return redirect("/contacted_persons?id={}".format(request.args["id"]))
     else:
         return route_template( 'patients/add_contacted_person', form=patient_form, hospital_types=hospital_types, added=False, error_msg=None)
+
+
+@blueprint.route('/add_state', methods=['POST'])
+@login_required
+def add_state():
+    if not current_user.is_authenticated:
+        return redirect(url_for('login_blueprint.login'))
+
+    if len(request.form):
+        patient_id = request.form["id"]
+        patient = None
+        try:
+            patient_query = Patient.query.filter(Patient.id == patient_id)
+            patient = patient_query.first()
+        except exc.SQLAlchemyError:
+            return render_template('errors/error-400.html'), 400
+
+        if patient:
+            state = {
+                "id": request.form["state"],
+                "comment": request.form["stateComment"],
+                "detection_date":request.form["stateDetectionDate"]
+            }
+            patientState = PatientState(
+                patient_id=patient_id, 
+                state_id=state["id"],
+                detection_date=state["detection_date"],
+                comment=state["comment"])
+            db.session.add(patientState)
+            db.session.commit()
+
+    return redirect(url_for('main_blueprint.patients'))
