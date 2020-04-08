@@ -93,8 +93,11 @@
                {% if patient.travel_type.value == c.flight_type[0] %}
                <div class="col">
                 <a href="/flight_profile?id={{ travel.flight_code.id }}" class="btn btn-primary mt-3" style="width:100%;">{{ _("Прилетевшие Вместе") }}</a>
-            </div>
-            {% endif %}
+                </div>
+                {% elif patient.travel_type.value == c.train_type[0] %}
+                <a href="/train_profile?id={{ travel.train.id }}" class="btn btn-primary mt-3" style="width:100%;">{{ _("Прибывшие Вместе") }}</a>
+                </div>                
+                {% endif %}
         </div>
         <!-- <button class="btn btn-primary mt-2" id="submit" name="submit" type="submit" value="Обновить">Обновить</button> -->
 

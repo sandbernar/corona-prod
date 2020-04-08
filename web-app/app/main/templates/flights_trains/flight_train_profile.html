@@ -21,8 +21,6 @@
                 {% with is_trains=is_trains, form=form, is_profile=True, travel=travel %}
                   {% include "flights_trains/modules/travel_form.html" %}
                 {% endwith %} 
-
- 
     <div class="col mt-3">
       <div class="card shadow">
         <div class="card-header border-0">
@@ -77,9 +75,11 @@
                     {{ _("Неизвестно") }}
                   {% endif %}
                 </td>
+                {% if is_trains %}
                 <td>
                   {{ patient[1].wagon }}
                 </td>
+                {% endif %}
                 <td>
                   {{ patient[1].seat }}
                 </td>                

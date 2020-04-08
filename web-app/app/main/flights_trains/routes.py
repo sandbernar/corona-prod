@@ -326,6 +326,9 @@ def flight_profile():
             q = q.filter(Patient.travel_type_id == flight_type_id)
             q = q.filter(Patient.id == FlightTravel.patient_id)
             q = q.filter(FlightTravel.flight_code_id == flight.id)
+            
+            if not current_user.is_admin:
+                q = q.filter(Patient.region_id == current_user.region_id)
 
             seatmap, patients_seat = generate_plane_seatmap(q)
 
@@ -382,6 +385,9 @@ def train_profile():
             q = q.filter(Patient.travel_type_id == train_type_id)
             q = q.filter(Patient.id == TrainTravel.patient_id)
             q = q.filter(TrainTravel.train_id == train.id)
+            
+            if not current_user.is_admin:
+                q = q.filter(Patient.region_id == current_user.region_id)
 
             page = 1
             per_page = 5

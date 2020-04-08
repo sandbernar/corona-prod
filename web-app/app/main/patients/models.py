@@ -65,8 +65,8 @@ class Patient(db.Model):
     home_address_id = Column(Integer, ForeignKey('Address.id'), nullable=False)
     home_address = db.relationship('Address', foreign_keys=[home_address_id], cascade="all,delete", backref="Patient")
 
-    telephone = Column(String)
-    email = Column(String, nullable=True)
+    telephone = Column(String, nullable=True, default=None)
+    email = Column(String, nullable=True, default=None)
 
     region_id = Column(Integer, ForeignKey('Region.id'))
     region = db.relationship('Region')
@@ -80,8 +80,8 @@ class Patient(db.Model):
     hospital_id = Column(Integer, ForeignKey('Hospital.id'), nullable=True, default=None)
     hospital = db.relationship('Hospital')
 
-    job = Column(String, nullable=True)
-    job_position = Column(String, nullable=True)
+    job = Column(String, nullable=True, default=None)
+    job_position = Column(String, nullable=True, default=None)
     job_address_id = Column(Integer, ForeignKey('Address.id'), nullable=True, default=None)
     job_address = db.relationship('Address', foreign_keys=[job_address_id], cascade="all, delete-orphan", single_parent=True)
 
