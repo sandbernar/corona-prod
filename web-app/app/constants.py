@@ -24,6 +24,12 @@ by_sea_type = ("by_sea", "Морской Транспорт")
 flight_type = ("flight_type", "Самолет")
 local_type = ("local_type", "Местные")
 
+# State
+state_dead = "Умер"
+state_infec = "Инфицирован"
+state_hosp = "Госпитализирован"
+states = [state_dead, state_infec, state_hosp]
+
 various_travel_types = [by_auto_type, by_foot_type, by_sea_type]
 
 board_team = "экипаж"

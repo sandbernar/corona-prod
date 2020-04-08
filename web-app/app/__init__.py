@@ -36,7 +36,7 @@ def configure_database(app):
     def add_hospitals():
         from app.main.models import (Region, Country, Infected_Country_Category, 
                                     TravelType, BorderControl, VariousTravel, Address, VisitedCountry)
-        from app.main.patients.models import PatientStatus, ContactedPersons, Patient
+        from app.main.patients.models import PatientStatus, ContactedPersons, Patient, State, PatientState
         from app.main.hospitals.models import  Hospital, Hospital_Type
         from app.main.flights_trains.models import FlightTravel, FlightCode
        
@@ -50,12 +50,10 @@ def configure_database(app):
         ### Flight
         FlightTravel.query.delete()
         FlightCode.query.delete()
-
         TravelType.query.delete()
         Region.query.delete()
 
         Hospital_Type.query.delete()
-
         PatientStatus.query.delete()
         ContactedPersons.query.delete()
 
@@ -65,10 +63,17 @@ def configure_database(app):
         Address.query.delete()
         Country.query.delete()
 
+        State.query.delete()
+        PatientState.query.delete()
+
         db.session.commit()
 
         df = pd.read_excel(C.hospitals_list_xlsx)
         df = df.drop_duplicates()
+
+        for state in C.states:
+            tmpState = State(name=state)
+            db.session.add(tmpState)
 
         for typ in C.travel_types:
             travel_type = TravelType(value=typ[0], name=typ[1])

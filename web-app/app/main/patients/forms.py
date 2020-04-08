@@ -82,6 +82,7 @@ class PatientForm(FlaskForm):
     is_found = RadioField("Is Found", id="is_found", choices=[(1, "Да"),(0,"Нет")], default=0, validators=[DataRequired()])
     is_infected = RadioField("Is Infected", id="is_infected", choices=[(1, "Да"),(0,"Нет")], default=0, validators=[DataRequired()])
 
+
 class UpdateProfileForm(PatientForm):
     is_found = BooleanField(id="is_found")
     is_infected = BooleanField(id="is_infected")
@@ -90,6 +91,11 @@ class UpdateProfileForm(PatientForm):
     is_transit = BooleanField(id="is_transit")
     citizenship = TextField('Citizenship', id='citizenship', validators=[DataRequired()])
     flight_code_id = SelectField('Flight Code', id='flight_code_id')
+
+    state = SelectField('State' , validators=[DataRequired()])
+    stateComment = TextField('State Comment', id='stateComment')
+    stateDetectionDate = DateField('State Detection Date')
+
 
 class AddFlightFromExcel(UploadDataForm):
     flights_id = SelectField('Flights ID', id='flights_id' , validators=[DataRequired()])
