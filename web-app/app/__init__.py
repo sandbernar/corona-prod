@@ -9,7 +9,7 @@ from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
 from importlib import import_module
 from logging import basicConfig, DEBUG, getLogger, StreamHandler
-from os import path
+from os import path, getenv
 import pandas as pd
 import re
 from flask_wtf.csrf import CSRFProtect
@@ -243,6 +243,7 @@ def create_app(config, selenium=False, unittest=False):
         app.config['LOGIN_DISABLED'] = True
     if unittest:
         app.config['CSRF_ENABLED'] = False
+    app.config['SECRET_KEY'] = getenv("APP_SECRET_KEY") or "supersecret123456haha"
     csrf.init_app(app)
     register_extensions(app)
     register_blueprints(app)

@@ -1,3 +1,10 @@
+## Тестирование
+
+Запустит docker-compose с базой данных и приложением
+```
+docker-compose -f docker-compose-test.yml up -d
+```
+
 ## Запуск
 
 Запустится на порту :5005
@@ -53,6 +60,7 @@ DATABASE_PASSWORD=${DATABASE_PASSWORD}
 DATABASE_NAME=anti_corona_crm
 DATABASE_HOST=postgres
 DATABASE_PORT=5432
+APP_SECRET_KEY=${APP_SECRET_KEY}
 EOF
 ```
 
