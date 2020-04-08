@@ -13,29 +13,67 @@
 <!-- Header -->
 {% include "site_template/top-stats.html" %}
 
-<!-- Modal -->
+<!-- Modal DELETE PATIENT-->
 <div class="modal fade" id="deletePatientModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">{{ _("Удалить пациента?") }}</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true"></span>
-      </button>
-  </div>
-  <div class="modal-body">
-    {{ _("Вы уверены, что хотите удалить пациента") }} <bold> {{patient.first_name}} </bold>?
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">{{ _("Удалить пациента?") }}</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true"></span>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                {{ _("Вы уверены, что хотите удалить пациента") }} <bold> {{patient.first_name}} </bold>?
+            </div>
+            <div class="modal-footer">
+                <form action="/delete_patient" method="POST">
+                    {{ form.hidden_tag() }}
+                    <input type="hidden" name="delete" value='{{ patient.id }}'>
+                    <button type="submit" class="btn btn-primary">{{ _("Да") }}</button>
+                </form>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ _("Нет") }}</button>
+            </div>
+        </div>
+    </div>
 </div>
-<div class="modal-footer">
-    <form action="/delete_patient" method="POST">
-        {{ form.hidden_tag() }}
-        <input type="hidden" name="delete" value='{{ patient.id }}'>
-        <button type="submit" class="btn btn-primary">{{ _("Да") }}</button>
-    </form>
-    <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ _("Нет") }}</button>
-</div>
-</div>
-</div>
+
+<!-- Modal ADD STATE-->
+<div class="modal fade" id="addPatientStateModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Добавить статус</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true"></span>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <form action="/add_state" method="POST">
+                    {{ form.hidden_tag() }}
+                    <input type="hidden" name="id" value='{{ patient.id }}'>
+                    <div class="form-group">
+                        <label for="name-input" class="form-control-label">Статус*</label>
+                        {{ form.state(class="form-control") }}
+                    </div>
+                    <div class="form-group">
+                        <label for="name-input" class="form-control-label">Комментарий</label>
+                        {{ form.stateComment(class="form-control", type="text") }}
+                    </div>
+                    <div class="form-group">
+                        <label for="name-input" class="form-control-label">Дата выявления*</label>
+                        {{ form.stateDetectionDate(class="form-control", type="date") }}
+                    </div>
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Page content -->
@@ -70,7 +108,7 @@
                     </div>
                 </div>
                 <div class="card-body pt-0 pt-md-4">
-                    <div class="text-center">                       
+                    <!-- <div class="text-center">             -->
                         <h3>
                             {{ _("Возраст") }} {{ age }}<span class="font-weight-light"></span>
                         </h3>
@@ -132,14 +170,11 @@
                 <hr class="my-4" />                    
             </div>
             <div class="row mt-3">
-                <div class="col">
                     <input class="btn btn-primary" id="submit" name="submit" type="submit" value={{ _("Сохранить") }}>
-                </div>
-                <div class="col">
-                    <input class="btn btn-danger" data-toggle="modal" type="button" data-target="#deletePatientModal" value={{ _("Удалить") }}>
-                </div>                            
+                    <br>
+                    <input class="btn btn-danger" data-toggle="modal" type="button" data-target="#deletePatientModal" value={{ _("Удалить") }}>                
             </div>
-        </div>
+        <!-- </div> -->
     </div>
 </div>
 
@@ -151,25 +186,28 @@
     <div class="card bg-secondary shadow mt-3">
         <div class="card-header bg-white">
             <div class="row align-items-center">
-                <div class="col-8">
+                <div class="col">
                     <h3 class="mb-0">{{ patient.first_name }}</h3>
+                </div>
+                <div class="col" style="text-align: end;">
+                    <button data-toggle="modal" type="button" data-target="#addPatientStateModal"  class="btn btn-primary btn-sm">Добавить статус</button>
                 </div>
             </div>
         </div>
         <div class="card-body">
             <h6 class="heading-small text-muted mb-4">{{ _("Личные Данные") }}</h6>
             <div class="pl-lg-4">
-                <div class="row">
-                  <div class="col">
+                <div class="col">
+                  <!-- <div class="col"> -->
                         {% with form=form %}
                           {% include "patients/modules/patient_form_left.html" %}
                         {% endwith %} 
-                    </div>
-                                      <div class="col">
+                    <!-- </div> -->
+                                      <!-- <div class="col"> -->
                         {% with form=form %}
                           {% include "patients/modules/patient_form_right.html" %}
                         {% endwith %}                         
-                  </div>
+                  <!-- </div> -->
                 </div>
                 
             </div>
@@ -178,10 +216,56 @@
                                  
         {% endif %}
     </div>
-</div>
+    </div>
+    <div class="card bg-secondary shadow mt-3">
+        <div class="card-header bg-white">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h3 class="mb-0">История статусов</h3>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <div>
+                    <table class="table align-items-center">
+                        <thead class="thead-light">
+                            <tr>
+                                <th scope="col">Статус</th>
+                                <th scope="col">Комметарий</th>
+                                <th scope="col">Дата выявления</th>
+                                <!-- <th scope="col"></th> -->
+                            </tr>
+                        </thead>
+                        <tbody class="list">
+                            <tr>
+                            {% for state in states %}
+                                <td>{{ state.state.name }} </td>
+                                <td>{{ state.comment }}</td>
+                                <td>{{ state.detection_date }}</td>
+                                <!-- <td class="text-right">
+                                    <div class="dropdown">
+                                        <a class="btn btn-sm btn-icon-only text-light" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                          <i class="fas fa-ellipsis-v"></i>
+                                        </a>
+                                        <div class="dropdown-menu dropdown-menu-right dropdown-menu-arrow">
+                                            <a class="dropdown-item" href="#">Удалить</a>
+                                        </div>
+                                    </div>
+                                </td> -->
+                            {% endfor %}
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 </div>
 </form>
+
+
 
 {% include "site_template/footer.html" %}
 
