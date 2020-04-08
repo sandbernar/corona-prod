@@ -16,9 +16,9 @@ from jinja2 import TemplateNotFound
 
 from app.main.models import (Region, Country, VisitedCountry, Infected_Country_Category, 
                             TravelType, BorderControl, VariousTravel, Address)
-from app.main.patients.models import Patient, PatientStatus, ContactedPersons
+from app.main.patients.models import Patient, PatientStatus, ContactedPersons, State, PatientState
 from app.main.hospitals.models import Hospital, Hospital_Type
-from app.main.flights.models import FlightCode, FlightTravel
+from app.main.flights_trains.models import FlightCode, FlightTravel, Train, TrainTravel
 
 from app.main.patients.forms import PatientForm, UpdateProfileForm, AddFlightFromExcel
 from app.main.forms import TableSearchForm
@@ -126,6 +126,7 @@ def process_address(request_dict, form_prefix='home', lat_lng = True, address = 
 
     address.country_id = request_dict[form_prefix + '_address_country_id']
     address.state = request_dict.get(form_prefix + '_address_state', None)
+    address.county = request_dict.get(form_prefix + '_address_county', None)
     address.city = request_dict[form_prefix + '_address_city']
     address.street = request_dict[form_prefix + '_address_street']
     address.house = request_dict[form_prefix + '_address_house']
@@ -136,7 +137,7 @@ def process_address(request_dict, form_prefix='home', lat_lng = True, address = 
     db.session.commit()
 
     if lat_lng:
-        lat_lng = get_lat_lng([str(address)])[0]
+        lat_lng = get_lat_lng([address])[0]
 
         address.lat = lat_lng[0]
         address.lng = lat_lng[1]
@@ -166,48 +167,6 @@ def handle_add_update_patient(request_dict, final_dict, update_dict = {}):
     travel_type = TravelType.query.filter_by(value=request_dict['travel_type']).first()
     
     final_dict['travel_type_id'] = travel_type.id if travel_type else None
-    final_dict['travel_id'] = None
-
-    if travel_type:
-        if travel_type.value == c.flight_type[0]:
-            f_travel = update_dict.get('flight_travel', FlightTravel())
-            
-            f_code_id = request_dict['flight_code_id']
-            seat = request_dict.get('flight_seat', None)
-            
-            if f_travel.flight_code_id != f_code_id or f_travel.seat != seat:
-                f_travel.flight_code_id = f_code_id
-                f_travel.seat = seat
-
-                db.session.add(f_travel)
-                db.session.commit()
-
-                final_dict['travel_id'] = f_travel.id
-        else:
-            border_form_key = None
-
-            if travel_type.value == c.by_auto_type[0]:
-                border_form_key = 'auto_border_id'
-            elif travel_type.value == c.by_foot_type[0]:
-                border_form_key = 'foot_border_id'
-            elif travel_type.value == c.by_sea_type[0]:
-                border_form_key = 'sea_border_id'
-            
-            if border_form_key:
-                v_travel = update_dict.get('various_travel', VariousTravel())
-
-                date = request_dict['arrival_date']
-                border_control_id = request_dict[border_form_key]
-
-                if v_travel.border_control_id != border_control_id or v_travel.date != date:
-                    v_travel.date = date 
-                    v_travel.border_control_id = border_control_id
-
-                    db.session.add(v_travel)
-                    db.session.commit()
-
-                    final_dict['travel_id'] = v_travel.id
-
 
     # 5
     # Home Address
@@ -221,7 +180,59 @@ def handle_add_update_patient(request_dict, final_dict, update_dict = {}):
     if job_address:
         final_dict['job_address_id'] = job_address.id
 
-def handle_visited_country_address(request_dict, final_dict, patient, update_dict = {}):
+def handle_after_patient(request_dict, final_dict, patient, update_dict = {}):
+    travel_type = patient.travel_type
+
+    if travel_type:
+        if travel_type.value == c.flight_type[0]:
+            f_travel = update_dict.get('flight_travel', FlightTravel(patient_id = patient.id))
+            
+            f_code_id = request_dict['flight_code_id']
+            seat = request_dict.get('flight_seat', None)
+            
+            if f_travel.flight_code_id != f_code_id or f_travel.seat != seat:
+                f_travel.flight_code_id = f_code_id
+                f_travel.seat = seat
+
+                db.session.add(f_travel)
+                db.session.commit()
+        elif travel_type.value == c.train_type[0]:
+            t_travel = update_dict.get('train_travel', TrainTravel(patient_id = patient.id))
+            
+            t_id = request_dict['train_id']
+            wagon = request_dict.get('train_wagon', None)
+            seat = request_dict.get('train_seat', None)
+            
+            if t_travel.train_id != t_id or t_travel.seat != seat or t_travel.wagon != wagon:
+                t_travel.train_id = t_id
+                t_travel.seat = seat
+                t_travel.wagon = wagon
+
+                db.session.add(t_travel)
+                db.session.commit()                
+        else:
+            border_form_key = None
+
+            if travel_type.value == c.by_auto_type[0]:
+                border_form_key = 'auto_border_id'
+            elif travel_type.value == c.by_foot_type[0]:
+                border_form_key = 'foot_border_id'
+            elif travel_type.value == c.by_sea_type[0]:
+                border_form_key = 'sea_border_id'
+            
+            if border_form_key:
+                v_travel = update_dict.get('various_travel', VariousTravel(patient_id = patient.id))
+
+                date = request_dict['arrival_date']
+                border_control_id = request_dict[border_form_key]
+
+                if v_travel.border_control_id != border_control_id or v_travel.date != date:
+                    v_travel.date = date 
+                    v_travel.border_control_id = border_control_id
+
+                    db.session.add(v_travel)
+                    db.session.commit()
+
     # 4 Visited Country
     visited_country_id = request_dict.get('visited_country_id', None)
 
@@ -264,7 +275,7 @@ def add_patient():
         db.session.add(patient)
         db.session.commit()
 
-        handle_visited_country_address(request_dict, final_dict, patient)
+        handle_after_patient(request_dict, final_dict, patient)
 
         return jsonify({"patient_id": patient.id})
     else:
@@ -282,6 +293,10 @@ def patient_profile():
         if not patient:
             return render_template('errors/error-404.html'), 404
         else:
+            # patient.visited_country = []
+            # db.session.delete(patient.visited_country[0])
+            # db.session.commit()
+
             form = UpdateProfileForm(request.form)
             change = None
 
@@ -289,6 +304,11 @@ def patient_profile():
 
             form = prepare_patient_form(form)
             form.travel_type.default = patient.travel_type.value
+            
+            # States
+            states = State.query.all()
+            states = [(st.id, st.name) for st in states]
+            form.state.choices = states
 
             if len(request.form):
                 request_dict = request.form.to_dict(flat = True)
@@ -308,9 +328,9 @@ def patient_profile():
                 request_dict['travel_type'] = patient.travel_type.value
                 
                 if request_dict['travel_type'] == c.flight_type[0]:
-                    update_dict['flight_travel'] = FlightTravel.query.filter_by(id=patient.travel_id).first()
+                    update_dict['flight_travel'] = FlightTravel.query.filter_by(id=patient.id).first()
                 elif request_dict['travel_type'] in dict(c.various_travel_types).keys():
-                    update_dict['various_travel'] = VariousTravel.query.filter_by(id=patient.travel_id).first()
+                    update_dict['various_travel'] = VariousTravel.query.filter_by(id=patient.id).first()
 
                 handle_add_update_patient(request_dict, final_dict, update_dict)
                 
@@ -338,13 +358,15 @@ def patient_profile():
             # Populate the form
 
             form.hospital_region_id.default = patient.region_id if not patient.hospital else patient.hospital.region_id
-
             travel = None
             travel_type = TravelType.query.filter_by(id=patient.travel_type_id).first()
+            
             if travel_type.value == c.flight_type[0]:
-                travel = FlightTravel.query.filter_by(id=patient.travel_id).first()
+                travel = FlightTravel.query.filter_by(patient_id=patient.id).first()
+            elif travel_type.value == c.train_type[0]:
+                travel = TrainTravel.query.filter_by(patient_id=patient.id).first()
             elif travel_type.value != c.local_type[0]:
-                travel = VariousTravel.query.filter_by(id=patient.travel_id).first()
+                travel = VariousTravel.query.filter_by(patient_id=patient.id).first()
 
             if patient.is_found:
                 form.is_found.default = 'checked'
@@ -394,41 +416,50 @@ def patient_profile():
                 change = _("Пользователь %(full_name)s успешно добавлен", full_name=patient.full_name)
 
             form.process()
+            print("hospitals", hospital_name)
 
-            return route_template('patients/profile', patient=patient, age=age, hospital_name=hospital_name, form = form, change = change, c=c, travel=travel)
+            states = PatientState.query.filter_by(patient_id=patient.id).join(State).all()
+
+            return route_template('patients/profile', states=states, patient=patient, age=age, hospital_name=hospital_name, form = form, change = change, c=c, travel=travel)
     else:    
         return render_template('errors/error-500.html'), 500
 
 def get_lat_lng(patients):
     lat_lng = []
-    for patient in patients:
+    for home_address in patients:
         lat = None
         lng = None
 
-        if not pd.isnull(patient):
-            home_address = patient.replace(".", ". ")
+        params = dict(
+            apiKey='S25QEDJvW3PCpRvVMoFmIJBHL01xokVyinW8F5Fj0pw',
+        )
 
-            params = dict(
-                apiKey='S25QEDJvW3PCpRvVMoFmIJBHL01xokVyinW8F5Fj0pw',
-            )
+        # home_address = re.sub(r"([0-9]+(\.[0-9]+)?)",r" \1 ", home_address).strip()
+        parsed_address = {}
+        parsed_address["country"] = home_address.country.name
+        parsed_address["state"] = home_address.state
+        parsed_address["county"] = home_address.county
+        parsed_address["city"] = home_address.city
+        parsed_address["street"] = home_address.street
+        parsed_address["houseNumber"] = home_address.house
+        parsed_address = {k: v for k, v in parsed_address.items() if v}
 
-            home_address = re.sub(r"([0-9]+(\.[0-9]+)?)",r" \1 ", home_address).strip()
-            # parsed_address = {k: v for (v, k) in parse_address(patient.home_address)}
-            
-            params['q'] = home_address
+        params['qq'] = ';'.join(['%s=%s' % (key, value) for (key, value) in parsed_address.items()])
 
-            url = "https://geocode.search.hereapi.com/v1/geocode"
+        url = "https://geocode.search.hereapi.com/v1/geocode"
 
-            resp = requests.get(url=url, params=params)
-            data = resp.json()
-                       
-            if len(data["items"]):
-                item = data["items"][0]
+        resp = requests.get(url=url, params=params)
+        data = resp.json()
+        print(data)
+                   
+        if len(data["items"]):
+            item = data["items"][0]
 
-                item = item["position"]
+            item = item["position"]
 
-                lat = item["lat"]
-                lng = item["lng"]
+            lat = item["lat"]
+            lng = item["lng"]
+
             
         lat_lng.append((lat, lng))
 
@@ -740,13 +771,6 @@ def delete_patient():
                     return_url = "{}?id={}".format(url_for('main_blueprint.contacted_persons'), q.first().patient_id)
                     q.delete()
 
-                travel_type = TravelType.query.filter_by(id=patient.travel_type_id).first()
-                if travel_type:
-                    if travel_type.value == c.flight_type[0]:
-                        q = FlightTravel.query.filter_by(id=patient.travel_id)
-                    else:
-                        q = VariousTravel.query.filter_by(id=patient.travel_id)
-                    
                     q.delete()               
 
 
@@ -867,3 +891,36 @@ def add_contacted_person():
         return redirect("/contacted_persons?id={}".format(request.args["id"]))
     else:
         return route_template( 'patients/add_contacted_person', form=patient_form, hospital_types=hospital_types, added=False, error_msg=None)
+
+
+@blueprint.route('/add_state', methods=['POST'])
+@login_required
+def add_state():
+    if not current_user.is_authenticated:
+        return redirect(url_for('login_blueprint.login'))
+
+    if len(request.form):
+        patient_id = request.form["id"]
+        patient = None
+        try:
+            patient_query = Patient.query.filter(Patient.id == patient_id)
+            patient = patient_query.first()
+        except exc.SQLAlchemyError:
+            return render_template('errors/error-400.html'), 400
+
+        if patient:
+            state = {
+                "id": request.form["state"],
+                "comment": request.form["stateComment"],
+                "detection_date":request.form["stateDetectionDate"]
+            }
+            patientState = PatientState(
+                patient_id=patient_id, 
+                state_id=state["id"],
+                detection_date=state["detection_date"],
+                comment=state["comment"])
+            db.session.add(patientState)
+            db.session.commit()
+    
+    url = f"/patient_profile?id={request.form['id']}"
+    return redirect(url)

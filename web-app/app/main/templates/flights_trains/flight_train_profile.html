@@ -16,68 +16,13 @@
 
 <!-- Page content -->
 <div class="container-fluid mt--7">
-  {% with change=change, error_msg=error_msg %}
-  {% include "site_template/change_notification.html" %}
-  {% endwith %}
   <div class="row">
     <div class="col">
-      <div class="col">
-        <div class="card bg-secondary shadow mt-2">
-          <div class="card-body">
-            <form>
-              <!-- Address -->
-              <h6 class="heading-small text-muted mb-4">{{ _("О Рейсе") }}</h6>
-              <div class="pl-lg-4">
-                <div class="row">
-                  <div class="col-md-12">
-                    <div class="row">
-                     <div class="col">
-                      <div class="form-group">
-                        <label class="form-control-label" for="input-home_address">{{ _("Код Рейса") }}</label>
-                        {{ form.code(placeholder="KC 971",class="form-control", type="text", disabled=True) }}
-                      </div>
-                    </div>
-                    <div class="col">
-                      <div class="form-group">
-                        <label for="region-input" class="form-control-label">{{ _("Дата") }}</label>
-                        {{ form.date(class="form-control", type="date", disabled=True) }}                          
-                      </div>       
-                    </div>
-                  </div>                 
-                </div>
-              </div>
-            </div>
-            <hr class="my-3" />
-            <h6 class="heading-small text-muted mb-4">{{ _("Геоинформация о Полете") }}</h6>
-            <div class="pl-lg-4">
-              <div class="row">
-                <div class="col">
-                  <div class="form-group">
-                    <label for="name-input" class="form-control-label">{{ _("Из Страны") }}</label>
-                    {{ form.from_country(class="form-control", disabled=True) }}
-                  </div>
-                  <div class="form-group">
-                    <label for="iin-input" class="form-control-label">{{ _("Из Города") }}</label>
-                    {{ form.from_city(class="form-control", placeholder="Нур-Султан", type="text", disabled=True) }}
-                  </div>
-                </div>
-                <div class="col">
-                  <div class="form-group">
-                    <label for="name-input" class="form-control-label">{{ _("В Страну") }}</label>
-                    {{ form.to_country(class="form-control", disabled=True) }}
-                  </div>
-                  <div class="form-group">
-                    <label for="iin-input" class="form-control-label">{{ _("В Город") }}</label>
-                    {{ form.to_city(class="form-control", placeholder="Алматы", type="text", disabled=True) }}
-                  </div>                                                  
-                </div>
-              </div>                
-            </div>                
-          </form>
-        </div>
-      </div>
+                {% with is_trains=is_trains, form=form, is_profile=True, travel=travel %}
+                  {% include "flights_trains/modules/travel_form.html" %}
+                {% endwith %} 
 
-    </div>
+ 
     <div class="col mt-3">
       <div class="card shadow">
         <div class="card-header border-0">
@@ -98,7 +43,8 @@
               <tr>
                 <th scope="col">{{ _("ФИО") }}</th>
                 <th scope="col">{{ _("Телефон") }}</th>
-                <th scope="col">{{ _("Дата Въезда") }}</th>
+                <th scope="col">{{ _("Регион") }}</th>
+                <th scope="col">{{ _("Страна последние 14 дней") }}</th>
               </tr>
             </thead>
             <tbody>
@@ -108,7 +54,7 @@
                 <th scope="row">
                   <div class="media align-items-center">
                     <div class="media-body">
-                      <span class="mb-0 text-sm"><a href="/patient_profile?id={{patient.id}}">{{ patient.full_name }}</a></span>
+                      <span class="mb-0 text-sm"><a href="/patient_profile?id={{patient.id}}">{{ patient }}</a></span>
                     </div>
                   </div>
                 </th>
@@ -116,7 +62,14 @@
                   {{ patient.telephone }}
                 </td>
                 <td>
-                  {{ patient.arrival_date }}
+                  {{ patient.region }}
+                </td>
+                <td>
+                  {% if patient.visited_country %}
+                    {{ patient.visited_country.country }}
+                  {% else %}
+                    {{ _("Неизвестно") }}
+                  {% endif %}
                 </td>
               </tr>
               {% endfor %}
@@ -186,6 +139,10 @@
 
 {% block javascripts %}
 {{ super()}}
+  {% with change=change, error_msg=error_msg %}
+    {% include "site_template/change_notification.html" %}
+  {% endwith %}
+
 <script src="{{ url_for('static', filename='assets/js/jquery.seat-charts.min.js') }}"></script>
 <script type="text/javascript">
   $( document ).on( "mousemove", function( event ) {

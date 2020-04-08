@@ -9,15 +9,17 @@ from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
 from importlib import import_module
 from logging import basicConfig, DEBUG, getLogger, StreamHandler
-from os import path
+from os import path, getenv
 import pandas as pd
 import re
-# from flask_wtf.csrf import CSRFProtect
+from flask_wtf.csrf import CSRFProtect
+
 
 from app import constants as C
 
 db = SQLAlchemy()
 login_manager = LoginManager()
+csrf = CSRFProtect()
 
 def register_extensions(app):
     db.init_app(app)
@@ -29,7 +31,7 @@ def register_blueprints(app):
         app.register_blueprint(module.blueprint)
 
         if module_name == "main":
-            for submodule_name in ["users", "hospitals", "patients", "flights"]:
+            for submodule_name in ["users", "hospitals", "patients", "flights_trains"]:
                 module = import_module('app.{}.{}.routes'.format(module_name, submodule_name))
                 app.register_blueprint(module.blueprint)            
 
@@ -37,9 +39,9 @@ def configure_database(app):
     def add_hospitals():
         from app.main.models import (Region, Country, Infected_Country_Category, 
                                     TravelType, BorderControl, VariousTravel, Address, VisitedCountry)
-        from app.main.patients.models import PatientStatus, ContactedPersons, Patient
+        from app.main.patients.models import PatientStatus, ContactedPersons, Patient, State, PatientState
         from app.main.hospitals.models import  Hospital, Hospital_Type
-        from app.main.flights.models import FlightTravel, FlightCode
+        from app.main.flights_trains.models import FlightTravel, FlightCode
        
         # Clear the tables
         Patient.query.delete()
@@ -51,12 +53,10 @@ def configure_database(app):
         ### Flight
         FlightTravel.query.delete()
         FlightCode.query.delete()
-
         TravelType.query.delete()
         Region.query.delete()
 
         Hospital_Type.query.delete()
-
         PatientStatus.query.delete()
         ContactedPersons.query.delete()
 
@@ -66,10 +66,17 @@ def configure_database(app):
         Address.query.delete()
         Country.query.delete()
 
+        State.query.delete()
+        PatientState.query.delete()
+
         db.session.commit()
 
         df = pd.read_excel(C.hospitals_list_xlsx)
         df = df.drop_duplicates()
+
+        for state in C.states:
+            tmpState = State(name=state)
+            db.session.add(tmpState)
 
         for typ in C.travel_types:
             travel_type = TravelType(value=typ[0], name=typ[1])
@@ -237,8 +244,9 @@ def create_app(config, selenium=False, unittest=False):
     if selenium:
         app.config['LOGIN_DISABLED'] = True
     if unittest:
-        app.config['CSRF_ENABLED'] = False
         app.config['WTF_CSRF_ENABLED'] = False
+    app.config['SECRET_KEY'] = getenv("APP_SECRET_KEY") or "supersecret123456haha"
+    csrf.init_app(app)
     register_extensions(app)
     register_blueprints(app)
     configure_database(app)

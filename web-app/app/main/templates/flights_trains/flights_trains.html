@@ -24,7 +24,11 @@
               <h3 class="mb-0">{{ _("Найдено") }} {{total}}, {{ _("показано") }} {{ patients|length }} {{ _("рейсов") }}</h3>
             </div>
             <div class="col-md-auto">
+            {% if is_trains %}
+              <a href="/add_train" class="btn btn-sm btn-primary" style="width:100%;">{{ _("Добавить ЖД Рейс") }}</a>
+            {% else %}
               <a href="/add_flight" class="btn btn-sm btn-primary" style="width:100%;">{{ _("Добавить Рейс") }}</a>
+            {% endif %}              
             </div>
           </div>
         </div>
@@ -32,38 +36,56 @@
           <table class="table align-items-center table-flush">
             <thead class="thead-light">
               <tr>
+              {% if is_trains %}
+                <th scope="col">{{ _("Профиль Рейса") }}</th>
+                <th scope="col">{{ _("Дата Отправления") }}</th>
+                <th scope="col">{{ _("Дата Прибытия") }}</th>
+              {% else %}
                 <th scope="col">{{ _("Код Рейса") }}</th>
                 <th scope="col">{{ _("Дата") }}</th>
+              {% endif %}
                 <th scope="col">{{ _("Из") }}</th>
                 <th scope="col">{{ _("В") }}</th>
                 <th scope="col">{{ _("Кол-во Прибывших") }}</th>
               </tr>
             </thead>
             <tbody>
-              {% for flight in flights %}
+              {% for travel in travels %}
               <tr>
                 <th scope="row">
                   <div class="media align-items-center">
                     <div class="media-body">
-                      <span class="mb-0 text-sm"><a href="/flight_profile?id={{flight.id}}">{{ flight.code }}</a></span>
+                    {% if is_trains %}
+                      <span class="mb-0 text-sm"><a href="/train_profile?id={{travel.id}}">{{ _("Открыть Профиль") }}</a></span>
+                    {% else %}
+                      <span class="mb-0 text-sm"><a href="/flight_profile?id={{travel.id}}">{{ travel }}</a></span>
+                    {% endif %}
                     </div>
                   </div>
                 </th>
+              {% if is_trains %}
                 <td>
-                  {{ flight.date }}
-                </td>                
-                <td>
-                  {{ flight.from_country }}, {{ flight.from_city }} 
+                  {{ travel.departure_date }}
                 </td>
                 <td>
-                  {{ flight.to_country }}, {{ flight.to_city }} 
+                  {{ travel.arrival_date }}
+                </td>
+              {% else %}
+                <td>
+                  {{ travel.date }}
+                </td>                                
+              {% endif %}
+                <td>
+                  {{ travel.from_country }}, {{ travel.from_city }} 
                 </td>
                 <td>
-                  {{ flights_count[flight.id] }}
+                  {{ travel.to_country }}, {{ travel.to_city }} 
+                </td>
+                <td>
+                  {{ travels_count[travel.id] }}
                 </td>                
               </tr>
               {% endfor %}
-
             </tbody>
           </table>
         </div>
@@ -104,4 +126,7 @@
 
 {% block javascripts %}
 {{ super()}}
+  {% with change=change, error_msg=error_msg %}
+  {% include "site_template/change_notification.html" %}
+  {% endwith %}
 {% endblock javascripts %}

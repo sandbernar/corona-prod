@@ -4,17 +4,29 @@ License: MIT
 Copyright (c) 2019 - present AppSeed.us
 """
 
+import datetime
+
 from flask_login import UserMixin
 from sqlalchemy import Column, Integer, String, Date, Boolean, Float, ForeignKey, JSON, DateTime
-import datetime
 
 from app import db
 from app import constants as c
-
 from app.login.models import User
 from app.main.models import Country, Address, VisitedCountry
-
 from app.login.util import hash_pass
+
+
+class State(db.Model):
+    """
+    State class represents Patient state:
+    * infected
+    * dead
+    * healthy
+    """
+
+    __tablename__ = 'State'
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False)
 
 class Patient(db.Model):
 
@@ -27,7 +39,7 @@ class Patient(db.Model):
     created_by = db.relationship('User')
 
     travel_type_id = Column(Integer, ForeignKey('TravelType.id'), nullable=True, default=None)
-    travel_type = db.relationship('TravelType')    
+    travel_type = db.relationship('TravelType')
 
     travel_id = Column(Integer, nullable=True, default=None, unique=False)
 
@@ -51,7 +63,7 @@ class Patient(db.Model):
     country_of_residence = db.relationship('Country', foreign_keys=[country_of_residence_id])
 
     home_address_id = Column(Integer, ForeignKey('Address.id'), nullable=False)
-    home_address = db.relationship('Address', foreign_keys=[home_address_id], cascade="all, delete-orphan", single_parent=True)
+    home_address = db.relationship('Address', foreign_keys=[home_address_id], cascade="all,delete", backref="Patient")
 
     telephone = Column(String)
     email = Column(String, nullable=True)
@@ -75,6 +87,9 @@ class Patient(db.Model):
 
     attrs = Column(JSON, unique=False)
 
+    # infected, dead, healthy
+    states = db.relationship("State", secondary=lambda:PatientState.__table__, backref=db.backref("patients"))
+
     def __init__(self, **kwargs):
         for property, value in kwargs.items():
             if hasattr(value, '__iter__') and not isinstance(value, str):
@@ -84,6 +99,24 @@ class Patient(db.Model):
 
     def __repr__(self):
         return "{} {} {}".format(str(self.first_name), str(self.second_name), str(self.patronymic_name))
+
+class PatientState(db.Model):
+    """
+    PatientState represents many-to-many relationship between Patient and State tables.
+    Table includes:
+    * created_at: creation datetime
+    * detection_date: datetime of detection
+    * comment: comment on state
+    """
+    __tablename__ = 'PatientState'
+
+    state_id = Column(Integer, ForeignKey('State.id'), primary_key = True)
+    patient_id = Column(Integer, ForeignKey('Patient.id'), primary_key = True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    patient = db.relationship('Patient')
+    state = db.relationship('State')
+    detection_date = Column(DateTime, nullable=False)
+    comment = Column(String, nullable=True)
 
 class ContactedPersons(db.Model):
     __tablename__ = 'ContactedPersons'
@@ -124,7 +157,8 @@ class PatientStatus(db.Model):
             setattr(self, property, value)
 
     def __repr__(self):
-        return str(self.name)        
+        return str(self.name)      
+
 
 class ContactedPerson(db.Model):
 
