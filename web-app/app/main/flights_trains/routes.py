@@ -176,7 +176,7 @@ def add_flight():
     if 'create' in request.form:
         new_dict = request.form.to_dict(flat=True)
 
-        flight = FlightCode.query.filter_by(code=new_dict['code'][0]).filter_by(date=new_dict['date']).first()
+        flight = FlightCode.query.filter_by(code=new_dict['code']).filter_by(date=new_dict['date']).first()
         if flight:
             return route_template( 'flights_trains/add_flight_train', error_msg=_('Рейс уже зарегистрирован'), 
                                     form=form, change=None, is_trains = False)
