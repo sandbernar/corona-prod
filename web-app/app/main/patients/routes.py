@@ -165,6 +165,7 @@ def handle_add_update_patient(request_dict, final_dict, update_dict = {}):
     final_dict['status_id'] = PatientStatus.query.filter_by(value=status).first().id
     final_dict['is_found'] = int(request_dict['is_found']) == 1
     final_dict['is_infected'] = int(request_dict['is_infected']) == 1    
+    final_dict['is_contacted'] = int(request_dict['is_contacted']) == 1    
 
     # 3
     travel_type = TravelType.query.filter_by(value=request_dict['travel_type']).first()
@@ -318,6 +319,7 @@ def patient_profile():
                 
                 request_dict['is_found'] = "is_found" in request.form
                 request_dict['is_infected'] = "is_infected" in request.form
+                request_dict['is_contacted'] = "is_contacted" in request.form
 
                 status = c.no_status[0]
                 for s in c.patient_statuses:
@@ -372,6 +374,9 @@ def patient_profile():
 
             if patient.is_infected:
                 form.is_infected.default = 'checked'
+            
+            if patient.is_contacted:
+                form.is_contacted.default = 'checked'
 
             if patient.status:
                 if patient.status.value == c.in_hospital[0]:
@@ -666,6 +671,10 @@ def patients():
     if "is_infected" in request.args:
         filt["is_infected"] = True
         form.is_infected.default='checked'
+    
+    if "is_contacted" in request.args:
+        filt["is_contacted"] = True
+        form.is_contacted.default='checked'
 
     q = db.session.query(Patient).filter_by(**filt)
     # q = q.filter(Patient.travel_id == FlightTravel.id)
@@ -720,7 +729,7 @@ def patients():
 
     for result in q.offset((page-1)*per_page).limit(per_page).all():
         p = result
-        contacted = ContactedPersons.query.filter_by(patient_id=p.id).all()
+        contacted = ContactedPersons.query.filter_by(infected_person_id=p.id).all()
 
         p.contacted_count = len(contacted)
         p.contacted_found_count = 0
@@ -766,7 +775,7 @@ def delete_patient():
 
             if patient:
                 if patient.is_contacted_person:
-                    q = ContactedPersons.query.filter_by(person_id=patient_id)
+                    q = ContactedPersons.query.filter_by(contacted_patient_id=patient_id)
                     return_url = "{}?id={}".format(url_for('main_blueprint.contacted_persons'), q.first().patient_id)
                     q.delete()
 
@@ -807,9 +816,9 @@ def contacted_persons():
 
         if patient:
             if patient.is_contacted_person:
-                q = ContactedPersons.query.filter_by(person_id=request.args["id"])
+                q = ContactedPersons.query.filter_by(contacted_patient_id=request.args["id"])
             else:
-                q = ContactedPersons.query.filter_by(patient_id=request.args["id"])
+                q = ContactedPersons.query.filter_by(infected_person_id=request.args["id"])
 
             page = 1
             per_page = 5
@@ -886,7 +895,7 @@ def add_contacted_person():
         db.session.add(patient)
         db.session.commit()
 
-        contacted = ContactedPersons(patient_id=main_patient_id, person_id=patient.id)
+        contacted = ContactedPersons(infected_person_id=main_patient_id, contacted_patient_id=patient.id)
         db.session.add(contacted)
         db.session.commit()
 

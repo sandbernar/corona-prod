@@ -76,6 +76,7 @@ class Patient(db.Model):
 
     is_found = Column(Boolean, unique=False, default=False)
     is_infected = Column(Boolean, unique=False, default=False)
+    is_contacted = Column(Boolean, unique=False, default=False)
 
     hospital_id = Column(Integer, ForeignKey('Hospital.id'), nullable=True, default=None)
     hospital = db.relationship('Hospital')

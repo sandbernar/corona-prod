@@ -111,13 +111,24 @@
                                 </div>
                                 {% endfor %}
                               </div>
-                            </div>                            
+                            </div>
+                            <div class="col">
+                              <div class="form-group">
+                                <label class="form-control-label">Контактный?</label><br>
+                                {% for subfield in form.is_contacted %}
+                                <div class="custom-control custom-radio custom-control-inline">
+                                  {{ subfield(type="radio", id=subfield.id, class="custom-control-input") }}
+                                  <label class="custom-control-label" for='{{ subfield.id }}'>{{ subfield.label }}</label>
+                                </div>
+                                {% endfor %}
+                              </div>
+                            </div>
                             <div class="col">
                               <div class="form-group">
                                 <label class="form-control-label">{{ _("Статус Нахождения") }}</label><br>
                                 {{ form.patient_status(class="form-control", id="patient_status") }}
                               </div>
-                            </div>                            
+                            </div>
                           </div>
                         </div>
                       </div>
