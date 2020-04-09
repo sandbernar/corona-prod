@@ -452,7 +452,7 @@ def get_lat_lng(patients):
 
         url = "https://geocode.search.hereapi.com/v1/geocode"
 
-        resp = requests.get(url=url, params=params)
+        resp = requests.get(url=url, params=params, verify=False)
         data = resp.json()
         print(data)
                    
