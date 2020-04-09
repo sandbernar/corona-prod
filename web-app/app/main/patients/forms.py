@@ -50,8 +50,8 @@ class PatientForm(FlaskForm):
     home_address_state = TextField('Home State')
     home_address_county = TextField('Home County')    
     home_address_city = TextField('Home City', validators=[DataRequired()])
-    home_address_street = TextField('Home Street', validators=[DataRequired()])
-    home_address_house = TextField('Home House', validators=[DataRequired()])
+    home_address_street = TextField('Home Street')
+    home_address_house = TextField('Home House')
     home_address_flat = TextField('Home Flat')
     home_address_building = TextField('Home Building')    
 
@@ -73,7 +73,7 @@ class PatientForm(FlaskForm):
     job_address_flat = TextField('Job Flat')
     job_address_building = TextField('Job Building')
 
-    telephone = TextField('Telephone', id='telephone'   , validators=[DataRequired()])
+    telephone = TextField('Telephone', id='telephone')
     email = TextField('EMail', id='email')
 
     hospital_region_id = SelectField('Hospital Region' , validators=[DataRequired()])
@@ -83,11 +83,13 @@ class PatientForm(FlaskForm):
     patient_status = SelectField('Patient Status', id='patient_status' , validators=[DataRequired()])
     is_found = RadioField("Is Found", id="is_found", choices=[(1, "Да"),(0,"Нет")], default=0, validators=[DataRequired()])
     is_infected = RadioField("Is Infected", id="is_infected", choices=[(1, "Да"),(0,"Нет")], default=0, validators=[DataRequired()])
+    is_contacted = RadioField("Is Contacted", id="is_contacted", choices=[(1, "Да"),(0,"Нет")], default=0, validators=[DataRequired()])
 
 
 class UpdateProfileForm(PatientForm):
     is_found = BooleanField(id="is_found")
     is_infected = BooleanField(id="is_infected")
+    is_contacted = BooleanField(id="is_contacted")
     in_hospital = BooleanField(id="in_hospital")
     is_home = BooleanField(id="is_home")
     is_transit = BooleanField(id="is_transit")

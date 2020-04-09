@@ -72,22 +72,16 @@
                 {{ form.hidden_tag() }}
                 <div class="row">
                   <div class="col">
-                    <div class="card shadow">
-                      <div class="card-header bg-transparent">
+
                         {% with form=form %}
                           {% include "patients/modules/patient_form_left.html" %}
                         {% endwith %}                    
-                      </div>
-                    </div>
+
                   </div>
                   <div class="col">
-                    <div class="card shadow">
-                      <div class="card-header bg-transparent">
                         {% with form=form %}
                           {% include "patients/modules/patient_form_right.html" %}
                         {% endwith %}                         
-                      </div>
-                    </div>
                   </div>
                 </div>
                 <div class="row mt-2">
@@ -117,13 +111,24 @@
                                 </div>
                                 {% endfor %}
                               </div>
-                            </div>                            
+                            </div>
+                            <div class="col">
+                              <div class="form-group">
+                                <label class="form-control-label">Контактный?</label><br>
+                                {% for subfield in form.is_contacted %}
+                                <div class="custom-control custom-radio custom-control-inline">
+                                  {{ subfield(type="radio", id=subfield.id, class="custom-control-input") }}
+                                  <label class="custom-control-label" for='{{ subfield.id }}'>{{ subfield.label }}</label>
+                                </div>
+                                {% endfor %}
+                              </div>
+                            </div>
                             <div class="col">
                               <div class="form-group">
                                 <label class="form-control-label">{{ _("Статус Нахождения") }}</label><br>
                                 {{ form.patient_status(class="form-control", id="patient_status") }}
                               </div>
-                            </div>                            
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -133,7 +138,7 @@
                     <div class="card shadow" style="height:100%;">
                       <div class="card-header bg-transparent" style="height:100%;">
                         <div class="card-body" style="height:100%;">
-                          <div class="col">
+                          <div class="row">
                             <div class="col">
                               <div class="form-group">
                                 <label for="job-input" class="form-control-label">{{ _("Регион Госпитализации") }}</label>

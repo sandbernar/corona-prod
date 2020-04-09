@@ -119,7 +119,7 @@ class VisitedCountry(db.Model):
     patient_id = Column(Integer, ForeignKey('Patient.id', ondelete="CASCADE"))
     patient = db.relationship('Patient', backref=db.backref('visited_country', passive_deletes=True))
 
-    country_id = Column(Integer, ForeignKey('Country.id'), nullable=False)
+    country_id = Column(Integer, ForeignKey('Country.id'), nullable=True, default=None)
     country = db.relationship('Country')
 
     from_date = Column(Date, nullable=True)

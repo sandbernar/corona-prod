@@ -1,3 +1,10 @@
+## Тестирование
+
+Запустит docker-compose с базой данных и приложением
+```
+docker-compose -f docker-compose-test.yml up -d
+```
+
 ## Запуск
 
 Запустится на порту :5005

@@ -39,14 +39,17 @@ travel_types = [flight_type, train_type, by_auto_type, by_foot_type, by_sea_type
 unknown = (None, "Неизвестно")
 
 cyrillic_to_ascii = {
-	"Е": "E",
-	"С": "C",
 	"А": "A",
-	"Н": "H",
-	"К": "K",
-	"Х": "X",
-	"М": "M",
+	"Б": "B",
 	"В": "B",
+	"Г": "G",
+	"Д": "D",
+	"Е": "E",
+	"К": "K",
+	"Н": "H",
+	"М": "M",
+	"С": "C",
+	"Х": "X",
 	"Т": "T"
 }
 

@@ -21,8 +21,6 @@
                 {% with is_trains=is_trains, form=form, is_profile=True, travel=travel %}
                   {% include "flights_trains/modules/travel_form.html" %}
                 {% endwith %} 
-
- 
     <div class="col mt-3">
       <div class="card shadow">
         <div class="card-header border-0">
@@ -45,6 +43,10 @@
                 <th scope="col">{{ _("Телефон") }}</th>
                 <th scope="col">{{ _("Регион") }}</th>
                 <th scope="col">{{ _("Страна последние 14 дней") }}</th>
+              {% if is_trains %}  
+                <th scope="col">{{ _("Вагон") }}</th>
+              {% endif %}  
+                <th scope="col">{{ _("Место") }}</th>
               </tr>
             </thead>
             <tbody>
@@ -54,23 +56,33 @@
                 <th scope="row">
                   <div class="media align-items-center">
                     <div class="media-body">
-                      <span class="mb-0 text-sm"><a href="/patient_profile?id={{patient.id}}">{{ patient }}</a></span>
+                      <span class="mb-0 text-sm"><a href="/patient_profile?id={{patient[0].id}}">{{ patient[0] }}</a></span>
                     </div>
                   </div>
                 </th>
                 <td>
-                  {{ patient.telephone }}
+                  {{ patient[0].telephone }}
                 </td>
                 <td>
-                  {{ patient.region }}
+                  {{ patient[0].region }}
                 </td>
                 <td>
-                  {% if patient.visited_country %}
-                    {{ patient.visited_country.country }}
+                  {% if patient[0].visited_country %}
+                  {% for country in patient[0].visited %}
+                    {{ country }}
+                  {% endfor %}
                   {% else %}
                     {{ _("Неизвестно") }}
                   {% endif %}
                 </td>
+                {% if is_trains %}
+                <td>
+                  {{ patient[1].wagon }}
+                </td>
+                {% endif %}
+                <td>
+                  {{ patient[1].seat }}
+                </td>                
               </tr>
               {% endfor %}
 

@@ -123,6 +123,9 @@ def is_same_address(request_dict, address, form_prefix='home'):
 def process_address(request_dict, form_prefix='home', lat_lng = True, address = None):
     if address is None:
         address = Address()
+    else:
+        if is_same_address(request_dict, address):
+            return address
 
     address.country_id = request_dict[form_prefix + '_address_country_id']
     address.state = request_dict.get(form_prefix + '_address_state', None)
@@ -162,6 +165,7 @@ def handle_add_update_patient(request_dict, final_dict, update_dict = {}):
     final_dict['status_id'] = PatientStatus.query.filter_by(value=status).first().id
     final_dict['is_found'] = int(request_dict['is_found']) == 1
     final_dict['is_infected'] = int(request_dict['is_infected']) == 1    
+    final_dict['is_contacted'] = int(request_dict['is_contacted']) == 1    
 
     # 3
     travel_type = TravelType.query.filter_by(value=request_dict['travel_type']).first()
@@ -170,15 +174,12 @@ def handle_add_update_patient(request_dict, final_dict, update_dict = {}):
 
     # 5
     # Home Address
-    home_address = process_address(request_dict)
+    home_address = process_address(request_dict, address=update_dict.get("home_address", None))
     final_dict['home_address_id'] = home_address.id
 
-    job_address = None
-    if "job_address_city" in request_dict:
-        job_address = process_address(request_dict, "job", False)
+    job_address = process_address(request_dict, "job", False, address=update_dict.get("job_address", None))
+    final_dict['job_address_id'] = job_address.id
 
-    if job_address:
-        final_dict['job_address_id'] = job_address.id
 
 def handle_after_patient(request_dict, final_dict, patient, update_dict = {}):
     travel_type = patient.travel_type
@@ -234,18 +235,22 @@ def handle_after_patient(request_dict, final_dict, patient, update_dict = {}):
                     db.session.commit()
 
     # 4 Visited Country
-    visited_country_id = request_dict.get('visited_country_id', None)
+    v_country_id = request_dict.get('visited_country_id', None)
+    v_country_id = None if v_country_id == '-1' else v_country_id
+    v_country = update_dict.get('visited_country', VisitedCountry(patient_id = patient.id))
+    
+    from_date = request_dict.get('visited_from_date', None)
+    from_date = None if not from_date else from_date
+    
+    to_date = request_dict.get('visited_from_date', None)
+    to_date = None if not to_date else to_date
 
-    if visited_country_id !='-1' and visited_country_id:
-        visited_country = VisitedCountry(patient_id = patient.id, country_id=visited_country_id)
-        
-        from_date = request_dict.get('visited_from_date', None)
-        visited_country.from_date = from_date if from_date else None
+    if v_country.to_date != to_date or v_country.from_date != from_date or v_country.country_id != v_country_id:
+        v_country.from_date = from_date
+        v_country.to_date = to_date
+        v_country.country_id = v_country_id
 
-        to_date = request_dict.get('visited_from_date', None)
-        visited_country.to_date = to_date if from_date else None            
-
-        db.session.add(visited_country)
+        db.session.add(v_country)
         db.session.commit()
 
 @blueprint.route('/add_person', methods=['GET', 'POST'])
@@ -293,10 +298,6 @@ def patient_profile():
         if not patient:
             return render_template('errors/error-404.html'), 404
         else:
-            # patient.visited_country = []
-            # db.session.delete(patient.visited_country[0])
-            # db.session.commit()
-
             form = UpdateProfileForm(request.form)
             change = None
 
@@ -318,6 +319,7 @@ def patient_profile():
                 
                 request_dict['is_found'] = "is_found" in request.form
                 request_dict['is_infected'] = "is_infected" in request.form
+                request_dict['is_contacted'] = "is_contacted" in request.form
 
                 status = c.no_status[0]
                 for s in c.patient_statuses:
@@ -326,13 +328,19 @@ def patient_profile():
 
                 request_dict['patient_status'] = status
                 request_dict['travel_type'] = patient.travel_type.value
+
+                update_dict["home_address"] = patient.home_address
+                update_dict["job_address"] = patient.job_address
                 
                 if request_dict['travel_type'] == c.flight_type[0]:
-                    update_dict['flight_travel'] = FlightTravel.query.filter_by(id=patient.id).first()
+                    update_dict['flight_travel'] = FlightTravel.query.filter_by(patient_id=patient.id).first()
+                elif request_dict['travel_type'] == c.train_type[0]:
+                    update_dict['train_travel'] = TrainTravel.query.filter_by(patient_id=patient.id).first()                    
                 elif request_dict['travel_type'] in dict(c.various_travel_types).keys():
-                    update_dict['various_travel'] = VariousTravel.query.filter_by(id=patient.id).first()
+                    update_dict['various_travel'] = VariousTravel.query.filter_by(patient_id=patient.id).first()
 
                 handle_add_update_patient(request_dict, final_dict, update_dict)
+                handle_after_patient(request_dict, final_dict, patient, update_dict)
                 
                 if "travel_type_id" in request.form:
                     travel_type_id = request.form['travel_type_id']
@@ -340,13 +348,6 @@ def patient_profile():
                         travel_type_id = None                    
 
                     patient.travel_type_id = travel_type_id
-
-                if not is_same_address(request_dict, patient.home_address):
-                    process_address(request_dict, address=patient.home_address)
-
-                if patient.job_address:
-                    if not is_same_address(request_dict, patient.job_address, form_prefix="job"):
-                        process_address(request_dict, lat_lng = False, form_prefix="job", address=patient.job_address)
 
                 for k, v in final_dict.items():
                     setattr(patient, k, v)
@@ -373,6 +374,9 @@ def patient_profile():
 
             if patient.is_infected:
                 form.is_infected.default = 'checked'
+            
+            if patient.is_contacted:
+                form.is_contacted.default = 'checked'
 
             if patient.status:
                 if patient.status.value == c.in_hospital[0]:
@@ -465,168 +469,168 @@ def get_lat_lng(patients):
 
     return lat_lng
 
-@blueprint.route('/add_data', methods=['GET', 'POST'])
-def add_data():
-    if not current_user.is_authenticated:
-        return redirect(url_for('login_blueprint.login'))
+# @blueprint.route('/add_data', methods=['GET', 'POST'])
+# def add_data():
+#     if not current_user.is_authenticated:
+#         return redirect(url_for('login_blueprint.login'))
 
-    data_form = AddFlightFromExcel()
-    docs = UploadSet('documents', ['xls', 'xlsx', 'csv'])
+#     data_form = AddFlightFromExcel()
+#     docs = UploadSet('documents', ['xls', 'xlsx', 'csv'])
 
-    if not data_form.flights_id.choices:
-        data_form.flights_id.choices = []
-        for flight in FlightCode.query.all():
-            flight_name = "{}, {}, {}-{}".format(flight.date, flight.code, flight.from_city, flight.to_city)
-            data_form.flights_id.choices.append((str(flight.id), flight_name))
+#     if not data_form.flights_id.choices:
+#         data_form.flights_id.choices = []
+#         for flight in FlightCode.query.all():
+#             flight_name = "{}, {}, {}-{}".format(flight.date, flight.code, flight.from_city, flight.to_city)
+#             data_form.flights_id.choices.append((str(flight.id), flight_name))
 
-        form_dict = request.form.to_dict()
-        if "flights_id" in form_dict:
-            data_form.flights_id.default = form_dict["flights_id"]
+#         form_dict = request.form.to_dict()
+#         if "flights_id" in form_dict:
+#             data_form.flights_id.default = form_dict["flights_id"]
 
-    found_hospitals = dict()
+#     found_hospitals = dict()
 
-    if data_form.validate_on_submit():
-        filename = docs.save(data_form.file.data)
-        file_url = docs.url(filename)
+#     if data_form.validate_on_submit():
+#         filename = docs.save(data_form.file.data)
+#         file_url = docs.url(filename)
 
-        patients = pd.read_excel(docs.path(filename))
-        added = 0
-        regions = get_regions(current_user)
+#         patients = pd.read_excel(docs.path(filename))
+#         added = 0
+#         regions = get_regions(current_user)
 
-        created_patients = []
+#         created_patients = []
 
-        def create_patient(row, flight_code_id):
+#         def create_patient(row, flight_code_id):
 
-            patient = Patient()
-            patient.full_name = row["ФИО"]
-            patient.iin = row["ИИН"]
+#             patient = Patient()
+#             patient.full_name = row["ФИО"]
+#             patient.iin = row["ИИН"]
 
-            if isinstance(row["Дата рождения"], pd._libs.tslibs.nattype.NaTType):
-                patient.dob = datetime(1000, 1, 1)
-            else:
-                if not isinstance(row["Дата рождения"], datetime):
-                    try:
-                        patient.dob = dateutil.parser.parse(row["Дата рождения"])
-                    except (TypeError, ValueError) as e:
-                        patient.dob = datetime(1000, 1, 1)
-                else:
-                    patient.dob = row["Дата рождения"]
+#             if isinstance(row["Дата рождения"], pd._libs.tslibs.nattype.NaTType):
+#                 patient.dob = datetime(1000, 1, 1)
+#             else:
+#                 if not isinstance(row["Дата рождения"], datetime):
+#                     try:
+#                         patient.dob = dateutil.parser.parse(row["Дата рождения"])
+#                     except (TypeError, ValueError) as e:
+#                         patient.dob = datetime(1000, 1, 1)
+#                 else:
+#                     patient.dob = row["Дата рождения"]
 
-            patient.citizenship = row.get("Гражданство", None)
-            patient.pass_num = row["Номер паспорта"]
-            patient.telephone = row["Номер мобильного телефона"]
+#             patient.citizenship = row.get("Гражданство", None)
+#             patient.pass_num = row["Номер паспорта"]
+#             patient.telephone = row["Номер мобильного телефона"]
 
-            # try:
-            #     patient.arrival_date = dateutil.parser.parse(row["Дата въезда"])
-            # except TypeError:
-            #     patient.arrival_date = datetime(1000, 1, 1)           
+#             # try:
+#             #     patient.arrival_date = dateutil.parser.parse(row["Дата въезда"])
+#             # except TypeError:
+#             #     patient.arrival_date = datetime(1000, 1, 1)           
 
-            patient.travel_type_id = TravelType.query.filter_by(value = c.flight_type[0]).first().id
+#             patient.travel_type_id = TravelType.query.filter_by(value = c.flight_type[0]).first().id
 
-            # Create travel for this user
-            flight_travel = FlightTravel(flight_code_id=flight_code_id, seat=None)
-            flight_travel.seat = row.get("Место пассажира на борту воздушного судна", None)
+#             # Create travel for this user
+#             flight_travel = FlightTravel(flight_code_id=flight_code_id, seat=None)
+#             flight_travel.seat = row.get("Место пассажира на борту воздушного судна", None)
 
-            db.session.add(flight_travel)
-            db.session.commit()
-            patient.travel_id = flight_travel.id
+#             db.session.add(flight_travel)
+#             db.session.commit()
+#             patient.travel_id = flight_travel.id
 
-            patient.visited_country = row.get("Место и сроки пребывания в последние 14 дней до прибытия в Казахстан (укажите страну, область, штат и т.д.)", None)
+#             patient.visited_country = row.get("Место и сроки пребывания в последние 14 дней до прибытия в Казахстан (укажите страну, область, штат и т.д.)", None)
             
-            region_name = ""
-            if not pd.isnull(row["регион"]):
-                regions_distance = []
-                preprocessed_region = row["регион"].lower().split(" ")
+#             region_name = ""
+#             if not pd.isnull(row["регион"]):
+#                 regions_distance = []
+#                 preprocessed_region = row["регион"].lower().split(" ")
 
-                for r in regions:
-                    preprocessed_r = r.name.lower().replace("(", "").replace(")", "").split(" ")
-                    common_elements = len(set(preprocessed_region).intersection(preprocessed_r))
-                    regions_distance.append(common_elements)
+#                 for r in regions:
+#                     preprocessed_r = r.name.lower().replace("(", "").replace(")", "").split(" ")
+#                     common_elements = len(set(preprocessed_region).intersection(preprocessed_r))
+#                     regions_distance.append(common_elements)
 
-                if np.max(regions_distance) == len(preprocessed_region):
-                    region = regions[np.argmax(regions_distance)]
-                else:
-                    regions_distance = []
-                    for r in regions:
-                        regions_distance.append(nltk.edit_distance(row["регион"], r.name))
+#                 if np.max(regions_distance) == len(preprocessed_region):
+#                     region = regions[np.argmax(regions_distance)]
+#                 else:
+#                     regions_distance = []
+#                     for r in regions:
+#                         regions_distance.append(nltk.edit_distance(row["регион"], r.name))
 
-                    region = regions[np.argmin(regions_distance)]
+#                     region = regions[np.argmin(regions_distance)]
                 
-                patient.region_id = region.id
-                region_name = region.name
-            else:
-                patient.region_id = Region.query.filter_by(name="Вне РК").first().id
+#                 patient.region_id = region.id
+#                 region_name = region.name
+#             else:
+#                 patient.region_id = Region.query.filter_by(name="Вне РК").first().id
 
-            patient.home_address = row["Место жительство, либо предпологаемое место проживания"]
-            patient.job = row.get("Место работы", None)
+#             patient.home_address = row["Место жительство, либо предпологаемое место проживания"]
+#             patient.job = row.get("Место работы", None)
             
-            if "Найден (да/нет)" in row.keys():
-                patient.is_found = True if row["Найден (да/нет)"].lower() == "да" else False
-            else:
-                if "Госпитализирован (да/нет)" in row.keys():
-                    patient.is_found = True if row["Госпитализирован (да/нет)"].lower() == "да" else False    
+#             if "Найден (да/нет)" in row.keys():
+#                 patient.is_found = True if row["Найден (да/нет)"].lower() == "да" else False
+#             else:
+#                 if "Госпитализирован (да/нет)" in row.keys():
+#                     patient.is_found = True if row["Госпитализирован (да/нет)"].lower() == "да" else False    
     
-            hospitals = Hospital.query.filter_by(region_id=patient.region_id).all()
+#             hospitals = Hospital.query.filter_by(region_id=patient.region_id).all()
 
-            if not pd.isnull(row.get("Место госпитализации", None)):
-                hospital_lower = row["Место госпитализации"].lower()
+#             if not pd.isnull(row.get("Место госпитализации", None)):
+#                 hospital_lower = row["Место госпитализации"].lower()
 
-                status = None
-                if "вылет" in hospital_lower or "транзит" in hospital_lower:
-                    status = c.is_transit
-                elif "карантин" in hospital_lower:
-                    status = c.is_home
-                elif len(hospital_lower):
-                    status = c.in_hospital
-                    hospital = found_hospitals.get(row["Место госпитализации"], None)
+#                 status = None
+#                 if "вылет" in hospital_lower or "транзит" in hospital_lower:
+#                     status = c.is_transit
+#                 elif "карантин" in hospital_lower:
+#                     status = c.is_home
+#                 elif len(hospital_lower):
+#                     status = c.in_hospital
+#                     hospital = found_hospitals.get(row["Место госпитализации"], None)
 
-                    if not hospital:
-                        hospital_distances = []
-                        hospital_name = row["Место госпитализации"]
+#                     if not hospital:
+#                         hospital_distances = []
+#                         hospital_name = row["Место госпитализации"]
 
-                        for h in hospitals:
-                            hospital_distances.append(nltk.edit_distance(hospital_name, h.name, True))
+#                         for h in hospitals:
+#                             hospital_distances.append(nltk.edit_distance(hospital_name, h.name, True))
 
-                        if len(hospital_distances):
-                            hospital = hospitals[np.argmin(hospital_distances)]
-                            patient.hospital_id = hospital.id
-                else:
-                    status = c.no_status
+#                         if len(hospital_distances):
+#                             hospital = hospitals[np.argmin(hospital_distances)]
+#                             patient.hospital_id = hospital.id
+#                 else:
+#                     status = c.no_status
                 
-                if status != None:
-                    patient.status_id = PatientStatus.query.filter_by(value=status[0]).first().id
-            else:
-                patient.status_id = PatientStatus.query.filter_by(value=c.no_status[0]).first().id
+#                 if status != None:
+#                     patient.status_id = PatientStatus.query.filter_by(value=status[0]).first().id
+#             else:
+#                 patient.status_id = PatientStatus.query.filter_by(value=c.no_status[0]).first().id
 
 
-            created_patients.append(patient)
+#             created_patients.append(patient)
 
-        patients.apply(lambda row: create_patient(row, request.form['flights_id'][0]), axis=1)
-        added = len(patients)
+#         patients.apply(lambda row: create_patient(row, request.form['flights_id'][0]), axis=1)
+#         added = len(patients)
 
-        lat_lng_data = []
-        for p in created_patients:
-            lat_lng_data.append((p.home_address, Region.query.filter_by(id=p.region_id).first().name))
+#         lat_lng_data = []
+#         for p in created_patients:
+#             lat_lng_data.append((p.home_address, Region.query.filter_by(id=p.region_id).first().name))
 
-        p_num = 16
-        pool = threadpool(processes = p_num)
-        lat_lng = pool.map(get_lat_lng, np.array_split(lat_lng_data, p_num))
-        pool.close()
-        pool.join()
+#         p_num = 16
+#         pool = threadpool(processes = p_num)
+#         lat_lng = pool.map(get_lat_lng, np.array_split(lat_lng_data, p_num))
+#         pool.close()
+#         pool.join()
 
-        lat_lng = list(itertools.chain.from_iterable(lat_lng))
+#         lat_lng = list(itertools.chain.from_iterable(lat_lng))
 
-        for p, coordinates in zip(created_patients, lat_lng):
-            p.address_lat = coordinates[0]
-            p.address_lng = coordinates[1]
+#         for p, coordinates in zip(created_patients, lat_lng):
+#             p.address_lat = coordinates[0]
+#             p.address_lng = coordinates[1]
 
-            db.session.add(p)
+#             db.session.add(p)
 
-        db.session.commit()      
+#         db.session.commit()      
 
-        return route_template( 'patients/add_data', form=data_form, added=added)
-    else:
-        return route_template( 'patients/add_data', form=data_form, added=-1)
+#         return route_template( 'patients/add_data', form=data_form, added=added)
+#     else:
+#         return route_template( 'patients/add_data', form=data_form, added=-1)
 
 @blueprint.route('/patients')
 @login_required
@@ -667,6 +671,10 @@ def patients():
     if "is_infected" in request.args:
         filt["is_infected"] = True
         form.is_infected.default='checked'
+    
+    if "is_contacted" in request.args:
+        filt["is_contacted"] = True
+        form.is_contacted.default='checked'
 
     q = db.session.query(Patient).filter_by(**filt)
     # q = q.filter(Patient.travel_id == FlightTravel.id)
@@ -721,7 +729,7 @@ def patients():
 
     for result in q.offset((page-1)*per_page).limit(per_page).all():
         p = result
-        contacted = ContactedPersons.query.filter_by(patient_id=p.id).all()
+        contacted = ContactedPersons.query.filter_by(infected_person_id=p.id).all()
 
         p.contacted_count = len(contacted)
         p.contacted_found_count = 0
@@ -767,14 +775,17 @@ def delete_patient():
 
             if patient:
                 if patient.is_contacted_person:
-                    q = ContactedPersons.query.filter_by(person_id=patient_id)
+                    q = ContactedPersons.query.filter_by(contacted_patient_id=patient_id)
                     return_url = "{}?id={}".format(url_for('main_blueprint.contacted_persons'), q.first().patient_id)
                     q.delete()
 
-                    q.delete()               
-
-
                 patient_query.delete()
+
+                if patient.home_address:
+                    db.session.delete(patient.home_address)
+                if patient.job_address:
+                    db.session.delete(patient.job_address)
+                                    
                 db.session.commit()
             
             # user does not exist
@@ -805,9 +816,9 @@ def contacted_persons():
 
         if patient:
             if patient.is_contacted_person:
-                q = ContactedPersons.query.filter_by(person_id=request.args["id"])
+                q = ContactedPersons.query.filter_by(contacted_patient_id=request.args["id"])
             else:
-                q = ContactedPersons.query.filter_by(patient_id=request.args["id"])
+                q = ContactedPersons.query.filter_by(infected_person_id=request.args["id"])
 
             page = 1
             per_page = 5
@@ -884,7 +895,7 @@ def add_contacted_person():
         db.session.add(patient)
         db.session.commit()
 
-        contacted = ContactedPersons(patient_id=main_patient_id, person_id=patient.id)
+        contacted = ContactedPersons(infected_person_id=main_patient_id, contacted_patient_id=patient.id)
         db.session.add(contacted)
         db.session.commit()
 

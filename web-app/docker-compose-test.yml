@@ -1,0 +1,23 @@
+version: '3'
+services:
+  postgres:
+    image: postgres
+    env_file: .env
+    environment:
+      - POSTGRES_PASSWORD=test1234Abc
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - ./initdb:/docker-entrypoint-initdb.d
+  appseed-app:
+    restart: always
+    env_file: .env
+    environment:
+        - DATABASE_HOST=postgres
+    build: .
+    ports:
+      - "5005:5005"
+    volumes:
+      - .:/app
+      - ./migrations:/migrations
+    depends_on:
+      - postgres

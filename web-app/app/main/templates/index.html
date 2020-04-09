@@ -99,9 +99,9 @@
                   </td>
                   <td>
                     {% if not patient.visited_country %}
-                    {{ constants.unknown[1] }} 
+                      {{ constants.unknown[1] }} 
                     {% else %}
-                    {{ patient.visited_country }}
+                      {{ patient.visited_country[0] }}
                     {% endif %}
                   </td>                  
                 </tr>
