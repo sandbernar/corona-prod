@@ -6,6 +6,8 @@ from flask_babelex import Babel
 from flask import request, session
 from time import sleep
 from app import create_app, db
+import random
+import time
 
 from app.login.util import hash_pass
 
@@ -16,13 +18,33 @@ from app.main.patients.forms import PatientForm, UpdateProfileForm, AddFlightFro
 from flask_migrate import Migrate
 from sqlalchemy import create_engine
 
+from app.main.flights_trains.models import FlightCode, FlightTravel, Train, TrainTravel
+from app.main.patients.models import Patient, PatientStatus, ContactedPersons, State, PatientState
 
-# get last added train id
-# get lass added flight id
-# generate random date
+FLIGHT = None
+TRAIN = None
+PATIENT = None
 
-train_id = 1
-flight_id = 1
+
+def str_time_prop(start, end, format, prop):
+    """Get a time at a proportion of a range of two formatted times.
+
+    start and end should be strings specifying times formated in the
+    given format (strftime-style), giving an interval [start, end].
+    prop specifies how a proportion of the interval to be taken after
+    start.  The returned time will be in the specified format.
+    """
+
+    stime = time.mktime(time.strptime(start, format))
+    etime = time.mktime(time.strptime(end, format))
+
+    ptime = stime + prop * (etime - stime)
+
+    return time.strftime(format, time.localtime(ptime))
+
+
+def random_date(start, end, prop):
+    return str_time_prop(start, end, '%m-%d-%Y', prop)
 
 
 class TestCase(unittest.TestCase):
@@ -67,6 +89,7 @@ class TestCase(unittest.TestCase):
         response = self.app.get('/', content_type='html/text', follow_redirects=True)
         self.assertEqual(response.status_code, 200)
         self.assertIn('Login', str(response.data))
+
     
     def test_login(self):
         rv = self.login('adm', 'paswd')
@@ -82,7 +105,7 @@ class TestCase(unittest.TestCase):
         self.login('adm', 'paswd')
         flight = {
             "code":"test",
-            "date":"2020-04-06",
+            "date":random_date("1-1-2008", "1-1-2009", random.random()),
             "from_country_id":88,
             "from_city":"Nur-Sultan",
             "to_country_id":88,
@@ -96,8 +119,8 @@ class TestCase(unittest.TestCase):
     def test_train(self):
         self.login('adm', 'paswd')
         train = {
-            "departure_date":"2020-04-02",
-            "arrival_date":"2020-04-13",
+            "departure_date":random_date("1-1-2008", "1-1-2009", random.random()),
+            "arrival_date":random_date("1-1-2008", "1-1-2009", random.random()),
             "from_country_id":88,
             "from_city":"Astana",
             "to_country_id":88,
@@ -112,15 +135,16 @@ class TestCase(unittest.TestCase):
     def test_new_patient(self):
         self.login("adm","paswd")
         rv = self.add_patient()
-        # print(str(rv.data.decode('utf-8')))
         assert "patient_id" in str(rv.data)
 
     def test_new_patient_train(self):
+        self.login("adm","paswd")
+        TRAIN = Train.query.all()[-1]
         patient = {
             "travel_type":"train_type",
-            "train_departure_date":"2020-04-01",
-            "train_arrival_date":"2020-04-20",
-            "train_id":3,
+            "train_departure_date": TRAIN.departure_date,
+            "train_arrival_date": TRAIN.arrival_date,
+            "train_id": TRAIN.id,
             "train_wagon":"32",
             "train_seat":"4",
             "second_name":"1",
@@ -163,10 +187,10 @@ class TestCase(unittest.TestCase):
         }
 
         rv = self.app.post("/add_person", data=patient, follow_redirects=True)
-        print(str(rv.data.decode('utf-8')))
         pass
 
     def test_edit_patient(self):
+        p = Patient.query.filter_by(travel_type_id=3)[-1]
         self.login("adm","paswd")
         patient = {
             "travel_type": "auto_type",
@@ -213,26 +237,29 @@ class TestCase(unittest.TestCase):
 
 
         # POST /patient_profile?id=2 HTTP/1.1
-        rv = self.app.post("/patient_profile?id=2", data=patient, follow_redirects=True)
+        rv = self.app.post("/patient_profile?id=" + str(p.id), data=patient, follow_redirects=True)
         assert "Профиль успешно обновлен" in str(rv.data.decode('utf-8'))
 
     def test_delete_patient(self):
         self.login("adm","paswd")
         # POST /delete_patient HTTP/1.1
-        rv = self.app.post("/delete_patient", data={"delete": 2}, follow_redirects=True)
+        PATIENT = Patient.query.all()[-1]
+        rv = self.app.post("/delete_patient", data={"delete": PATIENT.id}, follow_redirects=True)
         assert "Пользователь успешно удален" in str(rv.data.decode('utf-8'))
 
         pass
 
     def test_delete_train(self):
         self.login("adm","paswd")
+        TRAIN = Train.query.all()[-1]
         # csrf_token=IjRlZGMyZGIwMDJjMTQ5MDFkMzMzYjk4MjFmOTE1NzgyN2FmZDhiNGMi.Xo3ztw.lcpzWQxIEQ-LM2QUdlXzSU_fGsY&delete=1
-        rv= self.app.post("/delete_train", data={"delete": 2}, follow_redirects=True)
+        rv= self.app.post("/delete_train", data={"delete": TRAIN.id}, follow_redirects=True)
         assert "ЖД Рейс успешно удален" in str(rv.data.decode('utf-8'))
     
     def test_delete_flight(self):
         self.login("adm","paswd")
-        rv = self.app.post("/delete_flight", data={"delete": 2}, follow_redirects=True)
+        FLIGHT = FlightCode.query.all()[-1]
+        rv = self.app.post("/delete_flight", data={"delete": FLIGHT.id}, follow_redirects=True)
         assert "Рейс успешно удален" in str(rv.data.decode('utf-8'))
         pass
 
