@@ -238,11 +238,13 @@ def apply_themes(app):
 
 def create_app(config, selenium=False, unittest=False):
     app = Flask(__name__, static_folder='main/static')
+    # csrf = CSRFProtect(app)
+
     app.config.from_object(config)
     if selenium:
         app.config['LOGIN_DISABLED'] = True
     if unittest:
-        app.config['CSRF_ENABLED'] = False
+        app.config['WTF_CSRF_ENABLED'] = False
     app.config['SECRET_KEY'] = getenv("APP_SECRET_KEY") or "supersecret123456haha"
     csrf.init_app(app)
     register_extensions(app)
