@@ -137,6 +137,56 @@ class TestCase(unittest.TestCase):
         rv = self.add_patient()
         assert "patient_id" in str(rv.data)
 
+    def test_new_patient_flight(self):
+        self.login('adm', 'paswd')
+        FLIGHT = FlightCode.query.all()[-1]
+        patient = {
+            "travel_type":"flight_type",
+            "flight_arrival_date": FLIGHT.date,
+            "flight_code_id": FLIGHT.id,
+            "flight_seat":"1c",
+            "second_name":"w",
+            "first_name":"w",
+            "patronymic_name":"",
+            "gender":-1,
+            "dob":"2020-04-17",
+            "iin":"",
+            "country_of_residence_id":88,
+            "citizenship_id":88,
+            "pass_num":"",
+            "home_address_country_id":88,
+            "home_address_state":"",
+            "home_address_county":"",
+            "home_address_city":"w",
+            "home_address_street":"",
+            "home_address_house":"",
+            "home_address_flat":"",
+            "home_address_building":"",
+            "visited_country_id":-1,
+            "visited_from_date":"",
+            "visited_to_date":"",
+            "region_id":1,
+            "job":"",
+            "job_position":"",
+            "job_address_country_id":88,
+            "job_address_state":"",
+            "job_address_county":"",
+            "job_address_city":"",
+            "job_address_street":"",
+            "job_address_house":"",
+            "job_address_flat":"",
+            "job_address_building":"",
+            "telephone":"",
+            "email":"",
+            "is_found":0,
+            "is_infected":0,
+            "is_contacted":0,
+            "create":""
+        }
+        rv = self.app.post("/add_person", data=patient, follow_redirects=True)
+        print(str(rv.data.decode('utf-8')))
+        assert "patient_id" in str(rv.data)
+
     def test_new_patient_train(self):
         self.login("adm","paswd")
         TRAIN = Train.query.all()[-1]
@@ -187,7 +237,7 @@ class TestCase(unittest.TestCase):
         }
 
         rv = self.app.post("/add_person", data=patient, follow_redirects=True)
-        pass
+        assert "patient_id" in str(rv.data)
 
     def test_edit_patient(self):
         p = Patient.query.filter_by(travel_type_id=3)[-1]
