@@ -37,7 +37,6 @@ def login():
         # read form data
         username = request.form['username']
         password = request.form['password']
-
         # Locate user
         user = User.query.filter_by(username=username).first()
         
