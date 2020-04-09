@@ -87,9 +87,9 @@
                  <div id="map" style="width:100%; height:220px"></div>
              </div>
              <div class="row">
-                <div class="col">
+                <!-- <div class="col">
                    <a href="/contacted_persons?id={{ patient.id }}" class="btn btn-primary mt-3" style="width:100%;">{{ _("Контактные Лица") }}</a>
-               </div>
+               </div> -->
                {% if patient.travel_type.value == c.flight_type[0] %}
                <div class="col">
                 <a href="/flight_profile?id={{ travel.flight_code.id }}" class="btn btn-primary mt-3" style="width:100%;">{{ _("Прилетевшие Вместе") }}</a>
