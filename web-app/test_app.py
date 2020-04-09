@@ -21,11 +21,6 @@ from sqlalchemy import create_engine
 from app.main.flights_trains.models import FlightCode, FlightTravel, Train, TrainTravel
 from app.main.patients.models import Patient, PatientStatus, ContactedPersons, State, PatientState
 
-FLIGHT = None
-TRAIN = None
-PATIENT = None
-
-
 def str_time_prop(start, end, format, prop):
     """Get a time at a proportion of a range of two formatted times.
 
@@ -105,7 +100,7 @@ class TestCase(unittest.TestCase):
         self.login('adm', 'paswd')
         flight = {
             "code":"test",
-            "date":random_date("1-1-2008", "1-1-2009", random.random()),
+            "date":random_date("1-1-2008", "1-1-2020", random.random()),
             "from_country_id":88,
             "from_city":"Nur-Sultan",
             "to_country_id":88,
@@ -119,8 +114,8 @@ class TestCase(unittest.TestCase):
     def test_train(self):
         self.login('adm', 'paswd')
         train = {
-            "departure_date":random_date("1-1-2008", "1-1-2009", random.random()),
-            "arrival_date":random_date("1-1-2008", "1-1-2009", random.random()),
+            "departure_date":random_date("1-1-2008", "1-1-2020", random.random()),
+            "arrival_date":random_date("1-1-2008", "1-1-2020", random.random()),
             "from_country_id":88,
             "from_city":"Astana",
             "to_country_id":88,
@@ -302,7 +297,6 @@ class TestCase(unittest.TestCase):
     def test_delete_train(self):
         self.login("adm","paswd")
         TRAIN = Train.query.all()[-1]
-        # csrf_token=IjRlZGMyZGIwMDJjMTQ5MDFkMzMzYjk4MjFmOTE1NzgyN2FmZDhiNGMi.Xo3ztw.lcpzWQxIEQ-LM2QUdlXzSU_fGsY&delete=1
         rv= self.app.post("/delete_train", data={"delete": TRAIN.id}, follow_redirects=True)
         assert "ЖД Рейс успешно удален" in str(rv.data.decode('utf-8'))
     
@@ -315,46 +309,46 @@ class TestCase(unittest.TestCase):
 
     def add_patient(self):
         patient = {
-        "travel_type": "auto_type",
-        "arrival_date": "2020-04-10",
-        "auto_border_id": 1,
-        "second_name": "as",
-        "first_name": "as",
-        "patronymic_name": "",
-        "gender": -1,
-        "dob": "2020-04-17",
-        "iin": "",
-        "country_of_residence_id": 88,
-        "citizenship_id": 88,
-        "pass_num": "",
-        "home_address_country_id": 88,
-        "home_address_state": "",
-        "home_address_county": "",
-        "home_address_city": "a",
-        "home_address_street": "",
-        "home_address_house": "",
-        "home_address_flat": "",
-        "home_address_building": "",
-        "visited_country_id": -1,
-        "visited_from_date": "",
-        "visited_to_date": "",
-        "region_id": 1,
-        "job": "",
-        "job_position": "",
-        "job_address_country_id": 88,
-        "job_address_state": "",
-        "job_address_county": "",
-        "job_address_city": "",
-        "job_address_street":"" ,
-        "job_address_house": "",
-        "job_address_flat": "",
-        "job_address_building": "",
-        "telephone": "",
-        "email": "",
-        "is_found": 0,
-        "is_infected": 0,
-        "is_contacted": 0,
-        "create" : ""
+            "travel_type": "auto_type",
+            "arrival_date": "2020-04-10",
+            "auto_border_id": 1,
+            "second_name": "as",
+            "first_name": "as",
+            "patronymic_name": "",
+            "gender": -1,
+            "dob": "2020-04-17",
+            "iin": "",
+            "country_of_residence_id": 88,
+            "citizenship_id": 88,
+            "pass_num": "",
+            "home_address_country_id": 88,
+            "home_address_state": "",
+            "home_address_county": "",
+            "home_address_city": "a",
+            "home_address_street": "",
+            "home_address_house": "",
+            "home_address_flat": "",
+            "home_address_building": "",
+            "visited_country_id": -1,
+            "visited_from_date": "",
+            "visited_to_date": "",
+            "region_id": 1,
+            "job": "",
+            "job_position": "",
+            "job_address_country_id": 88,
+            "job_address_state": "",
+            "job_address_county": "",
+            "job_address_city": "",
+            "job_address_street":"" ,
+            "job_address_house": "",
+            "job_address_flat": "",
+            "job_address_building": "",
+            "telephone": "",
+            "email": "",
+            "is_found": 0,
+            "is_infected": 0,
+            "is_contacted": 0,
+            "create" : ""
         }
 
         return self.app.post("/add_person", data=patient, follow_redirects=True)
