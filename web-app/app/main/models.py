@@ -143,7 +143,7 @@ class Address(db.Model):
     state = Column(String, nullable=True, default = "")
     county = Column(String, nullable=True, default = "")
 
-    city = Column(String, nullable=False, default = "")
+    city = Column(String, nullable=True, default = "")
 
     street = Column(String, nullable=True, default = "")
     house = Column(String, nullable=True, default = "")
