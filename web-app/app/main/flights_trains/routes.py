@@ -167,9 +167,6 @@ def add_flight():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))
 
-    if not current_user.is_admin:
-        return render_template('errors/error-500.html'), 500        
-
     form = FlightForm()
     populate_add_flight_train_form(form)
 
@@ -198,9 +195,6 @@ def add_flight():
 def add_train():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))
-
-    if not current_user.is_admin:
-        return render_template('errors/error-500.html'), 500        
 
     form = TrainForm()
     populate_add_flight_train_form(form)
