@@ -84,32 +84,10 @@
             <div class="col-xl-3 order-xl-2 mb-5 mb-xl-0">
                 {% if patient.home_address.lat %}
                 <div class="card shadow">
-                 <div id="map" style="width:100%; height:220px"></div>
-             </div>
-             <div class="row">
-                <!-- <div class="col">
-                   <a href="/contacted_persons?id={{ patient.id }}" class="btn btn-primary mt-3" style="width:100%;">{{ _("Контактные Лица") }}</a>
-               </div> -->
-               {% if patient.travel_type.value == c.flight_type[0] %}
-               <div class="col">
-                <a href="/flight_profile?id={{ travel.flight_code.id }}" class="btn btn-primary mt-3" style="width:100%;">{{ _("Прилетевшие Вместе") }}</a>
-                </div>
-                {% elif patient.travel_type.value == c.train_type[0] %}
-                <a href="/train_profile?id={{ travel.train.id }}" class="btn btn-primary mt-3" style="width:100%;">{{ _("Прибывшие Вместе") }}</a>
-                </div>                
-                {% endif %}
-        </div>
-        <!-- <button class="btn btn-primary mt-2" id="submit" name="submit" type="submit" value="Обновить">Обновить</button> -->
-
-        <div class="card card-profile shadow mt-3">
-            {% else %}
-            <div class="card card-profile shadow mt-0">
-                {% endif %} 
-                <div class="row justify-content-center">
-                    <div class="col-lg-3 order-lg-2">
-
-                    </div>
-                </div>
+                   <div id="map" style="width:100%; height:220px"></div>
+               </div>
+               {% endif %}
+               <div class="card card-profile shadow mt-0">
                 <div class="card-body pt-0 pt-md-4">
                     <!-- <div class="text-center">             -->
                         <h3>
@@ -134,9 +112,9 @@
                               <label class="custom-control-label" for="is_contacted_checkbox">Контактный</label>
                           </div>
                       </div>                  
-                </div>
-                <hr class="my-4" />
-                <div class="row">
+                  </div>
+                  <hr class="my-4" />
+                  <div class="row">
                     <div class="col">
                         <div class="custom-control custom-checkbox">
                             {{ form.in_hospital(class="custom-control-input", id="in_hospital_checkbox") }}                    
@@ -179,17 +157,28 @@
                 </div>
                 <hr class="my-4" />                    
             </div>
-            <div class="row mt-3">
-                <div class="col" style="text-align:center;">
-                    <input class="btn btn-primary" id="submit" name="submit" type="submit" value={{ _("Сохранить") }}>
-                </div>
-                <div class="col" style="text-align:center;">
-                    <input class="btn btn-danger" data-toggle="modal" type="button" data-target="#deletePatientModal" value={{ _("Удалить") }}>                
-                </div>
+            <div class="col">
+                <div class="text-center">
+                    <a href="/contacted_persons?id={{ patient.id }}" class="btn btn-primary btn-full-width">{{ _("Контактные Лица") }}</a>
+                 {% if patient.travel_type.value == c.flight_type[0] %}
+                 <a href="/flight_profile?id={{ travel.flight_code.id }}" class="btn btn-primary btn-full-width mt-3">{{ _("Прилетевшие Вместе") }}</a>
+                 {% elif patient.travel_type.value == c.train_type[0] %}
+                 <a href="/train_profile?id={{ travel.train.id }}" class="btn btn-primary btn-full-width mt-3">{{ _("Прибывшие Вместе") }}</a>
+                 {% endif %}
+             </div>
+             <hr class="my-4" />               
+         </div>            
+         <div class="row mt-3">
+            <div class="col" style="text-align:center;">
+                <input class="btn btn-primary" id="submit" name="submit" type="submit" value={{ _("Сохранить") }}>
             </div>
-            <!-- </div> -->
+            <div class="col" style="text-align:center;">
+                <input class="btn btn-danger" data-toggle="modal" type="button" data-target="#deletePatientModal" value={{ _("Удалить") }}>                
+            </div>
         </div>
+        <!-- </div> -->
     </div>
+</div>
 
 </div>
 <div class="col-xl-9 order-xl-1">
@@ -242,7 +231,7 @@
                     <thead class="thead-light">
                         <tr>
                             <th scope="col">Статус</th>
-                            <th scope="col">Комметарий</th>
+                            <th scope="col">Комментарий</th>
                             <th scope="col">Дата выявления</th>
                             <!-- <th scope="col"></th> -->
                         </tr>

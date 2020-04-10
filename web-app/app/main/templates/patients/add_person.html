@@ -114,7 +114,7 @@
                             </div>
                             <div class="col">
                               <div class="form-group">
-                                <label class="form-control-label">Контактный?</label><br>
+                                <label class="form-control-label">{{ _("Контактный?") }}</label><br>
                                 {% for subfield in form.is_contacted %}
                                 <div class="custom-control custom-radio custom-control-inline">
                                   {{ subfield(type="radio", id=subfield.id, class="custom-control-input") }}

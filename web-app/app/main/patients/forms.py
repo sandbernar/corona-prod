@@ -81,9 +81,9 @@ class PatientForm(FlaskForm):
     hospital_id = SelectField('Hospital', choices = [], validators=[DataRequired()])  
 
     patient_status = SelectField('Patient Status', id='patient_status' , validators=[DataRequired()])
-    is_found = RadioField("Is Found", id="is_found", choices=[(1, "Да"),(0,"Нет")], default=0, validators=[DataRequired()])
-    is_infected = RadioField("Is Infected", id="is_infected", choices=[(1, "Да"),(0,"Нет")], default=0, validators=[DataRequired()])
-    is_contacted = RadioField("Is Contacted", id="is_contacted", choices=[(1, "Да"),(0,"Нет")], default=0, validators=[DataRequired()])
+    is_found = RadioField("Is Found", id="is_found", choices=[(1, _("Да")),(0, _("Нет"))], default=0, validators=[DataRequired()])
+    is_infected = RadioField("Is Infected", id="is_infected", choices=[(1, _("Да")),(0, _("Нет"))], default=0, validators=[DataRequired()])
+    is_contacted = RadioField("Is Contacted", id="is_contacted", choices=[(1, _("Да")),(0, _("Нет"))], default=0, validators=[DataRequired()])
 
 
 class UpdateProfileForm(PatientForm):

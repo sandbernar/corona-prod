@@ -2461,6 +2461,12 @@ textarea.form-control {
   }
 }
 
+.btn-full-width
+{   
+    width: 100% !important;
+}
+
+
 .btn {
   display: inline-block;
   font-weight: 600;
