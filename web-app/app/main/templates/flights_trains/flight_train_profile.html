@@ -157,15 +157,6 @@
 
 <script src="{{ url_for('static', filename='assets/js/jquery.seat-charts.min.js') }}"></script>
 <script type="text/javascript">
-  $( document ).on( "mousemove", function( event ) {
-  $( "#log" ).text( "pageX: " + event.pageX + ", pageY: " + event.pageY );
-  $( ".tooltip" ).css({
-    "left" : event.pageX,
-    "top" : event.pageY
-  });
-  });
-
-
   var setSearchParam = function(key, value) {
     if (!window.history.pushState) {
       return;

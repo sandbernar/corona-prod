@@ -258,38 +258,39 @@ def generate_plane_seatmap(q):
             else:
                 pass
         
-        new_seats = OrderedDict(sorted(new_seats.items(), key=lambda t: t[0]))
-        seat_num = list(new_seats.keys())[-1]
-        seat_letters = np.sort(np.unique(letters))
+        if new_seats:
+            new_seats = OrderedDict(sorted(new_seats.items(), key=lambda t: t[0]))
+            seat_num = list(new_seats.keys())[-1]
+            seat_letters = np.sort(np.unique(letters))
 
-        for k in new_seats.keys():
-            for s in new_seats[k].keys():
-                seat = "{}{}".format(k, s)
-                patients_seat[seat] = new_seats[k][s]
+            for k in new_seats.keys():
+                for s in new_seats[k].keys():
+                    seat = "{}{}".format(k, s)
+                    patients_seat[seat] = new_seats[k][s]
 
-        for row in range(1, seat_num + 1):
-            row_string = ""
-            row_s = []
-            row_seats = new_seats.get(row, {}).keys()
-            for letter in seat_letters:
-                row_letter = ""
-                if letter in row_seats:
-                    row_letter = "i" if new_seats[row][letter].is_infected else "o"
+            for row in range(1, seat_num + 1):
+                row_string = ""
+                row_s = []
+                row_seats = new_seats.get(row, {}).keys()
+                for letter in seat_letters:
+                    row_letter = ""
+                    if letter in row_seats:
+                        row_letter = "i" if new_seats[row][letter].is_infected else "o"
+                    else:
+                        row_letter = "e"
+                    row_letter = "{}[,{}]".format(row_letter, "{}{}".format(row, letter))
+                    row_s.append(row_letter)
+
+                if len(row_s) == 7:                        
+                    row_string = "{}{}_{}{}{}_{}{}"
+                elif len(row_s) == 6:
+                    row_string = "{}{}{}_{}{}{}"
                 else:
-                    row_letter = "e"
-                row_letter = "{}[,{}]".format(row_letter, "{}{}".format(row, letter))
-                row_s.append(row_letter)
+                    row_string = "{}"*len(row_s)
 
-            if len(row_s) == 7:                        
-                row_string = "{}{}_{}{}{}_{}{}"
-            elif len(row_s) == 6:
-                row_string = "{}{}{}_{}{}{}"
-            else:
-                row_string = "{}"*len(row_s)
+                row_string = row_string.format(*row_s)
 
-            row_string = row_string.format(*row_s)
-
-            seatmap.append(row_string)
+                seatmap.append(row_string)
 
     return seatmap, patients_seat
 
