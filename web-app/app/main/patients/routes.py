@@ -866,7 +866,7 @@ def contacted_persons():
 
             form.process()
             return route_template('patients/contacted_persons', patients=patients, form=form, page=page, 
-                                            max_page=max_page, total = total_len, constants=c, patient=patient,
+                                            max_page=max_page, total = total_len, constants=c, main_patient=patient,
                                             infected_contact=infected_contact, change=change, error_msg=error_msg)
         else:
             return render_template('errors/error-404.html'), 404
@@ -895,13 +895,28 @@ def select_contacted():
     else:
         return render_template('errors/error-400.html'), 400
 
-# @blueprint.route('/delete_contacted', methods=['GET'])
-# def delete_contacted():
-#     if not current_user.is_authenticated:
-#         return redirect(url_for('login_blueprint.login'))    
+@blueprint.route('/delete_contacted', methods=['GET'])
+def delete_contacted():
+    if not current_user.is_authenticated:
+        return redirect(url_for('login_blueprint.login'))    
 
-#     if "infected_patient_id" and "contacted_patient_id" in request.args:
+    if "infected_id" in request.args and "contacted_id" in request.args:
+        try:
+            contact = ContactedPersons.query.filter_by(infected_patient_id = request.args["infected_id"])
+            contact = contact.filter_by(contacted_patient_id=request.args["contacted_id"]).first()
 
+        except exc.SQLAlchemyError:
+            return render_template('errors/error-400.html'), 400        
+
+        if contact:
+            db.session.delete(contact)
+            db.session.commit()
+            message = _("Контактная связь успешно удалена")
+
+            return redirect("/contacted_persons?id={}&success={}".format(request.args["infected_id"], message))
+
+    message = _("Не удалось удалить связь")
+    return redirect("/contacted_persons?id={}&error={}".format(request.args["infected_id"], message))
 
 @blueprint.route('/add_state', methods=['POST'])
 @login_required
