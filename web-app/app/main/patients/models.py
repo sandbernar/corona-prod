@@ -124,8 +124,9 @@ class ContactedPersons(db.Model):
 
     id = Column(Integer, primary_key=True)
     
-    infected_person_id = Column(Integer, ForeignKey('Patient.id'))
-    infected_patient = db.relationship('Patient', foreign_keys=[infected_person_id])
+    infected_patient_id = Column(Integer, ForeignKey('Patient.id', ondelete="CASCADE"))
+    infected_patient = db.relationship('Patient', foreign_keys=[infected_patient_id],
+                                                backref=db.backref('infected_patient', passive_deletes=True))
 
     contacted_patient_id = Column(Integer, ForeignKey('Patient.id'))
     contacted_patient = db.relationship('Patient', foreign_keys=[contacted_patient_id])

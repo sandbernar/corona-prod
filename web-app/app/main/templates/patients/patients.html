@@ -98,6 +98,9 @@
                 <th scope="col">{{ _("Госпитализирован") }}</th>
                 <th scope="col">{{ _("Инфицирован") }}</th>
                 <th scope="col">{{ _("Контактов (найдено/всего)") }}</th>
+                {% if select_contacted %}
+                <th scope="col">{{ _("Выбрать контактных") }}</th>
+                {% endif %}
               </tr>
             </thead>
             <tbody>
@@ -106,7 +109,7 @@
                 <th scope="row">
                   <div class="media align-items-center">
                     <div class="media-body">
-                      <span class="mb-0 text-sm"><a href="/patient_profile?id={{patient.id}}">{{ patient.second_name }} {{ patient.first_name }} {{ patient.patronymic_name }}</a></span>
+                      <span class="mb-0 text-sm"><a href="/patient_profile?id={{patient.id}}">{{ patient }}</a></span>
                     </div>
                   </div>
                 </th>
@@ -142,7 +145,20 @@
                 </td>              
                 <td>
                   {{ patient.contacted_found_count }}/{{ patient.contacted_count }}
-                </td>              
+                </td>
+                {% if select_contacted %}
+                <td>
+                  {% if select_contacted == patient.id %}
+                  {{ _("Основной Пациент") }}
+                  {% elif patient.already_contacted %}
+                    <a href="/contacted_persons?id={{select_contacted}}" class="btn btn-success">{{ _('Контактный') }}</a>
+                  {% elif patient.already_infected %}
+                    <a href="/contacted_persons?id={{ patient.id }}" class="btn btn-danger">{{ _('Контактировал С') }}</a>
+                  {% else %}                  
+                    <a href="/select_contacted?infected_patient_id={{ select_contacted }}&contacted_patient_id={{ patient.id }}" class="btn btn-primary">{{ _('Выбрать Контактным') }}</a>                  
+                  {% endif %}
+                </td>
+                {% endif %}
               </tr>
               {% endfor %}
 
