@@ -1,0 +1,48 @@
+{% extends "base_site.html" %}
+
+{% block title %} Центр помощи {% endblock title %}
+
+{% block stylesheets %}
+  {{ super() }}
+{% endblock stylesheets %}
+
+{% block content %}
+
+    <div class="container">
+        <div class="row">
+            <div class="card shadow" style="width: 100%; margin-top: 1.5rem; padding: 2rem;">
+                <div>
+                    <div class="card-header bg-transparent">
+                        <div class="row align-items-center">
+                            <div class="col">
+                                <h2>Центр помощи</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="text-align: center; margin: 1rem 0;">
+                        <iframe width="400" height="315" src="https://www.youtube.com/embed/NNnIGh9g6fA" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text" style="max-width: 35rem;margin: 0 auto;">
+                            Видео-плейлист содержащий инструкций по использованию платформы. В конце видео появится ссылка на следующее видео.
+                        </p>
+                    </div>
+                    <hr>
+                    <div class="card-body">
+                        <div id="commento"></div>
+                        <script src="https://cdn.commento.io/js/commento.js"></script>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+
+    {% include "site_template/footer.html" %}
+
+    </div>
+
+{% endblock content %}
+
+{% block javascripts %}
+{{ super()}}
+{% endblock javascripts %}

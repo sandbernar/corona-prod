@@ -107,3 +107,8 @@ def countries_categories():
     categories = Infected_Country_Category.query.all()
 
     return route_template('countries_categories', categories=categories)
+
+@blueprint.route("/help", methods=['POST'])
+@login_required
+def help_route():
+    return render_template('help.html')
