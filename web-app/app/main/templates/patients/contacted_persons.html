@@ -21,24 +21,20 @@
         <div class="card-header bg-transparent">
           <div class="row align-items-center">
             <div class="col">
-              <h2 class="mb-0">{{ _('Карта Контактных Лиц') }}</h2>
+              <h2 class="mb-0">{{ _('Инфицирован') }}</h2>
             </div>
           </div>
         </div>
         <div id="map" style="width:100%; height:500px"></div>
       </div>
+      {% if infected_contact %}
       <div class="card shadow mt-4">
         <div class="card-header border-0">
           <div class="row">
             <div class="col">
-              <h3 class="mb-0">{{ _('Найдено') }} {{total}}, {{ _('показано') }} {{ patients|length }} {{ _('контактов') }}</h3>
+              <h3 class="mb-0">{{ _('Контактировал С') }}</h3>
             </div>
-<!--             <div class="col-md-auto">
-              <a href="/choose_contacted_person?id={{ patient.id }}" class="btn btn-sm btn-primary" style="width:100%;">Выбрать Контактное Лицо</a>
-            </div>   -->          
-            <!-- <div class="col-md-auto">
-              <a href="/add_contacted_person?id={{ patient.id }}" class="btn btn-sm btn-primary" style="width:100%;">{{ _("Добавить Контактное Лицо") }}</a>
-            </div> -->
+          
           </div>
         </div>
         <div class="table-responsive">
@@ -47,10 +43,74 @@
               <tr>
                 <th scope="col">{{ _("ФИО") }}</th>
                 <th scope="col">{{ _("Телефон") }}</th>
-                <th scope="col">{{ _("Дата Въезда") }}</th>
+                <th scope="col">{{ _("Тип Въезда") }}</th>
                 <th scope="col">{{ _("Регион") }}</th>
                 <th scope="col">{{ _("Найден") }}</th>
                 <th scope="col">{{ _("Госпитализирован") }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for patient in infected_contact %}
+              <tr>
+                <th scope="row">
+                  <div class="media align-items-center">
+                    <div class="media-body">
+                      <span class="mb-0 text-sm"><a href="/patient_profile?id={{patient.infected_patient.id}}">{{ patient.infected_patient }}</a></span>
+                    </div>
+                  </div>
+                </th>
+                <td>
+                  {{ patient.infected_patient.telephone }}
+                </td>
+                <td>
+                  {{ patient.infected_patient.travel_type }}
+                </td>
+                <td>
+                  {{ patient.infected_patient.region }}
+                </td>
+                <td>
+                  {% if patient.infected_patient.is_found %}
+                  <font color="green">{{ _("Да") }}</font>
+                  {% else %}
+                  <font color="red">{{ _("Нет") }}</font>
+                {% endif %}                        </td>
+                <td>
+                  {% if patient.infected_patient.status.value == constants.in_hospital[0] %}
+                  <font color="green">{{ _("Да") }}</font>
+                  {% else %}
+                  <font color="red">{{ _("Нет") }}</font>
+                {% endif %}                        </td>
+              </tr>
+              {% endfor %}
+
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="card shadow mt-4">
+        <div class="card-header border-0">
+          <div class="row">
+            <div class="col">
+              <h3 class="mb-0">{{ _('Найдено') }} {{total}}, {{ _('показано') }} {{ patients|length }} {{ _('контактов') }}</h3>
+            </div>
+            <div class="col-md-auto">
+              <a href="/patients?select_contacted_id={{ main_patient.id }}" class="btn btn-sm btn-primary" style="width:100%;">{{ _("Выбрать Контактное Лицо") }}</a>
+            </div>            
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="table align-items-center table-flush">
+            <thead class="thead-light">
+              <tr>
+                <th scope="col">{{ _("ФИО") }}</th>
+                <th scope="col">{{ _("Телефон") }}</th>
+                <th scope="col">{{ _("Тип Въезда") }}</th>
+                <th scope="col">{{ _("Регион") }}</th>
+                <th scope="col">{{ _("Найден") }}</th>
+                <th scope="col">{{ _("Госпитализирован") }}</th>
+                <th scope="col"></th>
               </tr>
             </thead>
             <tbody>
@@ -59,7 +119,7 @@
                 <th scope="row">
                   <div class="media align-items-center">
                     <div class="media-body">
-                      <span class="mb-0 text-sm"><a href="/patient_profile?id={{patient.id}}">{{ patient.full_name }}</a></span>
+                      <span class="mb-0 text-sm"><a href="/patient_profile?id={{patient.id}}">{{ patient }}</a></span>
                     </div>
                   </div>
                 </th>
@@ -67,7 +127,7 @@
                   {{ patient.telephone }}
                 </td>
                 <td>
-                  {{ patient.arrival_date }}
+                  {{ patient.travel_type }}
                 </td>
                 <td>
                   {{ patient.region }}
@@ -83,7 +143,11 @@
                   <font color="green">{{ _("Да") }}</font>
                   {% else %}
                   <font color="red">{{ _("Нет") }}</font>
-                {% endif %}                        </td>
+                {% endif %}                        
+                </td>
+                <td>
+                  <a href="/delete_contacted?infected_id={{ main_patient.id }}&contacted_id={{ patient.id }}" class="btn btn-danger">{{ _('Удалить Связь') }}</a>
+                </td>
               </tr>
               {% endfor %}
 
@@ -124,14 +188,18 @@
 </div>        
 
 {% endblock content %}
-
 {% block javascripts %}
+{{ super () }}
+{% with change=change, error_msg=error_msg %}
+  {% include "site_template/change_notification.html" %}
+{% endwith %}
+
 <script type="text/javascript">
   ymaps.ready(init);
 
 function init() {
     var myMap = new ymaps.Map("map", {
-            center: ['{{ patient.home_address.lat }}', '{{ patient.home_address.lng }}'],
+            center: ['{{ main_patient.home_address.lat }}', '{{ main_patient.home_address.lng }}'],
             zoom: 12,
             controls: ['zoomControl']
         }, {
@@ -160,7 +228,7 @@ function init() {
         });    
 
     geoObjects = []
-    {% for p in patients + [patient]  %}
+    {% for p in patients + [main_patient]  %}
 
     is_found = "Нет"
     if ('{{ p.is_found }}' == 'True') {
@@ -201,7 +269,7 @@ function init() {
                 type: "LineString",
                 // Указываем координаты вершин ломаной.
                 coordinates: [
-                    ['{{ patient.home_address.lat }}', '{{ patient.home_address.lng }}'],
+                    ['{{ main_patient.home_address.lat }}', '{{ main_patient.home_address.lng }}'],
                     ['{{ p.home_address.lat }}', '{{ p.home_address.lng }}']
                 ]
             },
@@ -239,5 +307,4 @@ function init() {
     window.location.href = window.location.href
   }
 </script>
-{{ super()}}
 {% endblock javascripts %}
