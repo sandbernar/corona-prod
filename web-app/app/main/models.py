@@ -5,7 +5,7 @@ Copyright (c) 2019 - present AppSeed.us
 """
 
 from flask_login import UserMixin
-from sqlalchemy import Column, Integer, String, Date, Boolean, Float, ForeignKey
+from sqlalchemy import Column, Integer, String, Date, Boolean, Float, ForeignKey, JSON
 
 from app import db
 from app import constants as c
@@ -62,7 +62,20 @@ class VariousTravel(db.Model):
         set_props(self, kwargs)
 
     def __repr__(self):
-        return str(self.border_control)    
+        return str(self.border_control)
+
+class OldDataTravel(db.Model):
+    __tablename__ = 'OldDataTravel'
+    id = Column(Integer, primary_key=True)
+
+    patient_id = Column(Integer, ForeignKey('Patient.id', ondelete="CASCADE"))
+    patient = db.relationship('Patient', backref=db.backref('old_data_travel', passive_deletes=True))    
+
+    date = Column(Date, nullable=True)
+    place = Column(String, nullable=True)
+    path = Column(String, nullable=True)
+
+    attrs = Column(JSON, unique=False)
 
 class BorderControl(db.Model):
     __tablename__ = 'BorderControl'

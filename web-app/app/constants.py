@@ -15,6 +15,9 @@ is_transit = ("is_transit", "Транзит")
 
 patient_statuses = [no_status, in_hospital, is_home, is_transit]
 
+# Regions
+out_of_rk = "Вне РК"
+
 # Travel Type
 all_types = "Все Типы"
 train_type = ("train_type", "Поезд")
@@ -23,6 +26,7 @@ by_foot_type = ("by_foot", "Пешком")
 by_sea_type = ("by_sea", "Морской Транспорт")
 flight_type = ("flight_type", "Самолет")
 local_type = ("local_type", "Местные")
+old_data_type = ("old_data_type", "Старые Данные")
 
 # State
 state_dead = "Умер"
@@ -34,7 +38,7 @@ various_travel_types = [by_auto_type, by_foot_type, by_sea_type]
 
 board_team = "экипаж"
 
-travel_types = [flight_type, train_type, by_auto_type, by_foot_type, by_sea_type, local_type]
+travel_types = [flight_type, train_type, by_auto_type, by_foot_type, by_sea_type, local_type, old_data_type]
 
 unknown = (None, "Неизвестно")
 
