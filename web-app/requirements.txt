@@ -13,3 +13,4 @@ pandas
 numpy
 psycopg2
 nltk
+Flask-Script
