@@ -14,7 +14,6 @@ import pandas as pd
 import re
 from flask_wtf.csrf import CSRFProtect
 
-
 from app import constants as C
 
 db = SQLAlchemy()
@@ -36,13 +35,78 @@ def register_blueprints(app):
                 app.register_blueprint(module.blueprint)            
 
 def configure_database(app):
-    def add_hospitals():
-        from app.main.models import (Region, Country, Infected_Country_Category, 
-                                    TravelType, BorderControl, VariousTravel, Address, VisitedCountry)
-        from app.main.patients.models import PatientStatus, ContactedPersons, Patient, State, PatientState
-        from app.main.hospitals.models import  Hospital, Hospital_Type
-        from app.main.flights_trains.models import FlightTravel, FlightCode
-       
+    from app.main.models import (Region, Country, Infected_Country_Category, 
+                            TravelType, BorderControl, VariousTravel, Address, VisitedCountry)
+    from app.main.patients.models import PatientStatus, ContactedPersons, Patient, State, PatientState
+    from app.main.hospitals.models import  Hospital, Hospital_Type
+    from app.main.flights_trains.models import FlightTravel, FlightCode
+
+    def setup_tables():
+        df = pd.read_excel(C.hospitals_list_xlsx)
+        df = df.drop_duplicates()
+
+        for state in C.states:
+            if not State.query.filter_by(name=state).first():
+                tmpState = State(name=state)
+                db.session.add(tmpState)
+
+        for typ in C.travel_types:
+            if not TravelType.query.filter_by(value=typ[0], name=typ[1]).first():
+                travel_type = TravelType(value=typ[0], name=typ[1])
+                db.session.add(travel_type)        
+
+        for cat in C.country_category:
+            if not Infected_Country_Category.query.filter_by(name=cat).first():
+                country_cat = Infected_Country_Category(name=cat)
+                db.session.add(country_cat)
+
+        for country in C.code_country_list:
+            if not Country.query.filter_by(code=country[0], name=country[1]).first():
+                new_country = Country(code=country[0], name=country[1])
+                db.session.add(new_country)
+
+        for status in C.patient_statuses:
+            if not PatientStatus.query.filter_by(value=status[0], name=status[1]).first():
+                p_status = PatientStatus(value=status[0], name=status[1])
+                db.session.add(p_status)
+
+        for n in df.region.unique():
+            if not Region.query.filter_by(name=n).first():
+                region = Region(name=n)
+                db.session.add(region)
+
+        if not Region.query.filter_by(name=C.out_of_rk).first():
+            region = Region(name=C.out_of_rk)
+            db.session.add(region)
+
+        for n in df.TIPMO.unique():
+            if not pd.isna(n):
+                if not Hospital_Type.query.filter_by(name=n).first():
+                    typ = Hospital_Type(name=n)
+                    db.session.add(typ)
+
+        db.session.commit()
+
+        # We need to get ids of TravelType for by auto and by foot types
+        q = TravelType.query
+        foot_auto_type_ids = [q.filter_by(value = C.by_auto_type[0]).first().id,
+                              q.filter_by(value = C.by_foot_type[0]).first().id]
+        
+        for type_id in foot_auto_type_ids:
+            for border_name in C.by_earth_border:
+                if not BorderControl.query.filter_by(travel_type_id=type_id, name=border_name).first():
+                    border = BorderControl(travel_type_id = type_id, name = border_name)
+                    db.session.add(border)
+
+        sea_type_id = q.filter_by(value = C.by_sea_type[0]).first().id
+        for border_name in C.by_sea_border:
+            if not BorderControl.query.filter_by(travel_type_id=sea_type_id, name=border_name).first():
+                border = BorderControl(travel_type_id = sea_type_id, name = border_name)
+                db.session.add(border)
+
+        return df
+
+    def add_hospitals():    
         # Clear the tables
         Patient.query.delete()
 
@@ -71,57 +135,7 @@ def configure_database(app):
 
         db.session.commit()
 
-        df = pd.read_excel(C.hospitals_list_xlsx)
-        df = df.drop_duplicates()
-
-        for state in C.states:
-            tmpState = State(name=state)
-            db.session.add(tmpState)
-
-        for typ in C.travel_types:
-            travel_type = TravelType(value=typ[0], name=typ[1])
-            db.session.add(travel_type)        
-
-        for cat in C.country_category:
-            country_cat = Infected_Country_Category(name=cat)
-            db.session.add(country_cat)
-
-        for country in C.code_country_list:
-            new_country = Country(code=country[0], name=country[1])
-            db.session.add(new_country)
-
-        for status in C.patient_statuses:
-            p_status = PatientStatus(value=status[0], name=status[1])
-            db.session.add(p_status)
-
-        for n in df.region.unique():
-            region = Region(name=n)
-            db.session.add(region)
-
-        region = Region(name="Вне РК")
-        db.session.add(region)
-
-        for n in df.TIPMO.unique():
-            if not pd.isna(n):
-                typ = Hospital_Type(name=n)
-                db.session.add(typ)
-
-        db.session.commit()
-
-        # We need to get ids of TravelType for by auto and by foot types
-        q = TravelType.query
-        foot_auto_type_ids = [q.filter_by(value = C.by_auto_type[0]).first().id,
-                              q.filter_by(value = C.by_foot_type[0]).first().id]
-        
-        for type_id in foot_auto_type_ids:
-            for border_name in C.by_earth_border:
-                border = BorderControl(travel_type_id = type_id, name = border_name)
-                db.session.add(border)
-
-        sea_type_id = q.filter_by(value = C.by_sea_type[0]).first().id
-        for border_name in C.by_sea_border:
-            border = BorderControl(travel_type_id = sea_type_id, name = border_name)
-            db.session.add(border)
+        df = setup_tables()
 
         for index, row in df.iterrows():
             hospital = Hospital()
@@ -161,6 +175,8 @@ def configure_database(app):
         
         if hospitals == 0:
             add_hospitals()
+        else:
+            setup_tables()
         
         triggers = db.engine.execute('select * from information_schema.triggers')
         triggers = [row for row in triggers]
