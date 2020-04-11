@@ -10,8 +10,11 @@ from .database import SessionLocal, engine
 models.Base.metadata.create_all(bind=engine)
 
 import time
+import logging
 
 app = FastAPI()
+
+logger = logging.getLogger("api")
 
 
 # Dependency
@@ -23,55 +26,32 @@ def get_db():
         db.close()
 
 @app.middleware("http")
-async def add_process_time_header(request: Request, call_next, db: Session = Depends(get_db)):
-    # logic check if exist in db
-    # return JSONResponse(content="no", status_code=200)
+async def add_process_time_header(request: Request, call_next):
+    token = None
+    try:
+        token = request.headers["X-API-TOKEN"]
+    except:
+        return JSONResponse(content="no", status_code=200)
     response = await call_next(request)
     return response
 
+def validate_token(token, db):
+    db_token = crud.get_token_id_by_token(db, token)
+    if db_token is None:
+        raise HTTPException(status_code=404, detail="Invalid Token")
+
 @app.post("/get_status_by_iin/", response_model=schemas.Patient)
-def get_status_by_iin(patient: schemas.PatientByIIN, db: Session = Depends(get_db)):
+def get_status_by_iin(request: Request, patient: schemas.PatientByIIN, db: Session = Depends(get_db)):
+    validate_token(request.headers["X-API-TOKEN"], db)
     db_patient = crud.get_patient_by_iin(db, patient.iin)
     if db_patient is None:
         raise HTTPException(status_code=404, detail="Patient not found")
     return db_patient
 
 @app.post("/get_status_by_pass_num/", response_model=schemas.Patient)
-def get_status_by_pn(patient: schemas.PatientByPassNum, db: Session = Depends(get_db)):
+def get_status_by_pn(request: Request, patient: schemas.PatientByPassNum, db: Session = Depends(get_db)):
+    validate_token(request.headers["X-API-TOKEN"], db)
     db_patient = crud.get_patient_by_pass_num(db, patient.pass_num)
     if db_patient is None:
         raise HTTPException(status_code=404, detail="Patient not found")
     return db_patient
-
-# def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
-#     db_user = crud.get_user_by_email(db, email=user.email)
-#     if db_user:
-#         raise HTTPException(status_code=400, detail="Email already registered")
-#     return crud.create_user(db=db, user=user)
-
-
-# @app.get("/users/", response_model=List[schemas.User])
-# def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-#     users = crud.get_users(db, skip=skip, limit=limit)
-#     return users
-
-
-# @app.get("/users/{user_id}", response_model=schemas.User)
-# def read_user(user_id: int, db: Session = Depends(get_db)):
-#     db_user = crud.get_user(db, user_id=user_id)
-#     if db_user is None:
-#         raise HTTPException(status_code=404, detail="User not found")
-#     return db_user
-
-
-# @app.post("/users/{user_id}/items/", response_model=schemas.Item)
-# def create_item_for_user(
-#     user_id: int, item: schemas.ItemCreate, db: Session = Depends(get_db)
-# ):
-#     return crud.create_user_item(db=db, item=item, user_id=user_id)
-
-
-# @app.get("/items/", response_model=List[schemas.Item])
-# def read_items(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-#     items = crud.get_items(db, skip=skip, limit=limit)
-#     return items

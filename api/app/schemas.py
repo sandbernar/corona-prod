@@ -11,20 +11,32 @@ class Status(BaseModel):
         orm_mode = True
 
 class Adress(BaseModel):
-    
+    city: str
+    street: str
+    house: str
+    flat: str
 
-class PatientBase(BaseModel):
-    pass
+    class Config:
+        orm_mode = True
 
-class PatientByIIN(PatientBase):
+class Hospital(BaseModel):
+    name: str = ""
+    full_name: str = ""
+    address: str = ""
+
+    class Config:
+        orm_mode = True
+
+class PatientByIIN(BaseModel):
     iin: str = "empty"
 
-class PatientByPassNum(PatientBase):
+class PatientByPassNum(BaseModel):
     pass_num: str = "empty"
 
-class Patient(PatientBase):
+class Patient(BaseModel):
     status: Status
-    adress: Adress
+    home_address: Adress
+    hospital: Hospital = None
     iin: str
     pass_num: str
 

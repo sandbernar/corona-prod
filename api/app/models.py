@@ -5,6 +5,13 @@ from .database import Base
 
 import datetime
 
+class Token(Base):
+    __tablename__ = 'tokens'
+
+    id = Column(Integer, primary_key=True)
+    token = Column(String, unique=False)
+    organisation = Column(String, unique=False)
+
 class Patient(Base):
     __tablename__ = 'Patient'
 
@@ -31,22 +38,16 @@ class Patient(Base):
     dob = Column(Date, nullable=False)
     iin = Column(String, nullable=True, default=None)
     
-    # citizenship_id = Column(Integer, ForeignKey('Country.id'))
-    # citizenship = relationship('Country', foreign_keys=[citizenship_id])
-    
     pass_num = Column(String, unique=False, nullable=True, default=None)
     
-    # country_of_residence_id = Column(Integer, ForeignKey('Country.id'), nullable=True)
-    # country_of_residence = relationship('Country', foreign_keys=[country_of_residence_id])
-
     home_address_id = Column(Integer, ForeignKey('Address.id'), nullable=False)
     home_address = relationship('Address', foreign_keys=[home_address_id], cascade="all,delete", backref="Patient")
 
     telephone = Column(String, nullable=True, default=None)
     email = Column(String, nullable=True, default=None)
 
-    region_id = Column(Integer, ForeignKey('Region.id'))
-    region = relationship('Region')
+    # region_id = Column(Integer, ForeignKey('Region.id'))
+    # region = relationship('Region')
 
     status_id = Column(Integer, ForeignKey('PatientStatus.id'))
     status = relationship('PatientStatus')
@@ -55,10 +56,10 @@ class Patient(Base):
 
     is_found = Column(Boolean, unique=False, default=False)
     is_infected = Column(Boolean, unique=False, default=False)
-    is_contacted = Column(Boolean, unique=False, default=False)
+    # is_contacted = Column(Boolean, unique=False, default=False)
 
-    # hospital_id = Column(Integer, ForeignKey('Hospital.id'), nullable=True, default=None)
-    # hospital = relationship('Hospital')
+    hospital_id = Column(Integer, ForeignKey('Hospital.id'), nullable=True, default=None)
+    hospital = relationship('Hospital')
 
     # job = Column(String, nullable=True, default=None)
     # job_position = Column(String, nullable=True, default=None)
@@ -77,8 +78,8 @@ class Patient(Base):
                 
     #         setattr(self, property, value)
 
-    def __repr__(self):
-        return "{} {} {}".format(str(self.first_name), str(self.second_name), str(self.patronymic_name))
+    # def __repr__(self):
+    #     return "{} {} {}".format(str(self.first_name), str(self.second_name), str(self.patronymic_name))
 
 # class PatientState(Base):
 #     """
@@ -105,57 +106,9 @@ class PatientStatus(Base):
     value = Column(String, unique=True)
     name = Column(String, unique=True)
 
-    # def __init__(self, **kwargs):
-    #     for property, value in kwargs.items():
-    #         if hasattr(value, '__iter__') and not isinstance(value, str):
-    #             value = value[0]
-                
-    #         setattr(self, property, value)
-
-    # def __repr__(self):
-    #     print(str(self.name))
-    #     return str(self.name)
-
 class Region(Base):
 
     __tablename__ = 'Region'
-
-    id = Column(Integer, primary_key=True)
-    name = Column(String, unique=True)
-
-class TravelType(Base):
-
-    __tablename__ = 'TravelType'
-
-    id = Column(Integer, primary_key=True)
-    name = Column(String, unique=True)
-    value = Column(String, unique=True)
-
-class VariousTravel(Base):
-    __tablename__ = 'VariousTravel'
-
-    id = Column(Integer, primary_key=True)
-    date = Column(Date)
-
-    patient_id = Column(Integer, ForeignKey('Patient.id', ondelete="CASCADE"))
-    patient = relationship('Patient', backref=backref('various_travel', passive_deletes=True))    
-
-    border_control_id = Column(Integer, ForeignKey('BorderControl.id'), nullable=True, default=None)
-    border_control = relationship('BorderControl')
-
-
-class BorderControl(Base):
-    __tablename__ = 'BorderControl'
-
-    id = Column(Integer, primary_key=True)
-    name = Column(String)
-    
-    travel_type_id = Column(Integer, ForeignKey('TravelType.id'), nullable=True, default=None)
-    travel_type = relationship('TravelType')    
-
-class Infected_Country_Category(Base):
-
-    __tablename__ = 'Infected_Country_Category'
 
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
@@ -168,21 +121,6 @@ class Country(Base):
 
     code = Column(String, unique=True)
     name = Column(String, unique=True)
-
-class VisitedCountry(Base):
-
-    __tablename__ = 'VisitedCountry'
-
-    id = Column(Integer, primary_key=True)
-    
-    patient_id = Column(Integer, ForeignKey('Patient.id', ondelete="CASCADE"))
-    patient = relationship('Patient', backref=backref('visited_country', passive_deletes=True))
-
-    country_id = Column(Integer, ForeignKey('Country.id'), nullable=True, default=None)
-    country = relationship('Country')
-
-    from_date = Column(Date, nullable=True)
-    to_date = Column(Date, nullable=True)
 
 class Address(Base):
 
@@ -205,3 +143,15 @@ class Address(Base):
 
     lat = Column(Float, nullable=True, default = None)
     lng = Column(Float, nullable=True, default = None)
+
+class Hospital(Base):
+
+    __tablename__ = 'Hospital'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String, unique=False)
+    full_name = Column(String, unique=False)
+    address = Column(String, unique=False)
+    
+    region_id = Column(Integer, ForeignKey('Region.id'))
+    region = relationship('Region')

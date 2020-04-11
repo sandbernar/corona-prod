@@ -9,6 +9,7 @@ SQLALCHEMY_DATABASE_URL = "postgresql://%s:%s@%s:%s/%s" % (getenv("DATABASE_USER
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL
 )
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+# SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+SessionLocal = sessionmaker(bind=engine)
 
 Base = declarative_base()
