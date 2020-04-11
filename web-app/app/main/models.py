@@ -68,6 +68,9 @@ class OldDataTravel(db.Model):
     __tablename__ = 'OldDataTravel'
     id = Column(Integer, primary_key=True)
 
+    patient_id = Column(Integer, ForeignKey('Patient.id', ondelete="CASCADE"))
+    patient = db.relationship('Patient', backref=db.backref('old_data_travel', passive_deletes=True))    
+
     date = Column(Date, nullable=True)
     place = Column(String, nullable=True)
     path = Column(String, nullable=True)
