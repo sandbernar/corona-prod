@@ -15,7 +15,7 @@ docker run -d \
     postgres
 
 docker exec -it postgres psql -U postgres -c "drop database anti_corona_crm;"
-docker exec -it postgres psql -U postgres -c "drop role adm;;"
+docker exec -it postgres psql -U postgres -c "drop role adm;"
 
 docker exec -it postgres psql -U postgres -c "update pg_database set datistemplate=false where datname='template1';" && \
 docker exec -it postgres psql -U postgres -c "drop database Template1;" && \
