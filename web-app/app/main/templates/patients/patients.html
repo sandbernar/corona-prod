@@ -17,7 +17,10 @@
     <div class="col">
       <div class="card shadow">
         <div class="card-header border-0">
-            <form method="GET" id="searchForm">            
+            <form method="GET" id="searchForm">
+            {% if select_contacted %}
+              <input type="text" name="select_contacted_id" style="display:none;" value="{{ select_contacted }}">
+            {% endif %}            
           <div class="row">
             <div class="col">
               <h3> {{ _('Поиск') }} </h3>
