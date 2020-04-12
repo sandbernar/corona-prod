@@ -35,6 +35,7 @@
                 <th scope="col">{{ _("Логин") }}</th>
                 <th scope="col">{{ _("E-Mail") }}</th>
                 <th scope="col">{{ _("Регион") }}</th>
+                <th scope="col">{{ _("Администратор?") }}</th>
                 <th scope="col">{{ _("Телефон") }}</th>
               </tr>
             </thead>
@@ -52,11 +53,18 @@
                   {{ user.email }}
                 </td>
                 <td>
-                  {% if user.region == None %}
-                  <font color="green">{{ _("Администратор") }}</font>
-                  {% else %}
+                {% if user.region == None %}
+                  {{ constants.all_regions }}
+                {% else %}
                   {{ user.region }}
                 {% endif %}
+                </td>
+                <td>
+                  {% if user.is_admin %}
+                    <font color="green">{{ _("Да") }}</font>
+                  {% else %}
+                    <font color="red">{{ _("Нет") }}</font>
+                  {% endif %}
                 </td>
                 <td>
                   {{ user.telephone }}

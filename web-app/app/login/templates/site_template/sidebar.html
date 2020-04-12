@@ -101,17 +101,23 @@
           </li>
         </ul> -->
         <hr class="my-3">
-        {% if current_user.is_admin %}
         <ul class="navbar-nav">
+        {% if current_user.is_admin %}
           <li class="nav-item">
             <a class="nav-link" href="/users">
               <i class="fas fa-users text-blue"></i> {{ _('Управление Аккаунтами') }}
             </a>
           </li>
+        {% else %}
+          <li class="nav-item">
+            <a class="nav-link" href="/user_profile?id={{ current_user.id }}">
+              <i class="fas fa-user text-blue"></i> {{ _('Мой Профиль') }}
+            </a>
+          </li>        
+        {% endif %}
         </ul>
         <hr class="my-3">              
-        {% endif %}
-          {% if current_user.is_authenticated %}
+        {% if current_user.is_authenticated %}
         <ul class="navbar-nav">
             <li class="nav-item">
               <a class="nav-link" href={{ url_for('login_blueprint.logout') }}>
@@ -119,7 +125,7 @@
               </a>
             </li>
         </ul>
-          {% endif %}
+        {% endif %}
       </div>
     </div>
   </nav>
