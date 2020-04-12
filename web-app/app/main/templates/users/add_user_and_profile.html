@@ -1,0 +1,161 @@
+{% extends "base_site.html" %}
+
+{% block title %} Icons {% endblock title %}
+
+{% block stylesheets %}
+{{ super() }}
+{% endblock stylesheets %}
+
+{% block content %}
+
+{% include "site_template/navigation.html" %}
+
+{% with stats=stats %}
+{% include "site_template/top-stats.html" %}
+{% endwith %}
+
+{% if is_profile %}
+<!-- Modal -->
+<div class="modal fade" id="deletePatientModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">{{ _("Удалить пользователя?") }}</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true"></span>
+        </button>
+      </div>
+      <div class="modal-body">
+        {{ _("Вы уверены, что хотите удалить пользователя") }} <bold> {{user.username}} </bold>?
+      </div>
+      <div class="modal-footer">
+        <form action="/delete_user" method="POST">
+          {{ form.hidden_tag() }}
+          <input type="hidden" name="delete" value='{{ user.id }}'>
+          <button type="submit" class="btn btn-primary">{{ _("Да") }}</button>
+        </form>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ _("Нет") }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<div class="container-fluid mt--7">
+  <!-- Table -->
+  <div class="row">
+    <div class="col">
+      <div class="card shadow">
+        <div class="card-header bg-transparent">
+          <h3 class="mb-0">{{ _("Добавить Пользователя") }}</h3>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col">
+              <form id="add-patients" role="form" method="post" action="">
+                {{ form.hidden_tag() }}
+                <div class="row">
+                  <div class="col">
+                    <div class="card shadow">
+                      <div class="card-header bg-transparent">
+                        <div class="form-group">
+                          <label for="name-input" class="form-control-label">{{ _("ФИО") }}*</label>
+                          {{ form.full_name(placeholder="Иванов Иван Иванович",class="form-control", type="text") }}
+                        </div>                        
+                        <div class="form-group">
+                          <label for="name-input" class="form-control-label">{{ _("Логин") }}*</label>
+                          {{ form.username(placeholder="user1234",class="form-control", type="text") }}
+                        </div>
+                        <div class="form-group">
+                          <label for="npass-input" class="form-control-label">{{ _("Пароль") }}*</label>
+                          {{ form.password(placeholder=_("Пароль"), class="form-control", type="text") }}
+                        </div>
+                        <div class="form-group">
+                          <label for="npass-input" class="form-control-label">{{ _("Электронная Почта") }}</label>
+                          {{ form.email(placeholder="E-Mail", class="form-control", type="text") }}
+                        </div>                                                                     
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col">
+                    <div class="card shadow">
+                      <div class="card-header bg-transparent">
+                        <div class="row">
+                          <div class="col">
+                            <div class="form-group">
+                              <label for="region-input" class="form-control-label">{{ _("Регион") }}*</label>
+                              {{ form.region_id(class="form-control", id="region_id") }}                          
+                            </div>
+                          </div>
+                          {% if current_user.is_admin %}
+                          <div class="col-md-auto">
+                            <div class="form-group">
+                              <label for="region-input" class="form-control-label">{{ _("Администратор?") }}*</label><br>
+                              {% for subfield in form.is_admin %}
+                              <div class="custom-control custom-radio custom-control-inline">
+                                {{ subfield(type="radio", id=subfield.id, class="custom-control-input") }}
+                                <label class="custom-control-label" for='{{ subfield.id }}'>{{ subfield.label }}</label>
+                              </div>
+                              {% endfor %}
+                            </div>
+                          </div>
+                          {% endif %}                          
+                        </div>
+                        <div class="form-group">
+                          <label for="phone-input" class="form-control-label">{{ _("Телефон") }}*</label>
+                          {{ form.telephone(placeholder="77017123456", class="form-control", type="tel") }}
+                        </div>
+                        <div class="form-group">
+                          <label for="npass-input" class="form-control-label">{{ _("Организация") }}*</label>
+                          {{ form.organization(placeholder=_("Организация"), class="form-control", type="text") }}
+                        </div>
+                      </div>
+                    </div>
+                    <div class="card shadow mt-3">
+                      <div class="card-header bg-transparent">
+                        <div class="row">
+                          {% if is_profile %}
+                          <div class="col">
+                            <button type="submit" name="update" class="btn btn-primary btn-full-width" type="button">
+                              {{ _("Сохранить") }}
+                            </button>
+                          </div>
+                            {% if current_user.is_admin %}
+                            <div class="col">
+                              <input class="btn btn-danger btn-full-width" data-toggle="modal" data-target="#deletePatientModal" value={{ _("Удалить Пользователя") }}>
+                            </div>
+                            {% endif %}
+                          {% else %}
+                          <div class="col">
+                            <button type="submit" name="create" class="btn btn-primary btn-full-width" type="button">
+                              {{ _("Создать Пользователя") }}
+                            </button>
+                          </div>
+                          {% endif %}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% include "site_template/footer.html" %}
+
+</div>        
+
+{% endblock content %}
+
+{% block javascripts %}
+{{ super()}}
+
+{% with change=change, error_msg=error_msg %}
+{% include "site_template/change_notification.html" %}
+{% endwith %}
+
+{% endblock javascripts %}

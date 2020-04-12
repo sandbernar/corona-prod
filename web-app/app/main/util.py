@@ -12,7 +12,12 @@ def get_regions(current_user):
 
 def get_regions_choices(current_user, with_all_regions = True):
     regions = get_regions(current_user)
-    choices = [ (-1, c.all_regions) ] if current_user.region_id == None and with_all_regions else []
+    choices = []
+    
+    if with_all_regions:
+        if current_user.region_id == None or current_user.is_admin:
+            choices += [ (-1, c.all_regions) ]
+
     choices += [(r.id, r.name) for r in regions]
 
     return choices
@@ -26,3 +31,22 @@ def get_flight_code(flight_code_name):
         db.session.commit()
 
     return flight_code.id
+
+def populate_form(form, attrs, prefix = ''):
+    for k in attrs:
+        param = getattr(form, prefix + k, None)
+        if param:
+            if attrs[k] is not None:
+                value = attrs[k]
+                if type(value) == bool:
+                    value = int(value)
+                setattr(param, 'default', value)  
+
+def disable_form_fields(form, fields):
+    readonly = {'readonly': True}
+
+    for field in fields:
+        param = getattr(form, field, None)
+        if param:
+            if field is not None:
+                setattr(param, 'render_kw', readonly)

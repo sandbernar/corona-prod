@@ -37,7 +37,7 @@ import dateutil.parser
 import requests
 
 from multiprocessing.pool import ThreadPool as threadpool
-from app.main.util import get_regions, get_regions_choices, get_flight_code
+from app.main.util import get_regions, get_regions_choices, get_flight_code, populate_form
 from app.login.util import hash_pass
 from sqlalchemy import func, exc
 
@@ -175,7 +175,7 @@ def handle_add_update_patient(request_dict, final_dict, update_dict = {}):
     # 5
     # Home Address
     home_address = process_address(request_dict, address=update_dict.get("home_address", None))
-    final_dict['home_address_id'] = home_address.id
+    # final_dict['home_address_id'] = home_address.id
 
     job_address = process_address(request_dict, "job", False, address=update_dict.get("job_address", None))
     final_dict['job_address_id'] = job_address.id
@@ -393,13 +393,6 @@ def patient_profile():
 
             today = datetime.today()
             age =  today.year - patient.dob.year - ((today.month, today.day) < (patient.dob.month, patient.dob.day))
-
-            def populate_form(form, attrs, prefix = ''):
-                for k in attrs:
-                    param = getattr(form, prefix + k, None)
-                    if param:
-                        if attrs[k] is not None:
-                            setattr(param, 'default', attrs[k])
 
             populate_form(form, patient.__dict__)
 
