@@ -120,9 +120,11 @@
                               {{ _("Сохранить") }}
                             </button>
                           </div>
-                          <div class="col">
-                            <input class="btn btn-danger btn-full-width" data-toggle="modal" data-target="#deletePatientModal" value={{ _("Удалить Пользователя") }}>
-                          </div>
+                            {% if current_user.is_admin %}
+                            <div class="col">
+                              <input class="btn btn-danger btn-full-width" data-toggle="modal" data-target="#deletePatientModal" value={{ _("Удалить Пользователя") }}>
+                            </div>
+                            {% endif %}
                           {% else %}
                           <div class="col">
                             <button type="submit" name="create" class="btn btn-primary btn-full-width" type="button">

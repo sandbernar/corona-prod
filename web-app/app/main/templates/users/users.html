@@ -37,6 +37,7 @@
                 <th scope="col">{{ _("Регион") }}</th>
                 <th scope="col">{{ _("Администратор?") }}</th>
                 <th scope="col">{{ _("Телефон") }}</th>
+                <th scope="col">{{ _("Добавлено Пациентов") }}</th>
               </tr>
             </thead>
             <tbody>
@@ -68,6 +69,9 @@
                 </td>
                 <td>
                   {{ user.telephone }}
+                </td>
+                <td>
+                  {{ user.num_patients }}
                 </td>
               </tr>
               {% endfor %}

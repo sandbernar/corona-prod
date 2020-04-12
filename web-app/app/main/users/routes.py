@@ -7,7 +7,9 @@ from app.main import blueprint
 from flask import render_template, redirect, url_for, request
 from flask_login import login_required, current_user
 from app import login_manager, db
+
 from app.main.models import Region
+from app.main.patients.models import Patient
 from app.main.users.forms import CreateUserForm, UpdateUserForm
 from app.main.forms import TableSearchForm
 import math
@@ -49,6 +51,9 @@ def users():
 
     users = q.offset((page-1)*per_page).limit(per_page).all()
 
+    for user in users:
+        user.num_patients = Patient.query.filter_by(created_by = user).count()
+
     max_page = math.ceil(total_len/per_page)
 
     change = None
@@ -58,6 +63,8 @@ def users():
         change =_("Пользователь был успешно добавлен")
     elif "delete_user" in request.args:
         change =_("Пользователь был успешно удален")
+    elif "error" in request.args:
+        error_msg = request.args["error"]
 
     form.process()
     return route_template('users/users', users=users, form=form, page=page, max_page=max_page, 
@@ -72,19 +79,21 @@ def add_user():
         return render_template('errors/error-500.html'), 500
 
     form = CreateUserForm()
-    regions = get_regions(current_user)
 
     if not form.region_id.choices:
-        form.region_id.choices = [(r.id, r.name) for r in regions]
+        form.region_id.choices = get_regions_choices(current_user)
 
     form.process()
 
     if 'create' in request.form:
-        new_dict = request.form.to_dict(flat=False)
+        new_dict = request.form.to_dict(flat=True)
         
         user = User.query.filter_by(username=new_dict['username'][0]).first()
         if user:
             return route_template( 'users/add_user', error_msg=_('Имя пользователя уже зарегистрировано'), form=form, change=None)
+
+        if "is_admin" in new_dict:
+            new_dict["is_admin"] = int(new_dict["is_admin"]) == 1
 
         user = User(**new_dict)
         
@@ -156,7 +165,7 @@ def user_profile():
                     values.pop("region_id", None)
 
                 if not error_msg:
-                    if 'password' in values:
+                    if values.get('password', ''):
                         password = values['password']
 
                         user.password = hash_pass(password)
@@ -200,12 +209,16 @@ def delete_user():
             user_id = request.form["delete"]
             user = None
             try:
-                user = User.query.filter(User.id == user_id)
+                user = User.query.filter(User.id == user_id).first()
             except exc.SQLAlchemyError:
                 pass
 
             if user:
-                user.delete()
+                if Patient.query.filter_by(created_by_id=user.id).count():
+                    error_msg = _("Пользователь добавил пациентов. Удалите пациентов, добавленных пользователем")
+                    return redirect("{}?error={}".format(url_for('main_blueprint.users'), error_msg))
+
+                db.session.delete(user)
                 db.session.commit()
 
     return redirect("{}?delete_user".format(url_for('main_blueprint.users')))
