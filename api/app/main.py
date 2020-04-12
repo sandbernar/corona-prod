@@ -3,6 +3,7 @@ from typing import List
 from fastapi import Depends, FastAPI, HTTPException, Request
 from sqlalchemy.orm import Session
 from fastapi.responses import JSONResponse
+from fastapi.encoders import jsonable_encoder
 
 from . import crud, models, schemas
 from .database import SessionLocal, engine
@@ -16,6 +17,16 @@ app = FastAPI()
 
 logger = logging.getLogger("api")
 
+class UnicornException(Exception):
+    def __init__(self):
+        pass
+
+@app.exception_handler(UnicornException)
+async def unicorn_exception_handler(request: Request, exc: UnicornException):
+    return JSONResponse(
+        status_code=400,
+        content={"ErrorCode" : "invalid_request", "Error" :"Invalid Authorization Code"}
+    )
 
 # Dependency
 def get_db():
@@ -31,19 +42,19 @@ async def add_process_time_header(request: Request, call_next):
     try:
         token = request.headers["X-API-TOKEN"]
     except:
-        return JSONResponse(content="no", status_code=200)
+        return JSONResponse(content=jsonable_encoder({"ErrorCode" : "invalid_request", "Error" :"The request is missing a required header : X-API-TOKEN"}), status_code=400)
     response = await call_next(request)
     return response
 
 def validate_token(token, db):
     db_token = crud.get_token_id_by_token(db, token)
     if db_token is None:
-        raise HTTPException(status_code=404, detail="Invalid Token")
+        raise UnicornException()
 
 def is_contacted(db, id):
     db_contacted = crud.get_is_contacted(db, id)
     if db_contacted is None:
-        return False
+        return False    
     else:
         return True
 
