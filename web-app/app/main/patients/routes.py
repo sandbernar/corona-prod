@@ -355,6 +355,9 @@ def patient_profile():
                 for k, v in final_dict.items():
                     setattr(patient, k, v)
 
+                if patient.status.value != c.in_hospital[0]:
+                    patient.hospital_id = None
+
                 db.session.add(patient)
                 db.session.commit()
                 change = _("Профиль успешно обновлен")

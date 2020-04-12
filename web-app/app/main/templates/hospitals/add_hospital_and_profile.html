@@ -29,7 +29,7 @@
         {{ _("Вы уверены, что хотите удалить госпиталь") }} <bold> {{hospital.username}} </bold>?
       </div>
       <div class="modal-footer">
-        <form action="/delete_user" method="POST">
+        <form action="/delete_hospital" method="POST">
           {{ form.hidden_tag() }}
           <input type="hidden" name="delete" value='{{ hospital.id }}'>
           <button type="submit" class="btn btn-primary">{{ _("Да") }}</button>
@@ -64,7 +64,7 @@
                       <div class="card-header bg-transparent">
                         <div class="form-group">
                           <label for="name-input" class="form-control-label">{{ _("Полное Название") }}*</label>
-                          {{ form.full_name(placeholder="Иванов Иван Иванович",class="form-control", type="text") }}
+                          {{ form.full_name(placeholder="ГКП на ПХВ \"Аршалинская районная больница\"",class="form-control", type="text") }}
                         </div>                        
                       <div class="form-group">
                         <label for="region-input" class="form-control-label">{{ _("Тип Стационара") }}*</label>
@@ -86,20 +86,19 @@
                         </div>
                       </div>
                     </div>
+                    {% if current_user.is_admin %}
                     <div class="card shadow mt-3">
                       <div class="card-header bg-transparent">
                         <div class="row">
-                          {% if is_profile %}
+                          {% if is_profile%}
                           <div class="col">
                             <button type="submit" name="update" class="btn btn-primary btn-full-width" type="button">
                               {{ _("Сохранить") }}
                             </button>
                           </div>
-                            {% if current_user.is_admin %}
                             <div class="col">
                               <input class="btn btn-danger btn-full-width" data-toggle="modal" data-target="#deletePatientModal" value={{ _("Удалить Пользователя") }}>
                             </div>
-                            {% endif %}
                           {% else %}
                           <div class="col">
                             <button type="submit" name="create" class="btn btn-primary btn-full-width" type="button">
@@ -110,6 +109,7 @@
                         </div>
                       </div>
                     </div>
+                    {% endif %}
                   </div>
                 </div>
               </form>

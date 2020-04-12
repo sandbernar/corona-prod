@@ -172,7 +172,6 @@ def hospital_profile():
         else:
             form = AddHospitalForm()
             
-
             change = None
             error_msg = None
 
@@ -202,9 +201,35 @@ def hospital_profile():
 
             populate_form(form, hospital_parameters)
 
-
             form.process()
 
             return route_template('hospitals/add_hospital_and_profile', form = form, change=change, hospital=hospital, error_msg=error_msg, is_profile=True)
     else:    
         return render_template('errors/error-500.html'), 500
+
+@blueprint.route('/delete_hospital', methods=['POST'])
+@login_required
+def delete_hospital():
+    if not current_user.is_authenticated:
+        return redirect(url_for('login_blueprint.login'))
+
+    if not current_user.is_admin:
+        return render_template('errors/error-500.html'), 500        
+    
+    if len(request.form):
+        if "delete" in request.form:
+            hospital_id = request.form["delete"]
+            try:
+                hospital = Hospital.query.filter(Hospital.id == hospital_id).first()
+            except exc.SQLAlchemyError:
+                pass
+
+            if hospital:
+                if Patient.query.filter_by(hospital_id=hospital.id).count():
+                    error_msg = _("К стационару прикреплены пациенты. Удалите пациентов, прикрепленных к данному стационару")
+                    return redirect("{}?error={}".format(url_for('main_blueprint.hospitals'), error_msg))
+
+                db.session.delete(hospital)
+                db.session.commit()
+
+    return redirect("{}?delete_hospital".format(url_for('main_blueprint.hospitals')))
