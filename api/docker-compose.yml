@@ -1,0 +1,14 @@
+version: '3'
+networks:
+  default:
+    external:
+      name: postgres
+services:
+  api:
+    restart: always
+    env_file: .env
+    build: .
+    ports:
+      - "4080:80"
+    volumes:
+      - .:/app
