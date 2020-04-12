@@ -4,22 +4,42 @@ from fastapi import Depends, FastAPI, HTTPException, Request
 from sqlalchemy.orm import Session
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
+from fastapi.middleware.cors import CORSMiddleware
 
 from . import crud, models, schemas
 from .database import SessionLocal, engine
 
-models.Base.metadata.create_all(bind=engine)
-
 import time
 import logging
 
+
+# bind models
+models.Base.metadata.create_all(bind=engine)
+
+# origins for cors
+origins = [
+    "*"
+]
+
+# init на "боевой машине" LMAO
 app = FastAPI()
 
+# lets setup some logs
 logger = logging.getLogger("api")
 
+# model for JSONEXCEPTIONS
 class UnicornException(Exception):
     def __init__(self):
         pass
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 @app.exception_handler(UnicornException)
 async def unicorn_exception_handler(request: Request, exc: UnicornException):
