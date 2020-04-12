@@ -891,7 +891,7 @@ def select_contacted():
         db.session.add(contacted)
         db.session.commit()
 
-        return redirect("/contacted_persons?id={}".format(infected_patient.id))
+        return redirect("/contacted_persons?id={}&success={}".format(infected_patient.id, _("Контактный успешно добавлен")))
     else:
         return render_template('errors/error-400.html'), 400
 
