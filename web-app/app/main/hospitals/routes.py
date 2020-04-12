@@ -18,17 +18,36 @@ from app.main.models import Region
 from datetime import datetime
 import pandas as pd
 import numpy as np
-import math
-from app.main.hospitals.forms import AddHospitalsDataForm, HospitalSearchForm, UpdateHospitalProfileForm
-from app.main.util import get_regions, get_regions_choices
+import math, re
+from app.main.hospitals.forms import AddHospitalForm, HospitalSearchForm
+from app.main.util import get_regions, get_regions_choices, populate_form, disable_form_fields
 from flask_babelex import _
 from app.main.routes import route_template
 
 from sqlalchemy import exc
 
+def prepare_hospital_form(form, current_user):
+    if not form.region_id.choices:
+        form.region_id.choices = get_regions_choices(current_user, with_all_regions=False)
+
+    if not form.hospital_type_id.choices:
+        form.hospital_type_id.choices = [(t.id, t.name) for t in Hospital_Type.query.all()]
+
+def get_hospital_short_name(full_name):
+    short_name = re.findall('"([^"]*)"', full_name.replace("«", "\"").replace("»", "\""))
+
+    if not len(short_name):
+        short_name = full_name
+    elif not (len(short_name[0])):
+        short_name = full_name
+    else:
+        short_name = short_name[0]
+
+    return short_name
+
 @blueprint.route('/hospitals')
 @login_required
-def all_hospitals():
+def hospitals():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))
     
@@ -77,97 +96,63 @@ def all_hospitals():
 
     max_page = math.ceil(total_len/per_page)
 
+    change = None
+    error_msg = None
+
+    if "added_hospital" in request.args:
+        change =_("Стационар был успешно добавлен")
+    elif "delete_hospital" in request.args:
+        change =_("Стационар был успешно удален")
+    elif "error" in request.args:
+        error_msg = request.args["error"]
+
     form.process()    
 
-    return route_template('hospitals/hospitals', hospitals=hospitals, form=form, page=page, max_page=max_page, total = total_len)
-
+    return route_template('hospitals/hospitals', hospitals=hospitals, form=form, page=page, max_page=max_page,
+                         total = total_len, change=change, error_msg=error_msg)
 
 @blueprint.route('/add_hospital', methods=['GET', 'POST'])
 def add_hospital():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))
 
-    patient_form = PatientForm()
+    if not current_user.is_admin:
+        return render_template('errors/error-500.html'), 500
+
+    form = AddHospitalForm()
+
+    prepare_hospital_form(form, current_user)
+
+    form.process()
+
     if 'create' in request.form:
-
-        # fullname  = request.form['fullname']
-        # iin     = request.form['iin'   ]
-        # dob = request.form['dob']
-        new_dict = request.form.to_dict(flat=False)
-
-        new_dict['arrival_date'] = datetime.strptime(request.form['arrival_date'], '%Y-%m-%d')
-        new_dict['dob'] = datetime.strptime(request.form['dob'], '%Y-%m-%d')
-
-        new_dict['is_found'] = int(new_dict['is_found'][0]) == 1
-        new_dict['in_hospital'] = int(new_dict['in_hospital'][0]) == 1
-
-        # # else we can create the user
-        patient = Patient(**new_dict)
-
-        query = "{}, {}".format(patient.region, patient.home_address)
-        results = geocoder.geocode(query)
+        new_dict = request.form.to_dict(flat=True)
         
-        if len(results):
-            patient.address_lat = results[0]['geometry']['lat']
-            patient.address_lng = results[0]['geometry']['lng']        
+        full_name = new_dict.get('full_name', '')
 
-        db.session.add(patient)
-        db.session.commit()
+        hospital = Hospital.query.filter_by(full_name=full_name).first()
+        if hospital:
+            return route_template( 'hospitals/add_hospital_and_profile', error_msg=_('Стационар с таким именем уже добавлен'), form=form, change=None)
 
-        return route_template( 'hospitals/add_hospital', form=patient_form, added=True, error_msg=None)
-        # return render_template( 'login/register.html', success='User created please <a href="/login">login</a>', form=patient_form)
-    else:
-        return route_template( 'hospitals/add_hospital', form=patient_form, added=False, error_msg=None)
+        if full_name:
+            new_dict['name'] = get_hospital_short_name(full_name)
+            new_dict['full_name'] = full_name
 
-@blueprint.route('/add_hospitals_csv', methods=['GET', 'POST'])
-def add_hospitals_csv():
-    if not current_user.is_authenticated:
-        return redirect(url_for('login_blueprint.login'))
+            hospital = Hospital(**new_dict)
 
-    data_form = AddHospitalsDataForm()
-    docs = UploadSet('documents', 'csv')
-
-    if "submit" in request.form:
-        filename = docs.save(data_form.file.data)
-        file_url = docs.url(filename)
-
-        hospitals = pd.read_csv(docs.path(filename))
-        added = 0
-
-        def get_default(l, index, default_val):
-            try:
-                return l[index]
-            except IndexError:
-                return default_val
-        for index, row in hospitals.iterrows():
-            hospital = Hospital()
-
-            hospital.name = row[0]
-            hospital.address = row[1]
-            hospital.beds_amount = get_default(row, 2, 0)
-            hospital.meds_amount = get_default(row, 3, 0)
-            hospital.tests_amount = get_default(row, 4, 0)
-            hospital.tests_used = get_default(row, 5, 0)
-            hospital.region = request.form["region"]
-            hospital.hospital_type = request.form["hospital_type"]
-
-            query = "{}, {}".format(data_form.region, hospital.address)
-            results = geocoder.geocode(query)
+            hospital.beds_amount = 0
+            hospital.meds_amount = 0
+            hospital.tests_amount = 0
+            hospital.tests_used = 0            
             
-            if len(results):
-                hospital.address_lat = results[0]['geometry']['lat']
-                hospital.address_lng = results[0]['geometry']['lng']
-
             db.session.add(hospital)
             db.session.commit()
-            added += 1
 
-        # # else we can create the user
-        return route_template( 'hospitals/add_hospitals_csv', form=data_form, added=added)
-        # return render_template( 'login/register.html', success='User created please <a href="/login">login</a>', form=patient_form)
+            return redirect("{}?added_hospital".format(url_for('main_blueprint.hospitals')))
+        else:
+            return render_template('errors/error-500.html'), 500
     else:
-        return route_template( 'hospitals/add_hospitals_csv', form=data_form, added=-1)
-
+        return route_template( 'hospitals/add_hospital_and_profile', form=form, change=None, error_msg=None, is_profile=False)
 
 @blueprint.route('/hospital_profile', methods=['GET', 'POST'])
 @login_required
@@ -176,35 +161,50 @@ def hospital_profile():
         return redirect(url_for('login_blueprint.login'))
 
     if "id" in request.args:
-        hospital = None
         try:
-            hospital = Hospital.query.filter_by(id=request.args["id"]).first()
+            hospital_query = Hospital.query.filter_by(id=request.args["id"])
+            hospital = hospital_query.first()
         except exc.SQLAlchemyError:
-            return render_template('errors/error-400.html'), 400
+            return render_template('errors/error-400.html'), 400    
         
         if not hospital:
             return render_template('errors/error-404.html'), 404
         else:
-            form = UpdateHospitalProfileForm()
-            updated = False
-            patients = []
+            form = AddHospitalForm()
+            
 
-            q = Patient.query.filter_by(hospital_id=hospital.id)
+            change = None
+            error_msg = None
 
-            page = 1
-            per_page = 5
+            if not current_user.is_admin:
+                form_fields = ["full_name", "region_id", "hospital_type_id"]
 
-            if "page" in request.args:
-                page = int(request.args["page"])
+                disable_form_fields(form, form_fields)
+                                
+            if 'update' in request.form and current_user.is_admin:
+                values = request.form.to_dict()
+                values.pop("csrf_token", None)
+                values.pop("update", None)
 
-            total_len = q.count()
+                values['name'] = get_hospital_short_name(values['full_name'])
+                
+                hospital_query.update(values)
 
-            for p in q.offset((page-1)*per_page).limit(per_page).all():
-                patients.append(p)
+                db.session.add(hospital)
+                db.session.commit()
 
-            max_page = math.ceil(total_len/per_page)            
-            # form.process()
-            return route_template('hospitals/hospital_profile', hospital=hospital, form = form, updated = updated, 
-                                                    patients=patients, total_patients=total_len, max_page=max_page, page=page)
+                change = _("Данные обновлены")                
+
+            prepare_hospital_form(form, current_user)
+
+            hospital = hospital_query.first()
+            hospital_parameters = hospital.__dict__.copy()
+
+            populate_form(form, hospital_parameters)
+
+
+            form.process()
+
+            return route_template('hospitals/add_hospital_and_profile', form = form, change=change, hospital=hospital, error_msg=error_msg, is_profile=True)
     else:    
         return render_template('errors/error-500.html'), 500

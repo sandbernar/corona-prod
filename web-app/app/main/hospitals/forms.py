@@ -10,21 +10,11 @@ from wtforms.validators import InputRequired, DataRequired
 from app import constants as c
 from app.main.forms import UploadDataForm
 
-class AddHospitalsDataForm(UploadDataForm):
-	region = TextField('Region', id='region'   , validators=[DataRequired()])
-	hospital_type = SelectField('Hospital Type', id='hospital_type',
-    	default=0,
-    	choices=[(0, "Больница"),
-    			(1, "Диспансер"),
-    			(2, "Поликлиника")])
+class AddHospitalForm(UploadDataForm):
+	region_id = SelectField('Hospital Region', validators=[DataRequired()])
+	full_name = TextField('Hospital Full Name', validators=[DataRequired()])
+	hospital_type_id = SelectField('Hospital Type', validators=[DataRequired()])
 
 class HospitalSearchForm(FlaskForm):
 	region = SelectField(id='region')
 	hospital_type = SelectField(id='hospital_type')
-
-
-class UpdateHospitalProfileForm(FlaskForm):
-	is_found = BooleanField(id="is_found")
-	in_hospital = BooleanField(id="in_hospital")
-
-	hospital = TextField('Hospital', id='hospital'   , validators=[DataRequired()])

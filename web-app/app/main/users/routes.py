@@ -88,7 +88,7 @@ def add_user():
     if 'create' in request.form:
         new_dict = request.form.to_dict(flat=True)
         
-        user = User.query.filter_by(username=new_dict['username'][0]).first()
+        user = User.query.filter_by(username=new_dict['username']).first()
         if user:
             return route_template( 'users/add_user', error_msg=_('Имя пользователя уже зарегистрировано'), form=form, change=None)
 
@@ -115,9 +115,6 @@ def user_profile():
         if request.args["id"] != str(current_user.id):
             if not current_user.is_admin:
                 return render_template('errors/error-500.html'), 500
-
-        user_query = User.query.filter_by(id=request.args["id"])
-        user = user_query.first()
 
         try:
             user_query = User.query.filter_by(id=request.args["id"])
