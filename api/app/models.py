@@ -16,88 +16,20 @@ class Patient(Base):
     __tablename__ = 'Patient'
 
     id = Column(Integer, primary_key=True)
-    created_date = Column(DateTime, default=datetime.datetime.utcnow)
-    
-    # created_by_id = Column(Integer, ForeignKey('User.id'))
-    # created_by = relationship('User', backref='id', lazy='dynamic',
-    #                     primaryjoin="User.id == Patient.created_by_id")
-
-    # travel_type_id = Column(Integer, ForeignKey('TravelType.id'), nullable=True, default=None)
-    # travel_type = relationship('TravelType')
-
-    # travel_id = Column(Integer, nullable=True, default=None, unique=False)
-
-    is_contacted_person = Column(Boolean, unique=False)
-   
     first_name = Column(String, unique=False)
     second_name = Column(String, unique=False)
     patronymic_name = Column(String, unique=False, nullable=True)
-
-    # False - male, True - female, None - unknown
-    gender = Column(Boolean, nullable=True, default=None)
-    dob = Column(Date, nullable=False)
     iin = Column(String, nullable=True, default=None)
-    
     pass_num = Column(String, unique=False, nullable=True, default=None)
-    
     home_address_id = Column(Integer, ForeignKey('Address.id'), nullable=False)
     home_address = relationship('Address', foreign_keys=[home_address_id], cascade="all,delete", backref="Patient")
-
-    telephone = Column(String, nullable=True, default=None)
-    email = Column(String, nullable=True, default=None)
-
-    # region_id = Column(Integer, ForeignKey('Region.id'))
-    # region = relationship('Region')
-
     status_id = Column(Integer, ForeignKey('PatientStatus.id'))
     status = relationship('PatientStatus')
-    # posts = relationship('Post', backref='author', lazy='dynamic',
-                        # primaryjoin="User.id == Post.user_id"))
-
     is_found = Column(Boolean, unique=False, default=False)
     is_infected = Column(Boolean, unique=False, default=False)
-    # is_contacted = Column(Boolean, unique=False, default=False)
-
     hospital_id = Column(Integer, ForeignKey('Hospital.id'), nullable=True, default=None)
     hospital = relationship('Hospital')
 
-    # job = Column(String, nullable=True, default=None)
-    # job_position = Column(String, nullable=True, default=None)
-    # job_address_id = Column(Integer, ForeignKey('Address.id'), nullable=True, default=None)
-    # job_address = relationship('Address', foreign_keys=[job_address_id], cascade="all, delete-orphan", single_parent=True)
-
-    # attrs = Column(JSON, unique=False)
-
-    # infected, dead, healthy
-    # states = relationship("State", secondary=lambda:PatientState.__table__, backref=backref("patients"))
-
-    # def __init__(self, **kwargs):
-    #     for property, value in kwargs.items():
-    #         if hasattr(value, '__iter__') and not isinstance(value, str):
-    #             value = value[0]
-                
-    #         setattr(self, property, value)
-
-    # def __repr__(self):
-    #     return "{} {} {}".format(str(self.first_name), str(self.second_name), str(self.patronymic_name))
-
-# class PatientState(Base):
-#     """
-#     PatientState represents many-to-many relationship between Patient and State tables.
-#     Table includes:
-#     * created_at: creation datetime
-#     * detection_date: datetime of detection
-#     * comment: comment on state
-#     """
-#     __tablename__ = 'PatientState'
-
-#     state_id = Column(Integer, ForeignKey('State.id'), primary_key = True)
-#     patient_id = Column(Integer, ForeignKey('Patient.id'), primary_key = True)
-#     created_at = Column(DateTime, default=datetime.datetime.utcnow)
-#     patient = relationship('Patient')
-#     state = relationship('State')
-#     detection_date = Column(DateTime, nullable=False)
-#     comment = Column(String, nullable=True)
 class PatientStatus(Base):
 
     __tablename__ = 'PatientStatus'
@@ -155,3 +87,17 @@ class Hospital(Base):
     
     region_id = Column(Integer, ForeignKey('Region.id'))
     region = relationship('Region')
+
+class ContactedPersons(Base):
+    __tablename__ = 'ContactedPersons'
+
+    id = Column(Integer, primary_key=True)
+    
+    infected_patient_id = Column(Integer, ForeignKey('Patient.id', ondelete="CASCADE"))
+    infected_patient = relationship('Patient', foreign_keys=[infected_patient_id],
+                                                backref=backref('infected_patient', passive_deletes=True))
+
+    contacted_patient_id = Column(Integer, ForeignKey('Patient.id'))
+    contacted_patient = relationship('Patient', foreign_keys=[contacted_patient_id])
+    
+    attrs = Column(JSON, unique=False)

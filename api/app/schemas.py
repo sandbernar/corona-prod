@@ -39,6 +39,9 @@ class Patient(BaseModel):
     hospital: Hospital = None
     iin: str
     pass_num: str
+    is_contacted: bool
+    is_infected: bool
+    is_found: bool
 
     class Config:
         orm_mode = True
