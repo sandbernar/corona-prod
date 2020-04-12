@@ -5,6 +5,15 @@
 docker-compose -f docker-compose-test.yml up -d
 ```
 
+## Мигрирование Базы данных
+```bash
+python manage.py db migrate
+```
+
+Через docker
+```bash
+docker exec -it web-app_appseed-app_1 python manage.py db migrate
+```
 ## Запуск
 
 Запустится на порту :5005
