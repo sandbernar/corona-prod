@@ -1,8 +1,11 @@
 version: '3'
+networks:
+  default:
+    external:
+      name: postgres
 services:
-  appseed-app:
+  api:
     restart: always
-    network_mode: "host"
     env_file: .env
     build: .
     ports:
