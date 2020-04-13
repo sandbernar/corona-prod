@@ -359,6 +359,7 @@
         $("#flight_arrival_date").val('{{ travel.flight_code.date }}')
         $("#flight_arrival_date").change()
         $("#flight_code_id").val('{{ travel.flight_code.id }}')
+        $('#flight_code_id option[value={{ travel.flight_code.id }}]').attr('selected','selected');
         {% if travel.seat %}
         $("#flight_seat").val('{{ travel.seat }}')
         {% endif %}
