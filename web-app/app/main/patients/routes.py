@@ -175,7 +175,7 @@ def handle_add_update_patient(request_dict, final_dict, update_dict = {}):
     # 5
     # Home Address
     home_address = process_address(request_dict, address=update_dict.get("home_address", None))
-    # final_dict['home_address_id'] = home_address.id
+    final_dict['home_address_id'] = home_address.id
 
     job_address = process_address(request_dict, "job", False, address=update_dict.get("job_address", None))
     final_dict['job_address_id'] = job_address.id
