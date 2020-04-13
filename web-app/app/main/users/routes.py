@@ -95,6 +95,10 @@ def add_user():
         if "is_admin" in new_dict:
             new_dict["is_admin"] = int(new_dict["is_admin"]) == 1
 
+        if 'region_id' in new_dict:
+            if new_dict['region_id'] == '-1':
+                new_dict['region_id'] = None
+
         user = User(**new_dict)
         
         db.session.add(user)
