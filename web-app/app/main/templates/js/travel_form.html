@@ -4,6 +4,7 @@ $.ajax({
   url: "/get_flights_by_date",
   data: {date: $("#flight_arrival_date").val()},
   dataType: "text",
+  async: false,
   success: function(data){
     document.getElementById("flight_code_id").innerHTML = data.toString();
   }
@@ -16,6 +17,7 @@ $.ajax({
   url: "/get_trains_by_date_range",
   data: {departure_date: $("#train_departure_date").val(), arrival_date: $("#train_arrival_date").val()},
   dataType: "text",
+  async: false,
   success: function(data){
     document.getElementById("train_id").innerHTML = data.toString();
   }
@@ -108,7 +110,7 @@ if (travel_type !== '{{c.local_type[0]}}') {
     addToTravelForm(flightForm)
 
     $("#flight_arrival_date").on("change", function(){
-      get_flights_by_date();
+    get_flights_by_date();
     });
   } else if(travel_type === '{{c.train_type[0]}}') {
     addToTravelForm(trainForm)
