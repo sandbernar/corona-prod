@@ -15,7 +15,7 @@ from app import constants as c
 from jinja2 import TemplateNotFound
 
 from app.main.models import (Region, Country, VisitedCountry, Infected_Country_Category, 
-                            TravelType, BorderControl, VariousTravel, Address)
+                            TravelType, BorderControl, VariousTravel, BlockpostTravel, Address)
 from app.main.patients.models import Patient, PatientStatus, ContactedPersons, State, PatientState
 from app.main.hospitals.models import Hospital, Hospital_Type
 from app.main.flights_trains.models import FlightCode, FlightTravel, Train, TrainTravel
@@ -42,9 +42,11 @@ from app.login.util import hash_pass
 from sqlalchemy import func, exc
 
 def prepare_patient_form(patient_form):
+    regions_choices = get_regions_choices(current_user, False)
+
     if not patient_form.region_id.choices:
-        patient_form.region_id.choices = get_regions_choices(current_user, False)
-        patient_form.hospital_region_id.choices = get_regions_choices(current_user, False)
+        patient_form.region_id.choices = regions_choices
+        patient_form.hospital_region_id.choices = regions_choices
 
     if not patient_form.travel_type.choices:
         patient_form.travel_type.choices = []
@@ -77,6 +79,10 @@ def prepare_patient_form(patient_form):
         if not typ_select.choices:
             borders = BorderControl.query.filter_by(travel_type_id = typ_id).all()
             typ_select.choices =[(b.id, b.name) for b in borders]
+
+    # Blockpost Travel
+    if not patient_form.blockpost_region_id.choices:
+        patient_form.blockpost_region_id.choices = regions_choices
 
     # Hospital
     hospital_types = Hospital_Type.query.all()
@@ -213,7 +219,19 @@ def handle_after_patient(request_dict, final_dict, patient, update_dict = {}):
                 t_travel.wagon = wagon
 
                 db.session.add(t_travel)
-                db.session.commit()                
+                db.session.commit()
+        elif travel_type.value == c.blockpost_type[0]:
+            blockpost_t = update_dict.get('blockpost_travel', BlockpostTravel(patient_id = patient.id))
+            
+            date = request_dict['arrival_date']
+            blockpost_r_id = request_dict['blockpost_region_id']
+            
+            if blockpost_t.region_id != blockpost_r_id or blockpost_t.date != date:
+                blockpost_t.date = date
+                blockpost_t.region_id = blockpost_r_id
+
+                db.session.add(blockpost_t)
+                db.session.commit()                     
         else:
             border_form_key = None
 
@@ -338,7 +356,9 @@ def patient_profile():
                 if request_dict['travel_type'] == c.flight_type[0]:
                     update_dict['flight_travel'] = FlightTravel.query.filter_by(patient_id=patient.id).first()
                 elif request_dict['travel_type'] == c.train_type[0]:
-                    update_dict['train_travel'] = TrainTravel.query.filter_by(patient_id=patient.id).first()                    
+                    update_dict['train_travel'] = TrainTravel.query.filter_by(patient_id=patient.id).first()
+                elif request_dict['travel_type'] == c.blockpost_type[0]:
+                    update_dict['blockpost_travel'] = BlockpostTravel.query.filter_by(patient_id=patient.id).first()
                 elif request_dict['travel_type'] in dict(c.various_travel_types).keys():
                     update_dict['various_travel'] = VariousTravel.query.filter_by(patient_id=patient.id).first()
 
@@ -372,6 +392,8 @@ def patient_profile():
                 travel = FlightTravel.query.filter_by(patient_id=patient.id).first()
             elif travel_type.value == c.train_type[0]:
                 travel = TrainTravel.query.filter_by(patient_id=patient.id).first()
+            elif travel_type.value == c.blockpost_type[0]:
+                travel = BlockpostTravel.query.filter_by(patient_id=patient.id).first()
             elif travel_type.value != c.local_type[0]:
                 travel = VariousTravel.query.filter_by(patient_id=patient.id).first()
 
@@ -419,7 +441,6 @@ def patient_profile():
                 change = _("Пользователь %(full_name)s успешно добавлен", full_name=patient.full_name)
 
             form.process()
-            print("hospitals", hospital_name)
 
             states = PatientState.query.filter_by(patient_id=patient.id).join(State).all()
 

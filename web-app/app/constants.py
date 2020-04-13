@@ -26,6 +26,7 @@ by_foot_type = ("by_foot", "Пешком")
 by_sea_type = ("by_sea", "Морской Транспорт")
 flight_type = ("flight_type", "Самолет")
 local_type = ("local_type", "Местные")
+blockpost_type = ("blockpost_type", "Блокпост")
 old_data_type = ("old_data_type", "Старые Данные")
 
 # State
@@ -38,7 +39,7 @@ various_travel_types = [by_auto_type, by_foot_type, by_sea_type]
 
 board_team = "экипаж"
 
-travel_types = [flight_type, train_type, by_auto_type, by_foot_type, by_sea_type, local_type, old_data_type]
+travel_types = [flight_type, train_type, by_auto_type, by_foot_type, by_sea_type, local_type, old_data_type, blockpost_type]
 
 unknown = (None, "Неизвестно")
 

@@ -64,6 +64,24 @@ class VariousTravel(db.Model):
     def __repr__(self):
         return str(self.border_control)
 
+class BlockpostTravel(db.Model):
+    __tablename__ = 'BlockpostTravel'
+
+    id = Column(Integer, primary_key=True)
+    date = Column(Date)
+
+    patient_id = Column(Integer, ForeignKey('Patient.id', ondelete="CASCADE"))
+    patient = db.relationship('Patient', backref=db.backref('blockpost_travel', passive_deletes=True))    
+
+    region_id = Column(Integer, ForeignKey('Region.id'), nullable=False)
+    region = db.relationship('Region')
+
+    def __init__(self, **kwargs):
+        set_props(self, kwargs)
+
+    def __repr__(self):
+        return str(self.border_control)
+
 class OldDataTravel(db.Model):
     __tablename__ = 'OldDataTravel'
     id = Column(Integer, primary_key=True)
