@@ -453,9 +453,8 @@ def get_lat_lng(patients):
 
         resp = requests.get(url=url, params=params, verify=False)
         data = resp.json()
-        print(data)
                    
-        if len(data["items"]):
+        if data and "items" in data and len(data["items"]):
             item = data["items"][0]
 
             item = item["position"]
@@ -839,6 +838,7 @@ def contacted_persons():
 
         if patient:
             q = ContactedPersons.query.filter_by(infected_patient_id=patient.id)
+            all_patients = [p.contacted_patient for p in q.all()]
 
             infected_contact = ContactedPersons.query.filter_by(contacted_patient_id = patient.id).all()
 
@@ -851,7 +851,7 @@ def contacted_persons():
                 error_msg = request.args['error']     
 
             page = 1
-            per_page = 5
+            per_page = 10
             if "page" in request.args:
                 page = int(request.args["page"])
 
@@ -864,7 +864,7 @@ def contacted_persons():
             max_page = math.ceil(total_len/per_page)
 
             form.process()
-            return route_template('patients/contacted_persons', patients=patients, form=form, page=page, 
+            return route_template('patients/contacted_persons', patients=patients, all_patients=all_patients, form=form, page=page, 
                                             max_page=max_page, total = total_len, constants=c, main_patient=patient,
                                             infected_contact=infected_contact, change=change, error_msg=error_msg)
         else:

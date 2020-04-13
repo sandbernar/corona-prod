@@ -42,12 +42,18 @@ def index():
             coordinates_patients.append(p)
 
     patients = q.all()
-    regions = dict()
-    for p in patients:
-        found_hospital = regions.get(p.region, (0, 0))
-        in_hospital_id = PatientStatus.query.filter_by(value=c.in_hospital[0]).first().id
+    regions_list = Region.query.all()
 
-        regions[p.region] = (found_hospital[0] + (1 - int(p.is_found)), found_hospital[1] + (1 - int(p.status_id == in_hospital_id)))
+    regions = dict()
+    in_hospital_id = PatientStatus.query.filter_by(value=c.in_hospital[0]).first().id
+    
+    for region in regions_list:
+        patient_region_query = Patient.query.filter_by(region_id=region.id)
+
+        not_found_count = patient_region_query.filter_by(is_found=False).count()
+        infected_count = patient_region_query.filter_by(is_infected = True).count()
+        
+        regions[region.name] = (not_found_count, infected_count)
 
     return route_template('index', last_five_patients=last_five_patients, coordinates_patients=coordinates_patients, regions=regions, constants=c)
 

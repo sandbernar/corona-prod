@@ -21,7 +21,7 @@
         <div class="card-header bg-transparent">
           <div class="row align-items-center">
             <div class="col">
-              <h2 class="mb-0">{{ _('Инфицирован') }}</h2>
+              <h2 class="mb-0">{{ _('Карта Контактных Пациентов') }}</h2>
             </div>
           </div>
         </div>
@@ -228,7 +228,7 @@ function init() {
         });    
 
     geoObjects = []
-    {% for p in patients + [main_patient]  %}
+    {% for p in all_patients + [main_patient]  %}
 
     is_found = "Нет"
     if ('{{ p.is_found }}' == 'True') {
@@ -236,22 +236,20 @@ function init() {
     }
     geoObjects.push(new ymaps.Placemark(['{{ p.home_address.lat }}', '{{ p.home_address.lng }}' ], {
         balloonContentBody: 
-        '<a href="/patient_profile?id={{p.id}}">{{ p.full_name }}</a><br>' +
+        '<a href="/patient_profile?id={{p.id}}">{{ p }}</a><br>' +
         '<strong>Регион</strong>: {{ p.region }}<br>' +
         '<strong>Адрес</strong>: {{ p.home_address }}<br>' +
         '<strong>Найден</strong>:' + is_found + '<br>' +
         '<strong>Статус</strong>: {{ p.status.name }}<br>',
-        clusterCaption: '<strong>{{ p.full_name }}</strong>'
+        clusterCaption: '<strong>{{ p }}</strong>'
     }, {
-        {% if p == patient %}
+        {% if p == main_patient %}
         preset: 'islands#redCircleDotIcon',
         {% else %}
         preset: 'islands#icon',
         {% endif %}
-        {% if not p.is_found and not p.status.value == constants.in_hospital[0] %}
+        {% if p.is_infected  %}
         iconColor: 'red'
-        {% elif p.is_found and not p.status.value == constants.in_hospital[0] and not p.status.value == constants.is_home[0] %}
-        iconColor: 'yellow'
         {% else %}
         iconColor: 'green'
         {% endif %}            
@@ -262,7 +260,7 @@ function init() {
     myMap.geoObjects.add(clusterer);
 
     myMap.geoObjects
-        {% for p in patients %}
+        {% for p in all_patients %}
         .add(new ymaps.GeoObject({
           geometry: {
                 // Тип геометрии - "Ломаная линия".
