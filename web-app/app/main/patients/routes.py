@@ -453,9 +453,8 @@ def get_lat_lng(patients):
 
         resp = requests.get(url=url, params=params, verify=False)
         data = resp.json()
-        print(data)
                    
-        if len(data["items"]):
+        if data and "items" in data and len(data["items"]):
             item = data["items"][0]
 
             item = item["position"]
