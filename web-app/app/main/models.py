@@ -199,3 +199,10 @@ class Address(db.Model):
             display_str = display_str + ", {}".format(str(self.building))
 
         return display_str
+
+class Token(db.Model):
+    __tablename__ = 'tokens'
+
+    id = Column(Integer, primary_key=True)
+    token = Column(String, unique=False)
+    organisation = Column(String, unique=False)
