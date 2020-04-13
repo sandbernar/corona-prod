@@ -80,11 +80,15 @@ def is_contacted(db, id):
 
 @app.post("/get_status_by_iin/", response_model=schemas.Patient)
 def get_status_by_iin(request: Request, patient: schemas.PatientByIIN, db: Session = Depends(get_db)):
+    logger.error("0")
     validate_token(request.headers["X-API-TOKEN"], db)
+    logger.error("1")
     db_patient = crud.get_patient_by_iin(db, patient.iin)
+    logger.error("2")
     if db_patient is None:
         raise HTTPException(status_code=404, detail="Patient not found")
     db_patient.is_contacted = is_contacted(db, db_patient.id)
+    logger.error("3")
     return db_patient
 
 @app.post("/get_status_by_pass_num/", response_model=schemas.Patient)
