@@ -182,21 +182,26 @@ function init() {
     if ('{{ p.is_found }}' == 'True') {
       is_found = '{{ _("Да") }}'
     }
+
+    is_infected = '{{ _("Нет") }}'
+    if ('{{ p.is_infected }}' == 'True') {
+      is_infected = '{{ _("Да") }}'
+    }
+
     {% if p.home_address %}
     geoObjects.push(new ymaps.Placemark(['{{ p.home_address.lat }}', '{{ p.home_address.lng }}' ], {
         balloonContentBody: 
         '<a href="/patient_profile?id={{p.id}}">{{ p }}</a><br>' +
         '<strong>{{ _("Регион") }}</strong>: {{ p.region }}<br>' +
         '<strong>{{ _("Адрес") }}</strong>: {{ p.home_address }}<br>' +
-        '<strong>{{ _("Найден?") }}</strong>:' + is_found + '<br>' +
+        '<strong>{{ _("Найден") }}</strong>: ' + is_found + '<br>' +
+        '<strong>{{ _("Инфицирован") }}</strong>: ' + is_infected + '<br>' +
         '<strong>{{ _("Статус") }}</strong>: {{ p.status.name }}<br>',
         clusterCaption: '<strong>{{ p }}</strong>'
     }, {
         preset: 'islands#icon',
-        {% if not p.is_found and not p.status.value == constants.in_hospital[0] %}
+        {% if p.is_infected %}
         iconColor: 'red'
-        {% elif p.is_found and not p.status.value == constants.in_hospital[0] and not p.status.value == constants.is_home[0] %}
-        iconColor: 'yellow'
         {% else %}
         iconColor: 'green'
         {% endif %}            
