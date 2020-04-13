@@ -47,7 +47,10 @@ def prepare_patient_form(patient_form):
         patient_form.hospital_region_id.choices = get_regions_choices(current_user, False)
 
     if not patient_form.travel_type.choices:
-        patient_form.travel_type.choices = [ (typ.value, typ.name) for typ in TravelType.query.all() ]
+        patient_form.travel_type.choices = []
+        for typ in TravelType.query.all():
+            if typ.value != c.old_data_type[0]:
+                patient_form.travel_type.choices.append((typ.value, typ.name))
 
     # Flight Travel
     if not patient_form.flight_arrival_date.choices:
@@ -351,6 +354,9 @@ def patient_profile():
 
                 for k, v in final_dict.items():
                     setattr(patient, k, v)
+
+                if patient.status.value != c.in_hospital[0]:
+                    patient.hospital_id = None
 
                 db.session.add(patient)
                 db.session.commit()

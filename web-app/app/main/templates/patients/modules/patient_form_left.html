@@ -111,22 +111,26 @@
                                   {{ form.home_address_street(class="form-control", type="text", placeholder=_("Байтурсынова") ) }}
                                 </div>
                               </div>
-                              <div class="col-sm-2">
-                                <div class="form-group">
-                                  <label for="home-input" class="form-control-label sub-label">{{ _("Дом") }}</label>
-                                  {{ form.home_address_house(class="form-control", type="text", placeholder=_("1") ) }}
-                                </div>
-                              </div>
-                              <div class="col-sm-2">
-                                <div class="form-group">
-                                  <label for="home-input" class="form-control-label sub-label">{{ _("Квартира") }}</label>
-                                  {{ form.home_address_flat(class="form-control", type="text", placeholder=_("2") ) }}
-                                </div>
-                              </div>                                                    
-                              <div class="col-sm-2">
-                                <div class="form-group">
-                                  <label for="home_address_building" class="form-control-label sub-label">{{ _("Корпус") }}</label>
-                                  {{ form.home_address_building(class="form-control", type="text", placeholder=_("3") ) }}
+                              <div class="col">
+                                <div class="row">
+                                  <div class="col">
+                                    <div class="form-group">
+                                      <label for="home-input" class="form-control-label sub-label">{{ _("Дом") }}</label>
+                                      {{ form.home_address_house(class="form-control", type="text", placeholder=_("1") ) }}
+                                    </div>
+                                  </div>
+                                  <div class="col">
+                                    <div class="form-group">
+                                      <label for="home-input" class="form-control-label sub-label">{{ _("Квартира") }}</label>
+                                      {{ form.home_address_flat(class="form-control", type="text", placeholder=_("2") ) }}
+                                    </div>
+                                  </div>                                                    
+                                  <div class="col">
+                                    <div class="form-group">
+                                      <label for="home_address_building" class="form-control-label sub-label">{{ _("Корпус") }}</label>
+                                      {{ form.home_address_building(class="form-control", type="text", placeholder=_("3") ) }}
+                                    </div>
+                                  </div>
                                 </div>
                               </div>                          
                             </div>
