@@ -41,10 +41,7 @@
           </div>
           <div class="card-body">
             <!-- Chart -->
-            <div class="chart">
-              <canvas id="not-found"></canvas>
-            </div>
-
+              <canvas id="chart-patients-not-found"></canvas>
         </div>
       </div>
     </div>
@@ -124,10 +121,7 @@
           </div>
           <div class="card-body">
             <!-- Chart -->
-            <div class="chart">
-              <canvas id="not-in-hospital"></canvas>
-            </div>
-
+            <canvas id="chart-patients-infected"></canvas>
         </div>
       </div>
     </div>
@@ -218,7 +212,10 @@ function init() {
 colors = ["#3e95cd", "#8e5ea2", "#3cba9f", "#e8c3b9", "#b8860b", "#c45850", "#ff4500", "#f00f30", "#0000cd", 
           "#7cfc00", "#00fa9a", "#000fff", "#f08080", "#d8bfd8", "#ff00ff", "#1e90ff", "#ff1493", "#ee82ee"]
 
-new Chart(document.getElementById("not-found"), {
+var not_found = document.getElementById("chart-patients-not-found")
+not_found.height = 270;
+
+new Chart(not_found, {
     type: 'pie',
     data: {    
       labels:       [
@@ -244,7 +241,10 @@ new Chart(document.getElementById("not-found"), {
     }
 });
 
-new Chart(document.getElementById("not-in-hospital"), {
+var not_in_hospital = document.getElementById("chart-patients-infected")
+not_in_hospital.height = 270;
+
+new Chart(not_in_hospital, {
     type: 'pie',
     data: {    
       labels:       [
@@ -253,7 +253,7 @@ new Chart(document.getElementById("not-in-hospital"), {
         {% endfor %}
       ],
       datasets: [{
-        label: '{{ _("Не найдены") }}',
+        label: '{{ _("Инфицированы") }}',
         backgroundColor: colors,
         data: [
         {% for region in regions %}
@@ -265,7 +265,7 @@ new Chart(document.getElementById("not-in-hospital"), {
     options: {
       title: {
         display: true,
-        text: '{{ _("Не найдены (по регионам)") }}'
+        text: '{{ _("Инфицированы (по регионам)") }}'
       }
     }
 });
