@@ -82,7 +82,7 @@ def flights_trains(codeModel, request):
     q = codeModel.query
 
     page = 1
-    per_page = 5
+    per_page = 10
     if "page" in request.args:
         page = int(request.args["page"])
 

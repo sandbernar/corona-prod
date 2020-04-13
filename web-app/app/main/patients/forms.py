@@ -32,6 +32,9 @@ class PatientForm(FlaskForm):
     foot_border_id = SelectField('By Foot Border', id='foot_border_id', validators=[DataRequired()])
     sea_border_id = SelectField('By Sea Border', validators=[DataRequired()])
 
+    # Blockpost Travel
+    blockpost_region_id = SelectField('Blockpost Region', validators=[DataRequired()])    
+
     first_name = TextField('First Name', validators=[DataRequired()])
     second_name = TextField('Second Name', validators=[DataRequired()])
     patronymic_name = TextField('Patronymic Name')

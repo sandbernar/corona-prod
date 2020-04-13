@@ -356,43 +356,47 @@
     function setup_form() {
         update_travel_form();
         {% if patient.travel_type.value == c.flight_type[0] %}
-        $("#flight_arrival_date").val('{{ travel.flight_code.date }}')
-        $("#flight_arrival_date").change()
-        $("#flight_code_id").val('{{ travel.flight_code.id }}')
-        {% if travel.seat %}
-        $("#flight_seat").val('{{ travel.seat }}')
-        {% endif %}
+            $("#flight_arrival_date").val('{{ travel.flight_code.date }}')
+            $("#flight_arrival_date").change()
+            $("#flight_code_id").val('{{ travel.flight_code.id }}')
+            {% if travel.seat %}
+                $("#flight_seat").val('{{ travel.seat }}')
+            {% endif %}
         {% elif patient.travel_type.value == c.train_type[0] %}
-        $("#train_departure_date").val('{{ travel.train.departure_date }}')
-        $("#train_departure_date").change()
+            $("#train_departure_date").val('{{ travel.train.departure_date }}')
+            $("#train_departure_date").change()
 
-        $("#train_arrival_date").val('{{ travel.train.arrival_date }}')
-        $("#train_arrival_date").change()
+            $("#train_arrival_date").val('{{ travel.train.arrival_date }}')
+            $("#train_arrival_date").change()
 
-        $("#train_id").val('{{ travel.train.id }}')
-        {% if travel.wagon %}
-        $("#train_wagon").val('{{ travel.wagon }}')
-        {% endif %}             
-        {% if travel.seat %}
-        $("#train_seat").val('{{ travel.seat }}')
-        {% endif %}            
+            $("#train_id").val('{{ travel.train.id }}')
+            {% if travel.wagon %}
+                $("#train_wagon").val('{{ travel.wagon }}')
+            {% endif %}             
+            {% if travel.seat %}
+                $("#train_seat").val('{{ travel.seat }}')
+            {% endif %}            
         {% else %}
-        $("#arrival_date").val('{{ travel.date }}')
-        var border_form_id = null
+            $("#arrival_date").val('{{ travel.date }}')
+            {% if patient.travel_type.value == c.blockpost_type[0] %}
+                 $("#blockpost_region_id").val('{{ travel.region_id }}')
+            {% endif %}
+            
+            var border_form_id = null
 
-        switch('{{ patient.travel_type.value }}') {
-          case '{{c.by_auto_type[0]}}':
-          border_form_id = "#auto_border_id"
-          break;
-          case '{{c.by_foot_type[0]}}':
-          border_form_id = "#foot_border_id"
-          break;
-          case '{{c.by_sea_type[0]}}':
-          border_form_id = "#sea_border_id"
-          break;
-      }
+            switch('{{ patient.travel_type.value }}') {
+              case '{{c.by_auto_type[0]}}':
+              border_form_id = "#auto_border_id"
+              break;
+              case '{{c.by_foot_type[0]}}':
+              border_form_id = "#foot_border_id"
+              break;
+              case '{{c.by_sea_type[0]}}':
+              border_form_id = "#sea_border_id"
+              break;
+          }
 
-      if (border_form_id) $(border_form_id).val({{ travel.border_control_id }})
+            if (border_form_id) $(border_form_id).val({{ travel.border_control_id }})
         {% endif %}
 }
 
