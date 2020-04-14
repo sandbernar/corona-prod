@@ -47,13 +47,13 @@ var flightForm = `  <div class='col'>
 var trainForm = `  <div class='col'>
                       <div class='form-group'>
                         <label for='arrival-date-input' class='form-control-label'>{{ _('Дата Отправления') }}</label>
-                        {{ form.train_departure_date(class='form-control', type="date") }}
+                        {{ form.train_departure_date(class='form-control datepicker', type="date") }}
                         </div>
                       </div>
                     <div class='col'>
                       <div class='form-group'>
                         <label for='arrival-date-input' class='form-control-label'>{{ _('Дата Прибытия') }}</label>
-                        {{ form.train_arrival_date(class='form-control', type="date") }}
+                        {{ form.train_arrival_date(class='form-control datepicker', type="date") }}
                         </div>
                       </div>    
                     <div class='col-md-auto'>                        
