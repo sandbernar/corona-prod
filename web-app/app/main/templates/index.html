@@ -98,7 +98,11 @@
                     {% if not patient.visited_country %}
                       {{ constants.unknown[1] }} 
                     {% else %}
-                      {{ patient.visited_country[0] }}
+                      {% if patient.visited_country[0].country == None %}
+                        {{ constants.unknown[1] }}
+                      {% else %}
+                        {{ patient.visited_country[0] }}
+                      {% endif %}
                     {% endif %}
                   </td>                  
                 </tr>

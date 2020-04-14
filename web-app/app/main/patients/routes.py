@@ -113,7 +113,7 @@ def is_same_address(request_dict, address, form_prefix='home'):
     is_same = True
 
     country_id = request_dict[form_prefix + '_address_country_id']
-    print(address.country_id, country_id)
+
     if address.country_id != (int(country_id) if country_id != None else country_id):
         is_same = False
     elif address.state != request_dict.get(form_prefix + '_address_state', None):
@@ -377,7 +377,7 @@ def patient_profile():
 
                 handle_add_update_patient(request_dict, final_dict, update_dict)
                 handle_after_patient(request_dict, final_dict, patient, update_dict)
-                
+
                 if "travel_type_id" in request.form:
                     travel_type_id = request.form['travel_type_id']
                     if travel_type_id == "None":
