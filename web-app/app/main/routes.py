@@ -86,7 +86,7 @@ def route_template(template, **kwargs):
         ratio = 0 if total == 0 else is_infected/total
         is_infected_str  = str("{}/{} ({}%)".format(is_infected, total, format(ratio*100, '.2f')))
 
-        return render_template(template + '.html', total_patients = str(total), is_found_str = is_found_str,
+        return render_template(template + '.html', total_kz_patients = str(total), is_found_str = is_found_str,
                                 in_hospital_str = in_hospital_str, is_infected_str = is_infected_str, **kwargs)
 
     except TemplateNotFound:
