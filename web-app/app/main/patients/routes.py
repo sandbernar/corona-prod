@@ -364,6 +364,9 @@ def patient_profile():
                 elif request_dict['travel_type'] in dict(c.various_travel_types).keys():
                     update_dict['various_travel'] = VariousTravel.query.filter_by(patient_id=patient.id).first()
 
+                if patient.visited_country and len(patient.visited_country):
+                    update_dict["visited_country"] = patient.visited_country[0]
+
                 handle_add_update_patient(request_dict, final_dict, update_dict)
                 handle_after_patient(request_dict, final_dict, patient, update_dict)
                 

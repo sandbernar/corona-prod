@@ -5,8 +5,8 @@ from app import constants as c
 from app import db
 
 def get_regions(current_user):
-    if current_user.region_id != None:
-        return Region.query.filter_by(id=current_user.region_id).all()
+    # if current_user.region_id != None:
+        # return Region.query.filter_by(id=current_user.region_id).all()
 
     return Region.query.all()
 
