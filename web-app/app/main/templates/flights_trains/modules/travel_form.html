@@ -6,7 +6,7 @@
           <div class="form-group">
           {% if is_trains %}
             <label for="name-input" class="form-control-label">{{ _("Дата Отправления") }}</label>
-            {{ form.departure_date(class="form-control", type="date") }}
+            {{ form.departure_date(class="form-control datepicker", type="date") }}
           {% else %}
             <label for="name-input" class="form-control-label">{{ _("Код Рейса") }}</label>
             {{ form.code(placeholder="KC 971",class="form-control", type="text") }}
@@ -17,10 +17,10 @@
           <div class="form-group">
           {% if is_trains %}
             <label for="name-input" class="form-control-label">{{ _("Дата Прибытия") }}</label>
-            {{ form.arrival_date(class="form-control", type="date") }}
+            {{ form.arrival_date(class="form-control datepicker", type="date") }}
           {% else %}
             <label for="npass-input" class="form-control-label">{{ _("Дата") }}</label>
-            {{ form.date(class="form-control", type="date") }}
+            {{ form.date(class="form-control datepicker", type="date") }}
           {% endif %}                            
 
           </div>
