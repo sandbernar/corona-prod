@@ -35,7 +35,7 @@ class Patient(db.Model):
     id = Column(Integer, primary_key=True)
     created_date = Column(DateTime, default=datetime.datetime.utcnow)
     
-    created_by_id = Column(Integer, ForeignKey('User.id'), nullable=True, default=None)
+    created_by_id = Column(Integer, ForeignKey('User.id'))
     created_by = db.relationship('User')
 
     travel_type_id = Column(Integer, ForeignKey('TravelType.id'), nullable=True, default=None)

@@ -1,0 +1,14 @@
+<div class="table-responsive">
+          <table class="table align-items-center table-flush">
+            <thead class="thead-light">
+              <tr>
+              {% for th in table_head %}
+                {% if th is string %}
+                  <th scope="col">{{ th }}</th>
+                {% else %}
+                  <!-- <th scope="col"><a onclick="setSearchParam('sort_by', '{{ th[1] }}')" href="#">{{ th[0] }}</a></th> -->
+                  <th scope="col">{{ th[0] }}</th>
+                {% endif %}
+              {% endfor %}
+              </tr>
+            </thead>
