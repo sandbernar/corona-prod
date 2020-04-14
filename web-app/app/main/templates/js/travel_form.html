@@ -132,7 +132,7 @@ if (travel_type !== '{{c.local_type[0]}}') {
   } else if(travel_type === '{{c.blockpost_type[0]}}') {
     addToTravelForm(borderForm)
     addToTravelForm(blockpostForm)
-  } else {
+  } else if(travel_type !== '{{c.old_data_type[0]}}') {
     addToTravelForm(borderForm)
     
     switch(travel_type) {
