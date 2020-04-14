@@ -5,8 +5,8 @@ from app import constants as c
 from app import db
 
 def get_regions(current_user):
-    if current_user.region_id != None:
-        return Region.query.filter_by(id=current_user.region_id).all()
+    # if current_user.region_id != None:
+        # return Region.query.filter_by(id=current_user.region_id).all()
 
     return Region.query.all()
 
@@ -15,8 +15,8 @@ def get_regions_choices(current_user, with_all_regions = True):
     choices = []
     
     if with_all_regions:
-        if current_user.region_id == None or current_user.is_admin:
-            choices += [ (-1, c.all_regions) ]
+        # if current_user.region_id == None or current_user.is_admin:
+        choices += [ (-1, c.all_regions) ]
 
     choices += [(r.id, r.name) for r in regions]
 

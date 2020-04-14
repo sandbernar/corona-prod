@@ -52,7 +52,7 @@ class PatientForm(FlaskForm):
     home_address_country_id = SelectField('Home Address Country', validators=[DataRequired()])
     home_address_state = TextField('Home State')
     home_address_county = TextField('Home County')    
-    home_address_city = TextField('Home City', validators=[DataRequired()])
+    home_address_city = TextField('Home City')
     home_address_street = TextField('Home Street')
     home_address_house = TextField('Home House')
     home_address_flat = TextField('Home Flat')

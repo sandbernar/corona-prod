@@ -50,10 +50,10 @@ def index():
     for region in regions_list:
         patient_region_query = Patient.query.filter_by(region_id=region.id)
 
-        not_found_count = patient_region_query.filter_by(is_found=False).count()
+        found_count = patient_region_query.filter_by(is_found=True).count()
         infected_count = patient_region_query.filter_by(is_infected = True).count()
         
-        regions[region.name] = (not_found_count, infected_count)
+        regions[region.name] = (found_count, infected_count)
 
     return route_template('index', last_five_patients=last_five_patients, coordinates_patients=coordinates_patients, regions=regions, constants=c)
 
@@ -67,22 +67,27 @@ def route_template(template, **kwargs):
         if not current_user.is_admin:
             q = q.filter_by(region_id=current_user.region_id)        
 
+        # Total Patients
         total = q.filter_by().count()
 
+        # Is Found
         is_found = q.filter_by(is_found=True).count()
-
         ratio = 0 if total == 0 else is_found/total
         is_found_str  = str("{}/{} ({}%)".format(is_found, total, format(ratio*100, '.2f')))
         
+        # In Hospital
         in_hospital_status_id = PatientStatus.query.filter_by(value=c.in_hospital[0]).first().id
         in_hospital = q.filter_by(status_id=in_hospital_status_id).count()
-        # in_hospital = 1
         ratio = 0 if is_found == 0 else in_hospital/is_found
         in_hospital_str = str("{}/{} ({}%)".format(in_hospital, is_found, format(ratio*100, '.2f')))
 
-        regions = "Весь РК" if current_user.region_id == None else Region.query.filter_by(id=current_user.region_id).first().name
+        # Is Infected
+        is_infected = q.filter_by(is_infected=True).count()
+        ratio = 0 if total == 0 else is_infected/total
+        is_infected_str  = str("{}/{} ({}%)".format(is_infected, total, format(ratio*100, '.2f')))
 
-        return render_template(template + '.html', stats = [str(total), is_found_str, in_hospital_str, regions], **kwargs)
+        return render_template(template + '.html', total_kz_patients = str(total), is_found_str = is_found_str,
+                                in_hospital_str = in_hospital_str, is_infected_str = is_infected_str, **kwargs)
 
     except TemplateNotFound:
         return render_template('errors/error-404.html'), 404

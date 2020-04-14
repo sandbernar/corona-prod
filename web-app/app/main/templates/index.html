@@ -35,7 +35,7 @@
             <div class="row align-items-center">
               <div class="col">
                 <h6 class="text-uppercase text-muted ls-1 mb-1">{{ _('Статистика') }}</h6>
-                <h2 class="mb-0">{{ _('Не Найдены') }}</h2>
+                <h2 class="mb-0">{{ _('Найдены') }}</h2>
               </div>
             </div>
           </div>
@@ -115,7 +115,7 @@
             <div class="row align-items-center">
               <div class="col">
                 <h6 class="text-uppercase text-muted ls-1 mb-1">{{ _('Статистика') }}</h6>
-                <h2 class="mb-0">{{ _('Не Госпитализированы') }}</h2>
+                <h2 class="mb-0">{{ _('Инфицированы') }}</h2>
               </div>
             </div>
           </div>
@@ -229,7 +229,7 @@ new Chart(not_found, {
         {% endfor %}
       ],
       datasets: [{
-        label: '{{ _("Не найдены") }}',
+        label: '{{ _("Найдены") }}',
         backgroundColor: colors,
         data: [
         {% for region in regions %}
@@ -241,7 +241,7 @@ new Chart(not_found, {
     options: {
       title: {
         display: true,
-        text: '{{ _("Не найдены (по регионам)") }}'
+        text: '{{ _("Найдены (по регионам)") }}'
       }
     }
 });

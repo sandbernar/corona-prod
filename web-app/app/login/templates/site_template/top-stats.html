@@ -11,10 +11,10 @@
                   <div class="row">
                     <div class="col">
                       <h5 class="card-title text-uppercase text-muted mb-0">{{ _('Всего Пациентов') }}</h5>
-                      <span class="h2 font-weight-bold mb-0">{{ stats[0] }}</span>
+                      <span class="h2 font-weight-bold mb-0">{{ total_kz_patients }}</span>
                     </div>
                     <div class="col-auto">
-                      <div class="icon icon-shape bg-danger text-white rounded-circle shadow">
+                      <div class="icon icon-shape bg-info text-white rounded-circle shadow">
                         <i class="fas fa-user-friends"></i>
                       </div>
                     </div>
@@ -28,7 +28,7 @@
                   <div class="row">
                     <div class="col">
                       <h5 class="card-title text-uppercase text-muted mb-0">{{ _('Найдено') }}</h5>
-                      <span class="h2 font-weight-bold mb-0">{{ stats[1] }}</span>
+                      <span class="h2 font-weight-bold mb-0">{{ is_found_str }}</span>
                     </div>
                     <div class="col-auto">
                       <div class="icon icon-shape bg-warning text-white rounded-circle shadow">
@@ -45,7 +45,7 @@
                   <div class="row">
                     <div class="col">
                       <h5 class="card-title text-uppercase text-muted mb-0">{{ _('Госпитализировано') }}</h5>
-                      <span class="h2 font-weight-bold mb-0">{{ stats[2] }}</span>
+                      <span class="h2 font-weight-bold mb-0">{{ in_hospital_str }}</span>
                     </div>
                     <div class="col-auto">
                       <div class="icon icon-shape bg-yellow text-white rounded-circle shadow">
@@ -61,12 +61,12 @@
                 <div class="card-body">
                   <div class="row">
                     <div class="col">
-                      <h5 class="card-title text-uppercase text-muted mb-0">{{ _('Показываются Регионы') }}</h5>
-                      <span class="h2 font-weight-bold mb-0">{{ stats[3] }}</span>
+                      <h5 class="card-title text-uppercase text-muted mb-0">{{ _('Инфицировано') }}</h5>
+                      <span class="h2 font-weight-bold mb-0">{{ is_infected_str }}</span>
                     </div>
                     <div class="col-auto">
-                      <div class="icon icon-shape bg-info text-white rounded-circle shadow">
-                        <i class="fas fa-globe-asia"></i>
+                      <div class="icon icon-shape bg-danger text-white rounded-circle shadow">
+                        <i class="fas fa-exclamation-triangle"></i>
                       </div>
                     </div>
                   </div>
