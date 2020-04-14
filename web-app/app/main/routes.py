@@ -50,10 +50,10 @@ def index():
     for region in regions_list:
         patient_region_query = Patient.query.filter_by(region_id=region.id)
 
-        not_found_count = patient_region_query.filter_by(is_found=False).count()
+        found_count = patient_region_query.filter_by(is_found=True).count()
         infected_count = patient_region_query.filter_by(is_infected = True).count()
         
-        regions[region.name] = (not_found_count, infected_count)
+        regions[region.name] = (found_count, infected_count)
 
     return route_template('index', last_five_patients=last_five_patients, coordinates_patients=coordinates_patients, regions=regions, constants=c)
 

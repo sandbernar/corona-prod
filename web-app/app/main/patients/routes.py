@@ -673,14 +673,18 @@ def patients():
     patients = []
     filt = dict()
 
-    if not current_user.is_admin:
-        filt["region_id"] = current_user.region_id
-    else:
-        if "region" in request.args:
-            region = request.args["region"]
-            if region != '-1':
-                filt["region_id"] = region
-                form.region.default = region
+    # if not current_user.is_admin:
+        # filt["region_id"] = current_user.region_id
+    # else:
+    if "region" in request.args:
+        region = request.args["region"]
+        if region != '-1':
+            filt["region_id"] = region
+            form.region.default = region
+    elif current_user.region_id != None:
+        region = current_user.region_id
+        filt["region_id"] = region
+        form.region.default = region
 
     if "travel_type" in request.args:
         travel_type_id = request.args["travel_type"]
