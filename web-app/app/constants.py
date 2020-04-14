@@ -33,7 +33,8 @@ old_data_type = ("old_data_type", "Старые Данные")
 state_dead = "Умер"
 state_infec = "Инфицирован"
 state_hosp = "Госпитализирован"
-states = [state_dead, state_infec, state_hosp]
+state_healthy = "Выздоровление"
+states = [state_dead, state_infec, state_hosp, state_healthy]
 
 various_travel_types = [by_auto_type, by_foot_type, by_sea_type]
 
