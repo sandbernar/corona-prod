@@ -41,7 +41,7 @@ from app.main.util import get_regions, get_regions_choices, get_flight_code, pop
 from app.login.util import hash_pass
 from sqlalchemy import func, exc
 
-def prepare_patient_form(patient_form):
+def prepare_patient_form(patient_form, with_old_data = False):
     regions_choices = get_regions_choices(current_user, False)
 
     if not patient_form.region_id.choices:
@@ -51,7 +51,10 @@ def prepare_patient_form(patient_form):
     if not patient_form.travel_type.choices:
         patient_form.travel_type.choices = []
         for typ in TravelType.query.all():
-            if typ.value != c.old_data_type[0]:
+            if typ.value == c.old_data_type[0]:
+                if with_old_data:
+                    patient_form.travel_type.choices.append((typ.value, typ.name))
+            else:
                 patient_form.travel_type.choices.append((typ.value, typ.name))
 
     # Flight Travel
@@ -334,7 +337,7 @@ def patient_profile():
 
             regions = Region.query.all()
 
-            form = prepare_patient_form(form)
+            form = prepare_patient_form(form, True)
             form.travel_type.default = patient.travel_type.value
             
             # States
