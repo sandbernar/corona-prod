@@ -1,32 +1,70 @@
 from flask import request
 import math
 
-def create_table(request, q, page = 1, per_page = 5):
-    if "page" in request.args:
-        page = int(request.args["page"])
+class TableModule:
+    class WrongPageError(Exception):
+        pass
 
-    total_len = q.count()
-    entries = []
+    class WrongSortingParameterError(Exception):
+        pass
 
-    # if "sort_by" in request.args:
-    #     sort_param = request.args["sort_by"]
-    #     first = q.first()
-    #     print(type(first))
-    #     if type(first) != result:
-    #         first = [first]
+    def __init__(self, request, q, table_head, print_entry_function, header_button = None, page = 1, per_page = 5):
+        if "page" in request.args:
+            try:
+                page = int(request.args["page"])
+            except ValueError:
+                raise self.WrongPageError
 
-    #     for m in first:
-    #         if sort_param in m.__dict__.keys():
-    #             q.order_by(getattr(m, sort_param).asc())
+        self.page = page
+        self.per_page = per_page
+        self.table_head_dict = table_head
+        self.table_head = []
+        self.request = request
+        self.q = q
+        self.header_button = header_button
 
-    #     # q.sort
+        if page < 1:
+            raise self.WrongPageError
 
+        self.total_len = q.count()
+        self.entries = []
+        
+        if self.total_len:
+            self.sort_table()
 
-    print(q.first()[1].__dict__.keys())
+            for p in self.q.offset((self.page-1)*self.per_page).limit(self.per_page).all():
+                self.entries.append(print_entry_function(p))
 
-    for p in q.offset((page-1)*per_page).limit(per_page).all():
-        entries.append(p)
+        self.max_page = math.ceil(self.total_len/self.per_page)
 
-    max_page = math.ceil(total_len/per_page)
+    def sort_table(self):
+        self.sort_by = None
+        self.sort_by_asc = True
+        # self.arrow = None
+        
+        if "sort_by_asc" in request.args:
+            self.sort_by = request.args["sort_by_asc"]
+            arrow = "↑"
+        elif "sort_by_desc" in request.args:
+            self.sort_by = request.args["sort_by_desc"]
+            self.sort_by_asc = False
+            arrow = "↓"
 
-    return entries, total_len, max_page, page
+        for i, th in enumerate(self.table_head_dict):
+            new_th = (th, th) if len(self.table_head_dict[th]) > 0 else th
+            self.table_head.append(new_th)
+
+        first = self.q.first()
+        if len(self.q._entities) == 1:
+            first = [first]
+        
+        if self.sort_by:
+            for m in first:
+                if self.sort_by in self.table_head_dict:
+                    for s in self.table_head_dict[self.sort_by]:
+                        if s in m.__dict__.keys():
+                            param = getattr(type(m), s)
+                            if self.sort_by_asc:
+                                self.q = self.q.order_by(param.asc())
+                            else:
+                                self.q = self.q.order_by(param.desc())

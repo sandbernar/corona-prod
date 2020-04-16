@@ -20,6 +20,8 @@ import math
 import re, json
 
 from app.main.util import get_regions, get_regions_choices
+from app.main.modules import TableModule
+
 from app.login.util import hash_pass
 from flask_babelex import _
 from app.main.routes import route_template
@@ -76,24 +78,7 @@ def flights_trains(codeModel, request):
     if not form.region.choices:
         form.region.choices = [ (-1, c.all_regions) ] + [(r.id, r.name) for r in regions]
 
-    travels = []
-    filt = dict()
 
-    q = codeModel.query
-
-    page = 1
-    per_page = 10
-    if "page" in request.args:
-        page = int(request.args["page"])
-
-    total_len = q.count()
-
-    travels = q.offset((page-1)*per_page).limit(per_page).all()
-
-    max_page = math.ceil(total_len/per_page)
-
-    travels_count = dict()
-    
     change = None
     error_msg = None
 
@@ -104,7 +89,7 @@ def flights_trains(codeModel, request):
 
     form.process()
 
-    return form, travels, page, max_page, total_len, change, error_msg
+    return form, change, error_msg
 
 def populate_add_flight_train_form(form):
     default_country = Country.query.filter_by(code="KZ").first().id
@@ -132,16 +117,33 @@ def flights():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))
 
-    form, travels, page, max_page, total, change, error_msg = flights_trains(FlightCode, request)
+    form, change, error_msg = flights_trains(FlightCode, request)
 
-    flights_count = dict()
+    table_head_params = OrderedDict()
+    table_head_params[_("Код Рейса")] = ["code"]
+    table_head_params[_("Дата")] = ["date"]
+    table_head_params[_("Из")] = ["from_country", "from_city"]
+    table_head_params[_("В")] = ["to_country", "to_city"]
+    table_head_params[_("Кол-во Прибывших")] = []
+    q = FlightCode.query
+
+    def print_entry(result):
+        code = (result, "/flight_profile?id={}".format(result.id))
+        date = result.date
+        from_country = "{}, {}".format(result.from_country, result.from_city)
+        to_country = "{}, {}".format(result.to_country, result.to_city)
+        passengers_num = FlightTravel.query.filter_by(flight_code_id=result.id).count()
+
+        return [code, date, from_country, to_country, passengers_num]
+
+    flights_table = TableModule(request, q, table_head_params, print_entry, (_("Добавить Рейс"), "/add_flight"))
     
-    for f in travels:
-    	flights_count[f.id] = FlightTravel.query.filter_by(flight_code_id=f.id).count()
+    # for f in travels:
+    	# flights_count[f.id] = FlightTravel.query.filter_by(flight_code_id=f.id).count()
 
     form.process()
-    return route_template('flights_trains/flights_trains', travels=travels, travels_count=flights_count, form=form, page=page, 
-                                    max_page=max_page, total = total, constants=c, change=change, error_msg=error_msg,
+    return route_template('flights_trains/flights_trains',  form=form,
+                                flights_table=flights_table, constants=c, change=change, error_msg=error_msg,
                                     is_trains = False)
 
 @blueprint.route('/trains', methods=['GET'])
@@ -313,7 +315,6 @@ def flight_profile():
             
             change = None
             error_msg = None
-            patients = []
             
             flight_type_id = TravelType.query.filter_by(value=c.flight_type[0]).first().id
 
@@ -322,28 +323,29 @@ def flight_profile():
             q = q.filter(Patient.id == FlightTravel.patient_id)
             q = q.filter(FlightTravel.flight_code_id == flight.id)
             
-            # if not current_user.is_admin:
-                # q = q.filter(Patient.region_id == current_user.region_id)
+            table_head_params = OrderedDict()
+            table_head_params[_("ФИО")] = ["first_name", "second_name", "patronymic_name"]
+            table_head_params[_("Телефон")] = ["telephone"]
+            table_head_params[_("Регион")] = []
+            table_head_params[_("Страна последние 14 дней")] = []
+            table_head_params[_("Место")] = ["seat"]
+
+            def print_entry(result):
+                full_name = (result[0], "/patient_profile?id={}".format(result[0].id))
+                telephone = result[0].telephone
+                region = result[0].region
+                visited_country = ", ".join([ str(c) for c in result[0].visited_country])
+                seat = result[1].seat
+
+                return [full_name, telephone, region, visited_country, seat]
+
+            patients_table = TableModule(request, q, table_head_params, print_entry)
 
             seatmap, patients_seat = generate_plane_seatmap(q)
 
-            page = 1
-            per_page = 5
-
-            if "page" in request.args:
-                page = int(request.args["page"])
-
-            total_len = q.count()
-
-            for p in q.offset((page-1)*per_page).limit(per_page).all():
-                patients.append(p)
-
-            max_page = math.ceil(total_len/per_page)
-  
             form.process()
             return route_template('flights_trains/flight_train_profile', form = form, travel=flight, change=change, seatmap=seatmap,
-                patients_seat=patients_seat, error_msg=error_msg, patients=patients, total_patients=total_len, max_page=max_page, page=page,
-                is_trains = False)
+                patients_seat=patients_seat, error_msg=error_msg, is_trains = False, patients_table=patients_table)
     else:    
         return render_template('errors/error-500.html'), 500
 
@@ -381,26 +383,29 @@ def train_profile():
             q = q.filter(Patient.id == TrainTravel.patient_id)
             q = q.filter(TrainTravel.train_id == train.id)
             
-            # if not current_user.is_admin:
-                # q = q.filter(Patient.region_id == current_user.region_id)
+            table_head_params = OrderedDict()
+            table_head_params[_("ФИО")] = ["first_name", "second_name", "patronymic_name"]
+            table_head_params[_("Телефон")] = ["telephone"]
+            table_head_params[_("Регион")] = []
+            table_head_params[_("Страна последние 14 дней")] = []
+            table_head_params[_("Вагон")] = ["wagon"]
+            table_head_params[_("Место")] = ["seat"]
 
-            page = 1
-            per_page = 5
+            def print_entry(result):
+                full_name = (result[0], "/patient_profile?id={}".format(result[0].id))
+                telephone = result[0].telephone
+                region = result[0].region
+                visited_country = ", ".join([ str(c) for c in result[0].visited_country])
+                wagon = result[1].wagon
+                seat = result[1].seat
 
-            if "page" in request.args:
-                page = int(request.args["page"])
+                return [full_name, telephone, region, visited_country, wagon, seat]
 
-            total_len = q.count()
-
-            for p in q.offset((page-1)*per_page).limit(per_page).all():
-                patients.append(p)
-
-            max_page = math.ceil(total_len/per_page)
+            patients_table = TableModule(request, q, table_head_params, print_entry)
   
             form.process()
             return route_template('flights_trains/flight_train_profile', form = form, travel=train, change=change, 
-                                    error_msg=error_msg, patients=patients, total_patients=total_len, 
-                                    max_page=max_page, page=page, is_trains=True, seatmap=[], patients_seat={})
+                                    error_msg=error_msg, patients_table=patients_table, is_trains=True, seatmap=[], patients_seat={})
     else:    
         return render_template('errors/error-500.html'), 500
 
