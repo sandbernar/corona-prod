@@ -35,7 +35,7 @@
       </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-primary" data-dismiss="modal">Соглашаюсь</button>
+        <button id="agreeButton" ype="button" class="btn btn-primary" data-dismiss="modal">Соглашаюсь</button>
       </div>
     </div>
   </div>
@@ -179,8 +179,15 @@ $(document).ready(function(){
     backdrop:'static',
     keyboard: false
   });
-  document.getElementById('agreementButton').click();
+  if (localStorage.getItem("agreed") != "true") {
+    document.getElementById('agreementButton').click();
+  }
 });
+
+$("#agreeButton").on("click", () => {
+  localStorage.setItem("agreed", "true");
+});
+
 ymaps.ready(init);
 
 function init() {
