@@ -184,7 +184,7 @@ def patients_content_by_id():
     for i in ids:
         p = None
         try:
-            p = q.filter_by(id=i)
+            p = q.filter_by(id=i).first()
         except exc.SQLAlchemyError:
             return render_template('errors/error-400.html'), 400
         if not p:
