@@ -21,6 +21,7 @@ from sqlalchemy import create_engine
 from app.main.flights_trains.models import FlightCode, FlightTravel, Train, TrainTravel
 from app.main.patients.models import Patient, PatientStatus, ContactedPersons, State, PatientState
 
+
 def str_time_prop(start, end, format, prop):
     """Get a time at a proportion of a range of two formatted times.
 
@@ -85,7 +86,6 @@ class TestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn('Login', str(response.data))
 
-    
     def test_login(self):
         rv = self.login('adm', 'paswd')
         assert 'Dashboard' in str(rv.data)
@@ -99,28 +99,28 @@ class TestCase(unittest.TestCase):
     def test_flight(self):
         self.login('adm', 'paswd')
         flight = {
-            "code":"test",
-            "date":random_date("1-1-2008", "1-1-2020", random.random()),
-            "from_country_id":88,
-            "from_city":"Nur-Sultan",
-            "to_country_id":88,
-            "to_city":"Astana",
-            "create":"",
+            "code": "test",
+            "date": random_date("1-1-2008", "1-1-2020", random.random()),
+            "from_country_id": 88,
+            "from_city": "Nur-Sultan",
+            "to_country_id": 88,
+            "to_city": "Astana",
+            "create": "",
         }
-        
+
         rv = self.app.post("/add_flight", data=flight, follow_redirects=True)
         assert "Рейс успешно добавлен" in str(rv.data.decode('utf-8'))
 
     def test_train(self):
         self.login('adm', 'paswd')
         train = {
-            "departure_date":random_date("1-1-2008", "1-1-2020", random.random()),
-            "arrival_date":random_date("1-1-2008", "1-1-2020", random.random()),
-            "from_country_id":88,
-            "from_city":"Astana",
-            "to_country_id":88,
-            "to_city":"Almaty",
-            "create":""
+            "departure_date": random_date("1-1-2008", "1-1-2020", random.random()),
+            "arrival_date": random_date("1-1-2008", "1-1-2020", random.random()),
+            "from_country_id": 88,
+            "from_city": "Astana",
+            "to_country_id": 88,
+            "to_city": "Almaty",
+            "create": ""
         }
 
         # POST /add_train HTTP/1.1
@@ -128,107 +128,108 @@ class TestCase(unittest.TestCase):
         assert "Рейс успешно добавлен" in str(rv.data.decode('utf-8'))
 
     def test_new_patient(self):
-        self.login("adm","paswd")
-        rv = self.add_patient()
-        assert "patient_id" in str(rv.data)
+        self.login("adm", "paswd")
+        for i in range(10000):
+            rv = self.add_patient()
+            assert "patient_id" in str(rv.data)
 
     def test_new_patient_flight(self):
         self.login('adm', 'paswd')
         FLIGHT = FlightCode.query.all()[-1]
         patient = {
-            "travel_type":"flight_type",
+            "travel_type": "flight_type",
             "flight_arrival_date": FLIGHT.date,
             "flight_code_id": FLIGHT.id,
-            "flight_seat":"1c",
-            "second_name":"w",
-            "first_name":"w",
-            "patronymic_name":"",
-            "gender":-1,
-            "dob":"2020-04-17",
-            "iin":"",
-            "country_of_residence_id":88,
-            "citizenship_id":88,
-            "pass_num":"",
-            "home_address_country_id":88,
-            "home_address_state":"",
-            "home_address_county":"",
-            "home_address_city":"w",
-            "home_address_street":"",
-            "home_address_house":"",
-            "home_address_flat":"",
-            "home_address_building":"",
-            "visited_country_id":-1,
-            "visited_from_date":"",
-            "visited_to_date":"",
-            "region_id":1,
-            "job":"",
-            "job_position":"",
-            "job_address_country_id":88,
-            "job_address_state":"",
-            "job_address_county":"",
-            "job_address_city":"",
-            "job_address_street":"",
-            "job_address_house":"",
-            "job_address_flat":"",
-            "job_address_building":"",
-            "telephone":"",
-            "email":"",
-            "is_found":0,
-            "is_infected":0,
-            "is_contacted":0,
-            "create":""
+            "flight_seat": "1c",
+            "second_name": "w",
+            "first_name": "w",
+            "patronymic_name": "",
+            "gender": -1,
+            "dob": "2020-04-17",
+            "iin": "",
+            "country_of_residence_id": 88,
+            "citizenship_id": 88,
+            "pass_num": "",
+            "home_address_country_id": 88,
+            "home_address_state": "",
+            "home_address_county": "",
+            "home_address_city": "w",
+            "home_address_street": "",
+            "home_address_house": "",
+            "home_address_flat": "",
+            "home_address_building": "",
+            "visited_country_id": -1,
+            "visited_from_date": "",
+            "visited_to_date": "",
+            "region_id": 1,
+            "job": "",
+            "job_position": "",
+            "job_address_country_id": 88,
+            "job_address_state": "",
+            "job_address_county": "",
+            "job_address_city": "",
+            "job_address_street": "",
+            "job_address_house": "",
+            "job_address_flat": "",
+            "job_address_building": "",
+            "telephone": "",
+            "email": "",
+            "is_found": 0,
+            "is_infected": 0,
+            "is_contacted": 0,
+            "create": ""
         }
         rv = self.app.post("/add_person", data=patient, follow_redirects=True)
         print(str(rv.data.decode('utf-8')))
         assert "patient_id" in str(rv.data)
 
     def test_new_patient_train(self):
-        self.login("adm","paswd")
+        self.login("adm", "paswd")
         TRAIN = Train.query.all()[-1]
         patient = {
-            "travel_type":"train_type",
+            "travel_type": "train_type",
             "train_departure_date": TRAIN.departure_date,
             "train_arrival_date": TRAIN.arrival_date,
             "train_id": TRAIN.id,
-            "train_wagon":"32",
-            "train_seat":"4",
-            "second_name":"1",
-            "first_name":"1",
-            "patronymic_name":"",
-            "gender":-1,
-            "dob":"2020-04-10",
-            "iin":"",
-            "country_of_residence_id":88,
-            "citizenship_id":88,
-            "pass_num":"",
-            "home_address_country_id":88,
-            "home_address_state":"",
-            "home_address_county":"",
-            "home_address_city":"1",
-            "home_address_street":"",
-            "home_address_house":"",
-            "home_address_flat":"",
-            "home_address_building":"",
-            "visited_country_id":-1,
-            "visited_from_date":"",
-            "visited_to_date":"",
-            "region_id":1,
-            "job":"",
-            "job_position":"",
-            "job_address_country_id":88,
-            "job_address_state":"",
-            "job_address_county":"",
-            "job_address_city":"",
-            "job_address_street":"",
-            "job_address_house":"",
-            "job_address_flat":"",
-            "job_address_building":"",
-            "telephone":"",
-            "email":"",
-            "is_found":0,
-            "is_infected":0,
-            "is_contacted":0,
-            "create":""
+            "train_wagon": "32",
+            "train_seat": "4",
+            "second_name": "1",
+            "first_name": "1",
+            "patronymic_name": "",
+            "gender": -1,
+            "dob": "2020-04-10",
+            "iin": "",
+            "country_of_residence_id": 88,
+            "citizenship_id": 88,
+            "pass_num": "",
+            "home_address_country_id": 88,
+            "home_address_state": "",
+            "home_address_county": "",
+            "home_address_city": "1",
+            "home_address_street": "",
+            "home_address_house": "",
+            "home_address_flat": "",
+            "home_address_building": "",
+            "visited_country_id": -1,
+            "visited_from_date": "",
+            "visited_to_date": "",
+            "region_id": 1,
+            "job": "",
+            "job_position": "",
+            "job_address_country_id": 88,
+            "job_address_state": "",
+            "job_address_county": "",
+            "job_address_city": "",
+            "job_address_street": "",
+            "job_address_house": "",
+            "job_address_flat": "",
+            "job_address_building": "",
+            "telephone": "",
+            "email": "",
+            "is_found": 0,
+            "is_infected": 0,
+            "is_contacted": 0,
+            "create": ""
         }
 
         rv = self.app.post("/add_person", data=patient, follow_redirects=True)
@@ -236,7 +237,7 @@ class TestCase(unittest.TestCase):
 
     def test_edit_patient(self):
         p = Patient.query.filter_by(travel_type_id=3)[-1]
-        self.login("adm","paswd")
+        self.login("adm", "paswd")
         patient = {
             "travel_type": "auto_type",
             "arrival_date": "2020-04-10",
@@ -253,9 +254,9 @@ class TestCase(unittest.TestCase):
             "home_address_country_id": 88,
             "home_address_state": "",
             "home_address_county": "",
-            "home_address_city": "a",
-            "home_address_street": "",
-            "home_address_house": "",
+            "home_address_city": "Нур-Султан",
+            "home_address_street": "Буктырма",
+            "home_address_house": "23",
             "home_address_flat": "",
             "home_address_building": "",
             "visited_country_id": -1,
@@ -268,7 +269,7 @@ class TestCase(unittest.TestCase):
             "job_address_state": "",
             "job_address_county": "",
             "job_address_city": "",
-            "job_address_street":"" ,
+            "job_address_street": "",
             "job_address_house": "",
             "job_address_flat": "",
             "job_address_building": "",
@@ -277,16 +278,15 @@ class TestCase(unittest.TestCase):
             "is_found": 0,
             "is_infected": 0,
             "is_contacted": 0,
-            "create" : ""
+            "create": ""
         }
-
 
         # POST /patient_profile?id=2 HTTP/1.1
         rv = self.app.post("/patient_profile?id=" + str(p.id), data=patient, follow_redirects=True)
         assert "Профиль успешно обновлен" in str(rv.data.decode('utf-8'))
 
     def test_delete_patient(self):
-        self.login("adm","paswd")
+        self.login("adm", "paswd")
         # POST /delete_patient HTTP/1.1
         PATIENT = Patient.query.all()[-1]
         rv = self.app.post("/delete_patient", data={"delete": PATIENT.id}, follow_redirects=True)
@@ -295,19 +295,30 @@ class TestCase(unittest.TestCase):
         pass
 
     def test_delete_train(self):
-        self.login("adm","paswd")
+        self.login("adm", "paswd")
         TRAIN = Train.query.all()[-1]
-        rv= self.app.post("/delete_train", data={"delete": TRAIN.id}, follow_redirects=True)
+        rv = self.app.post("/delete_train", data={"delete": TRAIN.id}, follow_redirects=True)
         assert "ЖД Рейс успешно удален" in str(rv.data.decode('utf-8'))
-    
+
     def test_delete_flight(self):
-        self.login("adm","paswd")
+        self.login("adm", "paswd")
         FLIGHT = FlightCode.query.all()[-1]
         rv = self.app.post("/delete_flight", data={"delete": FLIGHT.id}, follow_redirects=True)
         assert "Рейс успешно удален" in str(rv.data.decode('utf-8'))
         pass
 
     def add_patient(self):
+        city = ["Нур-султан", "Алматы"]
+        streetsAst = ["Кунаева", "Байтурсынова", "Абая", "Абылайхана"]
+        streetsAla = ["Жубанова", "Есенова", "Сарсенбаева", "Янтарная", "Сазановская"]
+
+        n = random.randrange(2)
+        c = city[n]
+        s = ""
+        if n == 0:
+            s = streetsAst[random.randrange(4)]
+        else:
+            s = streetsAla[random.randrange(5)]
         patient = {
             "travel_type": "auto_type",
             "arrival_date": "2020-04-10",
@@ -324,9 +335,9 @@ class TestCase(unittest.TestCase):
             "home_address_country_id": 88,
             "home_address_state": "",
             "home_address_county": "",
-            "home_address_city": "a",
-            "home_address_street": "",
-            "home_address_house": "",
+            "home_address_city": c,
+            "home_address_street": s,
+            "home_address_house": "23",
             "home_address_flat": "",
             "home_address_building": "",
             "visited_country_id": -1,
@@ -339,7 +350,7 @@ class TestCase(unittest.TestCase):
             "job_address_state": "",
             "job_address_county": "",
             "job_address_city": "",
-            "job_address_street":"" ,
+            "job_address_street": "",
             "job_address_house": "",
             "job_address_flat": "",
             "job_address_building": "",
@@ -348,7 +359,7 @@ class TestCase(unittest.TestCase):
             "is_found": 0,
             "is_infected": 0,
             "is_contacted": 0,
-            "create" : ""
+            "create": ""
         }
 
         return self.app.post("/add_person", data=patient, follow_redirects=True)
@@ -359,7 +370,7 @@ class TestCase(unittest.TestCase):
             password=password,
             login=""
         ), follow_redirects=True)
-    
+
     def logout(self):
         return self.app.get('/logout', follow_redirects=True)
 

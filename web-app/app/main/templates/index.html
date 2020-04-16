@@ -140,83 +140,134 @@
 
 {% block javascripts %}
 <script type="text/javascript">
+
 ymaps.ready(init);
 
 function init() {
-    var myMap = new ymaps.Map("map", {
-            center: [47.1605, 71.4704],
-            zoom: 4,
-            controls: ['zoomControl']
-        }, {
-            searchControlProvider: 'yandex#search'
-        })
+  var myMap = new ymaps.Map(
+    "map",
+    {
+      center: [47.1605, 71.4704],
+      zoom: 4,
+      controls: ["zoomControl"],
+    },
+    {
+      searchControlProvider: "yandex#search",
+    }
+  );
 
-    clusterer = new ymaps.Clusterer({
-            preset: 'islands#invertedVioletClusterIcons',
-            clusterHideIconOnBalloonOpen: false,
-            geoObjectHideIconOnBalloonOpen: false
-        })
+  var objectManager = new ymaps.LoadingObjectManager(
+    "http://0.0.0.0:5005/patients_within_tiles?bbox=%b&clusterize=1&zoom=%z&tiles=%t",
+    {
+      clusterize: true,
+      geoObjectOpenBalloonOnClick: true,
+      geoObjectOpenEmptyBalloon: true,
+    }
+  );
 
-    clusterer.events
-        // Можно слушать сразу несколько событий, указывая их имена в массиве.
-        .add(['mouseenter', 'mouseleave'], function (e) {
-            var target = e.get('target'),
-                type = e.get('type');
-            if (typeof target.getGeoObjects != 'undefined') {
-                // Событие произошло на кластере.
-                if (type == 'mouseenter') {
-                    target.options.set('preset', 'islands#invertedPinkClusterIcons');
-                } else {
-                    target.options.set('preset', 'islands#invertedVioletClusterIcons');
+  myMap.geoObjects.add(objectManager);
+
+  objectManager.objects.events.add("click", function (e) {
+    console.log("hey");
+    // Получим объект, на котором открылся балун.
+    var id = e.get("objectId"),
+      geoObject = objectManager.objects.getById(id);
+    // Загрузим данные для объекта при необходимости.
+    downloadContent([geoObject], id);
+  });
+
+  objectManager.clusters.events.add("balloonopen", function (e) {
+    console.log("hey");
+    // Получим id кластера, на котором открылся балун.
+    var id = e.get("objectId"),
+      // Получим геообъекты внутри кластера.
+      cluster = objectManager.clusters.getById(id),
+      geoObjects = cluster.properties.geoObjects;
+
+    // Загрузим данные для объектов при необходимости.
+    downloadContent(geoObjects, id, true);
+  });
+
+  function downloadContent(geoObjects, id, isCluster) {
+    // Создадим массив меток, для которых данные ещё не загружены.
+    ids = geoObjects.map(function (geoObject) {
+      return geoObject.id;
+    });
+    if (ids.length) {
+      // Сервер обработает массив идентификаторов и на его основе
+      // вернет JSON-объект, содержащий текст балуна для
+      // заданных меток.
+      a = {
+        ids: ids,
+      };
+      var csrf_token = "{{ csrf_token() }}";
+
+      $.ajaxSetup({
+        beforeSend: function (xhr, settings) {
+          if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type)) {
+            xhr.setRequestHeader("X-CSRFToken", csrf_token);
+          }
+        },
+      });
+
+      ymaps.vow
+        .resolve(
+          $.ajax({
+            // Обратите внимание, что серверную часть необходимо реализовать самостоятельно.
+            contentType: "application/json",
+            type: "POST",
+            data: JSON.stringify(a),
+            url: "http://0.0.0.0:5005/patients_content_by_id",
+            dataType: "json",
+            processData: false,
+            credentials: true,
+          })
+        )
+        .then(
+          function (data) {
+            console.log("gonna download", data);
+
+            geoObjects.forEach(function (geoObject) {
+              // Содержимое балуна берем из данных, полученных от сервера.
+              // Сервер возвращает массив объектов вида:
+              // [ {"balloonContent": "Содержимое балуна"}, ...]
+              for (let i = 0; i < data.length; i++) {
+                if (geoObject.id === data[i].id) {
+                  geoObject.properties.balloonContent = data[i].balloonContent;
+                  geoObject.properties.clusterCaption = data[i].clusterCaption;
+                  break;
                 }
-            } else {
-                // Событие произошло на геообъекте.
-                if (type == 'mouseenter') {
-                    target.options.set('preset', 'islands#pinkIcon');
-                } else {
-                    target.options.set('preset', 'islands#violetIcon');
-                }
-            }
-        });    
-
-    geoObjects = []
-    {% for p in coordinates_patients %}
-
-    is_found = '{{ _("Нет") }}'
-    if ('{{ p.is_found }}' == 'True') {
-      is_found = '{{ _("Да") }}'
+              }
+            });
+            // Оповещаем балун, что нужно применить новые данные.
+            setNewData();
+          },
+          function () {
+            geoObjects.forEach(function (geoObject) {
+              geoObject.properties.balloonContent = "Not found";
+            });
+            // Оповещаем балун, что нужно применить новые данные.
+            setNewData();
+          }
+        );
     }
 
-    is_infected = '{{ _("Нет") }}'
-    if ('{{ p.is_infected }}' == 'True') {
-      is_infected = '{{ _("Да") }}'
+    function setNewData() {
+      if (isCluster && objectManager.clusters.balloon.isOpen(id)) {
+        console.log("cluster");
+        objectManager.clusters.balloon.setData(
+          objectManager.clusters.balloon.getData()
+        );
+      } else if (objectManager.objects.balloon.isOpen(id)) {
+        console.log("open");
+        objectManager.objects.balloon.setData(
+          objectManager.objects.balloon.getData()
+        );
+      }
     }
-
-    {% if p.home_address %}
-    geoObjects.push(new ymaps.Placemark(['{{ p.home_address.lat }}', '{{ p.home_address.lng }}' ], {
-        balloonContentBody: 
-        '<a href="/patient_profile?id={{p.id}}">{{ p }}</a><br>' +
-        '<strong>{{ _("Регион") }}</strong>: {{ p.region }}<br>' +
-        '<strong>{{ _("Адрес") }}</strong>: {{ p.home_address }}<br>' +
-        '<strong>{{ _("Найден") }}</strong>: ' + is_found + '<br>' +
-        '<strong>{{ _("Инфицирован") }}</strong>: ' + is_infected + '<br>' +
-        '<strong>{{ _("Статус") }}</strong>: {{ p.status.name }}<br>',
-        clusterCaption: '<strong>{{ p }}</strong>'
-    }, {
-        preset: 'islands#icon',
-        {% if p.is_infected %}
-        iconColor: 'red'
-        {% else %}
-        iconColor: 'green'
-        {% endif %}            
-    }))
-    {% endif %}
-    {% endfor %}
-
-    clusterer.add(geoObjects);
-    myMap.geoObjects.add(clusterer);     
-
+  }
 }
+
 
 colors = ["#3e95cd", "#8e5ea2", "#3cba9f", "#e8c3b9", "#b8860b", "#c45850", "#ff4500", "#f00f30", "#0000cd", 
           "#7cfc00", "#00fa9a", "#000fff", "#f08080", "#d8bfd8", "#ff00ff", "#1e90ff", "#ff1493", "#ee82ee"]
