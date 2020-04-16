@@ -10,10 +10,10 @@ from app import login_manager, db
 
 from app.main.models import Region, TravelType, Country
 from app.main.flights_trains.models import FlightCode, FlightTravel, Train, TrainTravel
-from app.main.flights_trains.forms import FlightTrainsForm, FlightForm, TrainForm
-from app.main.forms import TableSearchForm
+from app.main.flights_trains.forms import FlightTrainsForm, FlightForm, TrainForm, FlightSearchForm, TrainSearchForm
 from app.main.patients.models import Patient
 from collections import OrderedDict
+from datetime import datetime
 
 import numpy as np
 import math
@@ -71,14 +71,7 @@ def get_trains_by_date_range():
 
     return json.dumps("error")
 
-def flights_trains(codeModel, request):
-    form = TableSearchForm()
-    regions = get_regions(current_user)
-
-    if not form.region.choices:
-        form.region.choices = [ (-1, c.all_regions) ] + [(r.id, r.name) for r in regions]
-
-
+def flights_trains(request):
     change = None
     error_msg = None
 
@@ -87,9 +80,7 @@ def flights_trains(codeModel, request):
     elif "error" in request.args:
         error_msg = request.args['error']
 
-    form.process()
-
-    return form, change, error_msg
+    return change, error_msg
 
 def populate_add_flight_train_form(form):
     default_country = Country.query.filter_by(code="KZ").first().id
@@ -108,8 +99,7 @@ def populate_profile_flight_train_form(form, travel):
 
     form.from_city.default = travel.from_city
 
-    form.to_city.default = travel.to_city    
-
+    form.to_city.default = travel.to_city
 
 @blueprint.route('/flights', methods=['GET'])
 @login_required
@@ -117,7 +107,8 @@ def flights():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))
 
-    form, change, error_msg = flights_trains(FlightCode, request)
+    change, error_msg = flights_trains(request)
+    form = FlightSearchForm()
 
     table_head_params = OrderedDict()
     table_head_params[_("Код Рейса")] = ["code"]
@@ -136,6 +127,18 @@ def flights():
 
         return [code, date, from_country, to_country, passengers_num]
 
+    if "code" in request.args:
+        code = request.args["code"]
+        q = q.filter(FlightCode.code.contains(code))
+        form.code.default = code
+
+    if "date" in request.args:
+        if request.args["date"]:
+            date = datetime.strptime(request.args["date"], '%Y-%m-%d')
+
+            q = q.filter_by(date=date)
+            form.date.default = date
+
     flights_table = TableModule(request, q, table_head_params, print_entry, (_("Добавить Рейс"), "/add_flight"))
 
     form.process()
@@ -148,7 +151,8 @@ def trains():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))
 
-    form, change, error_msg = flights_trains(Train, request)
+    change, error_msg = flights_trains(request)
+    form = TrainSearchForm()
 
     table_head_params = OrderedDict()
     table_head_params[_("Профиль Рейса")] = []
@@ -170,7 +174,21 @@ def trains():
 
         return [profile, departure_date, arrival_date, from_country, to_country, passengers_num]
 
-    flights_table = TableModule(request, q, table_head_params, print_entry, (_("Добавить Рейс"), "/add_flight"))
+    if "departure_date" in request.args:
+        if request.args["departure_date"]:
+            departure_date = datetime.strptime(request.args["departure_date"], '%Y-%m-%d')
+            
+            q = q.filter(Train.departure_date >= departure_date)
+            form.departure_date.default = departure_date
+
+    if "arrival_date" in request.args:
+        if request.args["arrival_date"]:
+            arrival_date = datetime.strptime(request.args["arrival_date"], '%Y-%m-%d')
+            
+            q = q.filter(Train.arrival_date <= arrival_date)
+            form.arrival_date.default = arrival_date
+
+    flights_table = TableModule(request, q, table_head_params, print_entry, (_("Добавить ЖД Рейс"), "/add_train"))
 
     form.process()
 

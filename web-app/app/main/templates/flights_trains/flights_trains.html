@@ -17,9 +17,23 @@
   <!-- Table -->
   <div class="row">
     <div class="col">
-      {% with table=flights_table %}
+    {% if is_trains %}
+      {% with table=flights_table,
+       search_fields = [
+        [_("Дата Отправления"), form.departure_date(type="date", class="form-control")],
+        [_("Дата Прибытия"), form.arrival_date(type="date", class="form-control")]
+      ] %}
+        {% include "modules/table/table.html" %}
+      {% endwith %}    
+    {% else %}
+      {% with table=flights_table,
+       search_fields = [
+        [_("Код Рейса"), form.code(type="text", class="form-control", placeholder=_("Код Рейса"))],
+        [_("Дата Рейса"), form.date(type="date", class="form-control", placeholder=_("Код Рейса"))]
+      ] %}
         {% include "modules/table/table.html" %}
       {% endwith %}  
+    {% endif %}
     </div>
   </div>
   <!-- Footer -->

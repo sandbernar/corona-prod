@@ -1,88 +1,105 @@
-{% if table.entries %}
-<div class="card shadow">
-  <div class="card-header border-0">
-    <div class="row">
-      <div class="col">
-        <h3 class="mb-0">{{ _("Всего") }} {{table.total_len}}, {{ _("показано") }} {{ table.entries|length }}</h3>
+<form method="GET">
+{% if search_fields %}
+  <div class="card shadow">
+    <div class="card-header border-0">
+      <div class="row">
+        {% for field in search_fields %}
+        <div class="col">
+          <label for="name-input" class="form-control-label">{{ field[0] }}</label>
+          {{ field[1] }}
+        </div>
+        {% endfor %}
+        <div class="col-md-auto">
+          <button type="submit" class="btn btn-primary" style="height:100%">{{ _("Поиск") }}</button>
+        </div>
       </div>
-      <div class="col-md-auto">
-      {% if table.header_button %}
-        <a href={{ table.header_button[1]}} class="btn btn-sm btn-primary btn-full-width">{{ table.header_button[0] }}</a>
-      {% endif %}              
-      </div>      
     </div>
   </div>
-  {% if table.entries %}
-  <div class="table-responsive">
-    <table class="table align-items-center table-flush">
-      <thead class="thead-light">
-        <tr>
-          {% for th in table.table_head %}
+  <div class="card shadow mt-3">
+  {% else %}
+  <div class="card shadow">
+{% endif %}
+    <div class="card-header border-0">
+      <div class="row">
+        <div class="col">
+          <h3 class="mb-0">{{ _("Всего") }} {{table.total_len}}, {{ _("показано") }} {{ table.entries|length }}</h3>
+        </div>   
+        <div class="col-md-auto">
+          {% if table.header_button %}
+          <a href={{ table.header_button[1]}} class="btn btn-sm btn-primary btn-full-width">{{ table.header_button[0] }}</a>
+          {% endif %}              
+        </div>      
+      </div>
+    </div>
+    {% if table.entries %}
+    <div class="table-responsive">
+      <table class="table align-items-center table-flush">
+        <thead class="thead-light">
+          <tr>
+            {% for th in table.table_head %}
             {% if th is string %}
-              <th scope="col">{{ th }}</th>
+            <th scope="col">{{ th }}</th>
             {% else %}
-              <th scope="col">
-                <a onclick="tableSort('{{ th[0] }}')" href="#">
-                  {{ th[0] }}
-                  {% if th[0] == table.sort_by %}
-                    {% if table.sort_by_asc %}
-                      ↑
-                    {% else %}
-                      ↓
-                    {% endif %}
-                  {% endif %}
-                </a>
-              </th>
+            <th scope="col">
+              <a onclick="tableSort('{{ th[0] }}')" href="#">
+                {{ th[0] }}
+                {% if th[0] == table.sort_by %}
+                {% if table.sort_by_asc %}
+                ↑
+                {% else %}
+                ↓
+                {% endif %}
+                {% endif %}
+              </a>
+            </th>
             {% endif %}
-          {% endfor %}
-        </tr>
-      </thead>
-      <tbody>
-        {% for entry in table.entries %}
-        <tr>
-          {% for column in entry %}
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for entry in table.entries %}
+          <tr>
+            {% for column in entry %}
             {% if column is iterable and column is not string %}
-              <th scope="row">
-                <div class="media align-items-center">
-                  <div class="media-body">
-                    <span class="mb-0 text-sm"><a href="{{ column[1] }}">{{ column[0] }}</a></span>
-                  </div>
+            <th scope="row">
+              <div class="media align-items-center">
+                <div class="media-body">
+                  <span class="mb-0 text-sm"><a href="{{ column[1] }}">{{ column[0] }}</a></span>
                 </div>
-              </th>
+              </div>
+            </th>
             {% else %}
-              <td>
-                {{ column }}
-              </td>
+            <td>
+              {{ column }}
+            </td>
             {% endif %}
+            {% endfor %}
+          </tr>
           {% endfor %}
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-</div>   
-  {% endif %}
-{% if table.max_page > 1%}
-<form method="GET">                    
-  <div class="card-footer py-4">
-    <nav aria-label="...">
-      <ul class="pagination justify-content-end mb-0">
-        <li class="page-item {% if table.page == 1%}disabled{%endif%}">
-          <a class="page-link" onclick="setSearchParam('page', {{ table.page - 1 }})">
-            <i class="fas fa-angle-left"></i>
-            <span class="sr-only">Previous</span>
-          </a>
-        </li>
-        <li class="page-item"><div class="page-link" style="cursor: default;"> {{ table.page }}</div></li>
-        <li class="page-item {% if table.page == table.max_page %}disabled{%endif%}">
-          <a class="page-link" onclick="setSearchParam('page', {{ table.page + 1 }})" >
-            <i class="fas fa-angle-right"></i>
-            <span class="sr-only">Next</span>
-          </a>
-        </li>
-      </ul>
-    </nav>
+        </tbody>
+      </table>
+    </div>   
+    {% endif %}
+    {% if table.max_page > 1%}
+    <div class="card-footer py-4">
+      <nav aria-label="...">
+        <ul class="pagination justify-content-end mb-0">
+          <li class="page-item {% if table.page == 1%}disabled{%endif%}">
+            <a class="page-link" onclick="setSearchParam('page', {{ table.page - 1 }})">
+              <i class="fas fa-angle-left"></i>
+              <span class="sr-only">Previous</span>
+            </a>
+          </li>
+          <li class="page-item"><div class="page-link" style="cursor: default;"> {{ table.page }}</div></li>
+          <li class="page-item {% if table.page == table.max_page %}disabled{%endif%}">
+            <a class="page-link" onclick="setSearchParam('page', {{ table.page + 1 }})" >
+              <i class="fas fa-angle-right"></i>
+              <span class="sr-only">Next</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+    {% endif %}
   </div>
 </form>
-{% endif %}
-</div>
-{% endif %}

@@ -40,15 +40,12 @@ class TableModule:
     def sort_table(self):
         self.sort_by = None
         self.sort_by_asc = True
-        # self.arrow = None
         
         if "sort_by_asc" in request.args:
             self.sort_by = request.args["sort_by_asc"]
-            arrow = "↑"
         elif "sort_by_desc" in request.args:
             self.sort_by = request.args["sort_by_desc"]
             self.sort_by_asc = False
-            arrow = "↓"
 
         for i, th in enumerate(self.table_head_dict):
             new_th = (th, th) if len(self.table_head_dict[th]) > 0 else th

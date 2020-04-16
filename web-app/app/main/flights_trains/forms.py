@@ -20,8 +20,17 @@ class FlightTrainsForm(FlaskForm):
 
 class FlightForm(FlightTrainsForm):
     date = DateField('Date', validators=[DataRequired()])
-    code = TextField('Code'     , id='flight_code' , validators=[DataRequired()])
+    code = TextField('Code', validators=[DataRequired()])
+
+class FlightSearchForm(FlaskForm):
+    date = DateField('Date')
+    code = TextField('Code')
+
+class TrainSearchForm(FlaskForm):
+    departure_date = DateField('Date')
+    arrival_date = DateField('Date')
 
 class TrainForm(FlightTrainsForm):
     departure_date = DateField('Departure Date', validators=[DataRequired()])
     arrival_date = DateField('Arrival Date', validators=[DataRequired()])
+
