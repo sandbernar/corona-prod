@@ -44,6 +44,7 @@
     <!-- JS -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
     <script src="https://api-maps.yandex.ru/2.1/?apikey=9e35ffd2-8d05-4f5a-ad8d-26b851cfdbb3&lang=ru_RU" type="text/javascript"></script>
+    <script src="{{ url_for('static', filename='assets/js/plugins/jquery/dist/jquery.min.js') }}"></script>
   {% endblock stylesheets %}
 
   {% endblock head %}
@@ -62,7 +63,6 @@
   
   {% block javascripts %}
     <!-- Core -->
-    <script src="{{ url_for('static', filename='assets/js/plugins/jquery/dist/jquery.min.js') }}"></script>
     <script src="{{ url_for('static', filename='assets/js/plugins/bootstrap/dist/js/bootstrap.bundle.min.js') }}"></script>
 
     <!-- Optional JS -->
@@ -76,10 +76,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.43/css/bootstrap-datetimepicker.min.css">
 
     <script>
-        if ( $('.datepicker')[0].type != 'date' ) $('.datepicker').datetimepicker({
-    format: 'L',
-    ignoreReadonly: true
-  })
+        if ($('.datepicker').length > 0) {
+            if ( $('.datepicker')[0].type != 'date' ) $('.datepicker').datetimepicker({
+                format: 'L',
+                ignoreReadonly: true
+            })
+        }
   </script>
   {% endblock javascripts %}
 
