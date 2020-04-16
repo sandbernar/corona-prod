@@ -14,6 +14,34 @@
     {% include "site_template/top-stats.html" %}
   {% endwith %}
 
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      
+      <div class="modal-body">
+        <div class="py-3">
+          <div class="text-center">
+            <i class="ni ni-bell-55 ni-3x"></i>
+            <h4 class="heading mt-4">Соглашение</h4>
+          </div>
+          <p>1.	Не разглашать информацию, составляющую служебную и/или иную тайну, охраняемую действующими законами, подзаконными актами и другими правовыми нормами Республики Казахстан (далее – сведения конфиденциального характера) и Министерства здравоохранения Республики Казахстан (далее – Министерство), которые до меня будут доведены или станут известны в связи с участием в реализации проекта ИС МЗ РК.</p>
+          <p>2.	Не разглашать информацию, которая содержится в материалах (решениях), полученных (принятых) в ходе заседаний по реализации проекта ИС МЗ РК. Информация, материалы, документы, презентации, полученные в рамках работы, являются сведениями конфиденциального характера.</p>
+          <p>3.	Не передавать третьим лицам и не раскрывать сведения, составляющие сведения конфиденциального характера, без решения руководителя проекта ИС МЗ РК.</p>
+          <p>4.	Сохранять сведения конфиденциального характера юридических и физических лиц, с которыми буду взаимодействовать в ходе реализации проекта  ИС МЗ РК.</p>
+          <p>5.	Не предпринимать несанкционированные действия (модификация, удаление и др.), которые за собой повлекут нарушение целостности, доступности и конфиденциальности ИС МЗ РК.</p>
+          <p>6.	В случае попыток посторонних лиц получить от меня вышеописанные сведения обязуюсь незамедлительно сообщить руководству.</p>
+          <p>Я предупрежден, что за нарушение настоящего Обязательства, за утрату или неаккуратное хранение документов, содержащих служебную и/или коммерческую тайну, буду привлечен к ответственности, в соответствии с действующим законодательством Республики Казахстан.</p>
+      </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-dismiss="modal">Соглашаюсь</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
   <div class="container-fluid mt--7">
     <div class="row">
       <div class="col-xl mb-5">
@@ -136,11 +164,23 @@
 
   </div>
 
+  <button id="agreementButton" style="display: none;" type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
+    Launch demo modal
+  </button>
+
 {% endblock content %}
 
 {% block javascripts %}
 <script type="text/javascript">
 
+$(document).ready(function(){
+  $("#exampleModal").modal({
+    show:false,
+    backdrop:'static',
+    keyboard: false
+  });
+  document.getElementById('agreementButton').click();
+});
 ymaps.ready(init);
 
 function init() {
