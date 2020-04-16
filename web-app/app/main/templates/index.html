@@ -179,13 +179,7 @@ $(document).ready(function(){
     backdrop:'static',
     keyboard: false
   });
-  if (localStorage.getItem("agreed") != "true") {
-    document.getElementById('agreementButton').click();
-  }
-});
-
-$("#agreeButton").on("click", () => {
-  localStorage.setItem("agreed", "true");
+  document.getElementById('agreementButton').click();
 });
 
 ymaps.ready(init);
