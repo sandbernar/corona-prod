@@ -137,14 +137,10 @@ def flights():
         return [code, date, from_country, to_country, passengers_num]
 
     flights_table = TableModule(request, q, table_head_params, print_entry, (_("Добавить Рейс"), "/add_flight"))
-    
-    # for f in travels:
-    	# flights_count[f.id] = FlightTravel.query.filter_by(flight_code_id=f.id).count()
 
     form.process()
-    return route_template('flights_trains/flights_trains',  form=form,
-                                flights_table=flights_table, constants=c, change=change, error_msg=error_msg,
-                                    is_trains = False)
+    return route_template('flights_trains/flights_trains',  form=form, flights_table=flights_table, constants=c, 
+                            change=change, error_msg=error_msg, is_trains = False)
 
 @blueprint.route('/trains', methods=['GET'])
 @login_required
@@ -152,17 +148,34 @@ def trains():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))
 
-    form, travels, page, max_page, total, change, error_msg = flights_trains(Train, request)
+    form, change, error_msg = flights_trains(Train, request)
 
-    trains_count = dict()
+    table_head_params = OrderedDict()
+    table_head_params[_("Профиль Рейса")] = []
+    table_head_params[_("Дата Отправления")] = ["departure_date"]
+    table_head_params[_("Дата Прибытия")] = ["arrival_date"]
+    table_head_params[_("Из")] = ["from_country", "from_city"]
+    table_head_params[_("В")] = ["to_country", "to_city"]
+    table_head_params[_("Кол-во Прибывших")] = []
     
-    for f in travels:
-        trains_count[f.id] = TrainTravel.query.filter_by(train_id=f.id).count()
+    q = Train.query
+
+    def print_entry(result):
+        profile = (_("Открыть Профиль"), "/train_profile?id={}".format(result.id))
+        departure_date = result.departure_date
+        arrival_date = result.arrival_date
+        from_country = "{}, {}".format(result.from_country, result.from_city)
+        to_country = "{}, {}".format(result.to_country, result.to_city)
+        passengers_num = TrainTravel.query.filter_by(train_id=result.id).count()
+
+        return [profile, departure_date, arrival_date, from_country, to_country, passengers_num]
+
+    flights_table = TableModule(request, q, table_head_params, print_entry, (_("Добавить Рейс"), "/add_flight"))
 
     form.process()
-    return route_template('flights_trains/flights_trains', travels=travels, travels_count=trains_count, form=form, page=page, 
-                                    max_page=max_page, total = total, constants=c, change=change, error_msg=error_msg,
-                                    is_trains = True)    
+
+    return route_template('flights_trains/flights_trains',  form=form, flights_table=flights_table, constants=c, 
+                            change=change, error_msg=error_msg, is_trains = True)                                       
 
 @blueprint.route('/add_flight', methods=['GET', 'POST'])
 def add_flight():
@@ -324,7 +337,7 @@ def flight_profile():
             q = q.filter(FlightTravel.flight_code_id == flight.id)
             
             table_head_params = OrderedDict()
-            table_head_params[_("ФИО")] = ["first_name", "second_name", "patronymic_name"]
+            table_head_params[_("ФИО")] = ["second_name"]
             table_head_params[_("Телефон")] = ["telephone"]
             table_head_params[_("Регион")] = []
             table_head_params[_("Страна последние 14 дней")] = []
@@ -334,7 +347,12 @@ def flight_profile():
                 full_name = (result[0], "/patient_profile?id={}".format(result[0].id))
                 telephone = result[0].telephone
                 region = result[0].region
-                visited_country = ", ".join([ str(c) for c in result[0].visited_country])
+
+                if result[0].visited_country == None:
+                    visited_country = _("Неизвестно")
+                else:                
+                    visited_country = ", ".join([ str(c) for c in result[0].visited_country])
+
                 seat = result[1].seat
 
                 return [full_name, telephone, region, visited_country, seat]

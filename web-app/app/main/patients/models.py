@@ -99,7 +99,7 @@ class Patient(db.Model):
             setattr(self, property, value)
 
     def __repr__(self):
-        return "{} {} {}".format(str(self.first_name), str(self.second_name), str(self.patronymic_name))
+        return "{} {} {}".format(str(self.second_name), str(self.first_name), str(self.patronymic_name))
 
 class PatientState(db.Model):
     """
