@@ -4,7 +4,7 @@ License: MIT
 """
 
 from flask_wtf import FlaskForm
-from wtforms import TextField, SelectField, RadioField
+from wtforms import TextField, SelectField, RadioField, DateField
 from wtforms.validators import DataRequired
 from flask_babelex import _
 
@@ -23,3 +23,8 @@ class CreateUserForm(FlaskForm):
 
 class UpdateUserForm(CreateUserForm):
     password = TextField('Password', validators=[])
+
+class UserActivityReportForm(FlaskForm):
+    region_id = SelectField('Region')
+    start_date = DateField('Report Start Date')
+    end_date = DateField('Report End Date')
