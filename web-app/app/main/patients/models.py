@@ -34,7 +34,7 @@ class Patient(db.Model):
 
     id = Column(Integer, primary_key=True)
     created_date = Column(DateTime, default=datetime.datetime.utcnow)
-    
+
     created_by_id = Column(Integer, ForeignKey('User.id'))
     created_by = db.relationship('User')
 
@@ -44,7 +44,7 @@ class Patient(db.Model):
     travel_id = Column(Integer, nullable=True, default=None, unique=False)
 
     is_contacted_person = Column(Boolean, unique=False)
-   
+
     first_name = Column(String, unique=False)
     second_name = Column(String, unique=False)
     patronymic_name = Column(String, unique=False, nullable=True)
@@ -53,17 +53,18 @@ class Patient(db.Model):
     gender = Column(Boolean, nullable=True, default=None)
     dob = Column(Date, nullable=False)
     iin = Column(String, nullable=True, default=None)
-    
+
     citizenship_id = Column(Integer, ForeignKey('Country.id'))
     citizenship = db.relationship('Country', foreign_keys=[citizenship_id])
-    
+
     pass_num = Column(String, unique=False, nullable=True, default=None)
-    
+
     country_of_residence_id = Column(Integer, ForeignKey('Country.id'), nullable=True)
     country_of_residence = db.relationship('Country', foreign_keys=[country_of_residence_id])
 
     home_address_id = Column(Integer, ForeignKey('Address.id'), nullable=False)
-    home_address = db.relationship('Address', foreign_keys=[home_address_id], cascade="all,delete", backref="Patient")
+    home_address = db.relationship('Address', foreign_keys=[
+                                   home_address_id], cascade="all,delete", backref="Patient")
 
     telephone = Column(String, nullable=True, default=None)
     email = Column(String, nullable=True, default=None)
@@ -84,22 +85,43 @@ class Patient(db.Model):
     job = Column(String, nullable=True, default=None)
     job_position = Column(String, nullable=True, default=None)
     job_address_id = Column(Integer, ForeignKey('Address.id'), nullable=True, default=None)
-    job_address = db.relationship('Address', foreign_keys=[job_address_id], cascade="all, delete-orphan", single_parent=True)
+    job_address = db.relationship('Address', foreign_keys=[
+                                  job_address_id], cascade="all, delete-orphan", single_parent=True)
 
     attrs = Column(JSON, unique=False)
 
     # infected, dead, healthy
-    states = db.relationship("State", secondary=lambda:PatientState.__table__, backref=db.backref("patients"))
+    states = db.relationship("State", secondary=lambda: PatientState.__table__,
+                             backref=db.backref("patients"))
 
     def __init__(self, **kwargs):
         for property, value in kwargs.items():
             if hasattr(value, '__iter__') and not isinstance(value, str):
                 value = value[0]
-                
+
             setattr(self, property, value)
 
     def __repr__(self):
         return "{} {} {}".format(str(self.first_name), str(self.second_name), str(self.patronymic_name))
+
+    @property
+    def serialize(self):
+        """Return object data in easily serializable format"""
+        return {
+            "type": "Feature",
+            "id": self.id,
+            "geometry": {"type": "Point", "coordinates": [self.home_address.lat, self.home_address.lng]},
+            "properties": {
+                    "balloonContent": "идет загрузка...",
+                    "clusterCaption": "идет загрузка...",
+                    # "hintContent": "Текст подсказки"
+            },
+            "options": {
+                "preset": "islands#icon",
+                "iconColor": "red"
+            }
+        }
+
 
 class PatientState(db.Model):
     """
@@ -111,37 +133,39 @@ class PatientState(db.Model):
     """
     __tablename__ = 'PatientState'
 
-    state_id = Column(Integer, ForeignKey('State.id'), primary_key = True)
-    patient_id = Column(Integer, ForeignKey('Patient.id'), primary_key = True)
+    state_id = Column(Integer, ForeignKey('State.id'), primary_key=True)
+    patient_id = Column(Integer, ForeignKey('Patient.id'), primary_key=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     patient = db.relationship('Patient')
     state = db.relationship('State')
     detection_date = Column(DateTime, nullable=False)
     comment = Column(String, nullable=True)
 
+
 class ContactedPersons(db.Model):
     __tablename__ = 'ContactedPersons'
 
     id = Column(Integer, primary_key=True)
-    
+
     infected_patient_id = Column(Integer, ForeignKey('Patient.id', ondelete="CASCADE"))
     infected_patient = db.relationship('Patient', foreign_keys=[infected_patient_id],
-                                                backref=db.backref('infected_patient', passive_deletes=True))
+                                       backref=db.backref('infected_patient', passive_deletes=True))
 
     contacted_patient_id = Column(Integer, ForeignKey('Patient.id'))
     contacted_patient = db.relationship('Patient', foreign_keys=[contacted_patient_id])
-    
+
     attrs = Column(JSON, unique=False)
 
     def __init__(self, **kwargs):
         for property, value in kwargs.items():
             if hasattr(value, '__iter__') and not isinstance(value, str):
                 value = value[0]
-                
+
             setattr(self, property, value)
 
     def __repr__(self):
-        return str(self.id)   
+        return str(self.id)
+
 
 class PatientStatus(db.Model):
 
@@ -155,7 +179,7 @@ class PatientStatus(db.Model):
         for property, value in kwargs.items():
             if hasattr(value, '__iter__') and not isinstance(value, str):
                 value = value[0]
-                
+
             setattr(self, property, value)
 
     def __repr__(self):

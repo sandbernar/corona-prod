@@ -10,12 +10,11 @@ from app import login_manager, db
 from app import constants as c
 from jinja2 import TemplateNotFound
 from flask import jsonify
-
+import time
 import json
 from functools import wraps
 from flask import redirect, request, current_app
 import math
-
 
 from app.main.patients.models import Patient, PatientStatus
 from app.main.models import Region, Infected_Country_Category, Address
@@ -206,6 +205,10 @@ def patients_content_by_id():
     return jsonify(response)
 
 
+def ser(d):
+    print(d)
+
+
 @blueprint.route("/patients_within_tiles")
 @login_required
 @support_jsonp
@@ -232,10 +235,10 @@ def patients_within_tiles():
 
     zoom = int(request.args["zoom"])
 
-    coordinates_patients = {
-        "type": "FeatureCollection",
-        "features": []
-    }
+    # coordinates_patients = {
+    #     "type": "FeatureCollection",
+    #     "features": []
+    # }
 
     # tiles x1, y1, x2, y2
     # x = xMax - xMin + 1
@@ -268,30 +271,34 @@ def patients_within_tiles():
         tiles[tile]["number"] += 1
         id = i
     """
-    q = Patient.query.join(Address, Patient.home_address_id == Address.id).filter(Address.lng != None).filter(Address.lat >= bbox_x1).filter(
-        Address.lat <= bbox_x2).filter(Address.lng >= bbox_y1).filter(Address.lng <= bbox_y2)
+    # start_time = time.time()
 
-    for p in q:
-        color = "green"
-        if p.is_infected == True:
-            color = "red"
+    # q = 
+    # process_time = time.time() - start_time
+    # print("sql query time", process_time)
 
-        coordinates_patients["features"].append(
-            {
-                "type": "Feature",
-                "id": p.id,
-                "geometry": {"type": "Point", "coordinates": [p.home_address.lat, p.home_address.lng]},
-                "properties": {
-                    "balloonContent": "идет загрузка...",
-                    "clusterCaption": "идет загрузка...",
-                    # "hintContent": "Текст подсказки"
-                },
-                "options": {
-                    "preset": "islands#icon",
-                    "iconColor": color
-                }
-            }
-        )
+    # start_time = time.time()
+    # for p in q:
+    #     color = "green"
+    #     if p.is_infected == True:
+    #         color = "red"
+
+    #     coordinates_patients["features"].append(
+    #         {
+    #             "type": "Feature",
+    #             "id": p.id,
+    #             "geometry": {"type": "Point", "coordinates": [p.home_address.lat, p.home_address.lng]},
+    #             "properties": {
+    #                 "balloonContent": "идет загрузка...",
+    #                 "clusterCaption": "идет загрузка...",
+    #                 # "hintContent": "Текст подсказки"
+    #             },
+    #             "options": {
+    #                 "preset": "islands#icon",
+    #                 "iconColor": color
+    #             }
+    #         }
+    #     )
         # xPatient, yPatinent = deg2num(p.home_address.lat, p.home_address.lng, zoom)
         # if xPatient >= xMin and yPatinent >= yMin and xPatient <= xMax and yPatinent <= yMax:
         #     t = (xPatient - xMin) * x + (yPatinent - yMin)
@@ -302,6 +309,16 @@ def patients_within_tiles():
         #     coordinates_patients["features"][t]["geometry"]["coordinates"][1] = p.home_address.lng
         #     coordinates_patients["features"][t]["number"] += 1
         #     coordinates_patients["features"][t]["properties"]["iconContent"] += 1
+    # process_time = time.time() - start_time
+    # print("loop", process_time, len(coordinates_patients["features"]))
 
+    start_time = time.time()
+    # r = jsonify(coordinates_patients)
+    r = jsonify(type="FeatureCollection",features=[i.serialize for i in Patient.query.join(Address, Patient.home_address_id == Address.id).filter(Address.lng != None).filter(Address.lat >= bbox_x1).filter(
+        Address.lat <= bbox_x2).filter(Address.lng >= bbox_y1).filter(Address.lng <= bbox_y2)])
 
-    return jsonify(coordinates_patients)
+    # r = jsonify({'data': serializer.serializer([instance for instance in q ], 'sqlalchemy')})
+    process_time = time.time() - start_time
+    print("jsonify", process_time)
+
+    return r
