@@ -18,7 +18,7 @@ import math
 
 
 from app.main.patients.models import Patient, PatientStatus
-from app.main.models import Region, Infected_Country_Category
+from app.main.models import Region, Infected_Country_Category, Address
 from app.main.hospitals.models import Hospital, Hospital_Type
 
 from datetime import datetime
@@ -140,6 +140,8 @@ def help_route():
     return render_template('help.html')
 
 # move to another dir
+
+
 def support_jsonp(f):
     """Wraps JSONified output for JSONP"""
     @wraps(f)
@@ -198,7 +200,7 @@ def patients_content_by_id():
         response.append({
             "id": i,
             "balloonContent": '<a href="/patient_profile?id=' + str(p.id) + '">' + repr(p) + '</a><br><strong>Регион</strong>:' + repr(p.region) + '<br><strong>Адрес</strong>: ' + repr(p.home_address) + '<br><strong>Найден</strong>: ' + is_found + '<br><strong>Инфицирован</strong>: ' + is_infected + '<br><strong>Статус</strong>:' + p.status.name + '<br>',
-            "clusterCaption":repr(p)
+            "clusterCaption": repr(p)
         })
 
     return jsonify(response)
@@ -229,7 +231,6 @@ def patients_within_tiles():
     # yMax = int(tiles[3])
 
     zoom = int(request.args["zoom"])
-
 
     coordinates_patients = {
         "type": "FeatureCollection",
@@ -267,42 +268,40 @@ def patients_within_tiles():
         tiles[tile]["number"] += 1
         id = i
     """
-    q = Patient.query.all()
+    q = Patient.query.join(Address, Patient.home_address_id == Address.id).filter(Address.lng != None).filter(Address.lat >= bbox_x1).filter(
+        Address.lat <= bbox_x2).filter(Address.lng >= bbox_y1).filter(Address.lng <= bbox_y2)
 
     for p in q:
-        if p.home_address.lat:
-            if bbox_x1 <= p.home_address.lat and bbox_y1 <= p.home_address.lng and bbox_x2 >= p.home_address.lat and bbox_y2 >= p.home_address.lng:
-                color = "green"
-                if p.is_infected == True:
-                    color = "red"
+        color = "green"
+        if p.is_infected == True:
+            color = "red"
 
-                coordinates_patients["features"].append(
-                    {
-                        "type": "Feature",
-                        "id": p.id,
-                        "geometry": {"type": "Point", "coordinates": [p.home_address.lat, p.home_address.lng]},
-                        "properties": {
-                            "balloonContent": "идет загрузка...",
-                            "clusterCaption": "идет загрузка...",
-                            # "hintContent": "Текст подсказки"
-                        },
-                        "options": {
-                            "preset": "islands#icon",
-                            "iconColor": color
-                        }
-                    }
-                )
-            # xPatient, yPatinent = deg2num(p.home_address.lat, p.home_address.lng, zoom)
-            # if xPatient >= xMin and yPatinent >= yMin and xPatient <= xMax and yPatinent <= yMax:
-            #     t = (xPatient - xMin) * x + (yPatinent - yMin)
-            #     print(t, xPatient, yPatinent, xMin, xMax, yMin, yMax)
-            #     if t < 0 or t >= len(coordinates_patients["features"]):
-            #         continue
-            #     coordinates_patients["features"][t]["geometry"]["coordinates"][0] = p.home_address.lat
-            #     coordinates_patients["features"][t]["geometry"]["coordinates"][1] = p.home_address.lng
-            #     coordinates_patients["features"][t]["number"] += 1
-            #     coordinates_patients["features"][t]["properties"]["iconContent"] += 1
-
+        coordinates_patients["features"].append(
+            {
+                "type": "Feature",
+                "id": p.id,
+                "geometry": {"type": "Point", "coordinates": [p.home_address.lat, p.home_address.lng]},
+                "properties": {
+                    "balloonContent": "идет загрузка...",
+                    "clusterCaption": "идет загрузка...",
+                    # "hintContent": "Текст подсказки"
+                },
+                "options": {
+                    "preset": "islands#icon",
+                    "iconColor": color
+                }
+            }
+        )
+        # xPatient, yPatinent = deg2num(p.home_address.lat, p.home_address.lng, zoom)
+        # if xPatient >= xMin and yPatinent >= yMin and xPatient <= xMax and yPatinent <= yMax:
+        #     t = (xPatient - xMin) * x + (yPatinent - yMin)
+        #     print(t, xPatient, yPatinent, xMin, xMax, yMin, yMax)
+        #     if t < 0 or t >= len(coordinates_patients["features"]):
+        #         continue
+        #     coordinates_patients["features"][t]["geometry"]["coordinates"][0] = p.home_address.lat
+        #     coordinates_patients["features"][t]["geometry"]["coordinates"][1] = p.home_address.lng
+        #     coordinates_patients["features"][t]["number"] += 1
+        #     coordinates_patients["features"][t]["properties"]["iconContent"] += 1
 
 
     return jsonify(coordinates_patients)
