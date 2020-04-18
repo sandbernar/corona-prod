@@ -15,6 +15,8 @@ import json
 from functools import wraps
 from flask import redirect, request, current_app
 import math
+from functools import lru_cache
+
 
 from app.main.patients.models import Patient, PatientStatus
 from app.main.models import Region, Infected_Country_Category, Address
@@ -205,8 +207,17 @@ def patients_content_by_id():
     return jsonify(response)
 
 
-def ser(d):
-    print(d)
+def get_ttl_hash(seconds=3600):
+    """Return the same value withing `seconds` time period"""
+    return round(time.time() / seconds)
+
+
+@lru_cache()
+def getR(bbox_x1, bbox_y1, bbox_x2, bbox_y2, ttl_hash=None):
+    del ttl_hash
+    r = jsonify(type="FeatureCollection", features=[i.serialize for i in Patient.query.join(Address, Patient.home_address_id == Address.id).filter(Address.lng != None).filter(Address.lat >= bbox_x1).filter(
+        Address.lat <= bbox_x2).filter(Address.lng >= bbox_y1).filter(Address.lng <= bbox_y2)])
+    return r
 
 
 @blueprint.route("/patients_within_tiles")
@@ -215,110 +226,12 @@ def ser(d):
 def patients_within_tiles():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))
-    # add other params to test
     if not "bbox" in request.args:
         return render_template('errors/error-400.html'), 400
-
-    # bbox (x1 y1) => left bottom; (x2, y2) => top right
     latlng = request.args["bbox"].split(',')
     bbox_x1 = float(latlng[0])
     bbox_y1 = float(latlng[1])
     bbox_x2 = float(latlng[2])
     bbox_y2 = float(latlng[3])
-
-    # worldwide tiles
-    # tiles = request.args["tiles"].split(',')
-    # xMin = int(tiles[0])
-    # yMin = int(tiles[1])
-    # xMax = int(tiles[2])
-    # yMax = int(tiles[3])
-
-    zoom = int(request.args["zoom"])
-
-    # coordinates_patients = {
-    #     "type": "FeatureCollection",
-    #     "features": []
-    # }
-
-    # tiles x1, y1, x2, y2
-    # x = xMax - xMin + 1
-    # y = yMax - yMin + 1
-
-    # z = 0
-    # for i in range(x):
-    #     for v in range(y):
-    #         coordinates_patients["features"].append(
-    #             {
-    #                 "type": 'Cluster',
-    #                 "id": z,
-    #                 # "bbox": [[2, yMin], [bbox_x2, bbox_y2]],
-    #                 "number": 0,
-    #                 "geometry": {
-    #                     "type": 'Point',
-    #                     "coordinates": [0, 0]
-    #                 },
-    #                 "properties": {
-    #                     "iconContent": 0
-    #                 }
-    #             }
-    #         )
-    #         z += 1
-
-    """
-    for each patient get tiles => get x y tiles
-        tile = (x - xMin + 1) * (yMin - 1)
-        tiles[tile]["geometry"] = cords
-        tiles[tile]["number"] += 1
-        id = i
-    """
-    # start_time = time.time()
-
-    # q = 
-    # process_time = time.time() - start_time
-    # print("sql query time", process_time)
-
-    # start_time = time.time()
-    # for p in q:
-    #     color = "green"
-    #     if p.is_infected == True:
-    #         color = "red"
-
-    #     coordinates_patients["features"].append(
-    #         {
-    #             "type": "Feature",
-    #             "id": p.id,
-    #             "geometry": {"type": "Point", "coordinates": [p.home_address.lat, p.home_address.lng]},
-    #             "properties": {
-    #                 "balloonContent": "идет загрузка...",
-    #                 "clusterCaption": "идет загрузка...",
-    #                 # "hintContent": "Текст подсказки"
-    #             },
-    #             "options": {
-    #                 "preset": "islands#icon",
-    #                 "iconColor": color
-    #             }
-    #         }
-    #     )
-        # xPatient, yPatinent = deg2num(p.home_address.lat, p.home_address.lng, zoom)
-        # if xPatient >= xMin and yPatinent >= yMin and xPatient <= xMax and yPatinent <= yMax:
-        #     t = (xPatient - xMin) * x + (yPatinent - yMin)
-        #     print(t, xPatient, yPatinent, xMin, xMax, yMin, yMax)
-        #     if t < 0 or t >= len(coordinates_patients["features"]):
-        #         continue
-        #     coordinates_patients["features"][t]["geometry"]["coordinates"][0] = p.home_address.lat
-        #     coordinates_patients["features"][t]["geometry"]["coordinates"][1] = p.home_address.lng
-        #     coordinates_patients["features"][t]["number"] += 1
-        #     coordinates_patients["features"][t]["properties"]["iconContent"] += 1
-    # process_time = time.time() - start_time
-    # print("loop", process_time, len(coordinates_patients["features"]))
-
-    start_time = time.time()
-    # r = jsonify(coordinates_patients)
-    r = jsonify(type="FeatureCollection",features=[i.serialize for i in Patient.query.join(Address, Patient.home_address_id == Address.id).filter(Address.lng != None).filter(Address.lat >= bbox_x1).filter(
-        Address.lat <= bbox_x2).filter(Address.lng >= bbox_y1).filter(Address.lng <= bbox_y2)])
-
-    # r = jsonify({'data': serializer.serializer([instance for instance in q ], 'sqlalchemy')})
-    process_time = time.time() - start_time
-    print("jsonify", process_time)
-
+    r = getR(bbox_x1, bbox_y1, bbox_x2, bbox_y2, ttl_hash=get_ttl_hash())
     return r
