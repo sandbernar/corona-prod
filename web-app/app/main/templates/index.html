@@ -209,13 +209,13 @@ function init() {
       clusterize: true,
       geoObjectOpenBalloonOnClick: true,
       geoObjectOpenEmptyBalloon: true,
+    //   splitRequests: true,
     }
   );
 
   myMap.geoObjects.add(objectManager);
 
   objectManager.objects.events.add("click", function (e) {
-    console.log("hey");
     // Получим объект, на котором открылся балун.
     var id = e.get("objectId"),
       geoObject = objectManager.objects.getById(id);
@@ -224,7 +224,6 @@ function init() {
   });
 
   objectManager.clusters.events.add("balloonopen", function (e) {
-    console.log("hey");
     // Получим id кластера, на котором открылся балун.
     var id = e.get("objectId"),
       // Получим геообъекты внутри кластера.
@@ -272,8 +271,6 @@ function init() {
         )
         .then(
           function (data) {
-            console.log("gonna download", data);
-
             geoObjects.forEach(function (geoObject) {
               // Содержимое балуна берем из данных, полученных от сервера.
               // Сервер возвращает массив объектов вида:
@@ -301,12 +298,10 @@ function init() {
 
     function setNewData() {
       if (isCluster && objectManager.clusters.balloon.isOpen(id)) {
-        console.log("cluster");
         objectManager.clusters.balloon.setData(
           objectManager.clusters.balloon.getData()
         );
       } else if (objectManager.objects.balloon.isOpen(id)) {
-        console.log("open");
         objectManager.objects.balloon.setData(
           objectManager.objects.balloon.getData()
         );
