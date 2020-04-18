@@ -107,6 +107,9 @@ class Patient(db.Model):
     @property
     def serialize(self):
         """Return object data in easily serializable format"""
+        color = "green"
+        if self.is_infected == True:	
+            color = "red"
         return {
             "type": "Feature",
             "id": self.id,
@@ -118,7 +121,7 @@ class Patient(db.Model):
             },
             "options": {
                 "preset": "islands#icon",
-                "iconColor": "red"
+                "iconColor": color
             }
         }
 
