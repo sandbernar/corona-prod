@@ -140,11 +140,13 @@ for i in range(int(args['number'])):
 
     toPoint = kzcities[randint(0, len(kzcities)-1)]
     # insert address
+    additionalLat = randint(0, 200)
+    additionalLon = randint(0, 200)
     address = Address()
     address.country_id = 88
-    address.city = toPoint['name']
-    address.lat = toPoint['latitude']
-    address.lng = toPoint['longitude']
+    address.city = toPoint['name'] + f"{additionalLat} {additionalLon}"
+    address.lat = toPoint['latitude'] + float(additionalLat)/1000
+    address.lng = toPoint['longitude'] + float(additionalLon)/1000
     address.insert()
     patient.home_address_id = address.id
     patient.insert()
