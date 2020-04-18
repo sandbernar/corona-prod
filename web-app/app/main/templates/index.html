@@ -35,7 +35,7 @@
       </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-primary" data-dismiss="modal">Соглашаюсь</button>
+        <button id="agreeButton" ype="button" class="btn btn-primary" data-dismiss="modal">Соглашаюсь</button>
       </div>
     </div>
   </div>
@@ -179,8 +179,15 @@ $(document).ready(function(){
     backdrop:'static',
     keyboard: false
   });
-  document.getElementById('agreementButton').click();
+  if (localStorage.getItem("agreed") != "true") {
+    document.getElementById('agreementButton').click();
+  }
 });
+
+$("#agreeButton").on("click", () => {
+  localStorage.setItem("agreed", "true");
+});
+
 ymaps.ready(init);
 
 function init() {
@@ -197,7 +204,7 @@ function init() {
   );
 
   var objectManager = new ymaps.LoadingObjectManager(
-    "http://0.0.0.0:5005/patients_within_tiles?bbox=%b&clusterize=1&zoom=%z&tiles=%t",
+    window.location.origin+"/patients_within_tiles?bbox=%b&clusterize=1&zoom=%z&tiles=%t",
     {
       clusterize: true,
       geoObjectOpenBalloonOnClick: true,
@@ -257,7 +264,7 @@ function init() {
             contentType: "application/json",
             type: "POST",
             data: JSON.stringify(a),
-            url: "http://0.0.0.0:5005/patients_content_by_id",
+            url: window.location.origin+"/patients_content_by_id",
             dataType: "json",
             processData: false,
             credentials: true,

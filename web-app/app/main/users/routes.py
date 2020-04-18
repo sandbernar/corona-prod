@@ -4,23 +4,106 @@ License: MIT
 Copyright (c) 2019 - present AppSeed.us
 """
 from app.main import blueprint
-from flask import render_template, redirect, url_for, request
+from flask import render_template, redirect, url_for, request, Response
 from flask_login import login_required, current_user
 from app import login_manager, db
 
+import pandas as pd
+import io
+
 from app.main.models import Region
 from app.main.patients.models import Patient
-from app.main.users.forms import CreateUserForm, UpdateUserForm
+from app.main.users.forms import CreateUserForm, UpdateUserForm, UserActivityReportForm
 from app.main.forms import TableSearchForm
 import math
 from app.login.models import User
-from app.main.util import get_regions, get_regions_choices, populate_form, disable_form_fields
+from app.main.util import get_regions, get_regions_choices, populate_form, disable_form_fields, parse_date
 from app.login.util import hash_pass
 from flask_babelex import _
 from app.main.routes import route_template
 from jinja2 import TemplateNotFound
 from app import constants as c
-from sqlalchemy import exc
+from sqlalchemy import exc, func
+from sqlalchemy.sql import select
+import urllib
+from datetime import datetime, timedelta
+
+@blueprint.route('/export_users_activity_xls', methods=['POST'])
+@login_required
+def export_users_activity_xls():
+    if not current_user.is_authenticated:
+        return redirect(url_for('login_blueprint.login'))
+
+    if not current_user.is_admin:
+        return render_template('errors/error-500.html'), 500
+   
+    q_patient = db.session.query(Patient.created_by_id,
+                                    func.count('*').label('patient_count'))
+
+    start_date = request.form.get("start_date", None)
+    if start_date:
+        try:
+            start_date = parse_date(start_date)
+        except ValueError:
+            return render_template('errors/error-500.html'), 500
+
+        q_patient = q_patient.filter(Patient.created_date >= start_date)
+
+    end_date = request.form.get("end_date", None)
+    if end_date:
+        try:
+            end_date = parse_date(end_date)
+        except ValueError:
+            return render_template('errors/error-500.html'), 500
+
+        # Add day so that we get data from throughout the whole day
+        q_patient = q_patient.filter(Patient.created_date <= end_date + timedelta(days=1))
+
+    q_patient = q_patient.group_by(Patient.created_by_id).subquery()
+    q = db.session.query(User, q_patient.c.patient_count).outerjoin(q_patient, User.id == q_patient.c.created_by_id)
+
+    region_id = request.form.get("region_id", None)
+    if region_id:
+        try:
+            region_id = int(region_id)
+        except ValueError:
+            return render_template('errors/error-500.html'), 500
+
+        if region_id != -1:
+            q = q.filter(User.region_id == region_id)
+
+    data = [[row[0].full_name, row[0].organization, row[0].region, row[1] if row[1] else 0] for row in q.all()]
+    data = pd.DataFrame(data, columns=[_("ФИО"), _("Организация"), _("Регион"), _("Кол-во добавленных пациентов")])
+    # data.to_excel(in_memory_data)
+    # print(in_memory_data)
+
+
+    output = io.BytesIO()
+    # Use a temp filename to keep pandas happy.
+    writer = pd.ExcelWriter(output, engine='xlsxwriter')
+
+    # Write the data frame to the StringIO object.
+    data.to_excel(writer)
+    writer.save()
+    xlsx_data = output.getvalue()
+
+    region_name = Region.query.filter_by(id = region_id).first().name if region_id != -1 else c.all_regions
+    filename_xls = "{}_{}".format(_("пользователи"), region_name)
+
+    if start_date:
+        filename_xls = "{}_{}".format(filename_xls, start_date)
+
+    if end_date:
+        filename_xls = "{}_{}".format(filename_xls, end_date)
+
+    filename_xls = "{}.xls".format(filename_xls)
+    
+    response = Response(xlsx_data, mimetype="application/vnd.ms-excel")
+    response.headers["Content-Disposition"] = \
+        "attachment;" \
+        "filename*=UTF-8''{}".format(urllib.parse.quote(filename_xls.encode('utf-8')))
+
+    return response
 
 @blueprint.route('/users', methods=['GET'])
 @login_required
@@ -31,11 +114,12 @@ def users():
     if not current_user.is_admin:
         return render_template('errors/error-500.html'), 500
 
-    form = TableSearchForm()
+    form = UserActivityReportForm()
+
     regions = get_regions(current_user)
 
-    if not form.region.choices:
-        form.region.choices = [ (-1, c.all_regions) ] + [(r.id, r.name) for r in regions]
+    if not form.region_id.choices:
+        form.region_id.choices = [ (-1, c.all_regions) ] + [(r.id, r.name) for r in regions]
 
     users = []
     filt = dict()
