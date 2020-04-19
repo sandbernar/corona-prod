@@ -368,8 +368,6 @@ def train_profile():
     else:    
         return render_template('errors/error-500.html'), 500
 
-
-
 @blueprint.route('/delete_flight', methods=['POST'])
 @login_required
 def delete_flight():

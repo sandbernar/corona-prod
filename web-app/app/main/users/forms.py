@@ -24,6 +24,11 @@ class CreateUserForm(FlaskForm):
 class UpdateUserForm(CreateUserForm):
     password = TextField('Password', validators=[])
 
+class UserSearchForm(FlaskForm):
+    username = TextField('Username')
+    region_id = SelectField('Region')
+    is_admin = SelectField("Is Admin", choices=[(-1, _("Неважно")), (1, _("Да")), (0, _("Нет"))], default=-1)
+
 class UserActivityReportForm(FlaskForm):
     region_id = SelectField('Region')
     start_date = DateField('Report Start Date')

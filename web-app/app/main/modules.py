@@ -71,9 +71,10 @@ class TableModule:
             for m in first:
                 if self.sort_by in self.table_head_dict:
                     for s in self.table_head_dict[self.sort_by]:
-                        if s in m.__dict__.keys():
-                            param = getattr(type(m), s)
-                            if self.sort_by_asc:
-                                self.q = self.q.order_by(param.asc())
-                            else:
-                                self.q = self.q.order_by(param.desc())
+                        if hasattr(m, "__dict__"):
+                            if s in m.__dict__.keys():
+                                param = getattr(type(m), s)
+                                if self.sort_by_asc:
+                                    self.q = self.q.order_by(param.asc())
+                                else:
+                                    self.q = self.q.order_by(param.desc())
