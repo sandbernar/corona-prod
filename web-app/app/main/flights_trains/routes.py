@@ -9,8 +9,11 @@ from flask_login import login_required, current_user
 from app import login_manager, db
 
 from app.main.models import Region, TravelType, Country
+
 from app.main.flights_trains.models import FlightCode, FlightTravel, Train, TrainTravel
 from app.main.flights_trains.forms import FlightTrainsForm, FlightForm, TrainForm, FlightSearchForm, TrainSearchForm
+from app.main.flights_trains.modules import TrainTableModule, FlightTableModule
+
 from app.main.patients.models import Patient
 from collections import OrderedDict
 from datetime import datetime
@@ -19,7 +22,7 @@ import numpy as np
 import math
 import re, json
 
-from app.main.util import get_regions, get_regions_choices
+from app.main.util import get_regions, get_regions_choices, populate_countries_select, parse_date
 from app.main.modules import TableModule
 
 from app.login.util import hash_pass
@@ -28,12 +31,7 @@ from app.main.routes import route_template
 from jinja2 import TemplateNotFound
 from app import constants as c
 
-from sqlalchemy import exc
-
-def populate_countries_select(select_input, default, countries):
-    if not select_input.choices:
-        select_input.choices = [(c.id, c.name) for c in countries]
-        select_input.default = default
+from sqlalchemy import exc, func
 
 @blueprint.route("/get_flights_by_date", methods=['POST'])
 def get_flights_by_date():
@@ -86,20 +84,22 @@ def populate_add_flight_train_form(form):
     default_country = Country.query.filter_by(code="KZ").first().id
     countries = Country.query.all()
 
-    populate_countries_select(form.from_country_id, default_country, countries)
-    populate_countries_select(form.to_country_id, default_country, countries)
+    populate_countries_select(form.from_country_id, countries, default_country)
+    populate_countries_select(form.to_country_id, countries, default_country)
 
     form.process()
+
+def populate_search_form(form, request):
+    countries = Country.query.all()
+
+    populate_countries_select(form.from_country_id, countries=countries, default_state=(-1, _("Все Страны")))
+    populate_countries_select(form.to_country_id, countries=countries, default_state=(-1, _("Все Страны")))
 
 def populate_profile_flight_train_form(form, travel):
     countries = Country.query.all()
 
-    populate_countries_select(form.from_country_id, travel.from_country_id, countries)
-    populate_countries_select(form.to_country_id, travel.to_country_id, countries)
-
-    form.from_city.default = travel.from_city
-
-    form.to_city.default = travel.to_city
+    populate_countries_select(form.from_country_id, countries=countries)
+    populate_countries_select(form.to_country_id, countries=countries)
 
 @blueprint.route('/flights', methods=['GET'])
 @login_required
@@ -110,38 +110,11 @@ def flights():
     change, error_msg = flights_trains(request)
     form = FlightSearchForm()
 
-    table_head_params = OrderedDict()
-    table_head_params[_("Код Рейса")] = ["code"]
-    table_head_params[_("Дата")] = ["date"]
-    table_head_params[_("Из")] = ["from_country", "from_city"]
-    table_head_params[_("В")] = ["to_country", "to_city"]
-    table_head_params[_("Кол-во Прибывших")] = []
-    q = FlightCode.query
-
-    def print_entry(result):
-        code = (result, "/flight_profile?id={}".format(result.id))
-        date = result.date
-        from_country = "{}, {}".format(result.from_country, result.from_city)
-        to_country = "{}, {}".format(result.to_country, result.to_city)
-        passengers_num = FlightTravel.query.filter_by(flight_code_id=result.id).count()
-
-        return [code, date, from_country, to_country, passengers_num]
-
-    if "code" in request.args:
-        code = request.args["code"]
-        q = q.filter(FlightCode.code.contains(code))
-        form.code.default = code
-
-    if "date" in request.args:
-        if request.args["date"]:
-            date = datetime.strptime(request.args["date"], '%Y-%m-%d')
-
-            q = q.filter_by(date=date)
-            form.date.default = date
-
-    flights_table = TableModule(request, q, table_head_params, print_entry, (_("Добавить Рейс"), "/add_flight"))
+    populate_search_form(form, request)
+    flights_table = FlightTableModule(request, form, (_("Добавить Рейс"), "/add_flight"))
 
     form.process()
+
     return route_template('flights_trains/flights_trains',  form=form, flights_table=flights_table, constants=c, 
                             change=change, error_msg=error_msg, is_trains = False)
 
@@ -153,42 +126,9 @@ def trains():
 
     change, error_msg = flights_trains(request)
     form = TrainSearchForm()
-
-    table_head_params = OrderedDict()
-    table_head_params[_("Профиль Рейса")] = []
-    table_head_params[_("Дата Отправления")] = ["departure_date"]
-    table_head_params[_("Дата Прибытия")] = ["arrival_date"]
-    table_head_params[_("Из")] = ["from_country", "from_city"]
-    table_head_params[_("В")] = ["to_country", "to_city"]
-    table_head_params[_("Кол-во Прибывших")] = []
     
-    q = Train.query
-
-    def print_entry(result):
-        profile = (_("Открыть Профиль"), "/train_profile?id={}".format(result.id))
-        departure_date = result.departure_date
-        arrival_date = result.arrival_date
-        from_country = "{}, {}".format(result.from_country, result.from_city)
-        to_country = "{}, {}".format(result.to_country, result.to_city)
-        passengers_num = TrainTravel.query.filter_by(train_id=result.id).count()
-
-        return [profile, departure_date, arrival_date, from_country, to_country, passengers_num]
-
-    if "departure_date" in request.args:
-        if request.args["departure_date"]:
-            departure_date = datetime.strptime(request.args["departure_date"], '%Y-%m-%d')
-            
-            q = q.filter(Train.departure_date >= departure_date)
-            form.departure_date.default = departure_date
-
-    if "arrival_date" in request.args:
-        if request.args["arrival_date"]:
-            arrival_date = datetime.strptime(request.args["arrival_date"], '%Y-%m-%d')
-            
-            q = q.filter(Train.arrival_date <= arrival_date)
-            form.arrival_date.default = arrival_date
-
-    flights_table = TableModule(request, q, table_head_params, print_entry, (_("Добавить ЖД Рейс"), "/add_train"))
+    populate_search_form(form, request)
+    flights_table = TrainTableModule(request, form, (_("Добавить ЖД Рейс"), "/add_train"))
 
     form.process()
 

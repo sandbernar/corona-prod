@@ -59,3 +59,14 @@ def parse_date(text):
         except ValueError:
             pass
     raise ValueError('no valid date format found')
+    
+
+def populate_countries_select(select_input, countries, default = None, default_state=None):
+    if not select_input.choices:
+        select_input.choices = []
+
+        if default_state:
+            select_input.choices += [(default_state[0], default_state[1])]
+
+        select_input.choices += [(c.id, c.name) for c in countries]
+        select_input.default = default

@@ -20,17 +20,35 @@
     {% if is_trains %}
       {% with table=flights_table,
        search_fields = [
-        [_("Дата Отправления"), form.departure_date(type="date", class="form-control")],
-        [_("Дата Прибытия"), form.arrival_date(type="date", class="form-control")]
-      ] %}
+        [
+          [_("Из (Страна)"), form.from_country_id(class="form-control")],
+          [_("Из (Город)"), form.from_city(class="form-control", type="text", placeholder=_("Город"))],
+          [_("В (Страну)"), form.to_country_id(class="form-control")],
+          [_("В (Город)"), form.to_city(class="form-control", type="text", placeholder=_("Город"))]
+        ],
+        [
+          [_("Дата Отправления"), form.departure_date(type="date", class="form-control")],
+          [_("Дата Прибытия"), form.arrival_date(type="date", class="form-control")]
+        ]
+      ] 
+      %}
         {% include "modules/table/table.html" %}
       {% endwith %}    
     {% else %}
       {% with table=flights_table,
        search_fields = [
-        [_("Код Рейса"), form.code(type="text", class="form-control", placeholder=_("Код Рейса"))],
-        [_("Дата Рейса"), form.date(type="date", class="form-control", placeholder=_("Код Рейса"))]
-      ] %}
+        [
+          [_("Из (Страна)"), form.from_country_id(class="form-control")],
+          [_("Из (Город)"), form.from_city(class="form-control", type="text", placeholder=_("Город"))],
+          [_("В (Страну)"), form.to_country_id(class="form-control")],
+          [_("В (Город)"), form.to_city(class="form-control", type="text", placeholder=_("Город"))]
+        ],
+        [
+          [_("Код Рейса"), form.code(type="text", class="form-control", placeholder=_("Код Рейса"))],
+          [_("Дата"), form.date(type="date", class="form-control")]
+        ]
+      ] 
+      %}
         {% include "modules/table/table.html" %}
       {% endwith %}  
     {% endif %}
