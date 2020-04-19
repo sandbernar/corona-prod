@@ -1,4 +1,4 @@
-from app.main.models import Region
+from app.main.models import Region, Country
 from app.main.flights_trains.models import FlightCode
 
 from app import constants as c
@@ -43,8 +43,11 @@ def populate_form(form, attrs, prefix = ''):
                     value = int(value)
                 setattr(param, 'default', value)  
 
-def disable_form_fields(form, fields):
+def disable_form_fields(form, fields = []):
     readonly = {'readonly': True}
+
+    if not fields:
+        fields = [field for field in form.__dict__]
 
     for field in fields:
         param = getattr(form, field, None)
@@ -61,7 +64,9 @@ def parse_date(text):
     raise ValueError('no valid date format found')
     
 
-def populate_countries_select(select_input, countries, default = None, default_state=None):
+def populate_countries_select(select_input, default = None, default_state=None):
+    countries = Country.query.all()
+
     if not select_input.choices:
         select_input.choices = []
 

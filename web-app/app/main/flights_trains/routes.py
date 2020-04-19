@@ -11,8 +11,10 @@ from app import login_manager, db
 from app.main.models import Region, TravelType, Country
 
 from app.main.flights_trains.models import FlightCode, FlightTravel, Train, TrainTravel
-from app.main.flights_trains.forms import FlightTrainsForm, FlightForm, TrainForm, FlightSearchForm, TrainSearchForm
-from app.main.flights_trains.modules import TrainTableModule, FlightTableModule
+from app.main.flights_trains.forms import FlightTrainsForm, FlightForm, TrainForm, FlightSearchForm,\
+                                            TrainSearchForm, PatientsSearchForm
+
+from app.main.flights_trains.modules import TrainTableModule, FlightTableModule, PatientsTravelTableModule
 
 from app.main.patients.models import Patient
 from collections import OrderedDict
@@ -22,7 +24,7 @@ import numpy as np
 import math
 import re, json
 
-from app.main.util import get_regions, get_regions_choices, populate_countries_select, parse_date
+from app.main.util import get_regions_choices, populate_countries_select, parse_date, disable_form_fields
 from app.main.modules import TableModule
 
 from app.login.util import hash_pass
@@ -82,24 +84,20 @@ def flights_trains(request):
 
 def populate_add_flight_train_form(form):
     default_country = Country.query.filter_by(code="KZ").first().id
-    countries = Country.query.all()
 
-    populate_countries_select(form.from_country_id, countries, default_country)
-    populate_countries_select(form.to_country_id, countries, default_country)
+    populate_countries_select(form.from_country_id, default_country)
+    populate_countries_select(form.to_country_id, default_country)
 
     form.process()
+    countries = Country.query.all()
 
 def populate_search_form(form, request):
-    countries = Country.query.all()
-
-    populate_countries_select(form.from_country_id, countries=countries, default_state=(-1, _("Все Страны")))
-    populate_countries_select(form.to_country_id, countries=countries, default_state=(-1, _("Все Страны")))
+    populate_countries_select(form.from_country_id, default_state=(-1, _("Все Страны")))
+    populate_countries_select(form.to_country_id, default_state=(-1, _("Все Страны")))
 
 def populate_profile_flight_train_form(form, travel):
-    countries = Country.query.all()
-
-    populate_countries_select(form.from_country_id, countries=countries)
-    populate_countries_select(form.to_country_id, countries=countries)
+    populate_countries_select(form.from_country_id)
+    populate_countries_select(form.to_country_id)
 
 @blueprint.route('/flights', methods=['GET'])
 @login_required
@@ -278,12 +276,20 @@ def flight_profile():
             return render_template('errors/error-404.html'), 404
         else:
             form = FlightForm()
+            
+            disable_form_fields(form)
 
             form.code.default = flight.code
             form.date.default = flight.date
 
             populate_profile_flight_train_form(form, flight)
-            
+
+            form.from_country_id.default = flight.from_country_id
+            form.from_city.default = flight.from_city
+
+            form.to_country_id.default = flight.to_country_id
+            form.to_city.default = flight.to_city
+
             change = None
             error_msg = None
             
@@ -293,35 +299,22 @@ def flight_profile():
             q = q.filter(Patient.travel_type_id == flight_type_id)
             q = q.filter(Patient.id == FlightTravel.patient_id)
             q = q.filter(FlightTravel.flight_code_id == flight.id)
+
+            patients_search_form = PatientsSearchForm()
+
+            if not patients_search_form.region.choices:
+                patients_search_form.region.choices = get_regions_choices(current_user)
             
-            table_head_params = OrderedDict()
-            table_head_params[_("ФИО")] = ["second_name"]
-            table_head_params[_("Телефон")] = ["telephone"]
-            table_head_params[_("Регион")] = []
-            table_head_params[_("Страна последние 14 дней")] = []
-            table_head_params[_("Место")] = ["seat"]
-
-            def print_entry(result):
-                full_name = (result[0], "/patient_profile?id={}".format(result[0].id))
-                telephone = result[0].telephone
-                region = result[0].region
-
-                if result[0].visited_country == None:
-                    visited_country = _("Неизвестно")
-                else:                
-                    visited_country = ", ".join([ str(c) for c in result[0].visited_country])
-
-                seat = result[1].seat
-
-                return [full_name, telephone, region, visited_country, seat]
-
-            patients_table = TableModule(request, q, table_head_params, print_entry)
+            patients_table = PatientsTravelTableModule(request, q, patients_search_form)
 
             seatmap, patients_seat = generate_plane_seatmap(q)
 
             form.process()
-            return route_template('flights_trains/flight_train_profile', form = form, travel=flight, change=change, seatmap=seatmap,
-                patients_seat=patients_seat, error_msg=error_msg, is_trains = False, patients_table=patients_table)
+            patients_search_form.process()
+
+            return route_template('flights_trains/flight_train_profile', form = form, patients_search_form = patients_search_form,
+             travel=flight, change=change, seatmap=seatmap, patients_seat=patients_seat, error_msg=error_msg,
+              is_trains = False, patients_table=patients_table)
     else:    
         return render_template('errors/error-500.html'), 500
 
@@ -343,6 +336,8 @@ def train_profile():
         else:
             form = TrainForm()
 
+            disable_form_fields(form)
+
             form.departure_date.default = train.departure_date
             form.arrival_date.default = train.arrival_date
 
@@ -359,29 +354,17 @@ def train_profile():
             q = q.filter(Patient.id == TrainTravel.patient_id)
             q = q.filter(TrainTravel.train_id == train.id)
             
-            table_head_params = OrderedDict()
-            table_head_params[_("ФИО")] = ["first_name", "second_name", "patronymic_name"]
-            table_head_params[_("Телефон")] = ["telephone"]
-            table_head_params[_("Регион")] = []
-            table_head_params[_("Страна последние 14 дней")] = []
-            table_head_params[_("Вагон")] = ["wagon"]
-            table_head_params[_("Место")] = ["seat"]
+            patients_search_form = PatientsSearchForm()
 
-            def print_entry(result):
-                full_name = (result[0], "/patient_profile?id={}".format(result[0].id))
-                telephone = result[0].telephone
-                region = result[0].region
-                visited_country = ", ".join([ str(c) for c in result[0].visited_country])
-                wagon = result[1].wagon
-                seat = result[1].seat
-
-                return [full_name, telephone, region, visited_country, wagon, seat]
-
-            patients_table = TableModule(request, q, table_head_params, print_entry)
+            if not patients_search_form.region.choices:
+                patients_search_form.region.choices = get_regions_choices(current_user)
+            
+            patients_table = PatientsTravelTableModule(request, q, patients_search_form, True)
   
             form.process()
-            return route_template('flights_trains/flight_train_profile', form = form, travel=train, change=change, 
-                                    error_msg=error_msg, patients_table=patients_table, is_trains=True, seatmap=[], patients_seat={})
+            return route_template('flights_trains/flight_train_profile', form = form, travel=train, change=change,
+                                    patients_search_form = patients_search_form, error_msg=error_msg, 
+                                    patients_table=patients_table, is_trains=True, seatmap=[], patients_seat={})
     else:    
         return render_template('errors/error-500.html'), 500
 

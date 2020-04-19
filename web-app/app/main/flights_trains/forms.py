@@ -26,6 +26,10 @@ class TrainForm(FlightTrainsForm):
     departure_date = DateField('Departure Date', validators=[DataRequired()])
     arrival_date = DateField('Arrival Date', validators=[DataRequired()])
 
+class PatientsSearchForm(FlaskForm):
+    region = SelectField("Region ID")
+    full_name = TextField("Full Name")
+
 class FlightTrainsSearchForm(FlaskForm):
     from_country_id = SelectField('From Country')
     from_city = TextField('From City')
@@ -39,5 +43,4 @@ class TrainSearchForm(FlightTrainsSearchForm):
 
 class FlightSearchForm(FlightTrainsSearchForm):
     date = DateField('Date')
-    code = TextField('Code')    
-
+    code = TextField('Code')

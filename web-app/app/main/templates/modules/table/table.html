@@ -1,4 +1,7 @@
 <form method="GET">
+{% for hidden_val in hidden_values %}
+  <input type="hidden" style="display: none;" name="{{ hidden_val[0] }}" value="{{ hidden_val[1] }}">
+{% endfor %}
 {% if search_fields %}
   <div class="card shadow">
     <div class="card-header border-0">

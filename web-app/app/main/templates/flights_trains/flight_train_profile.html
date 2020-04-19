@@ -22,9 +22,11 @@
         {% include "flights_trains/modules/travel_form.html" %}
       {% endwith %} 
     <div class="col mt-3">
-      {% with table=patients_table, search_fields = [
-        [_("ФИО"), form.full_name(type="text", class="form-control", placeholder=_("ФИО"))],
-        [_("Регион"), form.region(class="form-control")]
+      {% with table=patients_table, hidden_values = [("id", travel.id)], search_fields = [
+        [
+          [_("ФИО"), patients_search_form.full_name(type="text", class="form-control", placeholder=_("ФИО"))],
+          [_("Регион"), patients_search_form.region(class="form-control")]
+        ]
       ] %}
         {% include "modules/table/table.html" %}
       {% endwith %}      

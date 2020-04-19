@@ -1,7 +1,10 @@
 from flask import request
 import math
 from app.main.modules import TableModule
+
 from app.main.flights_trains.models import TrainTravel, Train, FlightCode, FlightTravel
+from app.main.patients.models import Patient
+
 from collections import OrderedDict
 from app.main.util import parse_date
 from sqlalchemy import func
@@ -141,3 +144,60 @@ class FlightTableModule(TableModule):
         passengers_num = FlightTravel.query.filter_by(flight_code_id=result.id).count()
 
         return [code, date, from_country, to_country, passengers_num]
+
+class PatientsTravelTableModule(TableModule):
+    def __init__(self, request, q, search_form, is_trains = False, header_button = None, page = 1, per_page = 5):
+        self.is_trains = is_trains
+
+        table_head = OrderedDict()
+        table_head[_("ФИО")] = ["second_name"]
+        table_head[_("Телефон")] = ["telephone"]
+        table_head[_("Регион")] = []
+        table_head[_("Страна последние 14 дней")] = []
+        
+        if is_trains:
+            table_head[_("Вагон")] = ["wagon"]
+
+        table_head[_("Место")] = ["seat"]
+
+        super().__init__(request, q, table_head, header_button, search_form)     
+
+    def search_table(self):
+        full_name_value = self.request.args.get("full_name", None)
+        if full_name_value:
+            self.q = self.q.filter(func.lower(func.concat(Patient.first_name, ' ', Patient.second_name, ' ', 
+                                    Patient.patronymic_name)).contains(full_name_value.lower()))
+            
+            self.search_form.full_name.default = full_name_value
+
+        region_id = self.request.args.get("region", -1)
+        if region_id:
+            try:
+                region_id = int(region_id)
+            except ValueError:
+                return render_template('errors/error-500.html'), 500
+
+            if region_id != -1:
+                self.q = self.q.filter(Patient.region_id == region_id)
+                self.search_form.region.default = region_id        
+
+    def print_entry(self, result):
+        full_name = (result[0], "/patient_profile?id={}".format(result[0].id))
+        telephone = result[0].telephone
+        region = result[0].region
+
+        if result[0].visited_country == None:
+            visited_country = _("Неизвестно")
+        else:                
+            visited_country = ", ".join([ str(c) for c in result[0].visited_country])
+        
+        return_value = [full_name, telephone, region]
+
+        if self.is_trains:
+            wagon = result[1].wagon
+            return_value.append(wagon)
+
+        seat = result[1].seat
+        return_value.append(seat)
+
+        return return_value
