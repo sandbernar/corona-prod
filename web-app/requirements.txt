@@ -14,3 +14,7 @@ numpy
 psycopg2
 nltk
 Flask-Script
+xlsxwriter
+names
+geonamescache
+pycountry

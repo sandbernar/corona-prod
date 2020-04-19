@@ -1,3 +1,9 @@
+## Заполнение рандомными пациентами
+Для мака, флаг -n количество рандомных пациентов
+```
+docker run -it --network=postgres --env-file .env --rm -v $(pwd):/app web-app_appseed-app python generate_random_patients.py -n 10
+```
+
 ## Тестирование
 
 Запустит docker-compose с базой данных и приложением
