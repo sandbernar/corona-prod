@@ -3,7 +3,7 @@
 License: MIT
 Copyright (c) 2019 - present AppSeed.us
 """
-
+import os
 from app.main import blueprint
 
 from flask import render_template, redirect, url_for, request
@@ -999,3 +999,33 @@ def add_state():
     
     url = f"/patient_profile?id={request.form['id']}"
     return redirect(url)
+
+def getIinData(iin):
+    hGBDpath = os.getenv("HGBD_URL", "")
+    address = f"{hGBDpath}/api/Person?fioiin={iin}&page=1&pagesize=1"
+    r = requests.get(url=address)
+    data = r.json()
+    if len(data) == 0:
+        return None
+    return data[0]
+
+@blueprint.route('/iin/data', methods=['POST'])
+@login_required
+def iin_data():
+    data = json.loads(request.data)
+    if data == None or 'iin' not in data:
+        return jsonify({'description': 'No valid iin'}), 403
+    # personData = getIinData(data['iin'])
+    personData = {
+        "deathDate": None,
+        "lastName": "Doe",
+        "firstName": "John",
+        "secondName": "Martin",
+        "birthDate": "1995-03-10T00:00:00",
+        "iin": "950310450127",
+        "sex": "1",
+        "citizen": "Казахстан"
+    }
+    if personData is None:
+        return jsonify({'description': 'Person not found'}), 405
+    return jsonify(personData)
