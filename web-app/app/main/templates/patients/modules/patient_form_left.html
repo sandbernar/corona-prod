@@ -153,6 +153,18 @@ $("#iinAutoFill").click(() => {
         data: JSON.stringify(iinData),
         success: function (response) {
 			console.log(response);
+			// if already exists
+			if ('id' in response) {
+				$.notify({
+					icon: 'fa fa-times',
+					message: `Человек с таким <a href="/patient_profile?id=${response['id']}">ИИН уже внесен в базу</a>`
+				},{
+					type: 'info',
+				});
+				return ;
+			}
+			
+			// if is dead
 			if (response.deathDate != null) {
 				$.notify({
 					icon: 'fa fa-times',

@@ -1013,8 +1013,12 @@ def getIinData(iin):
 @login_required
 def iin_data():
     data = json.loads(request.data)
-    if data == None or 'iin' not in data:
+    if data == None or 'iin' not in data or type(data['iin']) != str or len(data['iin']) != 12:
         return jsonify({'description': 'No valid iin'}), 403
+    # check if already in db
+    patient = Patient.query.filter_by(iin=data['iin']).first()
+    if patient:
+        return jsonify({'description': 'Patient exists', 'id':patient.id}), 203
     # personData = getIinData(data['iin'])
     personData = {
         "deathDate": None,
