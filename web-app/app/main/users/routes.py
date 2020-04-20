@@ -13,7 +13,7 @@ import io
 
 from app.main.models import Region
 from app.main.patients.models import Patient
-from app.main.users.forms import CreateUserForm, UpdateUserForm, UserActivityReportForm
+from app.main.users.forms import CreateUserForm, UpdateUserForm, UserActivityReportForm, UserSearchForm
 from app.main.forms import TableSearchForm
 import math
 from app.login.models import User
@@ -27,6 +27,8 @@ from sqlalchemy import exc, func
 from sqlalchemy.sql import select
 import urllib
 from datetime import datetime, timedelta
+
+from app.main.users.modules import UserTableModule
 
 @blueprint.route('/export_users_activity_xls', methods=['POST'])
 @login_required
@@ -74,15 +76,10 @@ def export_users_activity_xls():
 
     data = [[row[0].full_name, row[0].organization, row[0].region, row[1] if row[1] else 0] for row in q.all()]
     data = pd.DataFrame(data, columns=[_("ФИО"), _("Организация"), _("Регион"), _("Кол-во добавленных пациентов")])
-    # data.to_excel(in_memory_data)
-    # print(in_memory_data)
-
 
     output = io.BytesIO()
-    # Use a temp filename to keep pandas happy.
     writer = pd.ExcelWriter(output, engine='xlsxwriter')
 
-    # Write the data frame to the StringIO object.
     data.to_excel(writer)
     writer.save()
     xlsx_data = output.getvalue()
@@ -120,26 +117,7 @@ def users():
 
     if not form.region_id.choices:
         form.region_id.choices = [ (-1, c.all_regions) ] + [(r.id, r.name) for r in regions]
-
-    users = []
-    filt = dict()
-
-    q = User.query
-
-    page = 1
-    per_page = 5
-    if "page" in request.args:
-        page = int(request.args["page"])
-
-    total_len = q.count()
-
-    users = q.offset((page-1)*per_page).limit(per_page).all()
-
-    for user in users:
-        user.num_patients = Patient.query.filter_by(created_by = user).count()
-
-    max_page = math.ceil(total_len/per_page)
-
+   
     change = None
     error_msg = None
 
@@ -150,9 +128,24 @@ def users():
     elif "error" in request.args:
         error_msg = request.args["error"]
 
+    users_search_form = UserSearchForm()
+
+    if not users_search_form.region_id.choices:
+        users_search_form.region_id.choices = [(-2, _("Неважно"))]
+        users_search_form.region_id.choices += get_regions_choices(current_user)
+
+    q_patient = db.session.query(Patient.created_by_id,
+                                    func.count('*').label('patient_count'))    
+    
+    q_patient = q_patient.group_by(Patient.created_by_id).subquery()
+    q = db.session.query(User, q_patient.c.patient_count).outerjoin(q_patient, User.id == q_patient.c.created_by_id)
+    
+    users_table = UserTableModule(request, q, users_search_form)
+
+    users_search_form.process()
     form.process()
-    return route_template('users/users', users=users, form=form, page=page, max_page=max_page, 
-                                        total = total_len, constants=c, change=change, error_msg=error_msg)
+    return route_template('users/users', users=users, users_table = users_table, form=form,
+                            users_search_form=users_search_form, constants=c, change=change, error_msg=error_msg)
 
 @blueprint.route('/add_user', methods=['GET', 'POST'])
 def add_user():

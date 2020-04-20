@@ -20,8 +20,10 @@ from app.main.patients.models import Patient, PatientStatus, ContactedPersons, S
 from app.main.hospitals.models import Hospital, Hospital_Type
 from app.main.flights_trains.models import FlightCode, FlightTravel, Train, TrainTravel
 
-from app.main.patients.forms import PatientForm, UpdateProfileForm, AddFlightFromExcel
+from app.main.patients.forms import PatientForm, UpdateProfileForm, AddFlightFromExcel, \
+                                    ContactedPatientsSearchForm
 from app.main.forms import TableSearchForm
+from app.main.patients.modules import ContactedPatientsTableModule
 
 from app.main.routes import route_template
 
@@ -824,6 +826,11 @@ def patients():
     if "delete" in request.args:
         change = _("Пользователь успешно удален")
 
+    if "success" in request.args:
+        change = request.args['success']
+    elif "error" in request.args:
+        error_msg = request.args['error']
+
     form.process()
     return route_template('patients/patients', patients=patients, form=form, page=page, max_page=max_page, total = total_len, 
                             constants=c, flight_codes_list=flight_codes_list, change=change, error_msg=error_msg, select_contacted = select_contacted)
@@ -899,25 +906,25 @@ def contacted_persons():
             if "success" in request.args:
                 change = request.args['success']
             elif "error" in request.args:
-                error_msg = request.args['error']     
+                error_msg = request.args['error']
+            
+            contacted_search_form = ContactedPatientsSearchForm()
+            if not contacted_search_form.region_id.choices:
+                contacted_search_form.region_id.choices = get_regions_choices(current_user)
 
-            page = 1
-            per_page = 10
-            if "page" in request.args:
-                page = int(request.args["page"])
+            q = q.join(ContactedPersons.contacted_patient)
 
-            total_len = q.count()
-
-            for contact in q.offset((page-1)*per_page).limit(per_page).all():
-                p_id = contact.contacted_patient_id
-                patients.append(Patient.query.filter_by(id=p_id).first())
-
-            max_page = math.ceil(total_len/per_page)
+            try:
+                contacted_patients_table = ContactedPatientsTableModule(request, q, contacted_search_form,
+                                        (_("Выбрать Контактное Лицо"), "patients?select_contacted_id={}".format(patient.id)))
+            except ValueError:
+                return render_template('errors/error-500.html'), 500
 
             form.process()
-            return route_template('patients/contacted_persons', patients=patients, all_patients=all_patients, form=form, page=page, 
-                                            max_page=max_page, total = total_len, constants=c, main_patient=patient,
-                                            infected_contact=infected_contact, change=change, error_msg=error_msg)
+            return route_template('patients/contacted_persons', patients=patients,
+                                contacted_patients_table=contacted_patients_table, contacted_search_form=contacted_search_form,
+                                all_patients=all_patients, form=form, constants=c, main_patient=patient,
+                                infected_contact=infected_contact, change=change, error_msg=error_msg)
         else:
             return render_template('errors/error-404.html'), 404
 
@@ -950,23 +957,22 @@ def delete_contacted():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))    
 
-    if "infected_id" in request.args and "contacted_id" in request.args:
+    if "contact_id" in request.args:
         try:
-            contact = ContactedPersons.query.filter_by(infected_patient_id = request.args["infected_id"])
-            contact = contact.filter_by(contacted_patient_id=request.args["contacted_id"]).first()
-
+            contact = ContactedPersons.query.filter_by(id = request.args["contact_id"]).first()
         except exc.SQLAlchemyError:
             return render_template('errors/error-400.html'), 400        
 
         if contact:
+            infected_patient_id = contact.infected_patient_id
             db.session.delete(contact)
             db.session.commit()
             message = _("Контактная связь успешно удалена")
 
-            return redirect("/contacted_persons?id={}&success={}".format(request.args["infected_id"], message))
+            return redirect("/contacted_persons?id={}&success={}".format(infected_patient_id, message))
 
-    message = _("Не удалось удалить связь")
-    return redirect("/contacted_persons?id={}&error={}".format(request.args["infected_id"], message))
+    message = _("Не удалось удалить контактную связь")
+    return redirect("/patients?error={}".format(message))
 
 @blueprint.route('/add_state', methods=['POST'])
 @login_required

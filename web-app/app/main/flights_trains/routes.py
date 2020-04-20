@@ -9,29 +9,31 @@ from flask_login import login_required, current_user
 from app import login_manager, db
 
 from app.main.models import Region, TravelType, Country
+
 from app.main.flights_trains.models import FlightCode, FlightTravel, Train, TrainTravel
-from app.main.flights_trains.forms import FlightTrainsForm, FlightForm, TrainForm
-from app.main.forms import TableSearchForm
+from app.main.flights_trains.forms import FlightTrainsForm, FlightForm, TrainForm, FlightSearchForm,\
+                                            TrainSearchForm, PatientsSearchForm
+
+from app.main.flights_trains.modules import TrainTableModule, FlightTableModule, PatientsTravelTableModule
+
 from app.main.patients.models import Patient
 from collections import OrderedDict
+from datetime import datetime
 
 import numpy as np
 import math
 import re, json
 
-from app.main.util import get_regions, get_regions_choices
+from app.main.util import get_regions_choices, populate_countries_select, parse_date, disable_form_fields
+from app.main.modules import TableModule
+
 from app.login.util import hash_pass
 from flask_babelex import _
 from app.main.routes import route_template
 from jinja2 import TemplateNotFound
 from app import constants as c
 
-from sqlalchemy import exc
-
-def populate_countries_select(select_input, default, countries):
-    if not select_input.choices:
-        select_input.choices = [(c.id, c.name) for c in countries]
-        select_input.default = default
+from sqlalchemy import exc, func
 
 @blueprint.route("/get_flights_by_date", methods=['POST'])
 def get_flights_by_date():
@@ -69,31 +71,7 @@ def get_trains_by_date_range():
 
     return json.dumps("error")
 
-def flights_trains(codeModel, request):
-    form = TableSearchForm()
-    regions = get_regions(current_user)
-
-    if not form.region.choices:
-        form.region.choices = [ (-1, c.all_regions) ] + [(r.id, r.name) for r in regions]
-
-    travels = []
-    filt = dict()
-
-    q = codeModel.query
-
-    page = 1
-    per_page = 10
-    if "page" in request.args:
-        page = int(request.args["page"])
-
-    total_len = q.count()
-
-    travels = q.offset((page-1)*per_page).limit(per_page).all()
-
-    max_page = math.ceil(total_len/per_page)
-
-    travels_count = dict()
-    
+def flights_trains(request):
     change = None
     error_msg = None
 
@@ -102,29 +80,24 @@ def flights_trains(codeModel, request):
     elif "error" in request.args:
         error_msg = request.args['error']
 
-    form.process()
-
-    return form, travels, page, max_page, total_len, change, error_msg
+    return change, error_msg
 
 def populate_add_flight_train_form(form):
     default_country = Country.query.filter_by(code="KZ").first().id
-    countries = Country.query.all()
 
-    populate_countries_select(form.from_country_id, default_country, countries)
-    populate_countries_select(form.to_country_id, default_country, countries)
+    populate_countries_select(form.from_country_id, default_country)
+    populate_countries_select(form.to_country_id, default_country)
 
     form.process()
-
-def populate_profile_flight_train_form(form, travel):
     countries = Country.query.all()
 
-    populate_countries_select(form.from_country_id, travel.from_country_id, countries)
-    populate_countries_select(form.to_country_id, travel.to_country_id, countries)
+def populate_search_form(form, request):
+    populate_countries_select(form.from_country_id, default_state=(-1, _("Все Страны")))
+    populate_countries_select(form.to_country_id, default_state=(-1, _("Все Страны")))
 
-    form.from_city.default = travel.from_city
-
-    form.to_city.default = travel.to_city    
-
+def populate_profile_flight_train_form(form, travel):
+    populate_countries_select(form.from_country_id)
+    populate_countries_select(form.to_country_id)
 
 @blueprint.route('/flights', methods=['GET'])
 @login_required
@@ -132,17 +105,16 @@ def flights():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))
 
-    form, travels, page, max_page, total, change, error_msg = flights_trains(FlightCode, request)
+    change, error_msg = flights_trains(request)
+    form = FlightSearchForm()
 
-    flights_count = dict()
-    
-    for f in travels:
-    	flights_count[f.id] = FlightTravel.query.filter_by(flight_code_id=f.id).count()
+    populate_search_form(form, request)
+    flights_table = FlightTableModule(request, form, (_("Добавить Рейс"), "/add_flight"))
 
     form.process()
-    return route_template('flights_trains/flights_trains', travels=travels, travels_count=flights_count, form=form, page=page, 
-                                    max_page=max_page, total = total, constants=c, change=change, error_msg=error_msg,
-                                    is_trains = False)
+
+    return route_template('flights_trains/flights_trains',  form=form, flights_table=flights_table, constants=c, 
+                            change=change, error_msg=error_msg, is_trains = False)
 
 @blueprint.route('/trains', methods=['GET'])
 @login_required
@@ -150,17 +122,16 @@ def trains():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))
 
-    form, travels, page, max_page, total, change, error_msg = flights_trains(Train, request)
-
-    trains_count = dict()
+    change, error_msg = flights_trains(request)
+    form = TrainSearchForm()
     
-    for f in travels:
-        trains_count[f.id] = TrainTravel.query.filter_by(train_id=f.id).count()
+    populate_search_form(form, request)
+    flights_table = TrainTableModule(request, form, (_("Добавить ЖД Рейс"), "/add_train"))
 
     form.process()
-    return route_template('flights_trains/flights_trains', travels=travels, travels_count=trains_count, form=form, page=page, 
-                                    max_page=max_page, total = total, constants=c, change=change, error_msg=error_msg,
-                                    is_trains = True)    
+
+    return route_template('flights_trains/flights_trains',  form=form, flights_table=flights_table, constants=c, 
+                            change=change, error_msg=error_msg, is_trains = True)                                       
 
 @blueprint.route('/add_flight', methods=['GET', 'POST'])
 def add_flight():
@@ -305,15 +276,22 @@ def flight_profile():
             return render_template('errors/error-404.html'), 404
         else:
             form = FlightForm()
+            
+            disable_form_fields(form)
 
             form.code.default = flight.code
             form.date.default = flight.date
 
             populate_profile_flight_train_form(form, flight)
-            
+
+            form.from_country_id.default = flight.from_country_id
+            form.from_city.default = flight.from_city
+
+            form.to_country_id.default = flight.to_country_id
+            form.to_city.default = flight.to_city
+
             change = None
             error_msg = None
-            patients = []
             
             flight_type_id = TravelType.query.filter_by(value=c.flight_type[0]).first().id
 
@@ -321,29 +299,22 @@ def flight_profile():
             q = q.filter(Patient.travel_type_id == flight_type_id)
             q = q.filter(Patient.id == FlightTravel.patient_id)
             q = q.filter(FlightTravel.flight_code_id == flight.id)
+
+            patients_search_form = PatientsSearchForm()
+
+            if not patients_search_form.region.choices:
+                patients_search_form.region.choices = get_regions_choices(current_user)
             
-            # if not current_user.is_admin:
-                # q = q.filter(Patient.region_id == current_user.region_id)
+            patients_table = PatientsTravelTableModule(request, q, patients_search_form)
 
             seatmap, patients_seat = generate_plane_seatmap(q)
 
-            page = 1
-            per_page = 5
-
-            if "page" in request.args:
-                page = int(request.args["page"])
-
-            total_len = q.count()
-
-            for p in q.offset((page-1)*per_page).limit(per_page).all():
-                patients.append(p)
-
-            max_page = math.ceil(total_len/per_page)
-  
             form.process()
-            return route_template('flights_trains/flight_train_profile', form = form, travel=flight, change=change, seatmap=seatmap,
-                patients_seat=patients_seat, error_msg=error_msg, patients=patients, total_patients=total_len, max_page=max_page, page=page,
-                is_trains = False)
+            patients_search_form.process()
+
+            return route_template('flights_trains/flight_train_profile', form = form, patients_search_form = patients_search_form,
+             travel=flight, change=change, seatmap=seatmap, patients_seat=patients_seat, error_msg=error_msg,
+              is_trains = False, patients_table=patients_table)
     else:    
         return render_template('errors/error-500.html'), 500
 
@@ -365,6 +336,8 @@ def train_profile():
         else:
             form = TrainForm()
 
+            disable_form_fields(form)
+
             form.departure_date.default = train.departure_date
             form.arrival_date.default = train.arrival_date
 
@@ -381,30 +354,19 @@ def train_profile():
             q = q.filter(Patient.id == TrainTravel.patient_id)
             q = q.filter(TrainTravel.train_id == train.id)
             
-            # if not current_user.is_admin:
-                # q = q.filter(Patient.region_id == current_user.region_id)
+            patients_search_form = PatientsSearchForm()
 
-            page = 1
-            per_page = 5
-
-            if "page" in request.args:
-                page = int(request.args["page"])
-
-            total_len = q.count()
-
-            for p in q.offset((page-1)*per_page).limit(per_page).all():
-                patients.append(p)
-
-            max_page = math.ceil(total_len/per_page)
+            if not patients_search_form.region.choices:
+                patients_search_form.region.choices = get_regions_choices(current_user)
+            
+            patients_table = PatientsTravelTableModule(request, q, patients_search_form, True)
   
             form.process()
-            return route_template('flights_trains/flight_train_profile', form = form, travel=train, change=change, 
-                                    error_msg=error_msg, patients=patients, total_patients=total_len, 
-                                    max_page=max_page, page=page, is_trains=True, seatmap=[], patients_seat={})
+            return route_template('flights_trains/flight_train_profile', form = form, travel=train, change=change,
+                                    patients_search_form = patients_search_form, error_msg=error_msg, 
+                                    patients_table=patients_table, is_trains=True, seatmap=[], patients_seat={})
     else:    
         return render_template('errors/error-500.html'), 500
-
-
 
 @blueprint.route('/delete_flight', methods=['POST'])
 @login_required

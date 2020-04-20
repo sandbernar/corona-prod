@@ -106,3 +106,8 @@ class UpdateProfileForm(PatientForm):
 
 class AddFlightFromExcel(UploadDataForm):
     flights_id = SelectField('Flights ID', id='flights_id' , validators=[DataRequired()])
+
+class ContactedPatientsSearchForm(FlaskForm):
+    full_name = TextField("Full Name")
+    region_id = SelectField("Region ID")
+    is_found = SelectField("Is Found", choices=[(-1, _("Неважно")), (1, _("Да")), (0, _("Нет"))], default=-1)

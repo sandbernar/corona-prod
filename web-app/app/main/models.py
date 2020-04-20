@@ -11,6 +11,7 @@ from app import db
 from app import constants as c
 
 from app.login.util import hash_pass
+from flask_babelex import _
 
 def set_props(model, kwargs):
     for property, value in kwargs.items():
@@ -160,7 +161,10 @@ class VisitedCountry(db.Model):
         set_props(self, kwargs)
 
     def __repr__(self):
-        return str(self.country)        
+        if self.country:
+            return str(self.country)
+        else:
+            return _("Неизвестно")
 
 class Address(db.Model):
 
@@ -188,7 +192,9 @@ class Address(db.Model):
         set_props(self, kwargs)
 
     def __repr__(self):
-        display_str = str(self.country.name)
+        display_str = str()
+        if self.country:
+            display_str = display_str + str(self.country.name)
         
         # if self.state != None:
             # display_str = display_str + ", {}".format(self.state)
