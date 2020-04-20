@@ -35,7 +35,12 @@
     <div class="card-header border-0">
       <div class="row">
         <div class="col">
+          {% if table.entries %}
           <h3 class="mb-0">{{ _("Всего") }} {{table.total_len}}, {{ _("показано") }} {{ table.entries | length }}</h3>
+          {% else %}
+          <h3 class="mb-0">{{ _("Всего") }} {{table.total_len}}, {{ _("показано") }} 0</h3>
+          {% endif %}
+          
         </div>   
         <div class="col-md-auto">
           {% if table.header_button %}

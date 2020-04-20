@@ -192,7 +192,9 @@ class Address(db.Model):
         set_props(self, kwargs)
 
     def __repr__(self):
-        display_str = str(self.country.name)
+        display_str = str()
+        if self.country:
+            display_str = display_str + str(self.country.name)
         
         # if self.state != None:
             # display_str = display_str + ", {}".format(self.state)

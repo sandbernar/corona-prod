@@ -11,9 +11,7 @@ from sqlalchemy import func
 from flask_babelex import _
 
 class UserTableModule(TableModule):
-    def __init__(self, request, q, search_form, is_trains = False, header_button = None, page = 1, per_page = 5):
-        self.is_trains = is_trains
-
+    def __init__(self, request, q, search_form, header_button = None, page = 1, per_page = 5):
         table_head = OrderedDict()
         table_head[_("Логин")] = ["username"]
         table_head[_("E-Mail")] = ["email"]
@@ -46,7 +44,7 @@ class UserTableModule(TableModule):
                 self.q = self.q.filter(User.region_id == query_region_id)
                 self.search_form.region_id.default = region_id
 
-        is_admin = self.request.args.get("is_admin", None)
+        is_admin = self.request.args.get("is_admin", "-1")
         if is_admin != "-1":
             try:
                 self.q = self.q.filter(User.is_admin == bool(int(is_admin)))

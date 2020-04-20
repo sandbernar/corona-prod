@@ -20,8 +20,10 @@ from app.main.patients.models import Patient, PatientStatus, ContactedPersons, S
 from app.main.hospitals.models import Hospital, Hospital_Type
 from app.main.flights_trains.models import FlightCode, FlightTravel, Train, TrainTravel
 
-from app.main.patients.forms import PatientForm, UpdateProfileForm, AddFlightFromExcel
+from app.main.patients.forms import PatientForm, UpdateProfileForm, AddFlightFromExcel, \
+                                    ContactedPatientsSearchForm
 from app.main.forms import TableSearchForm
+from app.main.patients.modules import ContactedPatientsTableModule
 
 from app.main.routes import route_template
 
@@ -899,25 +901,26 @@ def contacted_persons():
             if "success" in request.args:
                 change = request.args['success']
             elif "error" in request.args:
-                error_msg = request.args['error']     
+                error_msg = request.args['error']
+            
+            contacted_search_form = ContactedPatientsSearchForm()
+            if not contacted_search_form.region_id.choices:
+                contacted_search_form.region_id.choices = get_regions_choices(current_user)
 
-            page = 1
-            per_page = 10
-            if "page" in request.args:
-                page = int(request.args["page"])
-
-            total_len = q.count()
-
-            for contact in q.offset((page-1)*per_page).limit(per_page).all():
-                p_id = contact.contacted_patient_id
-                patients.append(Patient.query.filter_by(id=p_id).first())
-
-            max_page = math.ceil(total_len/per_page)
+            # for contact in q.offset((page-1)*per_page).limit(per_page).all():
+                # p_id = contact.contacted_patient_id
+                # patients.append(Patient.query.filter_by(id=p_id).first())
+            try:
+                contacted_patients_table = ContactedPatientsTableModule(request, q, contacted_search_form,
+                                        (_("Выбрать Контактное Лицо"), "patients?select_contacted_id={}".format(patient.id)))
+            except ValueError:
+                return render_template('errors/error-500.html'), 500
 
             form.process()
-            return route_template('patients/contacted_persons', patients=patients, all_patients=all_patients, form=form, page=page, 
-                                            max_page=max_page, total = total_len, constants=c, main_patient=patient,
-                                            infected_contact=infected_contact, change=change, error_msg=error_msg)
+            return route_template('patients/contacted_persons', patients=patients,
+                                contacted_patients_table=contacted_patients_table, contacted_search_form=contacted_search_form,
+                                all_patients=all_patients, form=form, constants=c, main_patient=patient,
+                                infected_contact=infected_contact, change=change, error_msg=error_msg)
         else:
             return render_template('errors/error-404.html'), 404
 
