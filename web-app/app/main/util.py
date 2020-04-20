@@ -4,6 +4,7 @@ from app.main.flights_trains.models import FlightCode
 from app import constants as c
 from app import db
 from datetime import datetime
+from flask_babelex import _
 
 def get_regions(current_user):
     # if current_user.region_id != None:
@@ -75,3 +76,12 @@ def populate_countries_select(select_input, default = None, default_state=None):
 
         select_input.choices += [(c.id, c.name) for c in countries]
         select_input.default = default
+
+def yes_no_html(yes=True, invert_colors=False):
+    yes_color = "red" if invert_colors else "green"
+    no_color = "green" if invert_colors else "red"
+
+    if yes:
+        return ("<font color='{}'>{}</font>".format(yes_color, _("Да")), "safe")
+
+    return ("<font color='{}'>{}</font>".format(no_color, _("Нет")), "safe")

@@ -79,6 +79,11 @@
           <tr>
             {% for column in entry %}
             {% if column is iterable and column is not string %}
+            {% if column[1] == "safe" %}
+            <td>
+              {{ column[0] |safe }}
+            </td>
+            {% else %}
             <th scope="row">
               <div class="media align-items-center">
                 <div class="media-body">
@@ -86,6 +91,7 @@
                 </div>
               </div>
             </th>
+            {% endif %}
             {% else %}
             <td>
               {{ column }}

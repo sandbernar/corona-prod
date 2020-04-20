@@ -8,7 +8,8 @@ class TableModule:
     class WrongSortingParameterError(Exception):
         pass
 
-    def __init__(self, request, q, table_head, header_button = None, search_form = None, page = 1, per_page = 5):
+    def __init__(self, request, q, table_head, header_button = None, search_form = None, sort_param = None,
+                page = 1, per_page = 5):
         if "page" in request.args:
             try:
                 page = int(request.args["page"])
@@ -23,6 +24,7 @@ class TableModule:
         self.q = q
         self.header_button = header_button
         self.search_form = search_form
+        self.sort_param = sort_param
 
         if page < 1:
             raise self.WrongPageError
@@ -40,7 +42,9 @@ class TableModule:
             self.search_table()
             self.sort_table()
             entries = []
-
+            print("\n")
+            print(self.q)
+            print("\n")
             for result in self.q.offset((self.page-1)*self.per_page).limit(self.per_page).all():
                 entries.append(self.print_entry(result))
 
@@ -64,9 +68,12 @@ class TableModule:
             self.table_head.append(new_th)
 
         first = self.q.first()
+
+        if first and self.sort_param != None:
+            first = getattr(first, self.sort_param)
+
         if len(self.q._entities) == 1:
             first = [first]
-        
         if self.sort_by:
             for m in first:
                 if self.sort_by in self.table_head_dict:
