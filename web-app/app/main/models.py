@@ -192,17 +192,14 @@ class Address(db.Model):
         set_props(self, kwargs)
 
     def __repr__(self):
-        display_str = str()
-        if self.country:
-            display_str = display_str + str(self.country.name)
+        display_str = ""
+
+        for param in [self.country, self.city, self.street, self.house, self.building]:
+            if param != None and param != "":
+                display_str = display_str + "{}, ".format(param)
         
-        # if self.state != None:
-            # display_str = display_str + ", {}".format(self.state)
-
-        display_str = display_str + ", {}, {}, {}".format(str(self.city), str(self.street), str(self.house))
-
-        if self.building != None:
-            display_str = display_str + ", {}".format(str(self.building))
+        # Get rid of the last comma
+        display_str = str(display_str).rstrip().rstrip(",")
 
         return display_str
 
