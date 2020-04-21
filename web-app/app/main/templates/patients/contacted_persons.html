@@ -21,7 +21,11 @@
         <div class="card-header bg-transparent">
           <div class="row align-items-center">
             <div class="col">
-              <h2 class="mb-0">{{ _('Карта Контактных Пациентов') }}</h2>
+              <h2 class="mb-0">{{ _('Карта Контактных Пациентов') }}
+                {% if not main_patient.home_address.lat %}
+                  {{ _("(Координаты нулевого пациента отсутствуют)") }}
+                {% endif %}
+              </h2>
             </div>
           </div>
         </div>
@@ -93,7 +97,8 @@
        search_fields = [[
           [_("ФИО"), contacted_search_form.full_name(class="form-control", type="text", placeholder=_("ФИО"))],
           [_("Регион"), contacted_search_form.region_id(class="form-control")],
-          [_("Найден"), contacted_search_form.is_found(class="form-control")]]
+          [_("Найден"), contacted_search_form.is_found(class="form-control")],
+          [_("Добавлен в течение 2-х часов"), contacted_search_form.is_added_in_2_hours(class="form-control")]]
       ] 
       %}
         {% include "modules/table/table.html" %}
@@ -119,9 +124,16 @@
   ymaps.ready(init);
 
 function init() {
+    var main_patient_lat_lng = ['{{ main_patient.home_address.lat }}', '{{ main_patient.home_address.lng }}']
+
     var myMap = new ymaps.Map("map", {
-            center: ['{{ main_patient.home_address.lat }}', '{{ main_patient.home_address.lng }}'],
+      {% if main_patient.home_address.lat %}
+            center: main_patient_lat_lng,
             zoom: 12,
+      {% else %}
+            center: [{{ constants.kz_center_lat_lng[0] }}, {{ constants.kz_center_lat_lng[1] }}],
+            zoom: 5,
+      {% endif %}
             controls: ['zoomControl']
         }, {
             searchControlProvider: 'yandex#search'
@@ -149,61 +161,73 @@ function init() {
         });    
 
     geoObjects = []
-    {% for p in all_patients + [main_patient]  %}
+    var contacted_patients = []
 
-    is_found = "Нет"
-    if ('{{ p.is_found }}' == 'True') {
-      is_found = "Да"
-    }
-    geoObjects.push(new ymaps.Placemark(['{{ p.home_address.lat }}', '{{ p.home_address.lng }}' ], {
-        balloonContentBody: 
-        '<a href="/patient_profile?id={{p.id}}">{{ p }}</a><br>' +
-        '<strong>Регион</strong>: {{ p.region }}<br>' +
-        '<strong>Адрес</strong>: {{ p.home_address }}<br>' +
-        '<strong>Найден</strong>:' + is_found + '<br>' +
-        '<strong>Статус</strong>: {{ p.status.name }}<br>',
-        clusterCaption: '<strong>{{ p }}</strong>'
-    }, {
+    {% for p in all_patients + [main_patient]  %}
+      {% if p.home_address.lat %}
+        
+        is_found = '{{ _("Нет") }}'
+        {% if p.is_found %}
+          is_found = '{{ _("Да") }}'
+        {% endif %}
+
+        var home_address_lat_lng = ['{{ p.home_address.lat }}', '{{ p.home_address.lng }}' ]
         {% if p == main_patient %}
-        preset: 'islands#redCircleDotIcon',
+          var patient_preset = 'islands#redCircleDotIcon'
         {% else %}
-        preset: 'islands#icon',
+          var patient_preset = 'islands#icon'
         {% endif %}
         {% if p.is_infected  %}
-        iconColor: 'red'
+          var icon_color = 'red'
         {% else %}
-        iconColor: 'green'
-        {% endif %}            
-    }))
+          var icon_color = 'green'
+        {% endif %}  
+
+        contacted_patients.push({"id": '{{ p.id }}',
+                                "full_name": '{{ p }}', 
+                                "region": '{{ p.region }}', 
+                                "address": '{{ p.home_address }}',
+                                "is_found": is_found,
+                                "status": '{{ p.status.name }}',
+                                "lat_lng": home_address_lat_lng,
+                                "preset": patient_preset,
+                                "icon_color": icon_color })
+      {% endif %}
     {% endfor %}
 
+    var contacted_line_style = {
+            strokeColor: "#ff0000",
+            strokeWidth: 2
+    }
+    for (const patient of contacted_patients) {
+      geoObjects.push(new ymaps.Placemark(patient['lat_lng'], {
+          balloonContentBody: 
+          `<a href="/patient_profile?id=${patient["id"]}">${patient["full_name"]}</a><br>` +
+          `<strong>Регион</strong>: ${patient["region"]}<br>` +
+          `<strong>Адрес</strong>: ${patient["address"]}<br>` +
+          `<strong>Найден</strong>:${patient["is_found"]}<br>` +
+          `<strong>Статус</strong>: ${patient["status"]}<br>`,
+          clusterCaption: `<strong> ${patient["full_name"]}</strong>`
+      }, {
+          preset: patient["preset"],
+          iconColor: patient["icon_color"]
+      }))
+
+    {% if main_patient.home_address.lat %}
+
+      myMap.geoObjects.add(new ymaps.GeoObject({
+            geometry: {
+                  type: "LineString",
+                  coordinates: [main_patient_lat_lng, patient['lat_lng']]
+              },
+              },
+              contacted_line_style
+              ))
+      {% endif %}
+      }
     clusterer.add(geoObjects);
     myMap.geoObjects.add(clusterer);
-
-    myMap.geoObjects
-        {% for p in all_patients %}
-        {% if p.home_address.lat %}
-        .add(new ymaps.GeoObject({
-          geometry: {
-                // Тип геометрии - "Ломаная линия".
-                type: "LineString",
-                // Указываем координаты вершин ломаной.
-                coordinates: [
-                    ['{{ main_patient.home_address.lat }}', '{{ main_patient.home_address.lng }}'],
-                    ['{{ p.home_address.lat }}', '{{ p.home_address.lng }}']
-                ]
-            },
-            properties:{
-                // Содержимое хинта.
-                balloonContent: "<a href='/patient_profile?id={{p.id}}'>{{ p.full_name }}</a>"
-            }},
-            {
-            strokeColor: "#ff0000",
-            strokeWidth: 5
-        }))
-        {% endif %}
-        {% endfor %}
-}
+}    
 
   var setSearchParam = function(key, value) {
     if (!window.history.pushState) {

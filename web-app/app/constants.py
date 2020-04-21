@@ -44,6 +44,8 @@ travel_types = [flight_type, train_type, by_auto_type, by_foot_type, by_sea_type
 
 unknown = (None, "Неизвестно")
 
+kz_center_lat_lng = (48.191216, 68.883269)
+
 cyrillic_to_ascii = {
 	"А": "A",
 	"Б": "B",

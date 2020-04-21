@@ -125,6 +125,14 @@ class Patient(db.Model):
             }
         }
 
+    def get_created_date(self):
+        sql = "select * from logging.t_history WHERE tabname='{}' \
+                AND new_val->>'id'='{}' AND operation='INSERT';".format(self.__tablename__, self.id)
+        result = db.engine.execute(sql)
+        created_date = result.fetchone()[1]
+
+        return created_date
+
 
 class PatientState(db.Model):
     """
@@ -169,6 +177,19 @@ class ContactedPersons(db.Model):
     def __repr__(self):
         return str(self.id)
 
+    @property
+    def created_date(self):
+        sql = "select * from logging.t_history WHERE tabname='ContactedPersons' \
+                AND new_val->>'id'='{}' AND operation='INSERT';".format(self.id)
+        result = db.engine.execute(sql)
+        created_date = result.fetchone()[1]
+
+        return created_date
+
+    def added_in_n_hours(self, hours = 2):
+        infected_created_date = self.infected_patient.get_created_date()
+
+        return self.created_date - infected_created_date < datetime.timedelta(hours=hours)
 
 class PatientStatus(db.Model):
 
