@@ -39,7 +39,7 @@ import dateutil.parser
 import requests
 
 from multiprocessing.pool import ThreadPool as threadpool
-from app.main.util import get_regions, get_regions_choices, get_flight_code, populate_form
+from app.main.util import get_regions, get_regions_choices, get_flight_code, populate_form, parse_date
 from app.login.util import hash_pass
 from sqlalchemy import func, exc
 
@@ -182,7 +182,7 @@ def handle_add_update_patient(request_dict, final_dict, update_dict = {}):
 
             final_dict[key] = request_dict[key]
     # 2
-    final_dict['dob'] = datetime.strptime(request.form['dob'], '%Y-%m-%d')    
+    final_dict['dob'] = parse_date(request.form['dob'])    
     final_dict['gender'] = None if int(request_dict['gender']) == -1 else int(request_dict['gender']) == 1
 
     status = request_dict.get('patient_status', c.no_status[0])

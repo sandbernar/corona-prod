@@ -209,53 +209,57 @@ def generate_plane_seatmap(q):
 
     boardmap = []
 
-    if len(plane_seats):
-        new_seats = {}
-        for p in plane_seats:
-            if p[0].lower() != c.board_team:
-                match = re.findall(r'[A-Za-zА-Яа-я]+|\d+', p[0])
-                if len(match) == 2:
-                    letter = c.cyrillic_to_ascii.get(match[1].upper(), match[1].upper())
+    try:
+        if len(plane_seats):
+            new_seats = {}
+            for p in plane_seats:
+                if p[0].lower() != c.board_team:
+                    match = re.findall(r'[A-Za-zА-Яа-я]+|\d+', p[0])
+                    if len(match) == 2:
+                        letter = c.cyrillic_to_ascii.get(match[1].upper(), match[1].upper())
 
-                    new_seats[int(match[0])] = new_seats.get(int(match[0]), {})
-                    new_seats[int(match[0])][letter] = p[1]
-                    letters.append(letter)
-            else:
-                pass
-        
-        if new_seats:
-            new_seats = OrderedDict(sorted(new_seats.items(), key=lambda t: t[0]))
-            seat_num = list(new_seats.keys())[-1]
-            seat_letters = np.sort(np.unique(letters))
-
-            for k in new_seats.keys():
-                for s in new_seats[k].keys():
-                    seat = "{}{}".format(k, s)
-                    patients_seat[seat] = new_seats[k][s]
-
-            for row in range(1, seat_num + 1):
-                row_string = ""
-                row_s = []
-                row_seats = new_seats.get(row, {}).keys()
-                for letter in seat_letters:
-                    row_letter = ""
-                    if letter in row_seats:
-                        row_letter = "i" if new_seats[row][letter].is_infected else "o"
-                    else:
-                        row_letter = "e"
-                    row_letter = "{}[,{}]".format(row_letter, "{}{}".format(row, letter))
-                    row_s.append(row_letter)
-
-                if len(row_s) == 7:                        
-                    row_string = "{}{}_{}{}{}_{}{}"
-                elif len(row_s) == 6:
-                    row_string = "{}{}{}_{}{}{}"
+                        new_seats[int(match[0])] = new_seats.get(int(match[0]), {})
+                        new_seats[int(match[0])][letter] = p[1]
+                        letters.append(letter)
                 else:
-                    row_string = "{}"*len(row_s)
+                    pass
+            
+            if new_seats:
+                new_seats = OrderedDict(sorted(new_seats.items(), key=lambda t: t[0]))
+                seat_num = list(new_seats.keys())[-1]
+                seat_letters = np.sort(np.unique(letters))
 
-                row_string = row_string.format(*row_s)
+                for k in new_seats.keys():
+                    for s in new_seats[k].keys():
+                        seat = "{}{}".format(k, s)
+                        patients_seat[seat] = new_seats[k][s]
 
-                seatmap.append(row_string)
+                for row in range(1, seat_num + 1):
+                    row_string = ""
+                    row_s = []
+                    row_seats = new_seats.get(row, {}).keys()
+                    for letter in seat_letters:
+                        row_letter = ""
+                        if letter in row_seats:
+                            row_letter = "i" if new_seats[row][letter].is_infected else "o"
+                        else:
+                            row_letter = "e"
+                        row_letter = "{}[,{}]".format(row_letter, "{}{}".format(row, letter))
+                        row_s.append(row_letter)
+
+                    if len(row_s) == 7:                        
+                        row_string = "{}{}_{}{}{}_{}{}"
+                    elif len(row_s) == 6:
+                        row_string = "{}{}{}_{}{}{}"
+                    else:
+                        row_string = "{}"*len(row_s)
+
+                    row_string = row_string.format(*row_s)
+
+                    seatmap.append(row_string)
+    except ValueError:
+        print("Check Value of Seat")
+        pass
 
     return seatmap, patients_seat
 
