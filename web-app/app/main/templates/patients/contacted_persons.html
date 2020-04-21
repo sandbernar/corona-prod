@@ -97,7 +97,8 @@
        search_fields = [[
           [_("ФИО"), contacted_search_form.full_name(class="form-control", type="text", placeholder=_("ФИО"))],
           [_("Регион"), contacted_search_form.region_id(class="form-control")],
-          [_("Найден"), contacted_search_form.is_found(class="form-control")]]
+          [_("Найден"), contacted_search_form.is_found(class="form-control")],
+          [_("Добавлен в течение 2-х часов"), contacted_search_form.is_added_in_2_hours(class="form-control")]]
       ] 
       %}
         {% include "modules/table/table.html" %}

@@ -20,6 +20,7 @@ class ContactedPatientsTableModule(TableModule):
         table_head[_("Найден")] = ["is_found"]
         table_head[_("Госпитализирован")] = []
         table_head[_("Удалить Связь")] = []
+        table_head[_("Добавлен в течение 2-х часов")] = []
 
         super().__init__(request, q, table_head, header_button, search_form, sort_param="contacted_patient")
 
@@ -42,7 +43,22 @@ class ContactedPatientsTableModule(TableModule):
         is_found = self.request.args.get("is_found", "-1")
         if is_found != "-1":
             self.q = self.q.filter(Patient.is_found == bool(int(is_found)))
-            self.search_form.is_found.default = is_found                  
+            self.search_form.is_found.default = is_found
+
+        is_added_in_2_hours = self.request.args.get("is_added_in_2_hours", "-1")
+        if is_added_in_2_hours != "-1":
+            infected_patient_id = request.args['id']
+
+            valid_ids = []
+            for c in self.q.all():
+                if c.added_in_n_hours() == bool(int(is_added_in_2_hours)):
+                    valid_ids.append(c.id)
+
+            self.q = self.q.filter(ContactedPersons.id.in_(valid_ids))
+
+
+            # self.q = self.q.filter(Patient.is_found == bool(int(is_found)))
+            self.search_form.is_added_in_2_hours.default = is_added_in_2_hours                            
 
         self.search_form.process()
 
@@ -53,8 +69,6 @@ class ContactedPatientsTableModule(TableModule):
         telephone = patient.telephone
         travel_type = patient.travel_type
         region = patient.region
-
-
 
         is_found = yes_no_html(False)
         if patient.is_found:
@@ -68,4 +82,7 @@ class ContactedPatientsTableModule(TableModule):
                                 result.id, _("Удалить Связь"))
         delete_contact_button = (delete_contact_html, "safe")
 
-        return [patient_id, telephone, travel_type, region, is_found, in_hospital, delete_contact_button]
+        is_added_in_2_hours = yes_no_html(True if result.added_in_n_hours() else False)
+
+        return [patient_id, telephone, travel_type, region, is_found, \
+                in_hospital, delete_contact_button, is_added_in_2_hours]
