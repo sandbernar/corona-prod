@@ -189,7 +189,7 @@ def handle_add_update_patient(request_dict, final_dict, update_dict = {}):
     final_dict['status_id'] = PatientStatus.query.filter_by(value=status).first().id
     final_dict['is_found'] = int(request_dict['is_found']) == 1
     final_dict['is_infected'] = int(request_dict['is_infected']) == 1    
-    final_dict['is_contacted'] = int(request_dict['is_contacted']) == 1    
+    # final_dict['is_contacted'] = int(request_dict['is_contacted']) == 1    
 
     # 3
     travel_type = TravelType.query.filter_by(value=request_dict['travel_type']).first()
@@ -781,6 +781,8 @@ def patients():
             return render_template('errors/error-400.html'), 400        
         
         select_contacted = patient.id
+
+    q = q.order_by(Patient.created_date.desc())
 
     page = 1
     per_page = 10

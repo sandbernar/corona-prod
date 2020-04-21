@@ -186,18 +186,17 @@ class PatientsTravelTableModule(TableModule):
         telephone = result[0].telephone
         region = result[0].region
 
-        if result[0].visited_country == None:
-            visited_country = _("Неизвестно")
-        else:                
-            visited_country = ", ".join([ str(c) for c in result[0].visited_country])
+        visited_country = _("Неизвестно")
         
-        return_value = [full_name, telephone, region]
+        if result[0].visited_country != None:
+            visited_country = ", ".join([ str(c) for c in result[0].visited_country])
+
+        return_value = [full_name, telephone, region, visited_country]
 
         if self.is_trains:
             wagon = result[1].wagon
             return_value.append(wagon)
 
-        seat = result[1].seat
-        return_value.append(seat)
+        return_value.append(result[1].seat)
 
         return return_value
