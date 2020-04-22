@@ -2,7 +2,8 @@ flask
 flask_login
 flask_migrate
 flask_babelex
-flask_wtf
+WTForms==2.2.1 
+flask_wtf==0.14.2
 flask_sqlalchemy
 flask-uploads
 gunicorn
