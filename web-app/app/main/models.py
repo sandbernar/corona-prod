@@ -4,12 +4,13 @@ License: MIT
 Copyright (c) 2019 - present AppSeed.us
 """
 
+import datetime
+
 from flask_login import UserMixin
-from sqlalchemy import Column, Integer, String, Date, Boolean, Float, ForeignKey, JSON
+from sqlalchemy import Column, Integer, String, Date, Boolean, Float, ForeignKey, JSON, DateTime
 
 from app import db
 from app import constants as c
-
 from app.login.util import hash_pass
 
 def set_props(model, kwargs):
@@ -206,3 +207,11 @@ class Token(db.Model):
     id = Column(Integer, primary_key=True)
     token = Column(String, unique=False)
     organisation = Column(String, unique=False)
+
+class HGBDToken(db.Model):
+    __tablename__ = 'HGBDToken'
+
+    id = Column(Integer, primary_key=True)
+    token = Column(String, nullable=False)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    count = Column(Integer, default=0)

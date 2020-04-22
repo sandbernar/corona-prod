@@ -186,7 +186,7 @@ $("#iinAutoFill").click(() => {
 				}
 			}
 			document.getElementById("countryInput").value = countryValue;
-			if (response.sex == "1") {
+			if (response.sex == "3") {
 				document.getElementById("gender-0").checked = true;
 			} else if (response.sex == "2") {
 				document.getElementById("gender-1").checked = true;
@@ -202,10 +202,21 @@ $("#iinAutoFill").click(() => {
 			});
         },
         error: function(jqXHR, textStatus, errorThrown) {
-		   console.log(textStatus, errorThrown);
+		   console.log(textStatus, errorThrown, jqXHR);
+		   // not valid iin
+		   text = 'Неизвестная ошибка';
+		   if (jqXHR.status == 403) {
+			   text = 'Невалидный ИИН';
+		   }
+
+		   // not found
+		   if (jqXHR.status == 405) {
+			   text = 'Не найдено в базе';
+		   }
+
 		   $.notify({
 				icon: 'fa fa-times',
-				message: 'Не найдено'
+				message: text
 			},{
 				type: 'danger',
 			});

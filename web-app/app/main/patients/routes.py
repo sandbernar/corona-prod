@@ -15,7 +15,7 @@ from app import constants as c
 from jinja2 import TemplateNotFound
 
 from app.main.models import (Region, Country, VisitedCountry, Infected_Country_Category, 
-                            TravelType, BorderControl, VariousTravel, BlockpostTravel, Address)
+                            TravelType, BorderControl, VariousTravel, BlockpostTravel, Address, HGBDToken)
 from app.main.patients.models import Patient, PatientStatus, ContactedPersons, State, PatientState
 from app.main.hospitals.models import Hospital, Hospital_Type
 from app.main.flights_trains.models import FlightCode, FlightTravel, Train, TrainTravel
@@ -1000,36 +1000,98 @@ def add_state():
     url = f"/patient_profile?id={request.form['id']}"
     return redirect(url)
 
-def getIinData(iin):
-    hGBDpath = os.getenv("HGBD_URL", "")
-    address = f"{hGBDpath}/api/Person?fioiin={iin}&page=1&pagesize=1"
-    r = requests.get(url=address)
-    data = r.json()
-    if len(data) == 0:
+def getHGBDToken():
+    """Function sends request to eta777 to fetch access_token for HGBD database.
+    If server returns valid response, then the new token is saved to database.
+
+    Return:
+        token: (str|None) None if couldnt retrieve token
+    """
+
+    url = "https://eta777.testlab.kz/oauth/token"
+    payload = f"grant_type=password&username={os.getenv('RPN_USERNAME')}&password={os.getenv('RPN_PASSWORD')}&scope=profile"
+    headers = {
+        'Authorization': f"Basic {os.getenv('RPN_CLIENT')}",
+        'Content-Type': 'text/plain'
+    }
+    response = requests.request("POST", url, headers=headers, data = payload, verify=False)
+    data = response.json()
+    print(data)
+    if "access_token" not in data:
         return None
-    return data[0]
+    hgbd = HGBDToken(token=data["access_token"])
+    db.session.add(hgbd)
+    db.session.commit()
+    return data["access_token"]
+
+def getIinData(iin):
+    """Function to get userdata by iin
+
+    Gets last HGBDToken. If not token or it is invalid then fetches for new token
+    and saves it to database.
+
+    Args:
+        iin: (str)
+    Return:
+        (dict|None) if successfully fetched user data returns dict, otherwise None
+    """
+    def getResponse(token):
+        """Function fetches user data by iin
+
+        Args:
+            iin: (str)    
+        Return:
+            response: (Requests)
+        """
+        hGBDpath = "http://5.104.236.197:22999/services/api/person"
+        address = f"{hGBDpath}?fioiin={iin}&page=1&pagesize=1"
+        headers = {'Authorization': f"Bearer {token}"}
+        response = requests.request("GET", address, headers=headers, verify=False)
+        return response
+
+    token = ""
+    tokenRecord = HGBDToken.query.order_by(-HGBDToken.id).first()
+    if tokenRecord is None:
+        token = getHGBDToken()
+    else:
+        token = tokenRecord.token
+    response = getResponse(token)
+    if not response.ok:
+        token = getHGBDToken()
+        response = getResponse(token)
+    
+    try:
+        data = response.json()
+        if len(data) == 0:
+            return None
+        tokenRecord = HGBDToken.query.order_by(-HGBDToken.id).first()
+        tokenRecord.count += 1
+        db.session.add(tokenRecord)
+        db.session.commit()
+        data[0]["citizen"] = c.HGDBCountry[data[0]["citizen"]]
+        return data[0]
+    except Exception as e:
+        print("getIinData:", e)
+    return None
 
 @blueprint.route('/iin/data', methods=['POST'])
 @login_required
 def iin_data():
+    """Endpoint for retrieving user data by iin.
+
+    1) Validate "iin" key and its value.
+    2) Check if there is already a Patient with the same iin
+    3) Get data from HGBD
+
+    If one of this steps fails, returns error with description.
+    """
     data = json.loads(request.data)
     if data == None or 'iin' not in data or type(data['iin']) != str or len(data['iin']) != 12:
         return jsonify({'description': 'No valid iin'}), 403
-    # check if already in db
     patient = Patient.query.filter_by(iin=data['iin']).first()
     if patient:
-        return jsonify({'description': 'Patient exists', 'id':patient.id}), 203
-    # personData = getIinData(data['iin'])
-    personData = {
-        "deathDate": None,
-        "lastName": "Doe",
-        "firstName": "John",
-        "secondName": "Martin",
-        "birthDate": "1995-03-10T00:00:00",
-        "iin": "950310450127",
-        "sex": "1",
-        "citizen": "Казахстан"
-    }
+        return jsonify({'description': 'Patient exists', 'id': patient.id}), 203
+    personData = getIinData(data['iin'])
     if personData is None:
         return jsonify({'description': 'Person not found'}), 405
     return jsonify(personData)
