@@ -311,7 +311,7 @@ def add_patient():
 
         # else we can create the user
         patient = Patient(**final_dict)
-        patient.is_contacted_person = False
+        # patient.is_contacted_person = False
         
         db.session.add(patient)
         db.session.commit()
@@ -355,7 +355,7 @@ def patient_profile():
                 
                 request_dict['is_found'] = "is_found" in request.form
                 request_dict['is_infected'] = "is_infected" in request.form
-                request_dict['is_contacted'] = "is_contacted" in request.form
+                # request_dict['is_contacted'] = "is_contacted" in request.form
 
                 status = c.no_status[0]
                 for s in c.patient_statuses:
@@ -421,8 +421,8 @@ def patient_profile():
             if patient.is_infected:
                 form.is_infected.default = 'checked'
             
-            if patient.is_contacted:
-                form.is_contacted.default = 'checked'
+            # if patient.is_contacted:
+                # form.is_contacted.default = 'checked'
 
             if patient.status:
                 if patient.status.value == c.in_hospital[0]:
@@ -723,9 +723,9 @@ def patients():
         filt["is_infected"] = True
         form.is_infected.default='checked'
     
-    if "is_contacted" in request.args:
-        filt["is_contacted"] = True
-        form.is_contacted.default='checked'
+    # if "is_contacted" in request.args:
+        # filt["is_contacted"] = True
+        # form.is_contacted.default='checked'
 
     q = db.session.query(Patient).filter_by(**filt)
     # q = q.filter(Patient.travel_id == FlightTravel.id)
