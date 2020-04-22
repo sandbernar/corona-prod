@@ -16,6 +16,7 @@ class Patient(Base):
     __tablename__ = 'Patient'
 
     id = Column(Integer, primary_key=True)
+    created_date = Column(DateTime, default=datetime.datetime.utcnow)
     first_name = Column(String, unique=False)
     second_name = Column(String, unique=False)
     patronymic_name = Column(String, unique=False, nullable=True)

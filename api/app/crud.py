@@ -1,6 +1,9 @@
 from sqlalchemy.orm import Session
+from datetime import date
 
 from . import models, schemas
+import logging
+logger = logging.getLogger("api")
 
 def get_patient_by_iin(db: Session, iin: str):
     return db.query(models.Patient).filter(models.Patient.iin == iin).first()
@@ -13,3 +16,7 @@ def get_token_id_by_token(db: Session, token: str):
 
 def get_is_contacted(db: Session, id: int):
     return db.query(models.ContactedPersons).filter(models.ContactedPersons.contacted_patient_id == id).first()
+
+def get_patients(db: Session, begin: date, end: date):
+    logger.error("hello")
+    return db.query(models.Patient).filter(models.Patient.created_date >= begin).filter(models.Patient.created_date <= end).all()
