@@ -1016,7 +1016,6 @@ def getHGBDToken():
     }
     response = requests.request("POST", url, headers=headers, data = payload, verify=False)
     data = response.json()
-    print(data)
     if "access_token" not in data:
         return None
     hgbd = HGBDToken(token=data["access_token"])
