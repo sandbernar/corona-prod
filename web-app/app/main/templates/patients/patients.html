@@ -104,7 +104,6 @@
                 {% if select_contacted %}
                 <th scope="col">{{ _("Выбрать контактных") }}</th>
                 {% endif %}
-                <th scope="col">{{ _("Время добавления")}}
               </tr>
             </thead>
             <tbody>
@@ -163,9 +162,6 @@
                   {% endif %}
                 </td>
                 {% endif %}
-                <td>
-                  {{ "{:%d-%m-%Y %H:%M}".format(patient.created_date) }}
-                </td>
               </tr>
               {% endfor %}
 
