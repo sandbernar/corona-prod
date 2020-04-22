@@ -18,7 +18,7 @@ import math
 from functools import lru_cache
 
 
-from app.main.patients.models import Patient, PatientStatus
+from app.main.patients.models import Patient
 from app.main.models import Region, Infected_Country_Category, Address
 from app.main.hospitals.models import Hospital, Hospital_Type
 
@@ -54,7 +54,7 @@ def index():
     regions_list = Region.query.all()
 
     regions = dict()
-    in_hospital_id = PatientStatus.query.filter_by(value=c.in_hospital[0]).first().id
+    # in_hospital_id = PatientStatus.query.filter_by(value=c.in_hospital[0]).first().id
 
     for region in regions_list:
         patient_region_query = Patient.query.filter_by(region_id=region.id)
@@ -85,9 +85,10 @@ def route_template(template, **kwargs):
         ratio = 0 if total == 0 else is_found / total
         is_found_str = str("{}/{} ({}%)".format(is_found, total, format(ratio * 100, '.2f')))
 
-        # In Hospital
-        in_hospital_status_id = PatientStatus.query.filter_by(value=c.in_hospital[0]).first().id
-        in_hospital = q.filter_by(status_id=in_hospital_status_id).count()
+        # In Hospital TODO
+        # in_hospital_status_id .query.filter_by(value=c.in_hospital[0]).first().id
+        # in_hospital = q.filter_by(status_id=in_hospital_status_id).count()
+        in_hospital = 0
         ratio = 0 if is_found == 0 else in_hospital / is_found
         in_hospital_str = str("{}/{} ({}%)".format(in_hospital,
                                                    is_found, format(ratio * 100, '.2f')))

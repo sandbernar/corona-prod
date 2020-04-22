@@ -7,13 +7,23 @@ no_hospital = "Не Госпитализирован"
 # Flight Code
 all_flight_codes = "Все Рейсы"
 
-# Statuses
-no_status = ("no_status", "Нет Статуса")
-in_hospital = ("in_hospital", "Госпитализирован")
-is_home = ("is_home", "Домашний Карантин")
-is_transit = ("is_transit", "Транзит")
+# State
+state_dead = "Умер"
+state_infec = "Инфицирован"
+state_hosp = "Госпитализирован"
+state_healthy = "Выздоровление"
+state_is_home = "Домашний Карантин"
+state_is_transit = "Транзит"
+states = [
+	state_dead,
+	state_infec,
+	state_hosp,
+	state_healthy,
+	state_is_home,
+	state_is_transit,
+]
 
-patient_statuses = [no_status, in_hospital, is_home, is_transit]
+# patient_statuses = [no_status, in_hospital, is_home, is_transit]
 
 # Regions
 out_of_rk = "Вне РК"
@@ -28,14 +38,6 @@ flight_type = ("flight_type", "Самолет")
 local_type = ("local_type", "Местные")
 blockpost_type = ("blockpost_type", "Блокпост")
 old_data_type = ("old_data_type", "Старые Данные")
-
-# State
-state_dead = "Умер"
-state_infec = "Инфицирован"
-state_hosp = "Госпитализирован"
-state_healthy = "Выздоровление"
-states = [state_dead, state_infec, state_hosp, state_healthy]
-
 various_travel_types = [by_auto_type, by_foot_type, by_sea_type]
 
 board_team = "экипаж"
