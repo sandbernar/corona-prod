@@ -1,138 +1,226 @@
-                        <div class="card bg-secondary shadow">
-                          <div class="card-header bg-white">                        
-                            <div class="row">
-                              <div class="col">
-                                <div class="form-group">
-                                  <label for="name-input" class="form-control-label">{{ _("Фамилия") }}*</label>
-                                  {{ form.second_name(placeholder=_("Иванов"),class="form-control", type="text") }}
-                                </div>
-                              </div>
-                              <div class="col">
-                                <div class="form-group">
-                                  <label for="name-input" class="form-control-label">{{ _("Имя") }}*</label>
-                                  {{ form.first_name(placeholder=_("Иван"),class="form-control", type="text") }}
-                                </div>
-                              </div>                          
-                              <div class="col">
-                                <div class="form-group">
-                                  <label for="name-input" class="form-control-label">{{ _("Отчество") }}</label>
-                                  {{ form.patronymic_name(placeholder=_("Иванович"),class="form-control", type="text") }}
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-auto">
-                                <div class="form-group">
-                                  <label class="form-control-label">{{ _("Пол") }}*</label><br>
-                                  {% for subfield in form.gender %}
-                                  <div class="custom-control custom-radio custom-control-inline">
-                                    {{ subfield(type="radio", id=subfield.id, class="custom-control-input") }}
-                                    <label class="custom-control-label" for='{{ subfield.id }}'>{{ subfield.label }}</label>
-                                  </div>
-                                  {% endfor %}
-                                </div>
-                              </div>
-                              <div class="col">
-                                <div class="form-group">
-                                  <label for="dob-input" class="form-control-label">{{ _("Дата Рождения") }}*</label>
-                                  {{ form.dob(class="form-control datepicker", type="date") }}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        <div class="card bg-secondary shadow mt-3">
-                          <div class="card-header bg-white">                        
-                            <div class="row">
-                              <div class="col">
-                                <div class="form-group">
-                                  <label for="iin-input" class="form-control-label">{{ _("ИИН") }}</label>
-                                  {{ form.iin(placeholder=_("12 Цифр"),class="form-control", type="text", onkeyup="this.value=this.value.replace(/[^0-9]/g,'');") }}
-                                </div>
-                              </div>
-                              <div class="col">
-                                <div class="form-group">
-                                  <label for="citizenship-input" class="form-control-label">{{ _("Страна Проживания") }}*</label>
-                                  {{ form.country_of_residence_id(class="form-control") }}
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col">
-                                <div class="form-group">
-                                  <label for="citizenship-input" class="form-control-label">{{ _("Гражданство") }}*</label>
-                                  {{ form.citizenship_id(class="form-control") }}
-                                </div>
-                              </div>
-                              <div class="col">
-                                <div class="form-group">
-                                  <label for="npass-input" class="form-control-label">{{ _("Номер Паспорта") }}</label>
-                                  {{ form.pass_num(placeholder=_("N12345678"), class="form-control", type="text") }}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        <div class="card bg-secondary shadow mt-3">
-                          <div class="card-header bg-white">
-                            <label for="home-input" class="form-control-label">{{ _("Место жительства / возможное место проживания") }}*</label>
-                            <div class="row">
-                              <div class="col">
-                                <div class="form-group">
-                                  <label for="home-input" class="form-control-label sub-label">{{ _("Страна") }}*</label>
-                                  {{ form.home_address_country_id(class="form-control") }}
-                                </div>
-                              </div>
-                              <div class="col">
-                                <div class="form-group">
-                                  <label for="home-input" class="form-control-label sub-label">{{ _("Область") }}</label>
-                                  {{ form.home_address_state(class="form-control", type="text" ) }}
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col">
-                                <div class="form-group">
-                                  <label for="home-input" class="form-control-label sub-label">{{ _("Район (только для села)") }}</label>
-                                  {{ form.home_address_county(class="form-control", type="text", placeholder="Не микрорайон" ) }}
-                                </div>
-                              </div>
-                              <div class="col">
-                                <div class="form-group">
-                                  <label for="home-input" class="form-control-label sub-label">{{ _("Город") }}</label>
-                                  {{ form.home_address_city(class="form-control", type="text" ) }}
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-xl">
-                                <div class="form-group">
-                                  <label for="home-input" class="form-control-label sub-label">{{ _("Улица") }}</label>
-                                  {{ form.home_address_street(class="form-control", type="text", placeholder=_("Байтурсынова или мкр. Отырар") ) }}
-                                </div>
-                              </div>
-                              <div class="col">
-                                <div class="row">
-                                  <div class="col">
-                                    <div class="form-group">
-                                      <label for="home-input" class="form-control-label sub-label">{{ _("Дом") }}</label>
-                                      {{ form.home_address_house(class="form-control", type="text", placeholder=_("1") ) }}
-                                    </div>
-                                  </div>
-                                  <div class="col">
-                                    <div class="form-group">
-                                      <label for="home-input" class="form-control-label sub-label">{{ _("Квартира") }}</label>
-                                      {{ form.home_address_flat(class="form-control", type="text", placeholder=_("2") ) }}
-                                    </div>
-                                  </div>                                                    
-                                  <div class="col">
-                                    <div class="form-group">
-                                      <label for="home_address_building" class="form-control-label sub-label">{{ _("Корпус") }}</label>
-                                      {{ form.home_address_building(class="form-control", type="text", placeholder=_("3") ) }}
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>                          
-                            </div>
-                          </div>        
-                        </div>  
+<div class="card bg-secondary shadow">
+	<div class="card-header bg-white">
+		<div class="row">
+	  		<div class="col">
+				<div class="form-group">
+					<label for="name-input" class="form-control-label">{{ _("Фамилия") }}*</label>
+					{{ form.second_name(placeholder=_("Иванов"),class="form-control", id="lastnameInput", type="text") }}
+				</div>
+	  		</div>
+			<div class="col">
+				<div class="form-group">
+					<label for="name-input" class="form-control-label">{{ _("Имя") }}*</label>
+					{{ form.first_name(placeholder=_("Иван"),class="form-control", id="firstnameInput", type="text") }}
+				</div>
+			</div>						  
+			<div class="col">
+				<div class="form-group">
+					<label for="name-input" class="form-control-label">{{ _("Отчество") }}</label>
+					{{ form.patronymic_name(placeholder=_("Иванович"),class="form-control", id="midnameInput", type="text") }}
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-auto">
+				<div class="form-group">
+					<label class="form-control-label">{{ _("Пол") }}*</label><br>
+					{% for subfield in form.gender %}
+						<div class="custom-control custom-radio custom-control-inline">
+						{{ subfield(type="radio", id=subfield.id, class="custom-control-input") }}
+						<label class="custom-control-label" for='{{ subfield.id }}'>{{ subfield.label }}</label>
+						</div>
+					{% endfor %}
+				</div>
+	  		</div>
+	  		<div class="col">
+				<div class="form-group">
+					<label for="dob-input" class="form-control-label">{{ _("Дата Рождения") }}*</label>
+					{{ form.dob(class="form-control datepicker", id="dobInput", type="date") }}
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="card bg-secondary shadow mt-3">
+	<div class="card-header bg-white">
+		<div class="row">
+			<div class="col">
+				<div class="form-group">
+					<label for="iin-input" class="form-control-label">{{ _("ИИН") }}</label>
+					<div class="input-group">
+						{{ form.iin(placeholder=_("12 Цифр"),class="form-control", id="iinInput", type="text", onkeyup="this.value=this.value.replace(/[^0-9]/g,'');") }}
+						<div class="input-group-append">
+							<button id="iinAutoFill" class="btn btn-primary btn-sm">Заполнить</button>
+						</div>
+					</div>
+	  			</div>
+	  		</div>
+	  <div class="col">
+	  <div class="form-group">
+		<label for="citizenship-input" class="form-control-label">{{ _("Страна Проживания") }}*</label>
+		{{ form.country_of_residence_id(class="form-control") }}
+	  </div>
+	  </div>
+	</div>
+	<div class="row">
+	  <div class="col">
+	  <div class="form-group">
+		<label for="citizenship-input" class="form-control-label">{{ _("Гражданство") }}*</label>
+		{{ form.citizenship_id(class="form-control", id="countryInput") }}
+	  </div>
+	  </div>
+	  <div class="col">
+	  <div class="form-group">
+		<label for="npass-input" class="form-control-label">{{ _("Номер Паспорта") }}</label>
+		{{ form.pass_num(placeholder=_("N12345678"), class="form-control", type="text") }}
+	  </div>
+	  </div>
+	</div>
+	</div>
+  </div>
+  <div class="card bg-secondary shadow mt-3">
+	<div class="card-header bg-white">
+	<label for="home-input" class="form-control-label">{{ _("Место жительства / возможное место проживания") }}*</label>
+	<div class="row">
+	  <div class="col">
+	  <div class="form-group">
+		<label for="home-input" class="form-control-label sub-label">{{ _("Страна") }}*</label>
+		{{ form.home_address_country_id(class="form-control") }}
+	  </div>
+	  </div>
+	  <div class="col">
+	  <div class="form-group">
+		<label for="home-input" class="form-control-label sub-label">{{ _("Область") }}</label>
+		{{ form.home_address_state(class="form-control", type="text" ) }}
+	  </div>
+	  </div>
+	</div>
+	<div class="row">
+	  <div class="col">
+	  <div class="form-group">
+		<label for="home-input" class="form-control-label sub-label">{{ _("Район (только для села)") }}</label>
+		{{ form.home_address_county(class="form-control", type="text", placeholder="Не микрорайон" ) }}
+	  </div>
+	  </div>
+	  <div class="col">
+	  <div class="form-group">
+		<label for="home-input" class="form-control-label sub-label">{{ _("Город") }}</label>
+		{{ form.home_address_city(class="form-control", type="text" ) }}
+	  </div>
+	  </div>
+	</div>
+	<div class="row">
+	  <div class="col-xl">
+	  <div class="form-group">
+		<label for="home-input" class="form-control-label sub-label">{{ _("Улица") }}</label>
+		{{ form.home_address_street(class="form-control", type="text", placeholder=_("Байтурсынова или мкр. Отырар") ) }}
+	  </div>
+	  </div>
+	  <div class="col">
+	  <div class="row">
+		<div class="col">
+		<div class="form-group">
+		  <label for="home-input" class="form-control-label sub-label">{{ _("Дом") }}</label>
+		  {{ form.home_address_house(class="form-control", type="text", placeholder=_("1") ) }}
+		</div>
+		</div>
+		<div class="col">
+		<div class="form-group">
+		  <label for="home-input" class="form-control-label sub-label">{{ _("Квартира") }}</label>
+		  {{ form.home_address_flat(class="form-control", type="text", placeholder=_("2") ) }}
+		</div>
+		</div>													
+		<div class="col">
+		<div class="form-group">
+		  <label for="home_address_building" class="form-control-label sub-label">{{ _("Корпус") }}</label>
+		  {{ form.home_address_building(class="form-control", type="text", placeholder=_("3") ) }}
+		</div>
+		</div>
+	  </div>
+	  </div>						  
+	</div>
+	</div>		
+  </div>
+<script>
+$("#iinAutoFill").click(() => {
+	let iinData = {
+		'iin': document.getElementById("iinInput").value
+	};
+	$.ajax({
+        url: "/iin/data",
+		type: "post",
+		contentType: "application/json",
+        data: JSON.stringify(iinData),
+        success: function (response) {
+			console.log(response);
+			// if already exists
+			if ('id' in response) {
+				$.notify({
+					icon: 'fa fa-times',
+					message: `Человек с таким <a href="/patient_profile?id=${response['id']}">ИИН уже внесен в базу</a>`
+				},{
+					type: 'info',
+				});
+				return ;
+			}
+			
+			// if is dead
+			if (response.deathDate != null) {
+				$.notify({
+					icon: 'fa fa-times',
+					message: 'Человек с таким ИИН умер'
+				},{
+					type: 'danger',
+				});
+				return ;
+			}
+			document.getElementById("lastnameInput").value = response.lastName;
+			document.getElementById("firstnameInput").value = response.firstName;
+			document.getElementById("midnameInput").value = response.secondName;
+			document.getElementById("dobInput").value = response.birthDate.slice(0,10);
+			let countryValue = 88
+			for (let i = 0; i < document.getElementById("countryInput").options.length; i++) {
+				if (document.getElementById("countryInput").options[i].text == response.citizen) {
+					countryValue = document.getElementById("countryInput").options[i].value;
+					break;
+				}
+			}
+			document.getElementById("countryInput").value = countryValue;
+			if (response.sex == "3") {
+				document.getElementById("gender-0").checked = true;
+			} else if (response.sex == "2") {
+				document.getElementById("gender-1").checked = true;
+			} else {
+				document.getElementById("gender-2").checked = true;
+			}
+
+			$.notify({
+				icon: 'fa fa-thumbs-up',
+				message: 'Заполнено успешно'
+			},{
+				type: 'info',
+			});
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+		   console.log(textStatus, errorThrown, jqXHR);
+		   // not valid iin
+		   text = 'Неизвестная ошибка';
+		   if (jqXHR.status == 403) {
+			   text = 'Невалидный ИИН';
+		   }
+
+		   // not found
+		   if (jqXHR.status == 405) {
+			   text = 'Не найдено в базе';
+		   }
+
+		   $.notify({
+				icon: 'fa fa-times',
+				message: text
+			},{
+				type: 'danger',
+			});
+        }
+    });
+});
+</script>
