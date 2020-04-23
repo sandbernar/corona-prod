@@ -74,10 +74,10 @@ curl -v -X POST "http://demo.crm.alem.school/api/get_status_by_iin/" -H "X-API-T
 ```
 
 #
-## Get patient by password number
+## Get patient by passport number
 #
 ### Title
-> get patient by password number
+> get patient by passport number
 ### URL
 > /api/get_status_by_pass_num/
 ### Method
