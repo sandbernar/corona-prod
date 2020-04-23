@@ -19,3 +19,4 @@ xlsxwriter
 names
 geonamescache
 pycountry
+dateparser==0.7.4
