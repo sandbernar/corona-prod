@@ -20,8 +20,10 @@ from sqlalchemy import create_engine
 
 from app.main.flights_trains.models import FlightCode, FlightTravel, Train, TrainTravel
 from app.main.patients.models import Patient, PatientStatus, ContactedPersons, State, PatientState
+import names
 
-
+import string
+from faker import Faker
 def str_time_prop(start, end, format, prop):
     """Get a time at a proportion of a range of two formatted times.
 
@@ -129,7 +131,7 @@ class TestCase(unittest.TestCase):
 
     def test_new_patient(self):
         self.login("adm", "paswd")
-        for i in range(10000):
+        for i in range(1000):
             rv = self.add_patient()
             assert "patient_id" in str(rv.data)
 
@@ -306,7 +308,6 @@ class TestCase(unittest.TestCase):
         rv = self.app.post("/delete_flight", data={"delete": FLIGHT.id}, follow_redirects=True)
         assert "Рейс успешно удален" in str(rv.data.decode('utf-8'))
         pass
-
     def add_patient(self):
         city = ["Нур-султан", "Алматы"]
         streetsAst = ["Кунаева", "Байтурсынова", "Абая", "Абылайхана"]
@@ -319,19 +320,24 @@ class TestCase(unittest.TestCase):
             s = streetsAst[random.randrange(4)]
         else:
             s = streetsAla[random.randrange(5)]
+        fake = Faker(['ru_RU'])
+        profile = fake.profile()
+        name = profile["name"]
+        iin = profile["ssn"]
+        birthdate = profile["birthdate"]
+        pass_num = "N{}".format(fake.ssn()[:8])
         patient = {
             "travel_type": "auto_type",
             "arrival_date": "2020-04-10",
             "auto_border_id": 1,
-            "second_name": "as",
-            "first_name": "as",
-            "patronymic_name": "",
+            "second_name": names.get_last_name(),
+            "first_name": names.get_first_name(),
             "gender": -1,
             "dob": "2020-04-17",
-            "iin": "",
+            "iin": iin,
             "country_of_residence_id": 88,
             "citizenship_id": 88,
-            "pass_num": "",
+            "pass_num": pass_num,
             "home_address_country_id": 88,
             "home_address_state": "",
             "home_address_county": "",
