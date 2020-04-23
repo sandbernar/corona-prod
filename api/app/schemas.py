@@ -54,6 +54,8 @@ class Patient(BaseModel):
     is_contacted: bool = False
     is_infected: bool = False
     is_found: bool = False
+    telephone: str = ""
+
 
     class Config:
         orm_mode = True

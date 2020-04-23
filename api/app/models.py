@@ -30,6 +30,8 @@ class Patient(Base):
     is_infected = Column(Boolean, unique=False, default=False)
     hospital_id = Column(Integer, ForeignKey('Hospital.id'), nullable=True, default=None)
     hospital = relationship('Hospital')
+    telephone = Column(String, nullable=True, default=None)
+
 
 class PatientStatus(Base):
 
