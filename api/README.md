@@ -39,7 +39,9 @@
     "pass_num": [string],
     "is_contacted": [boolean],
     "is_infected": [boolean],
-    "is_found": [boolean]
+    "is_found": [boolean],
+    "telephone": [string]
+
 }
 ```
 ### Error Response 
@@ -110,7 +112,8 @@ curl -v -X POST "http://demo.crm.alem.school/api/get_status_by_iin/" -H "X-API-T
     "pass_num": [string],
     "is_contacted": [boolean],
     "is_infected": [boolean],
-    "is_found": [boolean]
+    "is_found": [boolean],
+    "telephone": [string]
 }
 ```
 ### Error Response 
@@ -142,16 +145,72 @@ curl -v -X POST "http://demo.crm.alem.school/api/get_status_by_iin/" -H "X-API-T
 curl -v -X POST "http://demo.crm.alem.school/api/get_status_by_pass_num/" -H "X-API-TOKEN: ${API_TOKEN}" -H "accept: application/json" -H "Content-Type: application/json" -d "{\"pass_num\":\"1213\"}"
 ```
 
+#
+## Get patient within interval
+#
+### Title
+> get patients
+### URL
+> /api/get_patients_within_interval/
+### Method
+> POST
+### URL Params
+> None
+### Header Params
+> X-API-TOKEN
+### Data Params
+```json
+{ 
+    "behin": [datetime YYYY-MM-DD],
+    "end": [datetime YYYY-MM-DD],
+}
+```
+### Success Response Code
+> 200
+```json
+    [
+        {
+            "status": {
+                "name": [string]
+            },
+            "home_address": {
+                "city": [string],
+                "street": [string],
+                "house": [string],
+                "flat": [string]
+            },
+            "hospital": {
+                "name": [string],
+                "full_name": [string],
+                "address": [string]
+            },
+            "iin": [string],
+            "pass_num": [string],
+            "is_contacted": [boolean],
+            "is_infected": [boolean],
+            "is_found": [boolean],
+            "telephone": [string]
+        }
+    ]
+```
+### Error Response 
+> Code: 400
+```json
+{
+    "ErrorCode": "invalid_request",
+    "Error": "Invalid Authorization Code"
+}
+```
 
+> Code: 400
+```json
+{
+    "ErrorCode": "invalid_request",
+    "Error": "The request is missing a required header : X-API-TOKEN"
+}
+```
 
-GetPataientListByDateTimeInterval
-POST
-
-header
-X-API-TOKEN
-
-body
-begin datetime from
-end datetime till
-// 
-только с одной корректировкой пока: нужно добавить даты внесения с какого числа и по какое
+### Sample Call      
+```bash
+curl -X POST "http://demo.crm.alem.school/api/get_patients_within_interval/" -H "X-API-TOKEN: ${API_TOKEN}" -H "accept: application/json" -H "Content-Type: application/json" -d "{\"begin\":\"2019-02-21\",\"end\":\"2021-02-20\"}"
+```
