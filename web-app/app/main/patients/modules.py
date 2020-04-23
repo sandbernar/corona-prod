@@ -75,7 +75,7 @@ class ContactedPatientsTableModule(TableModule):
             is_found = yes_no_html(True)
 
         in_hospital = yes_no_html(False)
-        if patient.status.value == c.in_hospital[0]:
+        if patient.status and patient.status.value == c.in_hospital[0]:
             in_hospital = yes_no_html(True)
 
         delete_contact_html = "<a href=\"/delete_contacted?contact_id={}\" class=\"btn btn-danger\">{}</a>".format(
