@@ -141,3 +141,17 @@ curl -v -X POST "http://demo.crm.alem.school/api/get_status_by_iin/" -H "X-API-T
 ```bash
 curl -v -X POST "http://demo.crm.alem.school/api/get_status_by_pass_num/" -H "X-API-TOKEN: ${API_TOKEN}" -H "accept: application/json" -H "Content-Type: application/json" -d "{\"pass_num\":\"1213\"}"
 ```
+
+
+
+GetPataientListByDateTimeInterval
+POST
+
+header
+X-API-TOKEN
+
+body
+begin datetime from
+end datetime till
+// 
+только с одной корректировкой пока: нужно добавить даты внесения с какого числа и по какое
