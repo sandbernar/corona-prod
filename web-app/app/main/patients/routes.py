@@ -1008,41 +1008,76 @@ def add_state():
     url = f"/patient_profile?id={request.form['id']}"
     return redirect(url)
 
-def getHGBDToken():
-    """Function sends request to eta777 to fetch access_token for HGBD database.
-    If server returns valid response, then the new token is saved to database.
+class RPNService:
+    def __init__(self):
+        self.hgdb = self.getHGBDToken()
 
-    Return:
-        token: (str|None) None if couldnt retrieve token
-    """
+    def incrementCount(self):
+        self.hgdb.count += 1
+        db.session.add(self.hgdb)
+        db.session.commit()
 
-    url = "https://eta777.testlab.kz/oauth/token"
-    payload = f"grant_type=password&username={os.getenv('RPN_USERNAME')}&password={os.getenv('RPN_PASSWORD')}&scope=profile"
-    headers = {
-        'Authorization': f"Basic {os.getenv('RPN_CLIENT')}",
-        'Content-Type': 'text/plain'
-    }
-    response = requests.request("POST", url, headers=headers, data = payload, verify=False)
-    data = response.json()
-    if "access_token" not in data:
+    def checkToken(self, token):
+        """Function check if API returns valid response with given token
+        
+        Return:
+            (bool)
+        """
+        hGBDpath = "http://5.104.236.197:22999/services/api/person"
+        address = f"{hGBDpath}?fioiin=иванов&page=1&pagesize=1"
+        headers = {'Authorization': f"Bearer {token}"}
+        response = requests.request("GET", address, headers=headers, verify=False)
+        if not response.ok:
+            return False
+        data = response.json()
+        if type(data) != list or len(data) == 0:
+            return False
+        return True
+
+    def getHGBDToken(self):
+        """Function to retrieve token from HGBD
+
+        If there is no token, then new one is retrieved.
+        Token is checked for validity by self.checkToken
+
+        Return:
+            (HGBDToken|None)
+        """
+        tokenRecord = None
+        tokenFuncs = [HGBDToken.query.order_by(-HGBDToken.id).first, self.newHGBDToken]
+        for tokenFunc in tokenFuncs:
+            tokenRecord = tokenFunc()
+            if tokenRecord is None:
+                continue
+            healthy = self.checkToken(tokenRecord.token)
+            if healthy:
+                return tokenRecord
         return None
-    hgbd = HGBDToken(token=data["access_token"])
-    db.session.add(hgbd)
-    db.session.commit()
-    return data["access_token"]
 
-def getIinData(iin):
-    """Function to get userdata by iin
+    def newHGBDToken(self):
+        """Function sends request to eta777 to fetch access_token for HGBD database.
+        If server returns valid response, then the new token is saved to database.
 
-    Gets last HGBDToken. If not token or it is invalid then fetches for new token
-    and saves it to database.
+        Return:
+            token: (str|None) None if couldnt retrieve token
+        """
 
-    Args:
-        iin: (str)
-    Return:
-        (dict|None) if successfully fetched user data returns dict, otherwise None
-    """
-    def getResponse(token):
+        url = "https://eta777.testlab.kz/oauth/token"
+        payload = f"grant_type=password&username={os.getenv('RPN_USERNAME')}&password={os.getenv('RPN_PASSWORD')}&scope=profile"
+        headers = {
+            'Authorization': f"Basic {os.getenv('RPN_CLIENT')}",
+            'Content-Type': 'text/plain'
+        }
+        response = requests.request("POST", url, headers=headers, data = payload, verify=False)
+        data = response.json()
+        if "access_token" not in data:
+            return None
+        hgbd = HGBDToken(token=data["access_token"])
+        db.session.add(hgbd)
+        db.session.commit()
+        return hgbd
+    
+    def getPerson(self, iin):
         """Function fetches user data by iin
 
         Args:
@@ -1050,36 +1085,46 @@ def getIinData(iin):
         Return:
             response: (Requests)
         """
+        if self.hgdb is None:
+            return None
+        token = self.hgdb.token
         hGBDpath = "http://5.104.236.197:22999/services/api/person"
         address = f"{hGBDpath}?fioiin={iin}&page=1&pagesize=1"
         headers = {'Authorization': f"Bearer {token}"}
         response = requests.request("GET", address, headers=headers, verify=False)
-        return response
-
-    token = ""
-    tokenRecord = HGBDToken.query.order_by(-HGBDToken.id).first()
-    if tokenRecord is None:
-        token = getHGBDToken()
-    else:
-        token = tokenRecord.token
-    response = getResponse(token)
-    if not response.ok:
-        token = getHGBDToken()
-        response = getResponse(token)
-    
-    try:
         data = response.json()
-        if len(data) == 0:
+        if len(data) == 0 or type(data) != list:
             return None
-        tokenRecord = HGBDToken.query.order_by(-HGBDToken.id).first()
-        tokenRecord.count += 1
-        db.session.add(tokenRecord)
-        db.session.commit()
+        self.incrementCount()
         data[0]["citizen"] = c.HGDBCountry[data[0]["citizen"]]
         return data[0]
-    except Exception as e:
-        print("getIinData:", e)
-    return None
+    
+    def getPhones(self, personID):
+        if self.hgdb is None:
+            return None
+        token = self.hgdb.token
+        address = f"http://5.104.236.197:22999/services/api/person/{personID}/getPhones"
+        headers = {'Authorization': f"Bearer {token}"}
+        response = requests.request("GET", address, headers=headers, verify=False)
+        data = response.json()
+        if len(data) == 0 or type(data) != list:
+            return None
+        self.incrementCount()
+        return data[0]
+
+    def getAddresses(self, personID):
+        if self.hgdb is None:
+            return None
+        token = self.hgdb.token
+        address = f"http://5.104.236.197:22999/services/api/person/{personID}/addresses"
+        headers = {'Authorization': f"Bearer {token}"}
+        response = requests.request("GET", address, headers=headers, verify=False)
+        data = response.json()
+        if len(data) == 0 or type(data) != list:
+            return None
+        self.incrementCount()
+        return data[0]
+    
 
 @blueprint.route('/iin/data', methods=['POST'])
 @login_required
@@ -1098,7 +1143,12 @@ def iin_data():
     patient = Patient.query.filter_by(iin=data['iin']).first()
     if patient:
         return jsonify({'description': 'Patient exists', 'id': patient.id}), 203
-    personData = getIinData(data['iin'])
+    rpn = RPNService()
+    if rpn.hgdb is None:
+        return jsonify({'description': 'Service unreachable'}), 406
+    personData = rpn.getPerson(data['iin'])
     if personData is None:
         return jsonify({'description': 'Person not found'}), 405
+    personData["address"] = rpn.getAddresses(personData["PersonID"])
+    personData["phone"] = rpn.getPhones(personData["PersonID"])
     return jsonify(personData)

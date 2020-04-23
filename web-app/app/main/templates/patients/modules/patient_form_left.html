@@ -105,7 +105,7 @@
 	  <div class="col">
 	  <div class="form-group">
 		<label for="home-input" class="form-control-label sub-label">{{ _("Город") }}</label>
-		{{ form.home_address_city(class="form-control", type="text" ) }}
+		{{ form.home_address_city(class="form-control", id="cityInput", type="text" ) }}
 	  </div>
 	  </div>
 	</div>
@@ -113,7 +113,7 @@
 	  <div class="col-xl">
 	  <div class="form-group">
 		<label for="home-input" class="form-control-label sub-label">{{ _("Улица") }}</label>
-		{{ form.home_address_street(class="form-control", type="text", placeholder=_("Байтурсынова или мкр. Отырар") ) }}
+		{{ form.home_address_street(class="form-control", id="streetInput", type="text", placeholder=_("Байтурсынова или мкр. Отырар") ) }}
 	  </div>
 	  </div>
 	  <div class="col">
@@ -121,7 +121,7 @@
 		<div class="col">
 		<div class="form-group">
 		  <label for="home-input" class="form-control-label sub-label">{{ _("Дом") }}</label>
-		  {{ form.home_address_house(class="form-control", type="text", placeholder=_("1") ) }}
+		  {{ form.home_address_house(class="form-control", id="houseInput", type="text", placeholder=_("1") ) }}
 		</div>
 		</div>
 		<div class="col">
@@ -143,6 +143,13 @@
   </div>
 <script>
 $("#iinAutoFill").click(() => {
+	$.notify({
+		icon: 'fa fa-thumbs-up',
+		message: 'Загрузка...'
+	},{
+		type: 'info',
+	});
+
 	let iinData = {
 		'iin': document.getElementById("iinInput").value
 	};
@@ -194,6 +201,24 @@ $("#iinAutoFill").click(() => {
 				document.getElementById("gender-2").checked = true;
 			}
 
+			if (response.address != null) {
+				let addressValues = response.address.addressString.split(", ");
+				for (let i = 0; i < addressValues.length; i++) {
+					addressValues[i] = addressValues[i].split(": ");
+					if (addressValues[i].length > 1) {
+						addressValues[i] = addressValues[i][1];
+					}  else {
+						addressValues[i] = "";
+					}
+				}
+				document.getElementById("cityInput").value = addressValues[1];
+				document.getElementById("streetInput").value = addressValues[3];
+				document.getElementById("houseInput").value = addressValues[4];
+			}
+			if (response.phone != null) {
+				document.getElementById("phoneInput").value = response.phone.PhoneNumber;
+			}
+
 			$.notify({
 				icon: 'fa fa-thumbs-up',
 				message: 'Заполнено успешно'
@@ -212,6 +237,10 @@ $("#iinAutoFill").click(() => {
 		   // not found
 		   if (jqXHR.status == 405) {
 			   text = 'Не найдено в базе';
+		   }
+
+		   if (jqXHR.status == 406) {
+			   text = 'Сервис недоступен';
 		   }
 
 		   $.notify({
