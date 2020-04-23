@@ -142,6 +142,19 @@
 	</div>		
   </div>
 <script>
+function titleCase(str, delim) {
+	var splitStr = str.toLowerCase().split(delim);
+	for (var i = 0; i < splitStr.length; i++) {
+		// You do not need to check if i is larger than splitStr length, as your for does that for you
+		// Assign it back to the array
+		if (splitStr[i].includes('-')) {
+			splitStr[i] = titleCase(splitStr[i], '-');
+		}
+		splitStr[i] = splitStr[i].charAt(0).toUpperCase() + splitStr[i].substring(1);     
+	}
+	// Directly return the joined string
+	return splitStr.join(delim); 
+}
 $("#iinAutoFill").click(() => {
 	$.notify({
 		icon: 'fa fa-thumbs-up',
@@ -181,9 +194,9 @@ $("#iinAutoFill").click(() => {
 				});
 				return ;
 			}
-			document.getElementById("lastnameInput").value = response.lastName;
-			document.getElementById("firstnameInput").value = response.firstName;
-			document.getElementById("midnameInput").value = response.secondName;
+			document.getElementById("lastnameInput").value = titleCase(response.lastName, ' ');
+			document.getElementById("firstnameInput").value = titleCase(response.firstName, ' ');
+			document.getElementById("midnameInput").value = titleCase(response.secondName, ' ');
 			document.getElementById("dobInput").value = response.birthDate.slice(0,10);
 			let countryValue = 88
 			for (let i = 0; i < document.getElementById("countryInput").options.length; i++) {
@@ -211,9 +224,9 @@ $("#iinAutoFill").click(() => {
 						addressValues[i] = "";
 					}
 				}
-				document.getElementById("cityInput").value = addressValues[1];
-				document.getElementById("streetInput").value = addressValues[3];
-				document.getElementById("houseInput").value = addressValues[4];
+				document.getElementById("cityInput").value = titleCase(addressValues[1], ' ');
+				document.getElementById("streetInput").value = titleCase(addressValues[3], ' ');
+				document.getElementById("houseInput").value = titleCase(addressValues[4], ' ');
 			}
 			if (response.phone != null) {
 				document.getElementById("phoneInput").value = response.phone.PhoneNumber;
