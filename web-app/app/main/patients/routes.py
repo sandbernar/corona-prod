@@ -1062,7 +1062,7 @@ class RPNService:
             token: (str|None) None if couldnt retrieve token
         """
 
-        url = "https://eta777.testlab.kz/oauth/token"
+        url = f"{os.getenv('RPN_URL')}/oauth/token"
         payload = f"grant_type=password&username={os.getenv('RPN_USERNAME')}&password={os.getenv('RPN_PASSWORD')}&scope=profile"
         headers = {
             'Authorization': f"Basic {os.getenv('RPN_CLIENT')}",
@@ -1088,7 +1088,7 @@ class RPNService:
         if self.hgdb is None:
             return None
         token = self.hgdb.token
-        hGBDpath = "http://5.104.236.197:22999/services/api/person"
+        hGBDpath = f"{os.getenv('RPN_API_URL')}/services/api/person"
         address = f"{hGBDpath}?fioiin={iin}&page=1&pagesize=1"
         headers = {'Authorization': f"Bearer {token}"}
         response = requests.request("GET", address, headers=headers, verify=False)
@@ -1103,7 +1103,7 @@ class RPNService:
         if self.hgdb is None:
             return None
         token = self.hgdb.token
-        address = f"http://5.104.236.197:22999/services/api/person/{personID}/getPhones"
+        address = f"{os.getenv('RPN_API_URL')}/services/api/person/{personID}/getPhones"
         headers = {'Authorization': f"Bearer {token}"}
         response = requests.request("GET", address, headers=headers, verify=False)
         data = response.json()
@@ -1116,7 +1116,7 @@ class RPNService:
         if self.hgdb is None:
             return None
         token = self.hgdb.token
-        address = f"http://5.104.236.197:22999/services/api/person/{personID}/addresses"
+        address = f"{os.getenv('RPN_API_URL')}/services/api/person/{personID}/addresses"
         headers = {'Authorization': f"Bearer {token}"}
         response = requests.request("GET", address, headers=headers, verify=False)
         data = response.json()
