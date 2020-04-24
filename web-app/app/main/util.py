@@ -1,9 +1,12 @@
-from app.main.models import Region
+from app.main.models import Region, Country
 from app.main.flights_trains.models import FlightCode
 
 from app import constants as c
 from app import db
 from datetime import datetime
+from flask_babelex import _
+import dateparser
+
 
 def get_regions(current_user):
     # if current_user.region_id != None:
@@ -43,8 +46,11 @@ def populate_form(form, attrs, prefix = ''):
                     value = int(value)
                 setattr(param, 'default', value)  
 
-def disable_form_fields(form, fields):
+def disable_form_fields(form, fields = []):
     readonly = {'readonly': True}
+
+    if not fields:
+        fields = [field for field in form.__dict__]
 
     for field in fields:
         param = getattr(form, field, None)
@@ -53,9 +59,31 @@ def disable_form_fields(form, fields):
                 setattr(param, 'render_kw', readonly)
 
 def parse_date(text):
-    for date_format in ('%Y-%m-%d', '%d.%m.%Y', '%d/%m/%Y'):
-        try:
-            return datetime.strptime(text, date_format).date()
-        except ValueError:
-            pass
-    raise ValueError('no valid date format found')
+    parsed_date = dateparser.parse(text)
+
+    if parsed_date:
+        return parsed_date
+    else:
+        raise ValueError('no valid date format found')
+    
+
+def populate_countries_select(select_input, default = None, default_state=None):
+    countries = Country.query.all()
+
+    if not select_input.choices:
+        select_input.choices = []
+
+        if default_state:
+            select_input.choices += [(default_state[0], default_state[1])]
+
+        select_input.choices += [(c.id, c.name) for c in countries]
+        select_input.default = default
+
+def yes_no_html(yes=True, invert_colors=False):
+    yes_color = "red" if invert_colors else "green"
+    no_color = "green" if invert_colors else "red"
+
+    if yes:
+        return ("<font color='{}'>{}</font>".format(yes_color, _("Да")), "safe")
+
+    return ("<font color='{}'>{}</font>".format(no_color, _("Нет")), "safe")

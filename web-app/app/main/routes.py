@@ -175,6 +175,7 @@ def support_jsonp(f):
 def patients_content_by_id():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))
+    
     ids = request.get_json()
     if not "ids" in ids:
         return render_template('errors/error-400.html'), 400
@@ -193,15 +194,20 @@ def patients_content_by_id():
             return render_template('errors/error-400.html'), 400
         if not p:
             continue
-        is_found = "Нет"
-        is_infected = "Нет"
+        is_found = _("Нет")
+        is_infected = _("Нет")
         if p.is_found:
-            is_found = "Да"
+            is_found = _("Да")
         if p.is_infected:
-            is_infected = "Да"
+            is_infected = _("Да")
         response.append({
             "id": i,
-            "balloonContent": '<a href="/patient_profile?id=' + str(p.id) + '">' + repr(p) + '</a><br><strong>Регион</strong>:' + repr(p.region) + '<br><strong>Адрес</strong>: ' + repr(p.home_address) + '<br><strong>Найден</strong>: ' + is_found + '<br><strong>Инфицирован</strong>: ' + is_infected + '<br><strong>Статус</strong>:' + p.status.name + '<br>',
+            "balloonContent": '<a href="/patient_profile?id=' + str(p.id) + '">' + repr(p) +
+                              '</a><br><strong>Регион</strong>:' + repr(p.region) + 
+                              '<br><strong>Адрес</strong>: ' + repr(p.home_address) + 
+                              '<br><strong>Найден</strong>: ' + is_found + 
+                              '<br><strong>Инфицирован</strong>: ' + is_infected + 
+                              '<br><strong>Статус</strong>:' + _("Неизвестно") if not p.status else p.status.name + '<br>',
             "clusterCaption": repr(p)
         })
 

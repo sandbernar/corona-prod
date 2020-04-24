@@ -17,110 +17,46 @@
   <!-- Table -->
   <div class="row">
     <div class="col">
-      <div class="card shadow mt-4">
-        <div class="card-header border-0">
-          <div class="row">
-            <div class="col">
-              <h3 class="mb-0">{{ _("Найдено") }} {{total}}, {{ _("показано") }} {{ patients|length }} {{ _("рейсов") }}</h3>
-            </div>
-            <div class="col-md-auto">
-            {% if is_trains %}
-              <a href="/add_train" class="btn btn-sm btn-primary" style="width:100%;">{{ _("Добавить ЖД Рейс") }}</a>
-            {% else %}
-              <a href="/add_flight" class="btn btn-sm btn-primary" style="width:100%;">{{ _("Добавить Рейс") }}</a>
-            {% endif %}              
-            </div>
-          </div>
-        </div>
-        <div class="table-responsive">
-          <table class="table align-items-center table-flush">
-            <thead class="thead-light">
-              <tr>
-              {% if is_trains %}
-                <th scope="col">{{ _("Профиль Рейса") }}</th>
-                <th scope="col">{{ _("Дата Отправления") }}</th>
-                <th scope="col">{{ _("Дата Прибытия") }}</th>
-              {% else %}
-                <th scope="col">{{ _("Код Рейса") }}</th>
-                <th scope="col">{{ _("Дата") }}</th>
-              {% endif %}
-                <th scope="col">{{ _("Из") }}</th>
-                <th scope="col">{{ _("В") }}</th>
-                <th scope="col">{{ _("Кол-во Прибывших") }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for travel in travels %}
-              <tr>
-                <th scope="row">
-                  <div class="media align-items-center">
-                    <div class="media-body">
-                    {% if is_trains %}
-                      <span class="mb-0 text-sm"><a href="/train_profile?id={{travel.id}}">{{ _("Открыть Профиль") }}</a></span>
-                    {% else %}
-                      <span class="mb-0 text-sm"><a href="/flight_profile?id={{travel.id}}">{{ travel }}</a></span>
-                    {% endif %}
-                    </div>
-                  </div>
-                </th>
-              {% if is_trains %}
-                <td>
-                  {{ travel.departure_date }}
-                </td>
-                <td>
-                  {{ travel.arrival_date }}
-                </td>
-              {% else %}
-                <td>
-                  {{ travel.date }}
-                </td>                                
-              {% endif %}
-                <td>
-                  {{ travel.from_country }}, {{ travel.from_city }} 
-                </td>
-                <td>
-                  {{ travel.to_country }}, {{ travel.to_city }} 
-                </td>
-                <td>
-                  {{ travels_count[travel.id] }}
-                </td>                
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-        {% if max_page > 1%}
-        <div class="card-footer py-4">
-          <nav aria-label="...">
-            <ul class="pagination justify-content-end mb-0">
-              <li class="page-item {% if page == 1%}disabled{%endif%}">
-                <a class="page-link" onclick="setSearchParam('page', {{ page - 1 }})">
-                  <i class="fas fa-angle-left"></i>
-                  <span class="sr-only">Previous</span>
-                </a>
-              </li>
-              <li class="page-item"><div class="page-link" style="cursor: default;"> {{ page }}</div></li>
-              <li class="page-item {% if page == max_page %}disabled{%endif%}">
-                <a class="page-link" onclick="setSearchParam('page', {{ page + 1 }})" >
-                  <i class="fas fa-angle-right"></i>
-                  <span class="sr-only">Next</span>
-                </a>
-              </li>
-            </ul>
-          </nav>
-        </div>
-        {% endif %}        
-      </div>
+    {% if is_trains %}
+      {% with table=flights_table,
+       search_fields = [
+        [
+          [_("Из (Страна)"), form.from_country_id(class="form-control")],
+          [_("Из (Город)"), form.from_city(class="form-control", type="text", placeholder=_("Город"))],
+          [_("В (Страну)"), form.to_country_id(class="form-control")],
+          [_("В (Город)"), form.to_city(class="form-control", type="text", placeholder=_("Город"))]
+        ],
+        [
+          [_("Дата Отправления"), form.departure_date(type="date", class="form-control")],
+          [_("Дата Прибытия"), form.arrival_date(type="date", class="form-control")]
+        ]
+      ] 
+      %}
+        {% include "modules/table/table.html" %}
+      {% endwith %}    
+    {% else %}
+      {% with table=flights_table,
+       search_fields = [
+        [
+          [_("Из (Страна)"), form.from_country_id(class="form-control")],
+          [_("Из (Город)"), form.from_city(class="form-control", type="text", placeholder=_("Город"))],
+          [_("В (Страну)"), form.to_country_id(class="form-control")],
+          [_("В (Город)"), form.to_city(class="form-control", type="text", placeholder=_("Город"))]
+        ],
+        [
+          [_("Код Рейса"), form.code(type="text", class="form-control", placeholder=_("Код Рейса"))],
+          [_("Дата"), form.date(type="date", class="form-control")]
+        ]
+      ] 
+      %}
+        {% include "modules/table/table.html" %}
+      {% endwith %}  
+    {% endif %}
     </div>
   </div>
-
   <!-- Footer -->
-
-
-
   {% include "site_template/footer.html" %}
 
-</div>        
 
 {% endblock content %}
 

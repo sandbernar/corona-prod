@@ -50,7 +50,7 @@
 					<div class="input-group">
 						{{ form.iin(placeholder=_("12 Цифр"),class="form-control", id="iinInput", type="text", onkeyup="this.value=this.value.replace(/[^0-9]/g,'');") }}
 						<div class="input-group-append">
-							<button id="iinAutoFill" class="btn btn-primary btn-sm">Заполнить</button>
+							<span style="display: inline-flex;align-items: center;" id="iinAutoFill" class="btn btn-primary btn-sm">Заполнить</span>
 						</div>
 					</div>
 	  			</div>
@@ -105,7 +105,7 @@
 	  <div class="col">
 	  <div class="form-group">
 		<label for="home-input" class="form-control-label sub-label">{{ _("Город") }}</label>
-		{{ form.home_address_city(class="form-control", type="text" ) }}
+		{{ form.home_address_city(class="form-control", id="cityInput", type="text" ) }}
 	  </div>
 	  </div>
 	</div>
@@ -113,7 +113,7 @@
 	  <div class="col-xl">
 	  <div class="form-group">
 		<label for="home-input" class="form-control-label sub-label">{{ _("Улица") }}</label>
-		{{ form.home_address_street(class="form-control", type="text", placeholder=_("Байтурсынова или мкр. Отырар") ) }}
+		{{ form.home_address_street(class="form-control", id="streetInput", type="text", placeholder=_("Байтурсынова или мкр. Отырар") ) }}
 	  </div>
 	  </div>
 	  <div class="col">
@@ -121,7 +121,7 @@
 		<div class="col">
 		<div class="form-group">
 		  <label for="home-input" class="form-control-label sub-label">{{ _("Дом") }}</label>
-		  {{ form.home_address_house(class="form-control", type="text", placeholder=_("1") ) }}
+		  {{ form.home_address_house(class="form-control", id="houseInput", type="text", placeholder=_("1") ) }}
 		</div>
 		</div>
 		<div class="col">
@@ -142,7 +142,27 @@
 	</div>		
   </div>
 <script>
+function titleCase(str, delim) {
+	var splitStr = str.toLowerCase().split(delim);
+	for (var i = 0; i < splitStr.length; i++) {
+		// You do not need to check if i is larger than splitStr length, as your for does that for you
+		// Assign it back to the array
+		if (splitStr[i].includes('-')) {
+			splitStr[i] = titleCase(splitStr[i], '-');
+		}
+		splitStr[i] = splitStr[i].charAt(0).toUpperCase() + splitStr[i].substring(1);     
+	}
+	// Directly return the joined string
+	return splitStr.join(delim); 
+}
 $("#iinAutoFill").click(() => {
+	$.notify({
+		icon: 'fa fa-thumbs-up',
+		message: 'Загрузка...'
+	},{
+		type: 'info',
+	});
+
 	let iinData = {
 		'iin': document.getElementById("iinInput").value
 	};
@@ -174,9 +194,9 @@ $("#iinAutoFill").click(() => {
 				});
 				return ;
 			}
-			document.getElementById("lastnameInput").value = response.lastName;
-			document.getElementById("firstnameInput").value = response.firstName;
-			document.getElementById("midnameInput").value = response.secondName;
+			document.getElementById("lastnameInput").value = titleCase(response.lastName, ' ');
+			document.getElementById("firstnameInput").value = titleCase(response.firstName, ' ');
+			document.getElementById("midnameInput").value = titleCase(response.secondName, ' ');
 			document.getElementById("dobInput").value = response.birthDate.slice(0,10);
 			let countryValue = 88
 			for (let i = 0; i < document.getElementById("countryInput").options.length; i++) {
@@ -186,12 +206,30 @@ $("#iinAutoFill").click(() => {
 				}
 			}
 			document.getElementById("countryInput").value = countryValue;
-			if (response.sex == "1") {
+			if (response.sex == "3") {
 				document.getElementById("gender-0").checked = true;
 			} else if (response.sex == "2") {
 				document.getElementById("gender-1").checked = true;
 			} else {
 				document.getElementById("gender-2").checked = true;
+			}
+
+			if (response.address != null) {
+				let addressValues = response.address.addressString.split(", ");
+				for (let i = 0; i < addressValues.length; i++) {
+					addressValues[i] = addressValues[i].split(": ");
+					if (addressValues[i].length > 1) {
+						addressValues[i] = addressValues[i][1];
+					}  else {
+						addressValues[i] = "";
+					}
+				}
+				document.getElementById("cityInput").value = titleCase(addressValues[1], ' ');
+				document.getElementById("streetInput").value = titleCase(addressValues[3], ' ');
+				document.getElementById("houseInput").value = titleCase(addressValues[4], ' ');
+			}
+			if (response.phone != null) {
+				document.getElementById("phoneInput").value = response.phone.PhoneNumber;
 			}
 
 			$.notify({
@@ -202,10 +240,25 @@ $("#iinAutoFill").click(() => {
 			});
         },
         error: function(jqXHR, textStatus, errorThrown) {
-		   console.log(textStatus, errorThrown);
+		   console.log(textStatus, errorThrown, jqXHR);
+		   // not valid iin
+		   text = 'Неизвестная ошибка';
+		   if (jqXHR.status == 403) {
+			   text = 'Невалидный ИИН';
+		   }
+
+		   // not found
+		   if (jqXHR.status == 405) {
+			   text = 'Не найдено в базе';
+		   }
+
+		   if (jqXHR.status == 406) {
+			   text = 'Сервис недоступен';
+		   }
+
 		   $.notify({
 				icon: 'fa fa-times',
-				message: 'Не найдено'
+				message: text
 			},{
 				type: 'danger',
 			});

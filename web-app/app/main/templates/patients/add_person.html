@@ -318,7 +318,7 @@ $("#open_modal_add_patient").on("click", function(e){
   $("#hiddenSubmit")[0].click()
 } else {
   var addCheckBody = document.getElementById("add_check_body")
-  addCheckBody.innerHTML = `<b>{{ _("ФИО") }}:</b> ${$("#first_name").val()} ${$("#second_name").val()} ${$("#patronymic_name").val()} <br>`
+  addCheckBody.innerHTML = `<b>{{ _("ФИО") }}:</b> ${$("#firstnameInput").val()} ${$("#lastnameInput").val()} ${$("#midnameInput").val()} <br>`
   addCheckBody.innerHTML += `<b>{{ _("Тип Въезда в Страну") }}:</b> ` + $("#travel_type option:selected").text() + `<br>`
 }
 });

@@ -23,17 +23,16 @@ from sqlalchemy import func, exc
 
 from app import login_manager, db
 from app import constants as c
-from app.main import blueprint
 from app.main.models import Region, Country, VisitedCountry, Infected_Country_Category
-from app.main.models import TravelType, BorderControl, VariousTravel, BlockpostTravel, Address
-# from app.main.patients.models import Patient, PatientStatus, ContactedPersons, State, PatientState
-from app.main.patients.models import Patient, ContactedPersons, State, PatientState
+from app.main.models import TravelType, BorderControl, VariousTravel, BlockpostTravel, Address, HGBDToken
+from app.main.patients.forms import PatientForm, UpdateProfileForm, AddFlightFromExcel, ContactedPatientsSearchForm
+from app.main.patients.models import Patient, PatientStatus, ContactedPersons, State, PatientState
+from app.main.patients.modules import ContactedPatientsTableModule
 from app.main.hospitals.models import Hospital, Hospital_Type
 from app.main.flights_trains.models import FlightCode, FlightTravel, Train, TrainTravel
-from app.main.patients.forms import PatientForm, UpdateProfileForm, AddFlightFromExcel
 from app.main.forms import TableSearchForm
 from app.main.routes import route_template
-from app.main.util import get_regions, get_regions_choices, get_flight_code, populate_form
+from app.main.util import get_regions, get_regions_choices, get_flight_code, populate_form, parse_date
 from app.login.util import hash_pass
 
 def prepare_patient_form(patient_form, with_old_data = False):
@@ -186,7 +185,7 @@ def handle_add_update_patient(request_dict, final_dict, update_dict = {}):
                 request_dict[key] = None
             final_dict[key] = request_dict[key]
     # 2
-    final_dict['dob'] = datetime.strptime(request.form['dob'], '%Y-%m-%d')    
+    final_dict['dob'] = parse_date(request.form['dob'])    
     final_dict['gender'] = None if int(request_dict['gender']) == -1 else int(request_dict['gender']) == 1
 
     # TODO
@@ -196,8 +195,8 @@ def handle_add_update_patient(request_dict, final_dict, update_dict = {}):
     # final_dict['is_found'] = int(request_dict['is_found']) == 1
     # final_dict['is_infected'] = int(request_dict['is_infected']) == 1    
     # final_dict['is_contacted'] = int(request_dict['is_contacted']) == 1
-    is_found
-    is_infected
+    # is_found
+    # is_infected
 
     # 3
     travel_type = TravelType.query.filter_by(value=request_dict['travel_type']).first()
@@ -619,6 +618,8 @@ def patients():
         
         select_contacted = patient.id
 
+    q = q.order_by(Patient.created_date.desc())
+
     page = 1
     per_page = 10
     if "page" in request.args:
@@ -662,6 +663,11 @@ def patients():
 
     if "delete" in request.args:
         change = _("Пользователь успешно удален")
+
+    if "success" in request.args:
+        change = request.args['success']
+    elif "error" in request.args:
+        error_msg = request.args['error']
 
     form.process()
     return route_template('patients/patients', patients=patients, form=form, page=page, max_page=max_page, total = total_len, 
@@ -734,25 +740,25 @@ def contacted_persons():
             if "success" in request.args:
                 change = request.args['success']
             elif "error" in request.args:
-                error_msg = request.args['error']     
+                error_msg = request.args['error']
+            
+            contacted_search_form = ContactedPatientsSearchForm()
+            if not contacted_search_form.region_id.choices:
+                contacted_search_form.region_id.choices = get_regions_choices(current_user)
 
-            page = 1
-            per_page = 10
-            if "page" in request.args:
-                page = int(request.args["page"])
+            q = q.join(ContactedPersons.contacted_patient)
 
-            total_len = q.count()
-
-            for contact in q.offset((page-1)*per_page).limit(per_page).all():
-                p_id = contact.contacted_patient_id
-                patients.append(Patient.query.filter_by(id=p_id).first())
-
-            max_page = math.ceil(total_len/per_page)
+            try:
+                contacted_patients_table = ContactedPatientsTableModule(request, q, contacted_search_form,
+                                        (_("Выбрать Контактное Лицо"), "patients?select_contacted_id={}".format(patient.id)))
+            except ValueError:
+                return render_template('errors/error-500.html'), 500
 
             form.process()
-            return route_template('patients/contacted_persons', patients=patients, all_patients=all_patients, form=form, page=page, 
-                                            max_page=max_page, total = total_len, constants=c, main_patient=patient,
-                                            infected_contact=infected_contact, change=change, error_msg=error_msg)
+            return route_template('patients/contacted_persons', patients=patients,
+                                contacted_patients_table=contacted_patients_table, contacted_search_form=contacted_search_form,
+                                all_patients=all_patients, form=form, constants=c, main_patient=patient,
+                                infected_contact=infected_contact, change=change, error_msg=error_msg)
         else:
             return render_template('errors/error-404.html'), 404
 
@@ -785,23 +791,22 @@ def delete_contacted():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))    
 
-    if "infected_id" in request.args and "contacted_id" in request.args:
+    if "contact_id" in request.args:
         try:
-            contact = ContactedPersons.query.filter_by(infected_patient_id = request.args["infected_id"])
-            contact = contact.filter_by(contacted_patient_id=request.args["contacted_id"]).first()
-
+            contact = ContactedPersons.query.filter_by(id = request.args["contact_id"]).first()
         except exc.SQLAlchemyError:
             return render_template('errors/error-400.html'), 400        
 
         if contact:
+            infected_patient_id = contact.infected_patient_id
             db.session.delete(contact)
             db.session.commit()
             message = _("Контактная связь успешно удалена")
 
-            return redirect("/contacted_persons?id={}&success={}".format(request.args["infected_id"], message))
+            return redirect("/contacted_persons?id={}&success={}".format(infected_patient_id, message))
 
-    message = _("Не удалось удалить связь")
-    return redirect("/contacted_persons?id={}&error={}".format(request.args["infected_id"], message))
+    message = _("Не удалось удалить контактную связь")
+    return redirect("/patients?error={}".format(message))
 
 @blueprint.route('/add_state', methods=['POST'])
 @login_required
@@ -835,36 +840,147 @@ def add_state():
     url = f"/patient_profile?id={request.form['id']}"
     return redirect(url)
 
-def getIinData(iin):
-    hGBDpath = os.getenv("HGBD_URL", "")
-    address = f"{hGBDpath}/api/Person?fioiin={iin}&page=1&pagesize=1"
-    r = requests.get(url=address)
-    data = r.json()
-    if len(data) == 0:
+class RPNService:
+    def __init__(self):
+        self.hgdb = self.getHGBDToken()
+
+    def incrementCount(self):
+        self.hgdb.count += 1
+        db.session.add(self.hgdb)
+        db.session.commit()
+
+    def checkToken(self, token):
+        """Function check if API returns valid response with given token
+        
+        Return:
+            (bool)
+        """
+        hGBDpath = "http://5.104.236.197:22999/services/api/person"
+        address = f"{hGBDpath}?fioiin=иванов&page=1&pagesize=1"
+        headers = {'Authorization': f"Bearer {token}"}
+        response = requests.request("GET", address, headers=headers, verify=False)
+        if not response.ok:
+            return False
+        data = response.json()
+        if type(data) != list or len(data) == 0:
+            return False
+        return True
+
+    def getHGBDToken(self):
+        """Function to retrieve token from HGBD
+
+        If there is no token, then new one is retrieved.
+        Token is checked for validity by self.checkToken
+
+        Return:
+            (HGBDToken|None)
+        """
+        tokenRecord = None
+        tokenFuncs = [HGBDToken.query.order_by(-HGBDToken.id).first, self.newHGBDToken]
+        for tokenFunc in tokenFuncs:
+            tokenRecord = tokenFunc()
+            if tokenRecord is None:
+                continue
+            healthy = self.checkToken(tokenRecord.token)
+            if healthy:
+                return tokenRecord
         return None
-    return data[0]
+
+    def newHGBDToken(self):
+        """Function sends request to eta777 to fetch access_token for HGBD database.
+        If server returns valid response, then the new token is saved to database.
+
+        Return:
+            token: (str|None) None if couldnt retrieve token
+        """
+
+        url = f"{os.getenv('RPN_URL')}/oauth/token"
+        payload = f"grant_type=password&username={os.getenv('RPN_USERNAME')}&password={os.getenv('RPN_PASSWORD')}&scope=profile"
+        headers = {
+            'Authorization': f"Basic {os.getenv('RPN_CLIENT')}",
+            'Content-Type': 'text/plain'
+        }
+        response = requests.request("POST", url, headers=headers, data = payload, verify=False)
+        data = response.json()
+        if "access_token" not in data:
+            return None
+        hgbd = HGBDToken(token=data["access_token"])
+        db.session.add(hgbd)
+        db.session.commit()
+        return hgbd
+    
+    def getPerson(self, iin):
+        """Function fetches user data by iin
+
+        Args:
+            iin: (str)    
+        Return:
+            response: (Requests)
+        """
+        if self.hgdb is None:
+            return None
+        token = self.hgdb.token
+        hGBDpath = f"{os.getenv('RPN_API_URL')}/services/api/person"
+        address = f"{hGBDpath}?fioiin={iin}&page=1&pagesize=1"
+        headers = {'Authorization': f"Bearer {token}"}
+        response = requests.request("GET", address, headers=headers, verify=False)
+        data = response.json()
+        if len(data) == 0 or type(data) != list:
+            return None
+        self.incrementCount()
+        data[0]["citizen"] = c.HGDBCountry[data[0]["citizen"]]
+        return data[0]
+    
+    def getPhones(self, personID):
+        if self.hgdb is None:
+            return None
+        token = self.hgdb.token
+        address = f"{os.getenv('RPN_API_URL')}/services/api/person/{personID}/getPhones"
+        headers = {'Authorization': f"Bearer {token}"}
+        response = requests.request("GET", address, headers=headers, verify=False)
+        data = response.json()
+        if len(data) == 0 or type(data) != list:
+            return None
+        self.incrementCount()
+        return data[0]
+
+    def getAddresses(self, personID):
+        if self.hgdb is None:
+            return None
+        token = self.hgdb.token
+        address = f"{os.getenv('RPN_API_URL')}/services/api/person/{personID}/addresses"
+        headers = {'Authorization': f"Bearer {token}"}
+        response = requests.request("GET", address, headers=headers, verify=False)
+        data = response.json()
+        if len(data) == 0 or type(data) != list:
+            return None
+        self.incrementCount()
+        return data[0]
+    
 
 @blueprint.route('/iin/data', methods=['POST'])
 @login_required
 def iin_data():
+    """Endpoint for retrieving user data by iin.
+
+    1) Validate "iin" key and its value.
+    2) Check if there is already a Patient with the same iin
+    3) Get data from HGBD
+
+    If one of this steps fails, returns error with description.
+    """
     data = json.loads(request.data)
     if data == None or 'iin' not in data or type(data['iin']) != str or len(data['iin']) != 12:
         return jsonify({'description': 'No valid iin'}), 403
-    # check if already in db
     patient = Patient.query.filter_by(iin=data['iin']).first()
     if patient:
-        return jsonify({'description': 'Patient exists', 'id':patient.id}), 203
-    # personData = getIinData(data['iin'])
-    personData = {
-        "deathDate": None,
-        "lastName": "Doe",
-        "firstName": "John",
-        "secondName": "Martin",
-        "birthDate": "1995-03-10T00:00:00",
-        "iin": "950310450127",
-        "sex": "1",
-        "citizen": "Казахстан"
-    }
+        return jsonify({'description': 'Patient exists', 'id': patient.id}), 203
+    rpn = RPNService()
+    if rpn.hgdb is None:
+        return jsonify({'description': 'Service unreachable'}), 406
+    personData = rpn.getPerson(data['iin'])
     if personData is None:
         return jsonify({'description': 'Person not found'}), 405
+    personData["address"] = rpn.getAddresses(personData["PersonID"])
+    personData["phone"] = rpn.getPhones(personData["PersonID"])
     return jsonify(personData)

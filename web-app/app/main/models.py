@@ -4,13 +4,15 @@ License: MIT
 Copyright (c) 2019 - present AppSeed.us
 """
 
+import datetime
+
 from flask_login import UserMixin
-from sqlalchemy import Column, Integer, String, Date, Boolean, Float, ForeignKey, JSON
+from sqlalchemy import Column, Integer, String, Date, Boolean, Float, ForeignKey, JSON, DateTime
 
 from app import db
 from app import constants as c
-
 from app.login.util import hash_pass
+from flask_babelex import _
 
 def set_props(model, kwargs):
     for property, value in kwargs.items():
@@ -160,7 +162,10 @@ class VisitedCountry(db.Model):
         set_props(self, kwargs)
 
     def __repr__(self):
-        return str(self.country)        
+        if self.country:
+            return str(self.country)
+        else:
+            return _("Неизвестно")
 
 class Address(db.Model):
 
@@ -188,15 +193,14 @@ class Address(db.Model):
         set_props(self, kwargs)
 
     def __repr__(self):
-        display_str = str(self.country.name)
+        display_str = ""
+
+        for param in [self.country, self.city, self.street, self.house, self.building]:
+            if param != None and param != "":
+                display_str = display_str + "{}, ".format(param)
         
-        # if self.state != None:
-            # display_str = display_str + ", {}".format(self.state)
-
-        display_str = display_str + ", {}, {}, {}".format(str(self.city), str(self.street), str(self.house))
-
-        if self.building != None:
-            display_str = display_str + ", {}".format(str(self.building))
+        # Get rid of the last comma
+        display_str = str(display_str).rstrip().rstrip(",")
 
         return display_str
 
@@ -206,3 +210,11 @@ class Token(db.Model):
     id = Column(Integer, primary_key=True)
     token = Column(String, unique=False)
     organisation = Column(String, unique=False)
+
+class HGBDToken(db.Model):
+    __tablename__ = 'HGBDToken'
+
+    id = Column(Integer, primary_key=True)
+    token = Column(String, nullable=False)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    count = Column(Integer, default=0)
