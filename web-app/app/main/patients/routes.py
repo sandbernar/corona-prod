@@ -589,9 +589,9 @@ def patients():
             form.flight_code.default = c.all_flight_codes    
 
     # TODO
-    # if "not_in_hospital" in request.args:
+    if "not_in_hospital" in request.args:
         # in_hospital_id = PatientStatus.query.filter_by(value=c.in_hospital[0]).first().id
-        # q = q.filter(Patient.status_id != in_hospital_id)
+        q = q.filter(Patient.in_hospital == False)
 
         form.not_in_hospital.default='checked'
 
