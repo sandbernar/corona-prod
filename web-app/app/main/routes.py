@@ -211,7 +211,7 @@ def patients_content_by_id():
                               '</a><br><strong>Регион</strong>:' + repr(p.region) + 
                               '<br><strong>Адрес</strong>: ' + repr(p.home_address) + 
                               '<br><strong>Найден</strong>: ' + is_found + 
-                              '<br><strong>Инфицирован</strong>: ' + is_infected
+                              '<br><strong>Инфицирован</strong>: ' + is_infected,
                               #'<br><strong>Статус</strong>:' + _("Неизвестно") if not p.status else p.status.name + '<br>',
             "clusterCaption": repr(p)
         })
