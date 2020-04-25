@@ -82,10 +82,10 @@ class PatientForm(FlaskForm):
     hospital_type_id = SelectField('Hospital Type' , validators=[DataRequired()])
     hospital_id = SelectField('Hospital', choices = [], validators=[DataRequired()])  
 
-    patient_states = SelectMultipleField(id='patient_states')
+    # patient_states = SelectField(id='patient_states')
     is_found = RadioField("Is Found", id="is_found", choices=[(1, _("Да")),(0, _("Нет"))], default=0, validators=[DataRequired()])
     is_infected = RadioField("Is Infected", id="is_infected", choices=[(1, _("Да")),(0, _("Нет"))], default=0, validators=[DataRequired()])
-    # patient_status = SelectField('Patient Status', id='patient_status' , validators=[DataRequired()])
+    patient_status = SelectField('Patient Status', id='patient_status' , validators=[DataRequired()])
     # is_contacted = RadioField("Is Contacted", id="is_contacted", choices=[(1, _("Да")),(0, _("Нет"))], default=0, validators=[DataRequired()])
 
 

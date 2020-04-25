@@ -114,7 +114,7 @@
                             <div class="col">
                               <div class="form-group">
                                 <label class="form-control-label">{{ _("Статус Нахождения") }}</label><br>
-                                {{ form.patient_states(class="form-control", id="patient_states") }}
+                                {{ form.patient_status(class="form-control", id="patient_status") }}
                               </div>
                             </div>
                           </div>
@@ -309,7 +309,7 @@ $("#travel_type").on("change", function(){
 });
 
 $("#patient_status").on("change", function(){
-  disable_hospital_choice($(this).val() === 'in_hospital')
+  disable_hospital_choice($(this).val() === '3')
 });
 
 $("#open_modal_add_patient").on("click", function(e){

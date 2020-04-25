@@ -232,11 +232,11 @@
                         </tr>
                     </thead>
                     <tbody class="list">
+                        {% for state in states %}
                         <tr>
-                            {% for state in states %}
-                            <td>{{ state.state.name }} </td>
-                            <td>{{ state.comment }}</td>
-                            <td>{{ state.detection_date }}</td>
+                            <td>{{ state.name }} </td>
+                            <td>{{ state.formatted_comment }}</td>
+                            <td>{{ state.formatted_detection_date }}</td>
                                 <!-- <td class="text-right">
                                     <div class="dropdown">
                                         <a class="btn btn-sm btn-icon-only text-light" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -247,8 +247,8 @@
                                         </div>
                                     </div>
                                 </td> -->
-                                {% endfor %}
-                            </tr>
+                        </tr>
+                        {% endfor %}
                         </tbody>
                     </table>
                 </div>

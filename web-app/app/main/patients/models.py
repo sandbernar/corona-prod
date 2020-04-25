@@ -15,6 +15,35 @@ from app.login.models import User
 from app.main.models import Country, Address, VisitedCountry
 from app.login.util import hash_pass
 
+class State(db.Model):
+    """
+    State class represents Patient state:
+    * infected
+    * dead
+    * healthy
+    """
+
+    __tablename__ = 'State'
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False)
+
+class PatientState(db.Model):
+    """
+    PatientState represents many-to-many relationship between Patient and State tables.
+    Table includes:
+    * created_at: creation datetime
+    * detection_date: datetime of detection
+    * comment: comment on state
+    """
+    __tablename__ = 'PatientState'
+
+    id = Column(Integer, primary_key=True)
+    state_id = Column(Integer, nullable=False)
+    patient_id = Column(Integer, nullable=False)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    detection_date = Column(DateTime, default=datetime.datetime.utcnow)
+    comment = Column(String, nullable=True)
+
 class Patient(db.Model):
 
     __tablename__ = 'Patient'
@@ -62,13 +91,72 @@ class Patient(db.Model):
     # DEPRECATED
     status_id = Column(Integer, ForeignKey('PatientStatus.id'))
     status = db.relationship('PatientStatus')
-    is_found = Column(Boolean, unique=False, default=False)
-    is_infected = Column(Boolean, unique=False, default=False)
-    # is_contacted_person = Column(Boolean, unique=False)
-    # is_contacted = Column(Boolean, unique=False, default=False)
+    is_contacted_person = Column(Boolean, unique=False)
+    is_contacted = Column(Boolean, unique=False, default=False)
+
     # infected, dead, healthy
     # states = db.relationship("State", secondary=lambda: PatientState.__table__,
-                            #  backref=db.backref("patients"))
+    #                          backref=db.backref("patients"))
+    @property
+    def states(self):
+        results = PatientState.query.filter_by(patient_id=self.id).all()
+        results = sorted(results, key=lambda k: k.detection_date, reverse=True)
+        for i in range(len(results)):
+            results[i].name = State.query.filter_by(id=results[i].state_id).first().name
+            results[i].formatted_detection_date = datetime.datetime.strftime(results[i].detection_date, "%d.%m.%Y")
+            results[i].formatted_comment = results[i].comment
+            if results[i].comment is None:
+                results[i].formatted_comment = "Нет деталей"
+        return results
+    
+    def addState(self, state: PatientState):
+        if self.id is None:
+            return
+        state.patient_id = self.id
+        db.session.add(state)
+        db.session.commit()
+        return state
+
+    # is_found = Column(Boolean, unique=False, default=False)
+    @property
+    def is_found(self):
+        state = State.query.filter_by(name=c.state_found).first()
+        found = PatientState.query.filter_by(patient_id=self.id).filter_by(state_id=state.id).first()
+        if found:
+            return True
+        return False
+    
+    @is_found.setter
+    def is_found(self, value):
+        if value == True and self.id is not None:
+            state = State.query.filter_by(name=c.state_found).first()
+            patientState = PatientState(
+                state_id=state.id,
+                patient_id=self.id
+            )
+            db.session.add(patientState)
+            db.session.commit()
+
+    # is_infected = Column(Boolean, unique=False, default=False)
+    @property
+    def is_infected(self):
+        state = State.query.filter_by(name=c.state_infec).first()
+        infec = PatientState.query.filter_by(patient_id=self.id).filter_by(state_id=state.id).first()
+        if infec:
+            return True
+        return False
+    
+    @is_infected.setter
+    def is_infected(self, value):
+        if value == True and self.id is not None:
+            state = State.query.filter_by(name=c.state_infec).first()
+            patientState = PatientState(
+                state_id=state.id,
+                patient_id=self.id
+            )
+            db.session.add(patientState)
+            db.session.commit()
+    
 
     def __init__(self, **kwargs):
         for property, value in kwargs.items():
@@ -108,37 +196,6 @@ class Patient(db.Model):
         created_date = result.fetchone()[1]
 
         return created_date
-
-
-class State(db.Model):
-    """
-    State class represents Patient state:
-    * infected
-    * dead
-    * healthy
-    """
-
-    __tablename__ = 'State'
-    id = Column(Integer, primary_key=True)
-    name = Column(String, nullable=False)
-
-class PatientState(db.Model):
-    """
-    PatientState represents many-to-many relationship between Patient and State tables.
-    Table includes:
-    * created_at: creation datetime
-    * detection_date: datetime of detection
-    * comment: comment on state
-    """
-    __tablename__ = 'PatientState'
-
-    id = Column(Integer, primary_key=True)
-    state_id = Column(Integer, nullable=False)
-    patient_id = Column(Integer, nullable=False)
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
-    detection_date = Column(DateTime, default=datetime.datetime.utcnow)
-    comment = Column(String, nullable=True)
-
 
 class ContactedPersons(db.Model):
     __tablename__ = 'ContactedPersons'

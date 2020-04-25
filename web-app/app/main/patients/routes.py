@@ -23,6 +23,7 @@ from sqlalchemy import func, exc
 
 from app import login_manager, db
 from app import constants as c
+from app.main import blueprint
 from app.main.models import Region, Country, VisitedCountry, Infected_Country_Category
 from app.main.models import TravelType, BorderControl, VariousTravel, BlockpostTravel, Address, HGBDToken
 from app.main.patients.forms import PatientForm, UpdateProfileForm, AddFlightFromExcel, ContactedPatientsSearchForm
@@ -94,9 +95,9 @@ def prepare_patient_form(patient_form, with_old_data = False):
     patient_form.hospital_type_id.choices = hospital_types
 
     # States
-    patient_states = State.query.all()
-    if not patient_form.patient_states.choices:
-        patient_form.patient_states.choices = [(s.id, s.name) for s in patient_states]
+    patient_status = State.query.order_by(-State.id).all()
+    if not patient_form.patient_status.choices:
+        patient_form.patient_status.choices = [(s.id, s.name) for s in patient_status]
 
     # Countries
     countries = Country.query.all()
@@ -189,11 +190,13 @@ def handle_add_update_patient(request_dict, final_dict, update_dict = {}):
     final_dict['gender'] = None if int(request_dict['gender']) == -1 else int(request_dict['gender']) == 1
 
     # TODO
-    # status = request_dict.get('patient_status', c.no_status[0])
-    # final_dict['status_id'] = PatientStatus.query.filter_by(value=status).first().id
-    # final_dict['status_id'] = 0
-    # final_dict['is_found'] = int(request_dict['is_found']) == 1
-    # final_dict['is_infected'] = int(request_dict['is_infected']) == 1    
+    state_id = request_dict.get('patient_status')
+    if state_id:
+        state = State.query.filter_by(id=int(state_id)).first()
+        if state is not None and state.name != "Найден":
+            final_dict['state_id'] = state.id
+    final_dict['is_found'] = int(request_dict['is_found']) == 1
+    final_dict['is_infected'] = int(request_dict['is_infected']) == 1    
     # final_dict['is_contacted'] = int(request_dict['is_contacted']) == 1
     # is_found
     # is_infected
@@ -212,8 +215,14 @@ def handle_add_update_patient(request_dict, final_dict, update_dict = {}):
     final_dict['job_address_id'] = job_address.id
 
 def handle_after_patient(request_dict, final_dict, patient, update_dict = {}):
-    travel_type = patient.travel_type
+    # print(patient)
+    patient.is_found = final_dict['is_found']
+    patient.is_infected = final_dict['is_infected']
+    if 'state_id' in final_dict:
+        patientState = PatientState(state_id=final_dict['state_id'])
+        patient.addState(patientState)
 
+    travel_type = patient.travel_type
     if travel_type:
         if travel_type.value == c.flight_type[0]:
             f_travel = update_dict.get('flight_travel', FlightTravel(patient_id = patient.id))
@@ -309,11 +318,11 @@ def add_patient():
         # create Patient
         handle_add_update_patient(request_dict, final_dict)        
         patient = Patient(**final_dict)
-        # db.session.add(patient)
-        # db.session.commit()
+        db.session.add(patient)
+        db.session.commit()
 
         # Create Travels and VisitedCountries to created Patient
-        # handle_after_patient(request_dict, final_dict, patient)
+        handle_after_patient(request_dict, final_dict, patient)
         return jsonify({"patient_id": patient.id})
     else:
         return route_template( 'patients/add_person', form=patient_form, added=False, error_msg=None, c=c)
@@ -468,7 +477,8 @@ def patient_profile():
 
             form.process()
 
-            states = PatientState.query.filter_by(patient_id=patient.id).join(State).all()
+            # states = PatientState.query.filter_by(patient_id=patient.id).all()
+            states = patient.states
 
             return route_template('patients/profile', states=states, patient=patient, age=age, hospital_name=hospital_name, form = form, change = change, c=c, travel=travel)
     else:    

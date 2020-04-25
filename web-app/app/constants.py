@@ -14,6 +14,7 @@ state_hosp = "Госпитализирован"
 state_healthy = "Выздоровление"
 state_is_home = "Домашний Карантин"
 state_is_transit = "Транзит"
+state_found = "Найден"
 states = [
 	state_dead,
 	state_infec,
@@ -21,6 +22,7 @@ states = [
 	state_healthy,
 	state_is_home,
 	state_is_transit,
+	state_found
 ]
 
 # patient_statuses = [no_status, in_hospital, is_home, is_transit]
