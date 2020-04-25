@@ -8,6 +8,9 @@ import datetime
 
 from flask_login import UserMixin
 from sqlalchemy import Column, Integer, String, Date, Boolean, Float, ForeignKey, JSON, DateTime
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import column_property
+from sqlalchemy import select, func, case
 
 from app import db
 from app import constants as c
@@ -94,10 +97,27 @@ class Patient(db.Model):
     is_contacted_person = Column(Boolean, unique=False)
     is_contacted = Column(Boolean, unique=False, default=False)
 
+    infected_state_count = column_property(
+        select([func.count(PatientState.id)]).\
+            where(PatientState.patient_id==id).\
+            where(PatientState.state_id == select([State.id]).where(State.name == c.state_infec).limit(1))
+    )
+
+    found_state_count = column_property(
+        select([func.count(PatientState.id)]).\
+            where(PatientState.patient_id==id).\
+            where(PatientState.state_id == select([State.id]).where(State.name == c.state_found).limit(1))
+    )
+
+    hosp_state_count = column_property(
+        select([func.count(PatientState.id)]).\
+            where(PatientState.patient_id==id).\
+            where(PatientState.state_id == select([State.id]).where(State.name == c.state_hosp).limit(1))
+    )
     # infected, dead, healthy
     # states = db.relationship("State", secondary=lambda: PatientState.__table__,
     #                          backref=db.backref("patients"))
-    @property
+    @hybrid_property
     def states(self):
         results = PatientState.query.filter_by(patient_id=self.id).all()
         results = sorted(results, key=lambda k: k.detection_date, reverse=True)
@@ -117,14 +137,30 @@ class Patient(db.Model):
         db.session.commit()
         return state
 
+    @hybrid_property
+    def in_hospital(self):
+        state = State.query.filter_by(name=c.state_hosp).first()
+        hosp = PatientState.query.filter_by(patient_id=self.id).filter_by(state_id=state.id).first()
+        if hosp:
+            return True
+        return False
+    
+    @in_hospital.expression
+    def in_hospital(cls):
+        return cls.hosp_state_count > 0
+
     # is_found = Column(Boolean, unique=False, default=False)
-    @property
+    @hybrid_property
     def is_found(self):
         state = State.query.filter_by(name=c.state_found).first()
         found = PatientState.query.filter_by(patient_id=self.id).filter_by(state_id=state.id).first()
         if found:
             return True
         return False
+
+    @is_found.expression
+    def is_found(cls):
+        return cls.found_state_count > 0
     
     @is_found.setter
     def is_found(self, value):
@@ -138,13 +174,17 @@ class Patient(db.Model):
             db.session.commit()
 
     # is_infected = Column(Boolean, unique=False, default=False)
-    @property
+    @hybrid_property
     def is_infected(self):
         state = State.query.filter_by(name=c.state_infec).first()
         infec = PatientState.query.filter_by(patient_id=self.id).filter_by(state_id=state.id).first()
         if infec:
             return True
         return False
+    
+    @is_infected.expression
+    def is_infected(cls):
+        return cls.infected_state_count > 0
     
     @is_infected.setter
     def is_infected(self, value):
@@ -159,16 +199,16 @@ class Patient(db.Model):
     
 
     def __init__(self, **kwargs):
-        for property, value in kwargs.items():
+        for hybrid_property, value in kwargs.items():
             if hasattr(value, '__iter__') and not isinstance(value, str):
                 value = value[0]
 
-            setattr(self, property, value)
+            setattr(self, hybrid_property, value)
 
     def __repr__(self):
         return "{} {} {}".format(str(self.second_name), str(self.first_name), str(self.patronymic_name))
 
-    @property
+    @hybrid_property
     def serialize(self):
         """Return object data in easily serializable format"""
         color = "green"
@@ -210,15 +250,15 @@ class ContactedPersons(db.Model):
     attrs = Column(JSON, unique=False)
 
     def __init__(self, **kwargs):
-        for property, value in kwargs.items():
+        for hybrid_property, value in kwargs.items():
             if hasattr(value, '__iter__') and not isinstance(value, str):
                 value = value[0]
-            setattr(self, property, value)
+            setattr(self, hybrid_property, value)
 
     def __repr__(self):
         return str(self.id)
 
-    @property
+    @hybrid_property
     def created_date(self):
         sql = "select * from logging.t_history WHERE tabname='ContactedPersons' \
                 AND new_val->>'id'='{}' AND operation='INSERT';".format(self.id)
@@ -249,11 +289,11 @@ class PatientStatus(db.Model):
     name = Column(String, unique=True)
 
     def __init__(self, **kwargs):
-        for property, value in kwargs.items():
+        for hybrid_property, value in kwargs.items():
             if hasattr(value, '__iter__') and not isinstance(value, str):
                 value = value[0]
 
-            setattr(self, property, value)
+            setattr(self, hybrid_property, value)
 
     def __repr__(self):
         return str(self.name)
