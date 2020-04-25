@@ -47,7 +47,11 @@ def prepare_patient_form(patient_form, with_old_data = False):
     regions_choices = get_regions_choices(current_user, False)
 
     if not patient_form.region_id.choices:
-        patient_form.region_id.choices = regions_choices
+        patient_form.region_id.choices = [("", "")] + regions_choices
+        if current_user.region_id != None:
+            patient_form.region_id.default = current_user.region_id
+
+    if not patient_form.hospital_region_id.choices:
         patient_form.hospital_region_id.choices = regions_choices
 
     if not patient_form.travel_type.choices:
