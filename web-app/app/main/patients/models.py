@@ -46,6 +46,7 @@ class PatientState(db.Model):
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     detection_date = Column(DateTime, default=datetime.datetime.utcnow)
     comment = Column(String, nullable=True)
+    attrs = Column(JSON, default={})
 
 class Patient(db.Model):
 
