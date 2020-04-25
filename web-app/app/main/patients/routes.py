@@ -238,7 +238,7 @@ def handle_after_patient(request_dict, final_dict, patient, update_dict = {}):
         elif travel_type.value == c.blockpost_type[0]:
             blockpost_t = update_dict.get('blockpost_travel', BlockpostTravel(patient_id = patient.id))
             
-            date = request_dict['arrival_date']
+            date = parse_date(request_dict['arrival_date'])
             blockpost_r_id = request_dict['blockpost_region_id']
             
             if blockpost_t.region_id != blockpost_r_id or blockpost_t.date != date:
@@ -260,7 +260,7 @@ def handle_after_patient(request_dict, final_dict, patient, update_dict = {}):
             if border_form_key:
                 v_travel = update_dict.get('various_travel', VariousTravel(patient_id = patient.id))
 
-                date = request_dict['arrival_date']
+                date = parse_date(request_dict['arrival_date'])
                 border_control_id = request_dict[border_form_key]
 
                 if v_travel.border_control_id != border_control_id or v_travel.date != date:
