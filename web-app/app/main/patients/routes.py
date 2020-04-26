@@ -400,7 +400,8 @@ def patient_profile():
 
                 # TODO
                 # if patient.status.value != c.in_hospital[0]:
-                    # patient.hospital_id = None
+                if patient.in_hospital == False:
+                    patient.hospital_id = None
 
                 db.session.add(patient)
                 db.session.commit()
@@ -427,17 +428,6 @@ def patient_profile():
             if patient.is_infected:
                 form.is_infected.default = 'checked'
             
-            # if patient.is_contacted:
-                # form.is_contacted.default = 'checked'
-
-            # TODO
-            # if patient.status:
-            #     if patient.status.value == c.in_hospital[0]:
-            #         form.in_hospital.default = 'checked'
-            #     elif patient.status.value == c.is_home[0]:
-            #         form.is_home.default = 'checked'
-            #     elif patient.status.value == c.is_transit[0]:
-            #         form.is_transit.default = 'checked'                        
 
             hospital_name = None
             if patient.hospital:
@@ -849,6 +839,37 @@ def add_state():
     
     url = f"/patient_profile?id={request.form['id']}"
     return redirect(url)
+
+
+@blueprint.route('/delete_state', methods=['POST'])
+@login_required
+def delete_state():
+    if len(request.form):
+        patient_state_id = request.form["id"]
+        patient_state = PatientState.query.filter_by(id=patient_state_id).first()
+        if patient_state:
+            db.session.delete(patient_state)
+            db.session.commit()
+    url = f"/patient_profile?id={request.form['patientID']}"
+    return redirect(url)
+
+@blueprint.route('/update_state', methods=['POST'])
+@login_required
+def update_state():
+    if len(request.form):
+        patient_state_id = request.form["id"]
+        patient_state = PatientState.query.filter_by(id=patient_state_id).first()
+        if patient_state:
+            state = State.query.filter_by(id=request.form["state"]).first()
+            if state:
+                patient_state.state_id = state.id
+            patient_state.detection_date = request.form["detection_date"]
+            patient_state.comment = request.form["comment"]
+            db.session.add(patient_state)
+            db.session.commit()
+    url = f"/patient_profile?id={request.form['patientID']}"
+    return redirect(url)
+
 
 class RPNService:
     def __init__(self):

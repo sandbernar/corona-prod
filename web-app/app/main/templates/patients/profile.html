@@ -76,6 +76,73 @@
     </div>
 </div>
 
+<!-- Modal DELETE PatientState -->
+<div class="modal fade" id="deletePatientStateModal" tabindex="-1" role="dialog" aria-labelledby="deletePatientStateModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deletePatientStateModalLabel">Удаление статуса</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <h2>Вы уверены что хотите удалить статус?</h2>
+          <p>Статус: <span id="deletePatientStateState"></span></p>
+          <p>Комментарий: <span id="deletePatientStateComment"></span></p>
+          <p>Дата выявление: <span id="deletePatientStateDate"></span></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
+          <form action="/delete_state" method="POST">
+            {{ form.hidden_tag() }}
+            <input type="hidden" name="id" id="deletePatientStateID" value=''>
+            <input type="hidden" name="patientID" value='{{ patient.id }}'>
+            <button type="submit" class="btn btn-danger">Удалить</button>
+        </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<!-- Modal UPDATE STATE-->
+<div class="modal fade" id="updatePatientStateModal" tabindex="-1" role="dialog" aria-labelledby="updatePatientStateModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="updatePatientStateModalLabel">Изменить статус</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true"></span>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <form action="/update_state" method="POST">
+                    {{ form.hidden_tag() }}
+                    <input type="hidden" name="patientID" value='{{ patient.id }}'>
+                    <input type="hidden" name="id" id="updatePatientStateID" value=''>
+                    <div class="form-group">
+                        <label for="name-input" class="form-control-label">Статус</label>
+                        {{ form.state(class="form-control", id="updatePatientStateState") }}
+                    </div>
+                    <div class="form-group">
+                        <label for="name-input" class="form-control-label">Комментарий</label>
+                        <input class="form-control" id="updatePatientStateComment" name="comment" type="text" value="">
+                    </div>
+                    <div class="form-group">
+                        <label for="name-input" class="form-control-label">Дата выявления</label>
+                        <input class="form-control datepicker" id="updatePatientStateDate" name="detection_date" type="date" value="">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
+                        <button type="submit" class="btn btn-primary">Сохранить</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Page content -->
 <div class="container-fluid mt--7">
     <form method="POST"> 
@@ -96,41 +163,17 @@
                             {{ _("Возраст") }} {{ age }}<span class="font-weight-light"></span>
                         </h3>
                         <div class="row">
-                            <div class="col">
-                              <div class="custom-control custom-checkbox">
-                                {{ form.is_found(class="custom-control-input", id="is_found_checkbox", onchange="found_changed($(this).prop('checked'))") }}
-                                <label class="custom-control-label" for="is_found_checkbox">{{ _("Найден") }}</label>
-                            </div>
-                        </div>
-                        <div class="col">
-                            <div class="custom-control custom-checkbox">
-                                {{ form.is_infected(class="custom-control-input", id="is_infected_checkbox") }}
-                                <label class="custom-control-label" for="is_infected_checkbox">{{ _("Инфицирован") }}</label>
-                            </div>
-                        </div>
+                            {% if patient.is_found %}
+                                <span style="margin-top: 0.5rem; margin-left: 0.5rem;"class="badge badge-primary">{{ _("Найден") }}</span>
+                            {% endif %}                        
+                            {% if patient.in_hospital %}
+                            <span style="margin-top: 0.5rem; margin-left: 0.5rem;"class="badge badge-success">{{ _("Госпитализирован") }}</span>
+                            {% endif %}                        
+                            {% if patient.is_infected %}
+                                <span style="margin-top: 0.5rem; margin-left: 0.5rem;"class="badge badge-danger">{{ _("Инфицирован") }}</span>
+                            {% endif %}                        
                         <!-- HERE WAS form.is_contacted -->
-                  </div>
-                  <hr class="my-4" />
-                  <div class="row">
-                    <div class="col">
-                        <div class="custom-control custom-checkbox">
-                            {{ form.in_hospital(class="custom-control-input", id="in_hospital_checkbox") }}                    
-                            <label class="custom-control-label" for="in_hospital_checkbox">{{ _("Госпитализирован") }}</label>
-                        </div>
-                    </div>
-                    <div class="col">
-                        <div class="custom-control custom-checkbox">
-                            {{ form.is_home(class="custom-control-input", id="is_home", onchange="status_exclusive_checkbox($(this))") }}
-                            <label class="custom-control-label" for="is_home">{{ _("Домашний Карантин") }}</label>
-                        </div>
-                    </div>
-                    <div class="col">
-                        <div class="custom-control custom-checkbox">
-                            {{ form.is_transit(class="custom-control-input", id="is_transit", onchange="status_exclusive_checkbox($(this))") }}
-                            <label class="custom-control-label" for="is_transit">{{ _("Транзит") }}</label>
-                        </div>
-                    </div>                    
-                </div>                    
+                        </div>              
                 <hr class="my-4" />
                 <div class="col mt-3">
                   <div class="form-group">
@@ -237,16 +280,19 @@
                             <td>{{ state.name }} </td>
                             <td>{{ state.formatted_comment }}</td>
                             <td>{{ state.formatted_detection_date }}</td>
-                                <!-- <td class="text-right">
-                                    <div class="dropdown">
-                                        <a class="btn btn-sm btn-icon-only text-light" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                          <i class="fas fa-ellipsis-v"></i>
-                                        </a>
-                                        <div class="dropdown-menu dropdown-menu-right dropdown-menu-arrow">
-                                            <a class="dropdown-item" href="#">Удалить</a>
-                                        </div>
+                            <td class="text-right">
+                                <div class="dropdown">
+                                    <a class="btn btn-sm btn-icon-only text-light" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </a>
+                                    <div class="dropdown-menu dropdown-menu-right dropdown-menu-arrow">
+                                        <a onclick="fillUpdatePatientState({{ state.id }}, '{{ state.name }}', '{{ state.formatted_comment }}', '{{ state.detection_date }}')" 
+                                            class="dropdown-item" href="#" data-toggle="modal" data-target="#updatePatientStateModal">Изменить</a>
+                                        <a onclick="fillDeletePatientState({{ state.id }}, '{{ state.name }}', '{{ state.formatted_comment }}', '{{ state.formatted_detection_date }}')" 
+                                            class="dropdown-item" href="#" data-toggle="modal" data-target="#deletePatientStateModal">Удалить</a>
                                     </div>
-                                </td> -->
+                                </div>
+                            </td>
                         </tr>
                         {% endfor %}
                         </tbody>
@@ -393,7 +439,28 @@
 
             if (border_form_id) $(border_form_id).val({{ travel.border_control_id }})
         {% endif %}
-}
+    }
+
+    function fillDeletePatientState(stateID, stateName, stateComment, stateDetectionDate) {
+        document.getElementById("deletePatientStateState").innerText = stateName;
+        document.getElementById("deletePatientStateComment").innerText = stateComment;
+        document.getElementById("deletePatientStateDate").innerText = stateDetectionDate;
+        document.getElementById("deletePatientStateID").value = stateID;
+    }
+
+    function fillUpdatePatientState(stateID, stateName, stateComment, stateDetectionDate) {
+        let stateValue = null;
+        for (let i = 0; i < document.getElementById("updatePatientStateState").options.length; i++) {
+            if (document.getElementById("updatePatientStateState").options[i].text == stateName) {
+                stateValue = document.getElementById("updatePatientStateState").options[i].value;
+                break;
+            }
+        }
+		document.getElementById("updatePatientStateState").value = stateValue;
+        document.getElementById("updatePatientStateComment").value = stateComment;
+        document.getElementById("updatePatientStateDate").value = stateDetectionDate.slice(0,10);
+        document.getElementById("updatePatientStateID").value = stateID;
+    }
 
 </script>
 {% with change=change, error_msg=error_msg %}
