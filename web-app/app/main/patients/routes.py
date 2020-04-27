@@ -793,9 +793,9 @@ def patients():
         q = q.filter(Patient.telephone.contains(request.args["telephone"]))
         form.telephone.default = request.args["telephone"]
 
-    select_contacted = None
+    select_contacted = request.args.get("select_contacted_id", None)
 
-    if "select_contacted_id" in request.args:
+    if select_contacted:
         try:
             patient_query = Patient.query.filter_by(id = request.args["select_contacted_id"])
             patient = patient_query.first()
@@ -804,13 +804,6 @@ def patients():
         
         select_contacted = patient.id
     
-    if select_contacted:
-        infected_contacted = ContactedPersons.query.filter_by(infected_patient_id=select_contacted)
-        infected_contacted_ids = [c.contacted_patient_id for c in infected_contacted]
-
-        contacted_infected = ContactedPersons.query.filter_by(contacted_patient_id=select_contacted)
-        contacted_infected_ids = [c.infected_patient_id for c in contacted_infected]
-
     # for result in q.offset((page-1)*per_page).limit(per_page).all():
     #     p = result
     #     contacted = ContactedPersons.query.filter_by(infected_patient_id=p.id).all()
@@ -845,7 +838,7 @@ def patients():
         error_msg = request.args['error']
 
     try:
-        all_patients_table = AllPatientsTableModule(request, q)
+        all_patients_table = AllPatientsTableModule(request, q, select_contacted)
     except ValueError:
         return render_template('errors/error-500.html'), 500        
 

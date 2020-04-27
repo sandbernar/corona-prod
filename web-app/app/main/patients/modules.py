@@ -55,9 +55,6 @@ class ContactedPatientsTableModule(TableModule):
                     valid_ids.append(c.id)
 
             self.q = self.q.filter(ContactedPersons.id.in_(valid_ids))
-
-
-            # self.q = self.q.filter(Patient.is_found == bool(int(is_found)))
             self.search_form.is_added_in_2_hours.default = is_added_in_2_hours                            
 
         self.search_form.process()
@@ -88,11 +85,11 @@ class ContactedPatientsTableModule(TableModule):
                 in_hospital, delete_contact_button, is_added_in_2_hours]
 
 class AllPatientsTableModule(TableModule):
-    def __init__(self, request, q, search_form = None, header_button = None, page = 1, per_page = 5):
+    def __init__(self, request, q, select_contacted = None, search_form = None, header_button = None,\
+                    page = 1, per_page = 5):
         table_head = OrderedDict()
         table_head[_("ФИО")] = ["first_name", "second_name", "patronymic_name"]
         table_head[_("ИИН")] = ["iin"]
-        table_head[_("Телефон")] = ["telephone"]
         table_head[_("Тип Въезда")] = ["travel_type_id"]
         table_head[_("Регион")] = []
         table_head[_("Найден")] = ["is_found"]
@@ -101,8 +98,16 @@ class AllPatientsTableModule(TableModule):
         table_head[_("Контактов (найдено/всего)")] = []
         table_head[_("Время Добавления")] = ["created_date"]
 
-        if "select_contacted_id" in request.args:
+        self.select_contacted = select_contacted
+
+        if select_contacted:
             table_head[_("Выбрать контактных")] = []
+
+            infected_contacted = ContactedPersons.query.filter_by(infected_patient_id=select_contacted)
+            self.infected_contacted_ids = [c.contacted_patient_id for c in infected_contacted]
+
+            contacted_infected = ContactedPersons.query.filter_by(contacted_patient_id=select_contacted)
+            self.contacted_infected_ids = [c.infected_patient_id for c in contacted_infected]
 
         super().__init__(request, q, table_head, header_button, search_form)
 
@@ -137,9 +142,6 @@ class AllPatientsTableModule(TableModule):
                     valid_ids.append(c.id)
 
             self.q = self.q.filter(ContactedPersons.id.in_(valid_ids))
-
-
-            # self.q = self.q.filter(Patient.is_found == bool(int(is_found)))
             self.search_form.is_added_in_2_hours.default = is_added_in_2_hours                            
 
         #self.search_form.process()
@@ -149,7 +151,6 @@ class AllPatientsTableModule(TableModule):
 
         patient_id = (patient, "/patient_profile?id={}".format(patient.id))
         iin = patient.iin
-        telephone = patient.telephone
         travel_type = patient.travel_type
         region = patient.region
 
@@ -178,21 +179,28 @@ class AllPatientsTableModule(TableModule):
 
         contacted_count = "{}/{}".format(contacted_found_count, len(contacted))
 
-        # if select_contacted:
-        #     if p.id in infected_contacted_ids:
-        #         p.already_contacted = True
-        #     elif p.id in contacted_infected_ids:
-        #         p.already_infected = True
-
-      # {% if select_contacted == patient.id %}
-      # {{ _("Основной Пациент") }}
-      # {% elif patient.already_contacted %}
-      #   <a href="/contacted_persons?id={{select_contacted}}" class="btn btn-success">{{ _('Контактный') }}</a>
-      # {% elif patient.already_infected %}
-      #   <a href="/contacted_persons?id={{ patient.id }}" class="btn btn-danger">{{ _('Контактировал С') }}</a>
-      # {% else %}                  
-      #   <a href="/select_contacted?infected_patient_id={{ select_contacted }}&contacted_patient_id={{ patient.id }}" class="btn btn-primary">{{ _('Выбрать Контактным') }}</a>                  
-      # {% endif %}
-
-        return [patient_id, iin, telephone, travel_type, region, is_found, \
+        row_to_print = [patient_id, iin, travel_type, region, is_found, \
                 in_hospital, is_infected, contacted_count, created_date]
+
+        if self.select_contacted:
+            select_contacted_button = None
+
+            if self.select_contacted == patient.id:
+                select_contacted_button = _("Основной Пациент")
+            elif patient.id in self.infected_contacted_ids:
+                select_contacted_html = "<a href=\"/contacted_persons?id={}\" class=\"btn btn-success\">{}</a>".format(
+                                        self.select_contacted, _("Контактный"))
+                select_contacted_button = (select_contacted_html, "safe")                
+            elif patient.id in self.contacted_infected_ids:
+                select_contacted_html = "<a href=\"/contacted_persons?id={}\" class=\"btn btn-danger\">{}</a>".format(
+                                        patient.id, _("Контактировал С"))
+                select_contacted_button = (select_contacted_html, "safe")
+            else:
+                select_contacted_html = "<a href=\"/select_contacted?infected_patient_id={}&contacted_patient_id={}\" class=\"btn btn-primary\">{}</a>".format(
+                                        self.select_contacted, patient.id, _("Выбрать Контактным"))
+                select_contacted_button = (select_contacted_html, "safe")
+
+            if select_contacted_button:
+                row_to_print.append(select_contacted_button)
+
+        return row_to_print
