@@ -13,42 +13,58 @@
 {% include "site_template/top-stats.html" %}
 
 <div class="container-fluid mt--7">
-  <div class="row">
-    <div class="col">
-      <div class="card shadow">
-        <div class="card-header border-0">
-            <form method="GET" id="searchForm">
-            {% if select_contacted %}
-              <input type="text" name="select_contacted_id" style="display:none;" value="{{ select_contacted }}">
-            {% endif %}            
-          <div class="row">
-            <div class="col">
-              <h3> {{ _('Поиск Пациента') }} </h3>
-            </div>
-              <div class="col">
-                        {{ form.second_name(class="form-control", placeholder=_('Фамилия')) }}              
+  <div class="card shadow">
+    <div class="card-header border-0">
+      <h3> {{ _('Поиск Пациента') }} </h3>
+      <form method="GET" id="searchForm">
+        {% if select_contacted %}
+        <input type="text" name="select_contacted_id" style="display:none;" value="{{ select_contacted }}">
+        {% endif %}      
+        <div class="card shadow">
+          <div class="card-header border-0">
+            <div class="row">
+              <div class="col-xl">
+                <label class='form-control-label'>{{ _('Фамилия') }}</label>
+                {{ form.second_name(class="form-control", placeholder=_('Фамилия')) }}              
               </div>
-              <div class="col">
-                        {{ form.first_name(class="form-control", placeholder=_('Имя')) }}              
+              <div class="col-xl">
+                <label class='form-control-label'>{{ _('Имя') }}</label>
+                {{ form.first_name(class="form-control", placeholder=_('Имя')) }}              
               </div>
-              <div class="col">
-                        {{ form.patronymic_name(class="form-control", placeholder=_('Отчество')) }}              
+              <div class="col-xl">
+                <label class='form-control-label'>{{ _('Отчество') }}</label>
+                {{ form.patronymic_name(class="form-control", placeholder=_('Отчество')) }}              
               </div>                            
-              <div class="col">
-                        {{ form.iin(class="form-control", placeholder=_('ИИН')) }}              
+              <div class="col-xl">
+                <label class='form-control-label'>{{ _('ИИН') }}</label>
+                {{ form.iin(class="form-control", placeholder=_('ИИН')) }}              
               </div>
-              <div class="col">
-                        {{ form.telephone(class="form-control", placeholder=_('Телефон')) }}              
+              <div class="col-xl">
+                <label class='form-control-label'>{{ _('Телефон') }}</label>
+                {{ form.telephone(class="form-control", placeholder=_('Телефон')) }}              
               </div>
-              <button type="submit" class="btn btn-primary" type="button" style="height:100%">
-                        {{ _('Поиск') }}
-              </button>
+
+            </div>
           </div>
-        </form>
         </div>
-      </div>
+        <div class="card shadow mt-3">
+          <div class="card-header border-0">        
+            <div class="row">
+              <div class="col">
+                {% with form=patients_form %}
+                {% include "patients/modules/travel_form.html" %}
+                {% endwith %}   
+              </div>
+            </div>
+          </div>
+        </div>
+          <button type="submit" class="btn btn-primary btn-full-width mt-3" type="button">
+            {{ _('Поиск') }}
+          </button>
+      </form>
     </div>
   </div>
+
   <!-- Table -->
   <div class="row mt-3">
     <div class="col">
@@ -65,9 +81,21 @@
 
 {% block javascripts %}
 {{ super()}}
+<script type="text/javascript">
+  {% with form=patients_form, c=constants %}
+  {% include "js/travel_form.html" %}
+  {% endwith %}
 
-{% with change=change, error_msg=error_msg %}
-  {% include "site_template/change_notification.html" %}
-{% endwith %}
+  update_travel_form()
+
+  $("#travel_type").on("change", function(){
+    update_travel_form();
+  });
+</script>
+
+
+  {% with change=change, error_msg=error_msg %}
+    {% include "site_template/change_notification.html" %}
+  {% endwith %}
 
 {% endblock javascripts %}

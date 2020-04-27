@@ -184,9 +184,20 @@
 
 </div>
 <div class="col-xl-9 order-xl-1">
-    {% with form=form %}
-    {% include "patients/modules/travel_form.html" %}
-    {% endwith %} 
+    <div class="row">
+      <div class="col">
+        <div class="card shadow">
+          <div class="card-header bg-transparent">
+            <h3 class="mb-0">{{ _("Тип Въезда") }}</h3>
+          </div>    
+          <div class="card-body">
+            {% with form=form %}
+            {% include "patients/modules/travel_form.html" %}
+            {% endwith %}
+        </div>
+        </div>
+      </div>
+    </div>            
     <div class="card bg-secondary shadow mt-3">
         <div class="card-header bg-white">
             <div class="row align-items-center">

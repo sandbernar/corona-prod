@@ -109,7 +109,7 @@
         <div class="col">
             <label for="name-input" class="form-control-label">{{ _("Строк на Странице") }}</label>
             {{ table.table_form.per_page(class="form-control", style="width:initial;", 
-                onclick="setSearchParam('per_page', $('#per_page option:selected').text());setSearchParam('page')") }}
+                onchange="setSearchParam('per_page', $('#per_page option:selected').text());setSearchParam('page')") }}
           </div>
       <div class="col">
       <br>

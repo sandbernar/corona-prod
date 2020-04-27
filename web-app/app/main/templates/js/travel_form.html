@@ -25,32 +25,32 @@ $.ajax({
 };
 
 function update_travel_form() {
-var flightForm = `  <div class='col'>
+var flightForm = `  <div class='col-xl'>
                       <div class='form-group'>
                         <label for='arrival-date-input' class='form-control-label'>{{ _('Дата Въезда') }}</label>
                         {{ form.flight_arrival_date(class='form-control') }}
                         </div>
                       </div>  
-                    <div class='col'>                        
+                    <div class='col-xl'>                        
                       <div class='form-group'>
                         <label for='flight-no-input' class='form-control-label'>{{ _('Номер Рейса') }}</label>
                         {{ form.flight_code_id(class='form-control') }}
                       </div>
                     </div>
-                    <div class='col'>                        
+                    <div class='col-xl'>                        
                       <div class='form-group'>
                         <label for='flight-no-input' class='form-control-label'>{{ _('Место') }}</label>
                         {{ form.flight_seat(class='form-control', placeholder=_('Например') + ' 1C') }}
                       </div>
                     </div>`;
 
-var trainForm = `  <div class='col'>
+var trainForm = `  <div class='col-xl'>
                       <div class='form-group'>
                         <label for='arrival-date-input' class='form-control-label'>{{ _('Дата Отправления') }}</label>
                         {{ form.train_departure_date(class='form-control datepicker', type="date") }}
                         </div>
                       </div>
-                    <div class='col'>
+                    <div class='col-xl'>
                       <div class='form-group'>
                         <label for='arrival-date-input' class='form-control-label'>{{ _('Дата Прибытия') }}</label>
                         {{ form.train_arrival_date(class='form-control datepicker', type="date") }}
@@ -62,20 +62,20 @@ var trainForm = `  <div class='col'>
                         {{ form.train_id(class='form-control') }}
                       </div>
                     </div>
-                    <div class='col'>                        
+                    <div class='col-xl'>                        
                       <div class='form-group'>
                         <label for='flight-no-input' class='form-control-label'>{{ _('Вагон') }}</label>
                         {{ form.train_wagon(class='form-control', placeholder=_('Например') + ' 32') }}
                       </div>
                     </div>                    
-                    <div class='col'>                        
+                    <div class='col-xl'>                        
                       <div class='form-group'>
                         <label for='flight-no-input' class='form-control-label'>{{ _('Место') }}</label>
                         {{ form.train_seat(class='form-control', placeholder=_('Например') + ' 4') }}
                       </div>
                     </div>`;
 
-var blockpostForm = `  <div class='col'>
+var blockpostForm = `  <div class='col-xl'>
                       <div class='form-group'>
                         <label for='arrival-date-input' class='form-control-label'>{{ _('Регион Блокпоста') }}</label>
                         {{ form.blockpost_region_id(class='form-control') }}
@@ -83,7 +83,7 @@ var blockpostForm = `  <div class='col'>
                       </div>  
                     `;
 
-var borderForm = `  <div class='col'>
+var borderForm = `  <div class='col-xl'>
                       <div class='form-group'>
                         <label for='arrival-date-input' class='form-control-label'>{{ _('Дата Въезда') }}</label>
                         {{ form.arrival_date(class='form-control datepicker', type='date') }}
@@ -91,7 +91,7 @@ var borderForm = `  <div class='col'>
                       </div>  
                     `;
 
-var formTemplateBegin = `<div class='col'>                        
+var formTemplateBegin = `<div class='col-xl'>                        
                       <div class='form-group'>
                         <label for='flight-no-input' class='form-control-label'>{{ _('Пункт Пропуска') }}</label>`
 

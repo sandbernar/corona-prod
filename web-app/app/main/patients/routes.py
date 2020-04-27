@@ -803,6 +803,8 @@ def patients():
             return render_template('errors/error-400.html'), 400        
         
         select_contacted = patient.id
+
+    patients_form = prepare_patient_form(PatientForm())
     
     # for result in q.offset((page-1)*per_page).limit(per_page).all():
     #     p = result
@@ -843,7 +845,7 @@ def patients():
         return render_template('errors/error-500.html'), 500        
 
     form.process()
-    return route_template('patients/patients', form=form, all_patients_table = all_patients_table,
+    return route_template('patients/patients', form=form, all_patients_table = all_patients_table, patients_form = patients_form,
                             constants=c, flight_codes_list=flight_codes_list, change=change, error_msg=error_msg, select_contacted = select_contacted)
 
 @blueprint.route('/delete_patient', methods=['POST'])
