@@ -109,10 +109,10 @@
         <div class="col">
             <label for="name-input" class="form-control-label">{{ _("Строк на Странице") }}</label>
             {{ table.table_form.per_page(class="form-control", style="width:initial;", 
-                onclick="setSearchParam('per_page', $('#per_page option:selected').text())")}}
+                onclick="setSearchParam('per_page', $('#per_page option:selected').text());setSearchParam('page')") }}
           </div>
       <div class="col">
-      <label class="form-control-label"></label>
+      <br>
     {% if table.max_page > 1%}
       <nav aria-label="...">
         <ul class="pagination justify-content-end mb-0">
@@ -133,6 +133,7 @@
       </nav>
     {% endif %}
     </div>
+  </div>
     </div>
   </div>
 </form>

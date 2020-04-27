@@ -44,11 +44,10 @@ class TableModule:
 
         if page < 1:
             raise self.WrongPageError
+        self.table_form.process()
 
         self.total_len = q.count()
-        self.max_page = math.ceil(self.total_len/self.per_page)
-
-        self.table_form.process()
+        self.max_page = 0
 
         # Should always be the last one to be called
         self.entries = self.get_entries()
@@ -61,9 +60,13 @@ class TableModule:
             self.search_table()
             self.sort_table()
             entries = []
+
+            self.total_len = self.q.count()
             
             for result in self.q.offset((self.page-1)*self.per_page).limit(self.per_page).all():
                 entries.append(self.print_entry(result))
+
+            self.max_page = math.ceil(self.total_len/self.per_page)
 
             return entries
 
