@@ -42,9 +42,7 @@ class TableModule:
             self.search_table()
             self.sort_table()
             entries = []
-            print("\n")
             print(self.q)
-            print("\n")
             for result in self.q.offset((self.page-1)*self.per_page).limit(self.per_page).all():
                 entries.append(self.print_entry(result))
 

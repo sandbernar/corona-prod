@@ -23,7 +23,7 @@ from app.main.flights_trains.models import FlightCode, FlightTravel, Train, Trai
 from app.main.patients.forms import PatientForm, UpdateProfileForm, AddFlightFromExcel, \
                                     ContactedPatientsSearchForm
 from app.main.forms import TableSearchForm
-from app.main.patients.modules import ContactedPatientsTableModule
+from app.main.patients.modules import ContactedPatientsTableModule, AllPatientsTableModule
 
 from app.main.routes import route_template
 
@@ -803,15 +803,6 @@ def patients():
             return render_template('errors/error-400.html'), 400        
         
         select_contacted = patient.id
-
-    q = q.order_by(Patient.created_date.desc())
-
-    page = 1
-    per_page = 10
-    if "page" in request.args:
-        page = int(request.args["page"])
-
-    total_len = q.count()
     
     if select_contacted:
         infected_contacted = ContactedPersons.query.filter_by(infected_patient_id=select_contacted)
@@ -820,27 +811,25 @@ def patients():
         contacted_infected = ContactedPersons.query.filter_by(contacted_patient_id=select_contacted)
         contacted_infected_ids = [c.infected_patient_id for c in contacted_infected]
 
-    for result in q.offset((page-1)*per_page).limit(per_page).all():
-        p = result
-        contacted = ContactedPersons.query.filter_by(infected_patient_id=p.id).all()
+    # for result in q.offset((page-1)*per_page).limit(per_page).all():
+    #     p = result
+    #     contacted = ContactedPersons.query.filter_by(infected_patient_id=p.id).all()
 
-        p.contacted_count = len(contacted)
-        p.contacted_found_count = 0
+    #     p.contacted_count = len(contacted)
+    #     p.contacted_found_count = 0
 
-        for contact in contacted:
-            contacted_person = Patient.query.filter_by(id=contact.contacted_patient_id).first()
-            if contacted_person and contacted_person.is_found:
-                p.contacted_found_count += 1
+    #     for contact in contacted:
+    #         contacted_person = Patient.query.filter_by(id=contact.contacted_patient_id).first()
+    #         if contacted_person and contacted_person.is_found:
+    #             p.contacted_found_count += 1
 
-        if select_contacted:
-            if p.id in infected_contacted_ids:
-                p.already_contacted = True
-            elif p.id in contacted_infected_ids:
-                p.already_infected = True
+    #     if select_contacted:
+    #         if p.id in infected_contacted_ids:
+    #             p.already_contacted = True
+    #         elif p.id in contacted_infected_ids:
+    #             p.already_infected = True
 
-        patients.append(p)
-
-    max_page = math.ceil(total_len/per_page)
+    #     patients.append(p)
 
     flight_codes_list = [c.all_flight_codes] + [ code.code for code in FlightCode.query.all() ]
 
@@ -855,8 +844,13 @@ def patients():
     elif "error" in request.args:
         error_msg = request.args['error']
 
+    try:
+        all_patients_table = AllPatientsTableModule(request, q)
+    except ValueError:
+        return render_template('errors/error-500.html'), 500        
+
     form.process()
-    return route_template('patients/patients', patients=patients, form=form, page=page, max_page=max_page, total = total_len, 
+    return route_template('patients/patients', form=form, all_patients_table = all_patients_table,
                             constants=c, flight_codes_list=flight_codes_list, change=change, error_msg=error_msg, select_contacted = select_contacted)
 
 @blueprint.route('/delete_patient', methods=['POST'])
