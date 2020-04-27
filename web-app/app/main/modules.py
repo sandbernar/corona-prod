@@ -1,5 +1,8 @@
 from flask import request
 import math
+from wtforms import SelectField
+from wtforms.validators import DataRequired
+from flask_wtf import FlaskForm
 
 class TableModule:
     class WrongPageError(Exception):
@@ -7,6 +10,9 @@ class TableModule:
 
     class WrongSortingParameterError(Exception):
         pass
+
+    class TableForm(FlaskForm):
+        per_page = SelectField(choices=[(5, "5"), (10, "10"), (25, "25"), (50, "50"), (100, "100")], default=5, validators=[DataRequired()])
 
     def __init__(self, request, q, table_head, header_button = None, search_form = None, sort_param = None,
                 page = 1, per_page = 5):
@@ -26,12 +32,25 @@ class TableModule:
         self.search_form = search_form
         self.sort_param = sort_param
 
+        self.table_form = self.TableForm()
+        try:
+            per_page = request.args.get("per_page", None)
+            if per_page:
+                per_page = int(per_page)
+                self.table_form.per_page.default = per_page
+                self.per_page = per_page
+        except ValueError:
+            print("Wrong Per Page Value")        
+
         if page < 1:
             raise self.WrongPageError
 
         self.total_len = q.count()
         self.max_page = math.ceil(self.total_len/self.per_page)
 
+        self.table_form.process()
+
+        # Should always be the last one to be called
         self.entries = self.get_entries()
 
     def print_entry(self, result):
@@ -42,7 +61,7 @@ class TableModule:
             self.search_table()
             self.sort_table()
             entries = []
-            print(self.q)
+            
             for result in self.q.offset((self.page-1)*self.per_page).limit(self.per_page).all():
                 entries.append(self.print_entry(result))
 

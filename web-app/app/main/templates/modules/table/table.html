@@ -104,8 +104,16 @@
       </table>
     </div>   
     {% endif %}
-    {% if table.max_page > 1%}
     <div class="card-footer py-4">
+      <div class="row">
+        <div class="col">
+            <label for="name-input" class="form-control-label">{{ _("Строк на Странице") }}</label>
+            {{ table.table_form.per_page(class="form-control", style="width:initial;", 
+                onclick="setSearchParam('per_page', $('#per_page option:selected').text())")}}
+          </div>
+      <div class="col">
+      <label class="form-control-label"></label>
+    {% if table.max_page > 1%}
       <nav aria-label="...">
         <ul class="pagination justify-content-end mb-0">
           <li class="page-item {% if table.page == 1%}disabled{%endif%}">
@@ -123,7 +131,8 @@
           </li>
         </ul>
       </nav>
-    </div>
     {% endif %}
+    </div>
+    </div>
   </div>
 </form>
