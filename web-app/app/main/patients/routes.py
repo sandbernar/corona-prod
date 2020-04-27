@@ -170,6 +170,20 @@ def process_address(request_dict, form_prefix='home', lat_lng = True, address = 
 
     return address
 
+def can_we_add_patient(request_dict):
+    
+    iin = request_dict.get('iin', '')
+    if iin:
+        if Patient.query.filter_by(iin = iin.strip()).count():
+            return False, _("Пациент с данным ИИН уже есть в системе")
+
+    pass_num = request_dict.get('pass_num', '')
+    if pass_num:
+        if Patient.query.filter_by(pass_num = request_dict['pass_num'].strip()).count():
+            return False, _("Пациент с данным номером паспорта уже есть в системе")
+
+    return True, None
+
 def handle_add_update_patient(request_dict, final_dict, update_dict = {}):
     form_val_key = ['region_id', 'first_name', 'second_name', 'patronymic_name', 'dob', 'iin', 'citizenship_id', 
                     'pass_num', 'country_of_residence_id', 'telephone', 'email', 'job', 'job_position', 'hospital_id']
@@ -307,11 +321,15 @@ def add_patient():
         request_dict = request.form.to_dict(flat=True)
         final_dict = {'created_by_id': current_user.id}
 
+        should_we_add_patient, message = can_we_add_patient(request_dict)
+
+        if not should_we_add_patient:
+            return jsonify({"error": message})
+
         handle_add_update_patient(request_dict, final_dict)        
 
         # else we can create the user
         patient = Patient(**final_dict)
-        # patient.is_contacted_person = False
         
         db.session.add(patient)
         db.session.commit()

@@ -244,6 +244,18 @@
 
     $.post($("#add_patients").attr('action'), $("#add_patients").serialize() + '&create', function(res){
       // Do something with the response `res`
+      if (res.error !== undefined) {
+          $.notify({
+          // options
+          icon: 'fa fa-exclamation-circle',
+          message: res.error
+        },{
+          // settings
+          type: 'danger',
+        });
+        close_modal_submit(reset=false)
+        return
+      }
       if (res.patient_id !== undefined) {
         $.notify({
           // options
