@@ -2,7 +2,9 @@ from flask import request
 import math
 from app.main.modules import TableModule
 
-from app.main.patients.models import Patient, ContactedPersons
+from app.main.patients.models import Patient, ContactedPersons, PatientStatus
+from app.main.models import TravelType, VariousTravel, BlockpostTravel
+from app.main.flights_trains.models import FlightTravel, TrainTravel
 
 from collections import OrderedDict
 from app.main.util import parse_date, yes_no_html
@@ -127,24 +129,118 @@ class AllPatientsTableModule(TableModule):
                 self.q = self.q.filter(Patient.region_id == region_id)
                 self.search_form.region_id.default = region_id
 
-        is_found = self.request.args.get("is_found", "-1")
-        if is_found != "-1":
-            self.q = self.q.filter(Patient.is_found == bool(int(is_found)))
-            self.search_form.is_found.default = is_found
+        filt = dict()
 
-        is_added_in_2_hours = self.request.args.get("is_added_in_2_hours", "-1")
-        if is_added_in_2_hours != "-1":
-            infected_patient_id = request.args['id']
+        print(self.search_form.__dict__.keys())
 
-            valid_ids = []
-            for c in self.q.all():
-                if c.added_in_n_hours() == bool(int(is_added_in_2_hours)):
-                    valid_ids.append(c.id)
+        if "not_found" in request.args:
+            filt["is_found"] = False
+            self.search_form.not_found.default='checked'
 
-            self.q = self.q.filter(ContactedPersons.id.in_(valid_ids))
-            self.search_form.is_added_in_2_hours.default = is_added_in_2_hours                            
+        if "is_infected" in request.args:
+            filt["is_infected"] = True
+            self.search_form.is_infected.default='checked'
 
-        #self.search_form.process()
+        if "not_in_hospital" in request.args:
+            in_hospital_id = PatientStatus.query.filter_by(value=c.in_hospital[0]).first().id
+            self.q = self.q.filter(Patient.status_id != in_hospital_id)
+
+            self.search_form.not_in_hospital.default='checked'
+
+        def name_search(param, param_str, q):
+            if param_str in request.args:
+                req_str = request.args[param_str]
+                q = q.filter(func.lower(param).contains(req_str.lower()))
+                param = getattr(self.search_form, param_str, None)
+                if param:
+                    setattr(param, 'default', req_str)
+            
+            return q
+
+        self.q = name_search(Patient.first_name, "first_name", self.q)
+        self.q = name_search(Patient.second_name, "second_name", self.q)
+        self.q = name_search(Patient.patronymic_name, "patronymic_name", self.q)
+
+        if "iin" in request.args:
+            self.q = self.q.filter(Patient.iin.contains(request.args["iin"]))
+            self.search_form.iin.default = request.args["iin"]
+
+        if "telephone" in request.args:
+            self.q = self.q.filter(Patient.telephone.contains(request.args["telephone"]))
+            self.search_form.telephone.default = request.args["telephone"]
+
+        travel_type = request.args.get("travel_type", c.all_travel_types[0])
+        if travel_type and travel_type != c.all_travel_types[0]:
+            try:
+                travel_type_query = TravelType.query.filter_by(value=travel_type).first()
+                travel_type_id = travel_type_query.id
+            except exc.SQLAlchemyError:
+                return render_template('errors/error-400.html'), 400
+
+            if travel_type_id:
+                filt["travel_type_id"] = travel_type_id
+                self.search_form.travel_type.default = travel_type
+        
+        self.q = self.q.filter_by(**filt)
+
+        if travel_type and travel_type != c.all_travel_types[0]:
+            # FlightTravel
+            if travel_type_query.value == c.flight_type[0]:
+                self.q = self.q.join(FlightTravel)
+
+                flight_code_id = request.args.get("flight_code_id", None)
+                if flight_code_id != None:
+                    self.q = self.q.filter(FlightTravel.flight_code_id == flight_code_id)
+            
+            # TrainTravel
+            elif travel_type_query.value == c.train_type[0]:
+                self.q = self.q.join(TrainTravel)
+
+                train_id = request.args.get("train_id", None)
+                if train_id != None:
+                    self.q = self.q.filter(TrainTravel.train_id == train_id)
+
+            # Blockpost
+            elif travel_type_query.value == c.blockpost_type[0]:
+                self.q = self.q.join(BlockpostTravel)
+
+                arrival_date = request.args.get("arrival_date", None)
+                if arrival_date:
+                    self.q = self.q.filter(BlockpostTravel.date == arrival_date)
+                    self.search_form.arrival_date.default = parse_date(arrival_date)
+
+                blockpost_region_id = request.args.get("blockpost_region_id", "-1")
+                if blockpost_region_id != "-1":
+                    self.q = self.q.filter(BlockpostTravel.region_id == blockpost_region_id)
+                    self.search_form.blockpost_region_id.default = blockpost_region_id
+
+            # Auto
+            elif (travel_type_query.value, travel_type_query.name) in c.various_travel_types:
+                self.q = self.q.join(VariousTravel)
+
+                arrival_date = request.args.get("arrival_date", None)
+                if arrival_date:
+                    self.q = self.q.filter(VariousTravel.date == arrival_date)
+                    self.search_form.arrival_date.default = parse_date(arrival_date)
+                
+                border_id = request.args.get("auto_border_id", "-1")
+                if border_id != "-1":
+                    self.search_form.auto_border_id.default = border_id
+
+                border_list = [("auto_border_id", self.search_form.auto_border_id),
+                               ("foot_border_id", self.search_form.foot_border_id),
+                               ("sea_border_id", self.search_form.sea_border_id)]
+                
+                for border_type in border_list:
+                    if border_type[0] in request.args:
+                        if request.args[border_type[0]] != "-1":
+                            border_id = request.args[border_type[0]]
+                            border_type[1].default = border_id
+                
+                            self.q = self.q.filter(VariousTravel.border_control_id == border_id)
+                            break
+
+        self.search_form.process()
 
     def print_entry(self, result):
         patient = result

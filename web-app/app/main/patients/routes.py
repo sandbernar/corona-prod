@@ -21,8 +21,7 @@ from app.main.hospitals.models import Hospital, Hospital_Type
 from app.main.flights_trains.models import FlightCode, FlightTravel, Train, TrainTravel
 
 from app.main.patients.forms import PatientForm, UpdateProfileForm, AddFlightFromExcel, \
-                                    ContactedPatientsSearchForm
-from app.main.forms import TableSearchForm
+                                    ContactedPatientsSearchForm, PatientsSearchForm
 from app.main.patients.modules import ContactedPatientsTableModule, AllPatientsTableModule
 
 from app.main.routes import route_template
@@ -43,16 +42,18 @@ from app.main.util import get_regions, get_regions_choices, get_flight_code, pop
 from app.login.util import hash_pass
 from sqlalchemy import func, exc
 
-def prepare_patient_form(patient_form, with_old_data = False, with_all_travel_type=False):
+def prepare_patient_form(patient_form, with_old_data = False, with_all_travel_type=False, search_form=False):
     regions_choices = get_regions_choices(current_user, False)
 
     if not patient_form.region_id.choices:
-        patient_form.region_id.choices = [("", "")] + regions_choices
+        patient_form.region_id.choices = [("", "")] if not search_form else [(-1, c.all_regions)]
+        patient_form.region_id.choices += regions_choices
         if current_user.region_id != None:
             patient_form.region_id.default = current_user.region_id
 
-    if not patient_form.hospital_region_id.choices:
-        patient_form.hospital_region_id.choices = regions_choices
+    if not search_form:
+        if not patient_form.hospital_region_id.choices:
+            patient_form.hospital_region_id.choices = regions_choices
 
     if not patient_form.travel_type.choices:
         patient_form.travel_type.choices = [] if not with_all_travel_type else [c.all_travel_types]
@@ -65,11 +66,13 @@ def prepare_patient_form(patient_form, with_old_data = False, with_all_travel_ty
 
     # Flight Travel
     if not patient_form.flight_arrival_date.choices:
+        patient_form.flight_arrival_date.choices = [c.all_dates] if search_form else []
+
         dates = np.unique([f.date for f in FlightCode.query.all()])
-        patient_form.flight_arrival_date.choices = [(date, date) for date in dates]
+        patient_form.flight_arrival_date.choices += [(date, date) for date in dates]
     
     if not patient_form.flight_code_id.choices:
-        if patient_form.flight_arrival_date.choices:
+        if patient_form.flight_arrival_date.choices and not search_form:
             first_date = patient_form.flight_arrival_date.choices[0][0]
             patient_form.flight_code_id.choices = [(f.id,"{}, {} - {}".format(
                 f.code, f.from_city, f.to_city)) for f in FlightCode.query.filter_by(date=first_date).all()]
@@ -86,17 +89,19 @@ def prepare_patient_form(patient_form, with_old_data = False, with_all_travel_ty
     # Various Travel
     for typ_id, typ_select in travel_id_form:
         if not typ_select.choices:
+            typ_select.choices = [c.all_blockposts] if search_form else []
             borders = BorderControl.query.filter_by(travel_type_id = typ_id).all()
-            typ_select.choices =[(b.id, b.name) for b in borders]
+            typ_select.choices += [(b.id, b.name) for b in borders]
 
     # Blockpost Travel
     if not patient_form.blockpost_region_id.choices:
-        patient_form.blockpost_region_id.choices = regions_choices
+        patient_form.blockpost_region_id.choices = get_regions_choices(current_user, with_all_regions=search_form)
 
     # Hospital
-    hospital_types = Hospital_Type.query.all()
-    hospital_types = [(h.id, h.name) for h in hospital_types]
-    patient_form.hospital_type_id.choices = hospital_types
+    if not search_form:
+        hospital_types = Hospital_Type.query.all()
+        hospital_types = [(h.id, h.name) for h in hospital_types]
+        patient_form.hospital_type_id.choices = hospital_types
 
     # Countries
     countries = Country.query.all()
@@ -113,13 +118,14 @@ def prepare_patient_form(patient_form, with_old_data = False, with_all_travel_ty
             select_input.choices += [(c.id, c.name) for c in countries]
             select_input.default = default
 
-    populate_countries_select(patient_form.citizenship_id, kz.id, False)
-    populate_countries_select(patient_form.country_of_residence_id, kz.id)
+    if not search_form:
+        populate_countries_select(patient_form.citizenship_id, kz.id, False)
+        populate_countries_select(patient_form.country_of_residence_id, kz.id)
 
-    populate_countries_select(patient_form.home_address_country_id, kz.id)
-    populate_countries_select(patient_form.job_address_country_id, kz.id)
+        populate_countries_select(patient_form.home_address_country_id, kz.id)
+        populate_countries_select(patient_form.job_address_country_id, kz.id)
 
-    populate_countries_select(patient_form.visited_country_id, -1)
+        populate_countries_select(patient_form.visited_country_id, -1)
 
     return patient_form
 
@@ -550,91 +556,11 @@ def patients():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))
 
-    form = TableSearchForm()
-    patients_form = prepare_patient_form(PatientForm(), with_all_travel_type=True)
+    form = PatientsSearchForm()
+    form = prepare_patient_form(form, with_all_travel_type=True, with_old_data=True, search_form=True)
 
     patients = []
     filt = dict()
-
-    # if not current_user.is_admin:
-        # filt["region_id"] = current_user.region_id
-    # else:
-    if "region" in request.args:
-        region = request.args["region"]
-        if region != '-1':
-            filt["region_id"] = region
-            form.region.default = region
-    elif current_user.region_id != None:
-        region = current_user.region_id
-        filt["region_id"] = region
-        form.region.default = region
-
-    travel_type = request.args.get("travel_type", c.all_travel_types[0])
-    if travel_type and travel_type != c.all_travel_types[0]:
-        try:
-            travel_type_id = TravelType.query.filter_by(value=travel_type).first().id
-        except exc.SQLAlchemyError:
-            return render_template('errors/error-400.html'), 400
-
-        if travel_type_id:
-            filt["travel_type_id"] = travel_type_id
-            patients_form.travel_type.default = travel_type
-
-    if "not_found" in request.args:
-        filt["is_found"] = False
-        form.not_found.default='checked'
-
-    if "is_infected" in request.args:
-        filt["is_infected"] = True
-        form.is_infected.default='checked'
-    
-    # if "is_contacted" in request.args:
-        # filt["is_contacted"] = True
-        # form.is_contacted.default='checked'
-
-    q = db.session.query(Patient).filter_by(**filt)
-    # q = q.filter(Patient.travel_id == FlightTravel.id)
-
-    if "flight_code" in request.args:
-        flight_code = request.args["flight_code"]
-        if flight_code != '' and flight_code != c.all_flight_codes:
-            fc = FlightCode.query.filter_by(code=flight_code).first()
-            if fc:
-                flight_type_id = TravelType.query.filter_by(value=c.flight_type[0]).first().id
-
-                q = q.filter(Patient.travel_type_id == flight_type_id)
-                q = q.filter(FlightTravel.flight_code_id == fc.id)
-                form.flight_code.default = fc.code
-        else:
-            form.flight_code.default = c.all_flight_codes    
-
-    if "not_in_hospital" in request.args:
-        in_hospital_id = PatientStatus.query.filter_by(value=c.in_hospital[0]).first().id
-        q = q.filter(Patient.status_id != in_hospital_id)
-
-        form.not_in_hospital.default='checked'
-
-    def name_search(param, param_str, q):
-        if param_str in request.args:
-            req_str = request.args[param_str]
-            q = q.filter(func.lower(param).contains(req_str.lower()))
-            param = getattr(form, param_str, None)
-            if param:
-                setattr(param, 'default', req_str)
-        
-        return q
-
-    q = name_search(Patient.first_name, "first_name", q)
-    q = name_search(Patient.second_name, "second_name", q)
-    q = name_search(Patient.patronymic_name, "patronymic_name", q)
-
-    if "iin" in request.args:
-        q = q.filter(Patient.iin.contains(request.args["iin"]))
-        form.iin.default = request.args["iin"]
-
-    if "telephone" in request.args:
-        q = q.filter(Patient.telephone.contains(request.args["telephone"]))
-        form.telephone.default = request.args["telephone"]
 
     select_contacted = request.args.get("select_contacted_id", None)
 
@@ -646,27 +572,6 @@ def patients():
             return render_template('errors/error-400.html'), 400        
         
         select_contacted = patient.id
-
-    
-    # for result in q.offset((page-1)*per_page).limit(per_page).all():
-    #     p = result
-    #     contacted = ContactedPersons.query.filter_by(infected_patient_id=p.id).all()
-
-    #     p.contacted_count = len(contacted)
-    #     p.contacted_found_count = 0
-
-    #     for contact in contacted:
-    #         contacted_person = Patient.query.filter_by(id=contact.contacted_patient_id).first()
-    #         if contacted_person and contacted_person.is_found:
-    #             p.contacted_found_count += 1
-
-    #     if select_contacted:
-    #         if p.id in infected_contacted_ids:
-    #             p.already_contacted = True
-    #         elif p.id in contacted_infected_ids:
-    #             p.already_infected = True
-
-    #     patients.append(p)
 
     flight_codes_list = [c.all_flight_codes] + [ code.code for code in FlightCode.query.all() ]
 
@@ -682,16 +587,15 @@ def patients():
         error_msg = request.args['error']
 
     try:
-        all_patients_table = AllPatientsTableModule(request, q, select_contacted, 
-                header_button=(_("Добавить Пациента"), "/add_person"))
+        all_patients_table = AllPatientsTableModule(request, Patient.query, select_contacted,
+                            search_form=form, header_button=(_("Добавить Пациента"), "/add_person"))
     except ValueError:
         return render_template('errors/error-500.html'), 500        
 
     form.process()
-    patients_form.process()
 
-    return route_template('patients/patients', form=form, all_patients_table = all_patients_table, patients_form = patients_form,
-                            constants=c, flight_codes_list=flight_codes_list, change=change, error_msg=error_msg, select_contacted = select_contacted)
+    return route_template('patients/patients', form=form, all_patients_table = all_patients_table, constants=c, 
+                        flight_codes_list=flight_codes_list, change=change, error_msg=error_msg, select_contacted = select_contacted)
 
 @blueprint.route('/delete_patient', methods=['POST'])
 @login_required

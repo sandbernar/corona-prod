@@ -29,6 +29,9 @@ local_type = ("local_type", "Местные")
 blockpost_type = ("blockpost_type", "Блокпост")
 old_data_type = ("old_data_type", "Старые Данные")
 
+all_blockposts = (-1, "Все Блокпосты")
+all_dates = (-1, "Все Даты")
+
 # State
 state_dead = "Умер"
 state_infec = "Инфицирован"

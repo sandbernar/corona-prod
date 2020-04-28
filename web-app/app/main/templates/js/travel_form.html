@@ -1,3 +1,13 @@
+var csrf_token = "{{ csrf_token() }}"
+
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type)) {
+            xhr.setRequestHeader("X-CSRFToken", csrf_token)
+        }
+    }
+})
+    
 function get_flights_by_date(){
 $.ajax({
   type: 'POST',
@@ -37,12 +47,15 @@ var flightForm = `  <div class='col-xl'>
                         {{ form.flight_code_id(class='form-control') }}
                       </div>
                     </div>
+                    {% if "flight_seat" in form.__dict__.keys() %}                    
                     <div class='col-xl'>                        
                       <div class='form-group'>
                         <label for='flight-no-input' class='form-control-label'>{{ _('Место') }}</label>
                         {{ form.flight_seat(class='form-control', placeholder=_('Например') + ' 1C') }}
                       </div>
-                    </div>`;
+                    </div>
+                    {% endif %}
+                    `;
 
 var trainForm = `  <div class='col-xl'>
                       <div class='form-group'>
@@ -62,18 +75,23 @@ var trainForm = `  <div class='col-xl'>
                         {{ form.train_id(class='form-control') }}
                       </div>
                     </div>
+                    {% if "train_wagon" in form.__dict__.keys() %}
                     <div class='col-xl'>                        
                       <div class='form-group'>
                         <label for='flight-no-input' class='form-control-label'>{{ _('Вагон') }}</label>
                         {{ form.train_wagon(class='form-control', placeholder=_('Например') + ' 32') }}
                       </div>
-                    </div>                    
+                    </div>
+                    {% endif %}       
+                    {% if "train_seat" in form.__dict__.keys() %}             
                     <div class='col-xl'>                        
                       <div class='form-group'>
                         <label for='flight-no-input' class='form-control-label'>{{ _('Место') }}</label>
                         {{ form.train_seat(class='form-control', placeholder=_('Например') + ' 4') }}
                       </div>
-                    </div>`;
+                    </div>
+                    {% endif %}
+                    `;
 
 var blockpostForm = `  <div class='col-xl'>
                       <div class='form-group'>

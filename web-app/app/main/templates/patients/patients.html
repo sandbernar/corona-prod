@@ -46,7 +46,7 @@
           <div class="card-header border-0">
             <div class="row">
               <div class="col-xl">
-                {{ patients_form.region_id(class="form-control") }}
+                {{ form.region_id(class="form-control") }}
               </div>
               <div class="col-mt">
                 <div class="custom-control custom-checkbox">
@@ -59,7 +59,7 @@
                 </div>               
               </div>
               <div class="custom-control custom-checkbox">
-                {{ form.is_infected(class="custom-control-input", onchange="this.form.submit()") }}                    
+                {{ form.is_infected(class="custom-control-input") }}                    
                 <label class="custom-control-label" for="is_infected">{{ _("Инфицирован") }}</label>
               </div>              
             </div>
@@ -69,7 +69,7 @@
           <div class="card-header border-0">        
             <div class="row">
               <div class="col">
-                {% with form=patients_form %}
+                {% with form=form %}
                 {% include "patients/modules/travel_form.html" %}
                 {% endwith %}   
               </div>
@@ -79,7 +79,6 @@
           <button type="submit" class="btn btn-primary btn-full-width mt-3" type="button">
             {{ _('Поиск') }}
           </button>
-          {{ form.hidden_tag() }}
       </form>
     </div>
   </div>
@@ -101,7 +100,7 @@
 {% block javascripts %}
 {{ super()}}
 <script type="text/javascript">
-  {% with form=patients_form, c=constants %}
+  {% with form=form, c=constants %}
   {% include "js/travel_form.html" %}
   {% endwith %}
 
@@ -110,6 +109,42 @@
   $("#travel_type").on("change", function(){
     update_travel_form();
   });
+
+  const queryString = window.location.search;
+  const urlParams = new URLSearchParams(queryString);
+  const travel_type = urlParams.get('travel_type')
+  
+  if (travel_type !== null) {
+    if (travel_type == '{{ constants.flight_type[0] }}') {
+      flight_arrival_date = urlParams.get('flight_arrival_date')
+      if(flight_arrival_date !== null) {
+        $('#flight_arrival_date').val(flight_arrival_date)
+      }
+      
+      get_flights_by_date()
+      flight_code_id = urlParams.get('flight_code_id')
+      if(flight_code_id !== null) {
+        $('#flight_code_id').val(flight_code_id)
+      }
+    } else if (travel_type == '{{ constants.train_type[0] }}') {
+      train_departure_date = urlParams.get('train_departure_date')
+      if(train_departure_date !== null) {
+        $('#train_departure_date').val(train_departure_date)
+      }
+
+      train_arrival_date = urlParams.get('train_arrival_date')
+      if(train_arrival_date !== null) {
+        $('#train_arrival_date').val(train_arrival_date)
+      }
+      
+      get_trains_by_date_range()
+      train_id = urlParams.get('train_id')
+      if(train_id !== null) {
+        $('#train_id').val(train_id)
+      }
+    }
+  }
+
 </script>
 
 
