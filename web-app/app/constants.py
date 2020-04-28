@@ -46,6 +46,13 @@ unknown = (None, "Неизвестно")
 
 kz_center_lat_lng = (48.191216, 68.883269)
 
+# Job Categories
+doctors_job_category = ("doctors_job_category", "Врач")
+police_job_category = ("police_job_category", "Полицейский")
+military_job_category = ("military_job_category", "Военный")
+
+job_categories = [unknown, doctors_job_category, police_job_category, military_job_category]
+
 cyrillic_to_ascii = {
 	"А": "A",
 	"Б": "B",

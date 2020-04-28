@@ -66,6 +66,7 @@ class PatientForm(FlaskForm):
 
     job = TextField('Job')
     job_position = TextField('Job Position')
+    job_category_id = SelectField('Job Category')
 
     job_address_country_id = SelectField('Job Address Country')
     job_address_state = TextField('Job State')

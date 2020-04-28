@@ -14,8 +14,8 @@ from app import login_manager, db
 from app import constants as c
 from jinja2 import TemplateNotFound
 
-from app.main.models import (Region, Country, VisitedCountry, Infected_Country_Category, 
-                            TravelType, BorderControl, VariousTravel, BlockpostTravel, Address, HGBDToken)
+from app.main.models import Region, Country, VisitedCountry, Infected_Country_Category, JobCategory, \
+                            TravelType, BorderControl, VariousTravel, BlockpostTravel, Address, HGBDToken
 from app.main.patients.models import Patient, PatientStatus, ContactedPersons, State, PatientState
 from app.main.hospitals.models import Hospital, Hospital_Type
 from app.main.flights_trains.models import FlightCode, FlightTravel, Train, TrainTravel
@@ -101,6 +101,11 @@ def prepare_patient_form(patient_form, with_old_data = False, with_all_travel_ty
     # Countries
     countries = Country.query.all()
     kz = Country.query.filter_by(code="KZ").first()
+
+    # Job Category
+    job_categories = JobCategory.query.all()
+    if not patient_form.job_category_id.choices:
+        patient_form.job_category_id.choices = [(cat.id, cat.name) for cat in job_categories]
 
     def populate_countries_select(select_input, default, with_unknown = True):
         if not select_input.choices:
@@ -189,8 +194,9 @@ def can_we_add_patient(request_dict):
     return True, None
 
 def handle_add_update_patient(request_dict, final_dict, update_dict = {}):
-    form_val_key = ['region_id', 'first_name', 'second_name', 'patronymic_name', 'dob', 'iin', 'citizenship_id', 
-                    'pass_num', 'country_of_residence_id', 'telephone', 'email', 'job', 'job_position', 'hospital_id']
+    form_val_key = ['region_id', 'first_name', 'second_name', 'patronymic_name', 'dob', 'iin',
+                    'citizenship_id', 'pass_num', 'country_of_residence_id', 'telephone', 'email', 
+                    'job', 'job_position', 'hospital_id', 'job_category_id']
     
     # 1
     for key in form_val_key:
