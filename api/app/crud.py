@@ -18,5 +18,17 @@ def get_is_contacted(db: Session, id: int):
     return db.query(models.ContactedPersons).filter(models.ContactedPersons.contacted_patient_id == id).first()
 
 def get_patients(db: Session, begin: date, end: date):
-    logger.error("hello")
-    return db.query(models.Patient).filter(models.Patient.created_date >= begin).filter(models.Patient.created_date <= end).all()
+    flight = db.query(models.FlightTravel).join(models.Patient, models.FlightTravel.patient_id == models.Patient.id).filter(models.Patient.created_date >= begin).filter(models.Patient.created_date <= end).all()
+    train = db.query(models.TrainTravel).join(models.Patient, models.TrainTravel.patient_id == models.Patient.id).filter(models.Patient.created_date >= begin).filter(models.Patient.created_date <= end).all()
+    data = []
+    for a in flight:
+        data.append({
+            "from_country": a.flight_code.from_country.name,
+            "patient": a.patient
+        })
+    for a in train:
+        data.append({
+            "from_country": a.train.from_country.name,
+            "patient": a.patient
+        })
+    return data
