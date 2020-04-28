@@ -38,7 +38,7 @@ def upgrade():
     op.alter_column('PatientState', 'detection_date',
                existing_type=postgresql.TIMESTAMP(),
                nullable=True)
-    op.create_index(op.f('ix_PatientState_id'), 'PatientState', ['id'], unique=False)
+    op.create_primary_key("PatientState_pkey", "PatientState", ["id"])
     op.drop_constraint('PatientState_patient_id_fkey', 'PatientState', type_='foreignkey')
     op.drop_constraint('PatientState_state_id_fkey', 'PatientState', type_='foreignkey')
     # ### end Alembic commands ###
