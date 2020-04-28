@@ -40,7 +40,7 @@ class PatientState(db.Model):
     """
     __tablename__ = 'PatientState'
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, index=True)
     state_id = Column(Integer, nullable=False)
     patient_id = Column(Integer, nullable=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
