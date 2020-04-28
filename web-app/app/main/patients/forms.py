@@ -112,3 +112,4 @@ class ContactedPatientsSearchForm(FlaskForm):
     region_id = SelectField("Region ID")
     is_found = SelectField("Is Found", choices=[(-1, _("Неважно")), (1, _("Да")), (0, _("Нет"))], default=-1)
     is_added_in_2_hours = SelectField("Is Added in 2 Hours", choices=[(-1, _("Неважно")), (1, _("Да")), (0, _("Нет"))], default=-1)
+
