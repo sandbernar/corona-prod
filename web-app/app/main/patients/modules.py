@@ -3,7 +3,7 @@ import math
 from app.main.modules import TableModule
 
 from app.main.patients.models import Patient, ContactedPersons, PatientStatus
-from app.main.models import TravelType, VariousTravel, BlockpostTravel
+from app.main.models import TravelType, VariousTravel, BlockpostTravel, Address, Country
 from app.main.flights_trains.models import FlightTravel, TrainTravel
 
 from collections import OrderedDict
@@ -120,6 +120,18 @@ class AllPatientsTableModule(TableModule):
                                     Patient.patronymic_name)).contains(full_name_value.lower()))
             
             self.search_form.full_name.default = full_name_value
+
+        address = self.request.args.get("address", None)
+        if address:
+            self.q = self.q.join(Address, Patient.home_address_id == Address.id)
+            self.q = self.q.join(Country, Country.id == Address.country_id)
+            self.q = self.q.group_by(Patient.id)
+
+            self.q = self.q.filter(func.lower(func.concat(
+                Country.name, ' ', Address.city, ' ', Address.street,
+                ' ', Address.house, ' ', Address.flat)).contains(address.lower()))
+
+            self.search_form.address.default = address        
 
         region_id = self.request.args.get("region_id", -1)
         if region_id:

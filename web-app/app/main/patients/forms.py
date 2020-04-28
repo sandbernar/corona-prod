@@ -116,9 +116,9 @@ class ContactedPatientsSearchForm(FlaskForm):
 
 class PatientsSearchForm(FlaskForm):
     region_id = SelectField()
+    address = TextField()
     
     travel_type = SelectField()
-
     job_category_id = SelectField()
 
     not_found = BooleanField(id="not_found")

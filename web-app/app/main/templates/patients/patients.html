@@ -46,9 +46,15 @@
           <div class="card-header border-0">
             <div class="row">
               <div class="col-xl">
+                <label class='form-control-label'>{{ _('Адрес') }}</label>
+                {{ form.address(class="form-control", placeholder=_('Страна/Город/Улица и т.д.')) }}              
+              </div>              
+              <div class="col-xl">
+                <label class='form-control-label'>{{ _('Регион') }}</label>                
                 {{ form.region_id(class="form-control") }}
               </div>
-              <div class="col-mt">
+              <div class="col-md-auto">
+                <br>
                 <div class="custom-control custom-checkbox">
                   {{ form.not_found(class="custom-control-input") }}
                   <label class="custom-control-label" for="not_found">{{ _("Не найден") }}</label>
@@ -58,10 +64,13 @@
                   <label class="custom-control-label" for="not_in_hospital">{{ _("Не госпитализирован") }}</label>
                 </div>               
               </div>
-              <div class="custom-control custom-checkbox">
-                {{ form.is_infected(class="custom-control-input") }}                    
-                <label class="custom-control-label" for="is_infected">{{ _("Инфицирован") }}</label>
-              </div>              
+              <div class="col-md-auto">
+                <br>
+                <div class="custom-control custom-checkbox">
+                  {{ form.is_infected(class="custom-control-input") }}                    
+                  <label class="custom-control-label" for="is_infected">{{ _("Инфицирован") }}</label>
+                </div>
+            </div>
             </div>
           </div>
         </div>        
