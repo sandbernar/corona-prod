@@ -114,7 +114,13 @@
                                 <label for="name-input" class="form-control-label">{{ _("Регион Специалиста") }}</label>
                                 <div>{{ patient.created_by.region }}</div>
                             </div>             
-                        </div>                        
+                        </div>
+                        <div class="col-lg">
+                            <div class="form-group">
+                                <label for="name-input" class="form-control-label">{{ _("Организация") }}</label>
+                                <div>{{ patient.created_by.organization }}</div>
+                            </div>             
+                        </div>                                                
                     </div>
                     {% endif %}
                 </div>
