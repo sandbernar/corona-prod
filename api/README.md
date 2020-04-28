@@ -193,7 +193,7 @@ curl -v -X POST "http://demo.crm.alem.school/api/get_status_by_pass_num/" -H "X-
 ### Data Params
 ```json
 { 
-    "behin": [datetime YYYY-MM-DD],
+    "begin": [datetime YYYY-MM-DD],
     "end": [datetime YYYY-MM-DD],
 }
 ```
