@@ -29,6 +29,8 @@ import requests
 from flask_babelex import _
 from sqlalchemy import exc
 
+import uuid
+from sqlalchemy import text
 
 @blueprint.route('/index', methods=['GET'])
 @login_required
@@ -155,75 +157,43 @@ def support_jsonp(f):
             return f(*args, **kwargs)
     return decorated_function
 
-
-# def deg2num(lat_deg, lon_deg, zoom):
-#     lat_rad = math.radians(lat_deg)
-#     n = 2.0 ** zoom
-#     xtile = int((lon_deg + 180.0) / 360.0 * n)
-#     ytile = int((1.0 - math.asinh(math.tan(lat_rad)) / math.pi) / 2.0 * n)
-#     return (xtile, ytile)
-
-# def num2deg(xtile, ytile, zoom):
-#     n = 2.0 ** zoom
-#     lon_deg = xtile / n * 360.0 - 180.0
-#     lat_rad = math.atan(math.sinh(math.pi * (1 - 2 * ytile / n)))
-#     lat_deg = math.degrees(lat_rad)
-#     return (lat_deg, lon_deg)
-
 @blueprint.route("/patients_content_by_id", methods=['POST'])
 def patients_content_by_id():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))
-    
-    ids = request.get_json()
-    if not "ids" in ids:
+    req = request.get_json()
+    if not "lat_lon" in req:
         return render_template('errors/error-400.html'), 400
-
-    ids = ids["ids"]
+    print("lat lon", req["lat_lon"])
+    lat_lon = req["lat_lon"]
 
     q = Patient.query
 
     response = []
 
-    for i in ids:
-        p = None
-        try:
-            p = q.filter_by(id=i).first()
-        except exc.SQLAlchemyError:
-            return render_template('errors/error-400.html'), 400
-        if not p:
-            continue
-        is_found = _("Нет")
-        is_infected = _("Нет")
+    pat = None
+    lat_lon[0] = format(lat_lon[0], ".5f")
+    lat_lon[1] = format(lat_lon[1], ".5f")
+    try:
+        pat = q.join(Address, Patient.home_address_id == Address.id).filter(Address.lat == str(lat_lon[0])).filter(Address.lng == str(lat_lon[1])).all()
+    except exc.SQLAlchemyError as err:
+        return render_template('errors/error-400.html'), 400
+    if not pat:
+        return jsonify({})
+    for p in pat:
+        is_found = "Нет"
+        is_infected = "Нет"
         if p.is_found:
-            is_found = _("Да")
+            is_found = "Да"
         if p.is_infected:
-            is_infected = _("Да")
+            is_infected = "Да"
         response.append({
-            "id": i,
-            "balloonContent": '<a href="/patient_profile?id=' + str(p.id) + '">' + repr(p) +
-                              '</a><br><strong>Регион</strong>:' + repr(p.region) + 
-                              '<br><strong>Адрес</strong>: ' + repr(p.home_address) + 
-                              '<br><strong>Найден</strong>: ' + is_found + 
-                              '<br><strong>Инфицирован</strong>: ' + is_infected + 
-                              '<br><strong>Статус</strong>:' + _("Неизвестно") if not p.status else p.status.name + '<br>',
+            "id": uuid.uuid1(),
+            "balloonContent": '<a href="/patient_profile?id=' + str(p.id) + '">' + repr(p) + '</a><br><strong>Регион</strong>:' + repr    (p.region) + '<br><strong>Адрес</strong>: ' + repr(p.home_address) + '<br><strong>Найден</strong>: ' + is_found +   '<br><strong>Инфицирован</strong>: ' + is_infected + '<br><strong>Статус</strong>:' + p.status.name + '<br>',
             "clusterCaption": repr(p)
         })
 
     return jsonify(response)
-
-
-def get_ttl_hash(seconds=3600):
-    """Return the same value withing `seconds` time period"""
-    return round(time.time() / seconds)
-
-
-@lru_cache()
-def getR(bbox_x1, bbox_y1, bbox_x2, bbox_y2, ttl_hash=None):
-    del ttl_hash
-    r = jsonify(type="FeatureCollection", features=[i.serialize for i in Patient.query.join(Address, Patient.home_address_id == Address.id).filter(Address.lng != None).filter(Address.lat >= bbox_x1).filter(
-        Address.lat <= bbox_x2).filter(Address.lng >= bbox_y1).filter(Address.lng <= bbox_y2)])
-    return r
 
 
 @blueprint.route("/patients_within_tiles")
@@ -232,12 +202,86 @@ def getR(bbox_x1, bbox_y1, bbox_x2, bbox_y2, ttl_hash=None):
 def patients_within_tiles():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))
-    if not "bbox" in request.args:
+    if not "bbox" in request.args or not "zoom" in request.args:
         return render_template('errors/error-400.html'), 400
     latlng = request.args["bbox"].split(',')
     bbox_x1 = float(latlng[0])
     bbox_y1 = float(latlng[1])
     bbox_x2 = float(latlng[2])
     bbox_y2 = float(latlng[3])
-    r = getR(bbox_x1, bbox_y1, bbox_x2, bbox_y2, ttl_hash=get_ttl_hash())
-    return r
+
+    zoom = int(request.args["zoom"])
+
+    if (zoom > 19 or zoom < 0):
+        return render_template('errors/error-400.html'), 400
+    distances = [50,50, 10, 4, 3, 2, 1, 0.5, 0.5, 0.09, 0.07, 0.02, 0.01, 0.009,  0.008, 0.003, 0.002, 0.001, 0.001, 0.001]
+    distance = distances[zoom]
+    
+
+    coordinates_patients = {
+        "type": "FeatureCollection",
+        "features": []
+    }
+    sql = text("""
+    SELECT row_number() over () AS id,
+      ST_NumGeometries(gc),
+      ST_X(ST_Centroid(gc)) AS X,
+      ST_Y(ST_Centroid(gc)) AS Y
+    FROM (
+      SELECT unnest(ST_ClusterWithin(geom, %s)) gc
+      FROM (
+        SELECT * FROM "Address" WHERE geom && ST_MakeEnvelope(%s, %s, %s, %s, 4326)
+      ) AS points
+    ) f;
+    """ % (str(distance), bbox_y1, bbox_x1, bbox_y2, bbox_x2))
+    m = db.engine.execute(sql)
+    for a in m:
+        features = []
+        count = int(a[1])
+        if zoom == 19:
+            for i in range(count):
+                features.append(
+                    {
+                        "type": 'Feature',
+                        "id":  uuid.uuid1(),
+                        "properties": {
+                            "balloonConntent": "Loading...",
+                            "clusterCaption": "Loading..."
+                        },
+                        "geometry": {
+                            "type": 'Point',
+                            "coordinates": [a[3], a[2]]
+                        }
+                    }
+                )
+        if count == 1:
+            coordinates_patients["features"].append(
+                 {
+                    "type": 'Feature',
+                    "geometry": {
+                        "type": 'Point',
+                        "coordinates": [a[3], a[2]]
+                    },
+                    "id": uuid.uuid1(),
+                    "options": {
+                        "preset": 'islands#blueIcon'
+                    }
+                },
+            )
+        else:
+            coordinates_patients["features"].append(
+                {
+                    "type": 'Cluster',
+                    "id": uuid.uuid1(),
+                    "number": int(a[1]),
+                    "geometry": {
+                        "type": 'Point',
+                        "coordinates": [a[3], a[2]]
+                    },
+                    "features": features,
+                    "properties": {
+                        "iconContent": int(a[1]),
+                    }
+                }
+            )
+    return jsonify(coordinates_patients)
