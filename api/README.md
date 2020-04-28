@@ -203,6 +203,7 @@ curl -v -X POST "http://demo.crm.alem.school/api/get_status_by_pass_num/" -H "X-
     [
         {
             "from_country": [string],
+            "to_region": [string],
             "patient": {
                 "status": {
                     "name": [string]

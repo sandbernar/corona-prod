@@ -32,6 +32,8 @@ class Patient(Base):
     hospital = relationship('Hospital')
     telephone = Column(String, nullable=True, default=None)
     travel_id = Column(Integer, nullable=True, default=None, unique=False)
+    travel_type_id = Column(Integer, ForeignKey('TravelType.id'), nullable=True, default=None)
+
 
 
 
@@ -215,3 +217,18 @@ class Train(Base):
 
     def __repr__(self):
         return str(self.from_city)
+
+class VisitedCountry(Base):
+
+    __tablename__ = 'VisitedCountry'
+
+    id = Column(Integer, primary_key=True)
+    
+    patient_id = Column(Integer, ForeignKey('Patient.id', ondelete="CASCADE"))
+    patient = relationship('Patient', backref=backref('visited_country', passive_deletes=True))
+
+    country_id = Column(Integer, ForeignKey('Country.id'), nullable=True, default=None)
+    country = relationship('Country')
+
+    from_date = Column(Date, nullable=True)
+    to_date = Column(Date, nullable=True)

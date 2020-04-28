@@ -68,4 +68,5 @@ class Patient(BaseModel):
 
 class PatientFrom(BaseModel):
     from_country: str = None
+    to_region: str = None
     patient: Patient = None

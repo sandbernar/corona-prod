@@ -20,15 +20,27 @@ def get_is_contacted(db: Session, id: int):
 def get_patients(db: Session, begin: date, end: date):
     flight = db.query(models.FlightTravel).join(models.Patient, models.FlightTravel.patient_id == models.Patient.id).filter(models.Patient.created_date >= begin).filter(models.Patient.created_date <= end).all()
     train = db.query(models.TrainTravel).join(models.Patient, models.TrainTravel.patient_id == models.Patient.id).filter(models.Patient.created_date >= begin).filter(models.Patient.created_date <= end).all()
+
+    other = db.query(models.VisitedCountry).join(models.Patient, models.VisitedCountry.patient_id == models.Patient.id).filter(models.Patient.travel_type_id != 1).filter(models.Patient.travel_type_id != 2).filter(models.Patient.created_date >= begin).filter(models.Patient.created_date <= end).all()
+    # other = db.query(models.Patient).filter(models.Patient.travel_type_id != 1).filter(models.Patient.travel_type_id != 2).all()
     data = []
     for a in flight:
         data.append({
             "from_country": a.flight_code.from_country.name,
+            "to_region": a.flight_code.to_city,
             "patient": a.patient
         })
     for a in train:
         data.append({
             "from_country": a.train.from_country.name,
+            "to_region": a.train.to_city,
             "patient": a.patient
         })
+    for a in other:
+        data.append({
+            "from_country": a.country.name,
+            "to_region": "Kazakhstan",
+            "patient": a.patient
+        })
+    
     return data
