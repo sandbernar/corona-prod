@@ -31,6 +31,8 @@ class Patient(Base):
     hospital_id = Column(Integer, ForeignKey('Hospital.id'), nullable=True, default=None)
     hospital = relationship('Hospital')
     telephone = Column(String, nullable=True, default=None)
+    travel_id = Column(Integer, nullable=True, default=None, unique=False)
+
 
 
 class PatientStatus(Base):
@@ -104,3 +106,112 @@ class ContactedPersons(Base):
     contacted_patient = relationship('Patient', foreign_keys=[contacted_patient_id])
     
     attrs = Column(JSON, unique=False)
+
+class FlightTravel(Base):
+
+    __tablename__ = 'FlightTravel'
+
+    id = Column(Integer, primary_key=True)
+
+    patient_id = Column(Integer, ForeignKey('Patient.id', ondelete="CASCADE"))
+    patient = relationship('Patient', backref=backref('flight_travel', passive_deletes=True))
+
+    flight_code_id = Column(Integer, ForeignKey('FlightCode.id'))
+    flight_code = relationship('FlightCode')
+
+    seat = Column(String, unique=False, nullable=True)
+
+    def __init__(self, **kwargs):
+        for property, value in kwargs.items():
+            if hasattr(value, '__iter__') and not isinstance(value, str):
+                value = value[0]
+                
+            setattr(self, property, value)
+
+    def __repr__(self):
+        return str(self.seat)
+
+
+class FlightCode(Base):
+
+    __tablename__ = 'FlightCode'
+
+    id = Column(Integer, primary_key=True)
+    code = Column(String, unique=False)
+
+    date = Column(Date, unique=False)
+
+    from_country_id = Column(Integer, ForeignKey('Country.id'), nullable=False)
+    from_country = relationship('Country', foreign_keys=[from_country_id])
+
+    from_city = Column(String, unique=False)
+
+    to_country_id = Column(Integer, ForeignKey('Country.id'), nullable=False)
+    to_country = relationship('Country', foreign_keys=[to_country_id])
+
+    to_city = Column(String, unique=False)
+
+    def __init__(self, **kwargs):
+        for property, value in kwargs.items():
+            if hasattr(value, '__iter__') and not isinstance(value, str):
+                value = value[0]
+                
+            setattr(self, property, value)
+
+    def __repr__(self):
+        return str(self.code)
+
+class TrainTravel(Base):
+
+    __tablename__ = 'TrainTravel'
+
+    id = Column(Integer, primary_key=True)
+
+    patient_id = Column(Integer, ForeignKey('Patient.id', ondelete="CASCADE"))
+    patient = relationship('Patient', backref=backref('train_travel', passive_deletes=True))
+
+    train_id = Column(Integer, ForeignKey('Train.id'))
+    train = relationship('Train')
+
+    wagon = Column(String, unique=False, nullable=True) 
+    seat = Column(String, unique=False, nullable=True)
+
+    def __init__(self, **kwargs):
+        for property, value in kwargs.items():
+            if hasattr(value, '__iter__') and not isinstance(value, str):
+                value = value[0]
+                
+            setattr(self, property, value)
+
+    def __repr__(self):
+        return str(self.seat)
+
+
+class Train(Base):
+
+    __tablename__ = 'Train'
+
+    id = Column(Integer, primary_key=True)
+
+    departure_date = Column(Date, unique=False)
+    arrival_date = Column(Date, unique=False)
+
+    from_country_id = Column(Integer, ForeignKey('Country.id'), nullable=False)
+    from_country = relationship('Country', foreign_keys=[from_country_id])
+
+    from_city = Column(String, unique=False)
+
+    to_country_id = Column(Integer, ForeignKey('Country.id'), nullable=False)
+    to_country = relationship('Country', foreign_keys=[to_country_id])
+
+    to_city = Column(String, unique=False)
+
+    def __init__(self, **kwargs):
+        for property, value in kwargs.items():
+            if hasattr(value, '__iter__') and not isinstance(value, str):
+                value = value[0]
+                
+            setattr(self, property, value)
+
+    def __repr__(self):
+        return str(self.from_city)
