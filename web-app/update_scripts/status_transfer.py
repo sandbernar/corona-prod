@@ -74,7 +74,11 @@ for patient in patients:
         status = status[0]
         if status != "Нет Статуса":
             attrs['status'] = status['name']
-    psqlQuery('UPDATE "Patient" SET attrs = attrs::jsonb || \'%s\'::jsonb WHERE id=%d;' % (json.dumps(attrs), patient['id']))
+    
+    concat_attrs = ""
+    if patient['attrs']:
+        concat_attrs = "attrs::jsonb ||"
+    psqlQuery('UPDATE "Patient" SET attrs = %s \'%s\'::jsonb WHERE id=%d;' % (concat_attrs, json.dumps(attrs), patient['id']))
     # print(attrs)
 
 
