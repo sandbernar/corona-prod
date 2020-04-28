@@ -49,7 +49,7 @@
     <!-- Table -->
     <div class="row mt-3">
       <div class="col">
-      {% with table=users_table,
+      {% with table=users_table, hidden_values=[("id", main_patient.id)],
        search_fields = [
         [
           [_("Логин"), users_search_form.username(class="form-control", type="text", placeholder=_("Логин"))],

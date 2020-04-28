@@ -4,6 +4,7 @@ from app.main.modules import TableModule
 
 import app.constants as c
 from app.login.models import User
+from app.main.patients.models import Patient
 
 from collections import OrderedDict
 from app.main.util import parse_date
@@ -65,8 +66,9 @@ class UserTableModule(TableModule):
             is_admin = _("Да")
         
         telephone = result[0].telephone
+        added_patients_count = 0 if result[1] == None else result[1]
 
-        return [username, email, region, is_admin, telephone, result[1]]
+        return [username, email, region, is_admin, telephone, added_patients_count]
 
 class UserPatientsTableModule(TableModule):
     def __init__(self, request, q, search_form, header_button = None, page = 1, per_page = 5):
@@ -83,12 +85,12 @@ class UserPatientsTableModule(TableModule):
     def search_table(self):
         full_name_value = self.request.args.get("full_name", None)
         if full_name_value:
-            self.q = self.q.filter(func.lower(func.concat(Patient.first_name, ' ', Patient.second_name, ' ', 
+            self.q = self.q.filter(func.lower(func.concat(Patient.second_name, ' ', Patient.first_name, ' ', 
                                     Patient.patronymic_name)).contains(full_name_value.lower()))
             
             self.search_form.full_name.default = full_name_value
 
-        region_id = self.request.args.get("region", -1)
+        region_id = self.request.args.get("region_id", -1)
         if region_id:
             try:
                 region_id = int(region_id)
@@ -97,14 +99,16 @@ class UserPatientsTableModule(TableModule):
 
             if region_id != -1:
                 self.q = self.q.filter(Patient.region_id == region_id)
-                self.search_form.region.default = region_id
+                self.search_form.region_id.default = region_id
 
         iin = self.request.args.get("iin", None)
         if iin:
             self.q = self.q.filter(Patient.iin.contains(iin))
-            form.iin.default = iin
-  
+            self.search_form.iin.default = iin
 
+        if self.search_form:
+            self.search_form.process()
+  
     def print_entry(self, result):
         full_name = (result, "/patient_profile?id={}".format(result.id))
         iin = result.iin

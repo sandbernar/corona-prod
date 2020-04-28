@@ -27,7 +27,7 @@ class ContactedPatientsTableModule(TableModule):
     def search_table(self):
         full_name_value = self.request.args.get("full_name", None)
         if full_name_value:
-            self.q = self.q.filter(func.lower(func.concat(Patient.first_name, ' ', Patient.second_name, ' ', 
+            self.q = self.q.filter(func.lower(func.concat(Patient.second_name, ' ', Patient.first_name, ' ', 
                                     Patient.patronymic_name)).contains(full_name_value.lower()))
             
             self.search_form.full_name.default = full_name_value
@@ -114,7 +114,7 @@ class AllPatientsTableModule(TableModule):
     def search_table(self):
         full_name_value = self.request.args.get("full_name", None)
         if full_name_value:
-            self.q = self.q.filter(func.lower(func.concat(Patient.first_name, ' ', Patient.second_name, ' ', 
+            self.q = self.q.filter(func.lower(func.concat(Patient.second_name, ' ', Patient.first_name, ' ', 
                                     Patient.patronymic_name)).contains(full_name_value.lower()))
             
             self.search_form.full_name.default = full_name_value

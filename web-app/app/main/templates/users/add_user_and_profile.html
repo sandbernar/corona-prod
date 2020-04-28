@@ -149,7 +149,7 @@
     </div>
   </div>
   {% if is_profile %}
-      {% with table=patients_table,
+      {% with table=patients_table, hidden_values=[("id", user.id)],
        search_fields = [
         [
           [_("ФИО"), patients_table.search_form.full_name(class="form-control", type="text", placeholder=_("ФИО"))],
