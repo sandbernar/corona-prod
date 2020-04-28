@@ -20,7 +20,7 @@
         {% if select_contacted %}
         <input type="text" name="select_contacted_id" style="display:none;" value="{{ select_contacted }}">
         {% endif %}      
-        <div class="card shadow">
+        <div class="card shadow mt-3">
           <div class="card-header border-0">
             <div class="row">
               <div class="col-xl">
@@ -39,14 +39,32 @@
                 <label class='form-control-label'>{{ _('ИИН') }}</label>
                 {{ form.iin(class="form-control", placeholder=_('ИИН')) }}              
               </div>
-              <div class="col-xl">
-                <label class='form-control-label'>{{ _('Телефон') }}</label>
-                {{ form.telephone(class="form-control", placeholder=_('Телефон')) }}              
-              </div>
-
             </div>
           </div>
         </div>
+        <div class="card shadow mt-3">
+          <div class="card-header border-0">
+            <div class="row">
+              <div class="col-xl">
+                {{ patients_form.region_id(class="form-control") }}
+              </div>
+              <div class="col-mt">
+                <div class="custom-control custom-checkbox">
+                  {{ form.not_found(class="custom-control-input") }}
+                  <label class="custom-control-label" for="not_found">{{ _("Не найден") }}</label>
+                </div>
+                <div class="custom-control custom-checkbox">
+                  {{ form.not_in_hospital(class="custom-control-input") }}                    
+                  <label class="custom-control-label" for="not_in_hospital">{{ _("Не госпитализирован") }}</label>
+                </div>               
+              </div>
+              <div class="custom-control custom-checkbox">
+                {{ form.is_infected(class="custom-control-input", onchange="this.form.submit()") }}                    
+                <label class="custom-control-label" for="is_infected">{{ _("Инфицирован") }}</label>
+              </div>              
+            </div>
+          </div>
+        </div>        
         <div class="card shadow mt-3">
           <div class="card-header border-0">        
             <div class="row">
@@ -61,6 +79,7 @@
           <button type="submit" class="btn btn-primary btn-full-width mt-3" type="button">
             {{ _('Поиск') }}
           </button>
+          {{ form.hidden_tag() }}
       </form>
     </div>
   </div>

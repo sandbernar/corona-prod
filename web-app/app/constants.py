@@ -19,7 +19,7 @@ patient_statuses = [no_status, in_hospital, is_home, is_transit]
 out_of_rk = "Вне РК"
 
 # Travel Type
-all_types = "Все Типы"
+all_travel_types = ("all_travel_types", "Все Типы")
 train_type = ("train_type", "Поезд")
 by_auto_type = ("auto_type", "Авто")
 by_foot_type = ("by_foot", "Пешком")

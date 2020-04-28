@@ -12,7 +12,8 @@ class TableModule:
         pass
 
     class TableForm(FlaskForm):
-        per_page = SelectField(choices=[(5, "5"), (10, "10"), (25, "25"), (50, "50"), (100, "100")], default=5, validators=[DataRequired()])
+        per_page = SelectField(choices=[(5, "5"), (10, "10"), (25, "25"), (50, "50"), (100, "100"), (250, "250")], 
+                                default=5, validators=[DataRequired()])
 
     def __init__(self, request, q, table_head, header_button = None, search_form = None, sort_param = None,
                 page = 1, per_page = 5):

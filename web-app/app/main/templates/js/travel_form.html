@@ -113,7 +113,7 @@ if (travelForm.children.length !== 1) {
   }
 }
 var travel_type = $("#travel_type").val();
-if (travel_type !== '{{c.local_type[0]}}') {
+if (travel_type !== '{{c.local_type[0]}}' && travel_type !== '{{c.all_travel_types[0]}}') {
   if (travel_type === '{{c.flight_type[0]}}') {
     addToTravelForm(flightForm)
 

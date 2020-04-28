@@ -43,7 +43,7 @@ from app.main.util import get_regions, get_regions_choices, get_flight_code, pop
 from app.login.util import hash_pass
 from sqlalchemy import func, exc
 
-def prepare_patient_form(patient_form, with_old_data = False):
+def prepare_patient_form(patient_form, with_old_data = False, with_all_travel_type=False):
     regions_choices = get_regions_choices(current_user, False)
 
     if not patient_form.region_id.choices:
@@ -55,7 +55,7 @@ def prepare_patient_form(patient_form, with_old_data = False):
         patient_form.hospital_region_id.choices = regions_choices
 
     if not patient_form.travel_type.choices:
-        patient_form.travel_type.choices = []
+        patient_form.travel_type.choices = [] if not with_all_travel_type else [c.all_travel_types]
         for typ in TravelType.query.all():
             if typ.value == c.old_data_type[0]:
                 if with_old_data:
@@ -538,182 +538,14 @@ def get_lat_lng(patients):
 
     return lat_lng
 
-# @blueprint.route('/add_data', methods=['GET', 'POST'])
-# def add_data():
-#     if not current_user.is_authenticated:
-#         return redirect(url_for('login_blueprint.login'))
-
-#     data_form = AddFlightFromExcel()
-#     docs = UploadSet('documents', ['xls', 'xlsx', 'csv'])
-
-#     if not data_form.flights_id.choices:
-#         data_form.flights_id.choices = []
-#         for flight in FlightCode.query.all():
-#             flight_name = "{}, {}, {}-{}".format(flight.date, flight.code, flight.from_city, flight.to_city)
-#             data_form.flights_id.choices.append((str(flight.id), flight_name))
-
-#         form_dict = request.form.to_dict()
-#         if "flights_id" in form_dict:
-#             data_form.flights_id.default = form_dict["flights_id"]
-
-#     found_hospitals = dict()
-
-#     if data_form.validate_on_submit():
-#         filename = docs.save(data_form.file.data)
-#         file_url = docs.url(filename)
-
-#         patients = pd.read_excel(docs.path(filename))
-#         added = 0
-#         regions = get_regions(current_user)
-
-#         created_patients = []
-
-#         def create_patient(row, flight_code_id):
-
-#             patient = Patient()
-#             patient.full_name = row["ФИО"]
-#             patient.iin = row["ИИН"]
-
-#             if isinstance(row["Дата рождения"], pd._libs.tslibs.nattype.NaTType):
-#                 patient.dob = datetime(1000, 1, 1)
-#             else:
-#                 if not isinstance(row["Дата рождения"], datetime):
-#                     try:
-#                         patient.dob = dateutil.parser.parse(row["Дата рождения"])
-#                     except (TypeError, ValueError) as e:
-#                         patient.dob = datetime(1000, 1, 1)
-#                 else:
-#                     patient.dob = row["Дата рождения"]
-
-#             patient.citizenship = row.get("Гражданство", None)
-#             patient.pass_num = row["Номер паспорта"]
-#             patient.telephone = row["Номер мобильного телефона"]
-
-#             # try:
-#             #     patient.arrival_date = dateutil.parser.parse(row["Дата въезда"])
-#             # except TypeError:
-#             #     patient.arrival_date = datetime(1000, 1, 1)           
-
-#             patient.travel_type_id = TravelType.query.filter_by(value = c.flight_type[0]).first().id
-
-#             # Create travel for this user
-#             flight_travel = FlightTravel(flight_code_id=flight_code_id, seat=None)
-#             flight_travel.seat = row.get("Место пассажира на борту воздушного судна", None)
-
-#             db.session.add(flight_travel)
-#             db.session.commit()
-#             patient.travel_id = flight_travel.id
-
-#             patient.visited_country = row.get("Место и сроки пребывания в последние 14 дней до прибытия в Казахстан (укажите страну, область, штат и т.д.)", None)
-            
-#             region_name = ""
-#             if not pd.isnull(row["регион"]):
-#                 regions_distance = []
-#                 preprocessed_region = row["регион"].lower().split(" ")
-
-#                 for r in regions:
-#                     preprocessed_r = r.name.lower().replace("(", "").replace(")", "").split(" ")
-#                     common_elements = len(set(preprocessed_region).intersection(preprocessed_r))
-#                     regions_distance.append(common_elements)
-
-#                 if np.max(regions_distance) == len(preprocessed_region):
-#                     region = regions[np.argmax(regions_distance)]
-#                 else:
-#                     regions_distance = []
-#                     for r in regions:
-#                         regions_distance.append(nltk.edit_distance(row["регион"], r.name))
-
-#                     region = regions[np.argmin(regions_distance)]
-                
-#                 patient.region_id = region.id
-#                 region_name = region.name
-#             else:
-#                 patient.region_id = Region.query.filter_by(name="Вне РК").first().id
-
-#             patient.home_address = row["Место жительство, либо предпологаемое место проживания"]
-#             patient.job = row.get("Место работы", None)
-            
-#             if "Найден (да/нет)" in row.keys():
-#                 patient.is_found = True if row["Найден (да/нет)"].lower() == "да" else False
-#             else:
-#                 if "Госпитализирован (да/нет)" in row.keys():
-#                     patient.is_found = True if row["Госпитализирован (да/нет)"].lower() == "да" else False    
-    
-#             hospitals = Hospital.query.filter_by(region_id=patient.region_id).all()
-
-#             if not pd.isnull(row.get("Место госпитализации", None)):
-#                 hospital_lower = row["Место госпитализации"].lower()
-
-#                 status = None
-#                 if "вылет" in hospital_lower or "транзит" in hospital_lower:
-#                     status = c.is_transit
-#                 elif "карантин" in hospital_lower:
-#                     status = c.is_home
-#                 elif len(hospital_lower):
-#                     status = c.in_hospital
-#                     hospital = found_hospitals.get(row["Место госпитализации"], None)
-
-#                     if not hospital:
-#                         hospital_distances = []
-#                         hospital_name = row["Место госпитализации"]
-
-#                         for h in hospitals:
-#                             hospital_distances.append(nltk.edit_distance(hospital_name, h.name, True))
-
-#                         if len(hospital_distances):
-#                             hospital = hospitals[np.argmin(hospital_distances)]
-#                             patient.hospital_id = hospital.id
-#                 else:
-#                     status = c.no_status
-                
-#                 if status != None:
-#                     patient.status_id = PatientStatus.query.filter_by(value=status[0]).first().id
-#             else:
-#                 patient.status_id = PatientStatus.query.filter_by(value=c.no_status[0]).first().id
-
-
-#             created_patients.append(patient)
-
-#         patients.apply(lambda row: create_patient(row, request.form['flights_id'][0]), axis=1)
-#         added = len(patients)
-
-#         lat_lng_data = []
-#         for p in created_patients:
-#             lat_lng_data.append((p.home_address, Region.query.filter_by(id=p.region_id).first().name))
-
-#         p_num = 16
-#         pool = threadpool(processes = p_num)
-#         lat_lng = pool.map(get_lat_lng, np.array_split(lat_lng_data, p_num))
-#         pool.close()
-#         pool.join()
-
-#         lat_lng = list(itertools.chain.from_iterable(lat_lng))
-
-#         for p, coordinates in zip(created_patients, lat_lng):
-#             p.address_lat = coordinates[0]
-#             p.address_lng = coordinates[1]
-
-#             db.session.add(p)
-
-#         db.session.commit()      
-
-#         return route_template( 'patients/add_data', form=data_form, added=added)
-#     else:
-#         return route_template( 'patients/add_data', form=data_form, added=-1)
-
-@blueprint.route('/patients')
+@blueprint.route('/patients', methods=['GET', 'POST'])
 @login_required
 def patients():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))
 
     form = TableSearchForm()
-
-    if not form.region.choices:
-        form.region.choices = get_regions_choices(current_user)
-    
-    if not form.travel_type.choices:
-        form.travel_type.choices = [(-1, c.all_types)] + [(t.id, t.name) for t in TravelType.query.all()]
+    patients_form = prepare_patient_form(PatientForm(), with_all_travel_type=True)
 
     patients = []
     filt = dict()
@@ -731,11 +563,16 @@ def patients():
         filt["region_id"] = region
         form.region.default = region
 
-    if "travel_type" in request.args:
-        travel_type_id = request.args["travel_type"]
-        if travel_type_id != '-1':
+    travel_type = request.args.get("travel_type", c.all_travel_types[0])
+    if travel_type and travel_type != c.all_travel_types[0]:
+        try:
+            travel_type_id = TravelType.query.filter_by(value=travel_type).first().id
+        except exc.SQLAlchemyError:
+            return render_template('errors/error-400.html'), 400
+
+        if travel_type_id:
             filt["travel_type_id"] = travel_type_id
-            form.travel_type.default = travel_type_id
+            patients_form.travel_type.default = travel_type
 
     if "not_found" in request.args:
         filt["is_found"] = False
@@ -804,7 +641,6 @@ def patients():
         
         select_contacted = patient.id
 
-    patients_form = prepare_patient_form(PatientForm())
     
     # for result in q.offset((page-1)*per_page).limit(per_page).all():
     #     p = result
@@ -840,11 +676,14 @@ def patients():
         error_msg = request.args['error']
 
     try:
-        all_patients_table = AllPatientsTableModule(request, q, select_contacted)
+        all_patients_table = AllPatientsTableModule(request, q, select_contacted, 
+                header_button=(_("Добавить Пациента"), "/add_person"))
     except ValueError:
         return render_template('errors/error-500.html'), 500        
 
     form.process()
+    patients_form.process()
+
     return route_template('patients/patients', form=form, all_patients_table = all_patients_table, patients_form = patients_form,
                             constants=c, flight_codes_list=flight_codes_list, change=change, error_msg=error_msg, select_contacted = select_contacted)
 
