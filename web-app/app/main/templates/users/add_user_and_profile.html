@@ -148,6 +148,22 @@
       </div>
     </div>
   </div>
+  {% if is_profile %}
+      {% with table=patients_table,
+       search_fields = [
+        [
+          [_("ФИО"), patients_table.search_form.full_name(class="form-control", type="text", placeholder=_("ФИО"))],
+          [_("Регион"), patients_table.search_form.region_id(class="form-control")],
+          [_("ИИН"), patients_table.search_form.iin(class="form-control", type="text", placeholder=_("ИИН"))]
+        ]
+      ] 
+      %}
+      <div class="mt-3">
+              {% include "modules/table/table.html" %}
+            </div>
+      {% endwith %}
+
+  {% endif %}
 
   {% include "site_template/footer.html" %}
 

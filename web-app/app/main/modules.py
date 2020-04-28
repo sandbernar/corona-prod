@@ -16,7 +16,7 @@ class TableModule:
                                 default=5, validators=[DataRequired()])
 
     def __init__(self, request, q, table_head, header_button = None, search_form = None, sort_param = None,
-                page = 1, per_page = 5):
+                page = 1, per_page = 5, table_title = ""):
         if "page" in request.args:
             try:
                 page = int(request.args["page"])
@@ -32,6 +32,8 @@ class TableModule:
         self.header_button = header_button
         self.search_form = search_form
         self.sort_param = sort_param
+
+        self.table_title = table_title
 
         self.table_form = self.TableForm()
         try:

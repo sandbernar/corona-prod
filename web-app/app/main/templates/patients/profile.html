@@ -89,9 +89,38 @@
                <div class="card card-profile shadow mt-3">
                 {% else %}
                 <div class="card card-profile shadow mt-0">
-               {% endif %}
+                 {% endif %}
+                 <div class="card-body pt-0 pt-md-4">
+                    <div class="row">
+                        <div class="col-lg">
+                            <div class="form-group">
+                                <label for="name-input" class="form-control-label">{{ _("Время Добавления") }}</label>
+                                <div>{{ patient.created_date.strftime("%d-%m-%Y %H:%M") }}</div>
+                            </div>
+                        </div>
+                        {% if patient.created_by %}
+                        <div class="col-lg">
+                            <div class="form-group">
+                                <label for="name-input" class="form-control-label">{{ _("Логин Специалиста") }}</label>
+                                <div>{{ patient.created_by.username }}</div>
+                            </div>             
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% if patient.created_by %}
+                    <div class="row">
+                        <div class="col-lg">
+                            <div class="form-group">
+                                <label for="name-input" class="form-control-label">{{ _("Регион Специалиста") }}</label>
+                                <div>{{ patient.created_by.region }}</div>
+                            </div>             
+                        </div>                        
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+               <div class="card card-profile shadow mt-3">
                 <div class="card-body pt-0 pt-md-4">
-                    <!-- <div class="text-center">             -->
                         <h3>
                             {{ _("Возраст") }} {{ age }}<span class="font-weight-light"></span>
                         </h3>
@@ -107,13 +136,7 @@
                                 {{ form.is_infected(class="custom-control-input", id="is_infected_checkbox") }}
                                 <label class="custom-control-label" for="is_infected_checkbox">{{ _("Инфицирован") }}</label>
                             </div>
-                        </div>
-  <!--                       <div class="col">
-                            <div class="custom-control custom-checkbox">
-                              {{ form.is_contacted(class="custom-control-input", id="is_contacted_checkbox") }}
-                              <label class="custom-control-label" for="is_contacted_checkbox">Контактный</label>
-                          </div>
-                      </div>  -->                 
+                        </div>                
                   </div>
                   <hr class="my-4" />
                   <div class="row">

@@ -67,3 +67,49 @@ class UserTableModule(TableModule):
         telephone = result[0].telephone
 
         return [username, email, region, is_admin, telephone, result[1]]
+
+class UserPatientsTableModule(TableModule):
+    def __init__(self, request, q, search_form, header_button = None, page = 1, per_page = 5):
+        table_head = OrderedDict()
+        table_head[_("ФИО")] = ["second_name", "first_name", "patronymic_name"]
+        table_head[_("ИИН")] = ["iin"]
+        table_head[_("Телефон")] = ["telephone"]
+        table_head[_("Регион")] = []
+        table_head[_("Время Добавления")] = ["created_date"]
+        
+        super().__init__(request, q, table_head, header_button, search_form, 
+                        table_title=_("Пациенты, добавленные пользователем"))     
+
+    def search_table(self):
+        full_name_value = self.request.args.get("full_name", None)
+        if full_name_value:
+            self.q = self.q.filter(func.lower(func.concat(Patient.first_name, ' ', Patient.second_name, ' ', 
+                                    Patient.patronymic_name)).contains(full_name_value.lower()))
+            
+            self.search_form.full_name.default = full_name_value
+
+        region_id = self.request.args.get("region", -1)
+        if region_id:
+            try:
+                region_id = int(region_id)
+            except ValueError:
+                return render_template('errors/error-500.html'), 500
+
+            if region_id != -1:
+                self.q = self.q.filter(Patient.region_id == region_id)
+                self.search_form.region.default = region_id
+
+        iin = self.request.args.get("iin", None)
+        if iin:
+            self.q = self.q.filter(Patient.iin.contains(iin))
+            form.iin.default = iin
+  
+
+    def print_entry(self, result):
+        full_name = (result, "/patient_profile?id={}".format(result.id))
+        iin = result.iin
+        telephone = result.telephone
+        region = result.region
+        created_date = result.created_date.strftime("%d-%m-%Y %H:%M")
+
+        return [full_name, iin, telephone, region, created_date]
