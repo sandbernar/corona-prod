@@ -13,201 +13,156 @@
 {% include "site_template/top-stats.html" %}
 
 <div class="container-fluid mt--7">
-  <div class="row">
-    <div class="col">
-      <div class="card shadow">
-        <div class="card-header border-0">
-            <form method="GET" id="searchForm">
-            {% if select_contacted %}
-              <input type="text" name="select_contacted_id" style="display:none;" value="{{ select_contacted }}">
-            {% endif %}            
-          <div class="row">
-            <div class="col">
-              <h3> {{ _('Поиск') }} </h3>
-            </div>
-              <div class="col">
-                        {{ form.second_name(class="form-control", placeholder=_('Фамилия')) }}              
+  <div class="card shadow">
+    <div class="card-header border-0">
+      <h3> {{ _('Поиск Пациента') }} </h3>
+      <form method="GET" id="searchForm">
+        {% if select_contacted %}
+        <input type="text" name="select_contacted_id" style="display:none;" value="{{ select_contacted }}">
+        {% endif %}      
+        <div class="card shadow mt-3">
+          <div class="card-header border-0">
+            <div class="row">
+              <div class="col-xl">
+                <label class='form-control-label'>{{ _('Фамилия') }}</label>
+                {{ form.second_name(class="form-control", placeholder=_('Фамилия')) }}              
               </div>
-              <div class="col">
-                        {{ form.first_name(class="form-control", placeholder=_('Имя')) }}              
+              <div class="col-xl">
+                <label class='form-control-label'>{{ _('Имя') }}</label>
+                {{ form.first_name(class="form-control", placeholder=_('Имя')) }}              
               </div>
-              <div class="col">
-                        {{ form.patronymic_name(class="form-control", placeholder=_('Отчество')) }}              
+              <div class="col-xl">
+                <label class='form-control-label'>{{ _('Отчество') }}</label>
+                {{ form.patronymic_name(class="form-control", placeholder=_('Отчество')) }}              
               </div>                            
-              <div class="col">
-                        {{ form.iin(class="form-control", placeholder=_('ИИН')) }}              
+              <div class="col-xl">
+                <label class='form-control-label'>{{ _('ИИН') }}</label>
+                {{ form.iin(class="form-control", placeholder=_('ИИН')) }}              
               </div>
-              <div class="col">
-                        {{ form.telephone(class="form-control", placeholder=_('Телефон')) }}              
-              </div>
-              <button type="submit" class="btn btn-primary" type="button" style="height:100%">
-                        {{ _('Поиск') }}
-              </button>
+            </div>
           </div>
         </div>
-      </div>
+        <div class="card shadow mt-3">
+          <div class="card-header border-0">
+            <div class="row">
+              <div class="col-xl">
+                <label class='form-control-label'>{{ _('Адрес') }}</label>
+                {{ form.address(class="form-control", placeholder=_('Страна/Город/Улица и т.д.')) }}              
+              </div>
+              <div class="col-xl">
+                <label class='form-control-label'>{{ _('Регион') }}</label>                
+                {{ form.region_id(class="form-control") }}
+              </div>                            
+              <div class="col-md-auto">
+                <label class='form-control-label'>{{ _('Категория Работы') }}</label>                
+                {{ form.job_category_id(class="form-control") }}
+              </div>
+              <div class="col-md-auto">
+                <br>
+                <div class="custom-control custom-checkbox">
+                  {{ form.not_found(class="custom-control-input") }}
+                  <label class="custom-control-label" for="not_found">{{ _("Не найден") }}</label>
+                </div>
+                <div class="custom-control custom-checkbox">
+                  {{ form.not_in_hospital(class="custom-control-input") }}                    
+                  <label class="custom-control-label" for="not_in_hospital">{{ _("Не госпитализирован") }}</label>
+                </div>               
+              </div>
+              <div class="col-md-auto">
+                <br>
+                <div class="custom-control custom-checkbox">
+                  {{ form.is_infected(class="custom-control-input") }}                    
+                  <label class="custom-control-label" for="is_infected">{{ _("Инфицирован") }}</label>
+                </div>              
+            </div>
+            </div>
+          </div>
+        </div>        
+        <div class="card shadow mt-3">
+          <div class="card-header border-0">        
+            <div class="row">
+              <div class="col">
+                {% with form=form %}
+                {% include "patients/modules/travel_form.html" %}
+                {% endwith %}   
+              </div>
+            </div>
+          </div>
+        </div>
+          <button type="submit" class="btn btn-primary btn-full-width mt-3" type="button">
+            {{ _('Поиск') }}
+          </button>
+      </form>
     </div>
   </div>
+
   <!-- Table -->
   <div class="row mt-3">
     <div class="col">
-      <div class="card shadow">
-        <div class="card-header border-0">
-          <div class="row">
-            <div class="col-5">
-              <h3 class="mb">{{ _('Найдено') }} {{total}}, {{ _('показано') }} {{ patients|length }} {{ _('пациентов') }}</h3>
-            </div>
-              <div class="col">
-                <div class="row">
-                  <div class="col">
-<!--                     <div class="autocomplete" style="width:300px;">
-                      {{ form.flight_code(class="form-control", placeholder=_('Номер Рейса'), id="myInput", autocomplete="off", type="search") }}
-                    </div> -->
-                  </div>
-                  <div class="col">
-                    {{ form.travel_type(class="form-control", onchange="this.form.submit()") }}
-                  </div>
-                  <div class="col">
-                    {{ form.region(class="form-control", onchange="this.form.submit()") }}
-                  </div>
-                  <div class="col-mt">
-                    <div class="custom-control custom-checkbox">
-                      {{ form.not_found(class="custom-control-input", onchange="this.form.submit()") }}
-                      <label class="custom-control-label" for="not_found">{{ _("Не найден") }}</label>
-                    </div>
-                    <div class="custom-control custom-checkbox">
-                      {{ form.not_in_hospital(class="custom-control-input", onchange="this.form.submit()") }}                    
-                      <label class="custom-control-label" for="not_in_hospital">{{ _("Не госпитализирован") }}</label>
-                    </div>               
-                  </div>
-                  <div class="custom-control custom-checkbox">
-                    {{ form.is_infected(class="custom-control-input", onchange="this.form.submit()") }}                    
-                    <label class="custom-control-label" for="is_infected">{{ _("Инфицирован") }}</label>
-                  </div>   
-                </div>
-              </div>
-            </form>
-          </div>
-        </div>
-        <div class="table-responsive">
-          <table class="table align-items-center table-flush">
-            <thead class="thead-light">
-              <tr>
-                <th scope="col">{{ _("ФИО") }}</th>
-                <th scope="col">{{ _("Телефон") }}</th>
-                <th scope="col">{{ _("Тип Въезда") }}</th>
-                <th scope="col">{{ _("Регион") }}</th>
-                <th scope="col">{{ _("Найден") }}</th>
-                <th scope="col">{{ _("Госпитализирован") }}</th>
-                <th scope="col">{{ _("Инфицирован") }}</th>
-                <th scope="col">{{ _("Контактов (найдено/всего)") }}</th>
-                {% if select_contacted %}
-                <th scope="col">{{ _("Выбрать контактных") }}</th>
-                {% endif %}
-              </tr>
-            </thead>
-            <tbody>
-              {% for patient in patients %}
-              <tr>
-                <th scope="row">
-                  <div class="media align-items-center">
-                    <div class="media-body">
-                      <span class="mb-0 text-sm"><a href="/patient_profile?id={{patient.id}}">{{ patient }}</a></span>
-                    </div>
-                  </div>
-                </th>
-                <td>
-                  {{ patient.telephone }}
-                </td>
-                <td>
-                  {{ patient.travel_type.name }}
-                </td>                
-                <td>
-                  {{ patient.region }}
-                </td>
-                <td>
-                  {% if patient.is_found %}
-                  <font color="green">{{ _("Да") }}</font>
-                  {% else %}
-                  <font color="red">{{ _("Нет") }}</font>
-                  {% endif %}                        
-                </td>
-                <td>
-                  {% if patient.status.value == constants.in_hospital[0] %}
-                  <font color="green">{{ _("Да") }}</font>
-                  {% else %}
-                  <font color="red">{{ _("Нет") }}</font>
-                  {% endif %}                        
-                </td>
-                <td>
-                  {% if patient.is_infected %}
-                  <font color="red">{{ _("Да") }}</font>
-                  {% else %}
-                  <font color="green">{{ _("Нет") }}</font>
-                  {% endif %}                        
-                </td>              
-                <td>
-                  {{ patient.contacted_found_count }}/{{ patient.contacted_count }}
-                </td>
-                {% if select_contacted %}
-                <td>
-                  {% if select_contacted == patient.id %}
-                  {{ _("Основной Пациент") }}
-                  {% elif patient.already_contacted %}
-                    <a href="/contacted_persons?id={{select_contacted}}" class="btn btn-success">{{ _('Контактный') }}</a>
-                  {% elif patient.already_infected %}
-                    <a href="/contacted_persons?id={{ patient.id }}" class="btn btn-danger">{{ _('Контактировал С') }}</a>
-                  {% else %}                  
-                    <a href="/select_contacted?infected_patient_id={{ select_contacted }}&contacted_patient_id={{ patient.id }}" class="btn btn-primary">{{ _('Выбрать Контактным') }}</a>                  
-                  {% endif %}
-                </td>
-                {% endif %}
-              </tr>
-              {% endfor %}
-
-            </tbody>
-          </table>
-        </div>
-        {% if max_page > 1%}
-        <div class="card-footer py-4">
-          <nav aria-label="...">
-            <ul class="pagination justify-content-end mb-0">
-              <li class="page-item {% if page == 1%}disabled{%endif%}">
-                <a class="page-link" onclick="setSearchParam('page', {{ page - 1 }})">
-                  <i class="fas fa-angle-left"></i>
-                  <span class="sr-only">Previous</span>
-                </a>
-              </li>
-              <li class="page-item"><div class="page-link" style="cursor: default;"> {{ page }}</div></li>
-              <li class="page-item {% if page == max_page %}disabled{%endif%}">
-                <a class="page-link" onclick="setSearchParam('page', {{ page + 1 }})" >
-                  <i class="fas fa-angle-right"></i>
-                  <span class="sr-only">Next</span>
-                </a>
-              </li>
-            </ul>
-          </nav>
-        </div>
-        {% endif %}        
-      </div>
+      {% with table=all_patients_table, search_fields = [] %}
+        {% include "modules/table/table.html" %}
+      {% endwith %}                 
     </div>
   </div>
-
   <!-- Footer -->
-
-
-
   {% include "site_template/footer.html" %}
-
 </div>        
 
 {% endblock content %}
 
 {% block javascripts %}
 {{ super()}}
+<script type="text/javascript">
+  {% with form=form, c=constants %}
+  {% include "js/travel_form.html" %}
+  {% endwith %}
 
-{% with change=change, error_msg=error_msg %}
-  {% include "site_template/change_notification.html" %}
-{% endwith %}
+  update_travel_form()
+
+  $("#travel_type").on("change", function(){
+    update_travel_form();
+  });
+
+  const queryString = window.location.search;
+  const urlParams = new URLSearchParams(queryString);
+  const travel_type = urlParams.get('travel_type')
+  
+  if (travel_type !== null) {
+    if (travel_type == '{{ constants.flight_type[0] }}') {
+      flight_arrival_date = urlParams.get('flight_arrival_date')
+      if(flight_arrival_date !== null) {
+        $('#flight_arrival_date').val(flight_arrival_date)
+      }
+      
+      get_flights_by_date()
+      flight_code_id = urlParams.get('flight_code_id')
+      if(flight_code_id !== null) {
+        $('#flight_code_id').val(flight_code_id)
+      }
+    } else if (travel_type == '{{ constants.train_type[0] }}') {
+      train_departure_date = urlParams.get('train_departure_date')
+      if(train_departure_date !== null) {
+        $('#train_departure_date').val(train_departure_date)
+      }
+
+      train_arrival_date = urlParams.get('train_arrival_date')
+      if(train_arrival_date !== null) {
+        $('#train_arrival_date').val(train_arrival_date)
+      }
+      
+      get_trains_by_date_range()
+      train_id = urlParams.get('train_id')
+      if(train_id !== null) {
+        $('#train_id').val(train_id)
+      }
+    }
+  }
+
+</script>
+
+
+  {% with change=change, error_msg=error_msg %}
+    {% include "site_template/change_notification.html" %}
+  {% endwith %}
 
 {% endblock javascripts %}

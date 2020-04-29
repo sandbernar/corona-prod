@@ -66,6 +66,7 @@ class PatientForm(FlaskForm):
 
     job = TextField('Job')
     job_position = TextField('Job Position')
+    job_category_id = SelectField('Job Category')
 
     job_address_country_id = SelectField('Job Address Country')
     job_address_state = TextField('Job State')
@@ -112,3 +113,40 @@ class ContactedPatientsSearchForm(FlaskForm):
     region_id = SelectField("Region ID")
     is_found = SelectField("Is Found", choices=[(-1, _("Неважно")), (1, _("Да")), (0, _("Нет"))], default=-1)
     is_added_in_2_hours = SelectField("Is Added in 2 Hours", choices=[(-1, _("Неважно")), (1, _("Да")), (0, _("Нет"))], default=-1)
+
+class PatientsSearchForm(FlaskForm):
+    region_id = SelectField()
+    address = TextField()
+    
+    travel_type = SelectField()
+    job_category_id = SelectField()
+
+    not_found = BooleanField(id="not_found")
+    is_infected = BooleanField(id="is_infected")
+    not_in_hospital = BooleanField(id="not_in_hospital")
+    probably_duplicate = BooleanField()
+
+    # Flight Travel
+    flight_arrival_date = SelectField('Flight Arrival Date', id='flight_arrival_date')
+    flight_code_id = SelectField('Flight Code', id='flight_code_id')
+
+    # Train Travel
+    train_departure_date = DateField('Train Departure Date')
+    train_arrival_date = DateField('Train Arrival Date')
+    train_id = SelectField('Train', choices=[])
+
+    # Travel by auto, foot, sea
+    arrival_date = DateField('Arrival Date')
+    auto_border_id = SelectField('By Auto Border')
+    foot_border_id = SelectField('By Foot Border')
+    sea_border_id = SelectField('By Sea Border')
+
+    # Blockpost Travel
+    blockpost_region_id = SelectField('Blockpost Region')    
+
+    first_name = TextField('First Name')
+    second_name = TextField('Second Name')
+    patronymic_name = TextField('Patronymic Name')
+
+    iin = TextField(id='iin')
+    telephone = TextField(id='telephone')

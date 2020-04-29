@@ -1,3 +1,13 @@
+var csrf_token = "{{ csrf_token() }}"
+
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type)) {
+            xhr.setRequestHeader("X-CSRFToken", csrf_token)
+        }
+    }
+})
+    
 function get_flights_by_date(){
 $.ajax({
   type: 'POST',
@@ -25,32 +35,35 @@ $.ajax({
 };
 
 function update_travel_form() {
-var flightForm = `  <div class='col'>
+var flightForm = `  <div class='col-xl'>
                       <div class='form-group'>
                         <label for='arrival-date-input' class='form-control-label'>{{ _('Дата Въезда') }}</label>
                         {{ form.flight_arrival_date(class='form-control') }}
                         </div>
                       </div>  
-                    <div class='col'>                        
+                    <div class='col-xl'>                        
                       <div class='form-group'>
                         <label for='flight-no-input' class='form-control-label'>{{ _('Номер Рейса') }}</label>
                         {{ form.flight_code_id(class='form-control') }}
                       </div>
                     </div>
-                    <div class='col'>                        
+                    {% if "flight_seat" in form.__dict__.keys() %}                    
+                    <div class='col-xl'>                        
                       <div class='form-group'>
                         <label for='flight-no-input' class='form-control-label'>{{ _('Место') }}</label>
                         {{ form.flight_seat(class='form-control', placeholder=_('Например') + ' 1C') }}
                       </div>
-                    </div>`;
+                    </div>
+                    {% endif %}
+                    `;
 
-var trainForm = `  <div class='col'>
+var trainForm = `  <div class='col-xl'>
                       <div class='form-group'>
                         <label for='arrival-date-input' class='form-control-label'>{{ _('Дата Отправления') }}</label>
                         {{ form.train_departure_date(class='form-control datepicker', type="date") }}
                         </div>
                       </div>
-                    <div class='col'>
+                    <div class='col-xl'>
                       <div class='form-group'>
                         <label for='arrival-date-input' class='form-control-label'>{{ _('Дата Прибытия') }}</label>
                         {{ form.train_arrival_date(class='form-control datepicker', type="date") }}
@@ -62,20 +75,25 @@ var trainForm = `  <div class='col'>
                         {{ form.train_id(class='form-control') }}
                       </div>
                     </div>
-                    <div class='col'>                        
+                    {% if "train_wagon" in form.__dict__.keys() %}
+                    <div class='col-xl'>                        
                       <div class='form-group'>
                         <label for='flight-no-input' class='form-control-label'>{{ _('Вагон') }}</label>
                         {{ form.train_wagon(class='form-control', placeholder=_('Например') + ' 32') }}
                       </div>
-                    </div>                    
-                    <div class='col'>                        
+                    </div>
+                    {% endif %}       
+                    {% if "train_seat" in form.__dict__.keys() %}             
+                    <div class='col-xl'>                        
                       <div class='form-group'>
                         <label for='flight-no-input' class='form-control-label'>{{ _('Место') }}</label>
                         {{ form.train_seat(class='form-control', placeholder=_('Например') + ' 4') }}
                       </div>
-                    </div>`;
+                    </div>
+                    {% endif %}
+                    `;
 
-var blockpostForm = `  <div class='col'>
+var blockpostForm = `  <div class='col-xl'>
                       <div class='form-group'>
                         <label for='arrival-date-input' class='form-control-label'>{{ _('Регион Блокпоста') }}</label>
                         {{ form.blockpost_region_id(class='form-control') }}
@@ -83,15 +101,15 @@ var blockpostForm = `  <div class='col'>
                       </div>  
                     `;
 
-var borderForm = `  <div class='col'>
+var borderForm = `  <div class='col-xl'>
                       <div class='form-group'>
                         <label for='arrival-date-input' class='form-control-label'>{{ _('Дата Въезда') }}</label>
-                        {{ form.arrival_date(class='form-control', type='date') }}
+                        {{ form.arrival_date(class='form-control datepicker', type='date') }}
                         </div>
                       </div>  
                     `;
 
-var formTemplateBegin = `<div class='col'>                        
+var formTemplateBegin = `<div class='col-xl'>                        
                       <div class='form-group'>
                         <label for='flight-no-input' class='form-control-label'>{{ _('Пункт Пропуска') }}</label>`
 
@@ -113,7 +131,7 @@ if (travelForm.children.length !== 1) {
   }
 }
 var travel_type = $("#travel_type").val();
-if (travel_type !== '{{c.local_type[0]}}') {
+if (travel_type !== '{{c.local_type[0]}}' && travel_type !== '{{c.all_travel_types[0]}}') {
   if (travel_type === '{{c.flight_type[0]}}') {
     addToTravelForm(flightForm)
 

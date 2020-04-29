@@ -12,7 +12,7 @@ from sqlalchemy import Column, Integer, String, Date, Boolean, Float, ForeignKey
 from app import db
 from app import constants as c
 from app.login.models import User
-from app.main.models import Country, Address, VisitedCountry
+from app.main.models import Country, Address, VisitedCountry, JobCategory
 from app.login.util import hash_pass
 
 
@@ -87,6 +87,9 @@ class Patient(db.Model):
     job_address_id = Column(Integer, ForeignKey('Address.id'), nullable=True, default=None)
     job_address = db.relationship('Address', foreign_keys=[
                                   job_address_id], cascade="all, delete-orphan", single_parent=True)
+    
+    job_category_id = Column(Integer, ForeignKey('JobCategory.id'), nullable=True, default=None)
+    job_category = db.relationship('JobCategory')
 
     attrs = Column(JSON, unique=False)
 
