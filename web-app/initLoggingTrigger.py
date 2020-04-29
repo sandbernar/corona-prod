@@ -75,34 +75,28 @@ except Exception as e:
 # POSTGIS EXTENSION
 try:
     psqlCursor.execute(createExtensionQuery)
+    try: # ADD GEOM COLUMN
+        psqlCursor.execute(addGeomColumnQuery)
+        try: # CREATE TRIGGER FUNCTION add_geom
+            psqlCursor.execute(createGeomTriggerQuery)
+            try: # ADD TRIGGER TO ADDRESS
+                psqlCursor.execute(addGeomTriggerQuery)
+            except Exception as e:
+                print(e)
+        except Exception as e:
+            print(e)
+
+        addresses = psqlCursor.execute('SELECT * FROM "Address";')
+        for address in addresses:
+            if address["geom"] is None:
+                psqlCursor.execute('UPDATE "Address" SET geom = ST_SetSRID(ST_MakePoint(%d, %d), 4326) WHERE id=%d;' % (
+                    address["lng"],
+                    address["lat"],
+                    address["id"]
+                ))
+    except Exception as e:
+        print(e)
 except Exception as e:
     print(e)
-
-# ADD GEOM COLUMN
-try:
-    psqlCursor.execute(addGeomColumnQuery)
-except Exception as e:
-    print(e)
-
-# CREATE TRIGGER FUNCTION add_geom
-try:
-    psqlCursor.execute(createGeomTriggerQuery)
-except Exception as e:
-    print(e)
-
-# ADD TRIGGER TO ADDRESS
-try:
-    psqlCursor.execute(addGeomTriggerQuery)
-except Exception as e:
-    print(e)
-
-addresses = psqlCursor.execute('SELECT * FROM "Address";')
-for address in addresses:
-    if address["geom"] is None:
-        psqlCursor.execute('UPDATE "Address" SET geom = ST_SetSRID(ST_MakePoint(%d, %d), 4326) WHERE id=%d;' % (
-            address["lng"],
-            address["lat"],
-            address["id"]
-        ))
 
 print("init log done.")
