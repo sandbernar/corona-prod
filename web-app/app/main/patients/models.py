@@ -88,7 +88,7 @@ class Patient(db.Model):
     job_address = db.relationship('Address', foreign_keys=[
                                   job_address_id], cascade="all, delete-orphan", single_parent=True)
     
-    job_category_id = Column(Integer, ForeignKey('JobCategory.id'))
+    job_category_id = Column(Integer, ForeignKey('JobCategory.id'), nullable=True, default=None)
     job_category = db.relationship('JobCategory')
 
     attrs = Column(JSON, unique=False)

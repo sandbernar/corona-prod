@@ -143,7 +143,16 @@ class AllPatientsTableModule(TableModule):
 
         filt = dict()
 
-        print(self.search_form.__dict__.keys())
+        job_category_id = self.request.args.get("job_category_id", "-1")
+        if job_category_id != "-1":
+            if job_category_id == "None":
+                job_category_id = None
+            else:
+                job_category_id = int(job_category_id)
+
+            self.q = self.q.filter(Patient.job_category_id == job_category_id)
+            self.search_form.job_category_id.default = job_category_id
+
 
         if "not_found" in request.args:
             filt["is_found"] = False

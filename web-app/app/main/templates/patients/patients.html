@@ -48,10 +48,14 @@
               <div class="col-xl">
                 <label class='form-control-label'>{{ _('Адрес') }}</label>
                 {{ form.address(class="form-control", placeholder=_('Страна/Город/Улица и т.д.')) }}              
-              </div>              
+              </div>
               <div class="col-xl">
                 <label class='form-control-label'>{{ _('Регион') }}</label>                
                 {{ form.region_id(class="form-control") }}
+              </div>                            
+              <div class="col-md-auto">
+                <label class='form-control-label'>{{ _('Категория Работы') }}</label>                
+                {{ form.job_category_id(class="form-control") }}
               </div>
               <div class="col-md-auto">
                 <br>

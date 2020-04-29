@@ -110,7 +110,11 @@ def prepare_patient_form(patient_form, with_old_data = False, with_all_travel_ty
     # Job Category
     job_categories = JobCategory.query.all()
     if not patient_form.job_category_id.choices:
-        patient_form.job_category_id.choices = [(cat.id, cat.name) for cat in job_categories]
+        patient_form.job_category_id.choices = [] if not search_form else [c.all_job_categories]
+        if search_form:
+            patient_form.job_category_id.default = c.all_job_categories[0]
+            
+        patient_form.job_category_id.choices += [c.unknown] + [(cat.id, cat.name) for cat in job_categories]
 
     def populate_countries_select(select_input, default, with_unknown = True):
         if not select_input.choices:
@@ -202,7 +206,7 @@ def can_we_add_patient(request_dict):
 def handle_add_update_patient(request_dict, final_dict, update_dict = {}):
     form_val_key = ['region_id', 'first_name', 'second_name', 'patronymic_name', 'dob', 'iin',
                     'citizenship_id', 'pass_num', 'country_of_residence_id', 'telephone', 'email', 
-                    'job', 'job_position', 'hospital_id', 'job_category_id']
+                    'job', 'job_position', 'hospital_id']
     
     # 1
     for key in form_val_key:
@@ -214,6 +218,10 @@ def handle_add_update_patient(request_dict, final_dict, update_dict = {}):
     # 2
     final_dict['dob'] = parse_date(request.form['dob'])    
     final_dict['gender'] = None if int(request_dict['gender']) == -1 else int(request_dict['gender']) == 1
+
+    if 'job_category_id' in request_dict:
+        job_category_id = None if request_dict['job_category_id'] == "None" else request_dict['job_category_id']
+        final_dict['job_category_id'] = job_category_id
 
     status = request_dict.get('patient_status', c.no_status[0])
     final_dict['status_id'] = PatientStatus.query.filter_by(value=status).first().id
