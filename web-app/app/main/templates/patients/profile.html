@@ -90,16 +90,16 @@
                 {% else %}
                 <div class="card card-profile shadow mt-0">
                  {% endif %}
-                 <div class="card-body pt-0 pt-md-4">
-                    <div class="row">
-                        <div class="col-lg">
+                 <div class="card-body pt-0">
+                    <div class="row mt-3">
+                        <div class="col">
                             <div class="form-group">
                                 <label for="name-input" class="form-control-label">{{ _("Время Добавления") }}</label>
                                 <div>{{ patient.created_date.strftime("%d-%m-%Y %H:%M") }}</div>
                             </div>
                         </div>
                         {% if patient.created_by %}
-                        <div class="col-lg">
+                        <div class="col">
                             <div class="form-group">
                                 <label for="name-input" class="form-control-label">{{ _("Логин Специалиста") }}</label>
                                 <div>
@@ -115,13 +115,13 @@
                     </div>
                     {% if patient.created_by %}
                     <div class="row">
-                        <div class="col-lg">
+                        <div class="col">
                             <div class="form-group">
                                 <label for="name-input" class="form-control-label">{{ _("Регион Специалиста") }}</label>
                                 <div>{{ patient.created_by.region }}</div>
                             </div>             
                         </div>
-                        <div class="col-lg">
+                        <div class="col">
                             <div class="form-group">
                                 <label for="name-input" class="form-control-label">{{ _("Организация") }}</label>
                                 <div>{{ patient.created_by.organization }}</div>
@@ -209,9 +209,11 @@
             <div class="col" style="text-align:center;">
                 <input class="btn btn-primary" id="submit" name="submit" type="submit" value={{ _("Сохранить") }}>
             </div>
-<!--             <div class="col" style="text-align:center;">
+            {% if current_user.is_admin or current_user.region.id in regions_with_delete %}
+            <div class="col" style="text-align:center;">
                 <input class="btn btn-danger" data-toggle="modal" type="button" data-target="#deletePatientModal" value={{ _("Удалить") }}>                
-            </div> -->
+            </div>
+            {% endif %}
         </div>
         <!-- </div> -->
     </div>
