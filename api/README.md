@@ -1,5 +1,29 @@
 # API
 
+## Описание работы статусов is_found, is_infected и is_contacted
+
+В случае, когда пациент инфицирован или предпологается, что он болен Covid-19, возвращается true. В зависимости от статуса определяется, был ли он найден.
+Если пациент найден, то прикрепляется определенный статус `Госпитализирован, Домашний карантин или Транзит`
+
+В случае, если пациент контактировал с пациентом, статус is_contacted: true.
+
+### status:
+```
+Возможные статусы:
+    Нет Статуса - пациент существует в базе. Статус не определен.
+    Госпитализирован - пациент был найден и госпитализирован.
+    Домашний Карантин - пациент находится на домашнем карантине.
+    Транзит - 
+```
+### is_contacted
+```
+    Контактировал ли пациент с больным Covid-19
+```
+### is_infected
+```
+    Является ли пациент заражен Covid-19
+```
+
 #
 ## Get patient by iin
 #
@@ -35,6 +59,10 @@
         "full_name": [string],
         "address": [string]
     },
+    "created_date": [string YYYY-MM-DD],
+    "first_name": [string],
+    "second_name": [string],
+    "patronymic_name": [string],
     "iin": [string],
     "pass_num": [string],
     "is_contacted": [boolean],
@@ -108,6 +136,10 @@ curl -v -X POST "http://demo.crm.alem.school/api/get_status_by_iin/" -H "X-API-T
         "full_name": [string],
         "address": [string]
     },
+    "first_name": [string],
+    "second_name": [string],
+    "patronymic_name": [string],
+    "created_date": [string YYYY-MM-DD],
     "iin": [string],
     "pass_num": [string],
     "is_contacted": [boolean],
@@ -161,7 +193,7 @@ curl -v -X POST "http://demo.crm.alem.school/api/get_status_by_pass_num/" -H "X-
 ### Data Params
 ```json
 { 
-    "behin": [datetime YYYY-MM-DD],
+    "begin": [datetime YYYY-MM-DD],
     "end": [datetime YYYY-MM-DD],
 }
 ```
@@ -170,26 +202,34 @@ curl -v -X POST "http://demo.crm.alem.school/api/get_status_by_pass_num/" -H "X-
 ```json
     [
         {
-            "status": {
-                "name": [string]
-            },
-            "home_address": {
-                "city": [string],
-                "street": [string],
-                "house": [string],
-                "flat": [string]
-            },
-            "hospital": {
-                "name": [string],
-                "full_name": [string],
-                "address": [string]
-            },
-            "iin": [string],
-            "pass_num": [string],
-            "is_contacted": [boolean],
-            "is_infected": [boolean],
-            "is_found": [boolean],
-            "telephone": [string]
+            "from_country": [string],
+            "to_region": [string],
+            "patient": {
+                "status": {
+                    "name": [string]
+                },
+                "home_address": {
+                    "city": [string],
+                    "street": [string],
+                    "house": [string],
+                    "flat": [string]
+                },
+                "hospital": {
+                    "name": [string],
+                    "full_name": [string],
+                    "address": [string]
+                },
+                "created_date": [string YYYY-MM-DD],
+                "first_name": [string],
+                "second_name": [string],
+                "patronymic_name": [string],
+                "iin": [string],
+                "pass_num": [string],
+                "is_contacted": [boolean],
+                "is_infected": [boolean],
+                "is_found": [boolean],
+                "telephone": [string]
+            }
         }
     ]
 ```
@@ -210,7 +250,7 @@ curl -v -X POST "http://demo.crm.alem.school/api/get_status_by_pass_num/" -H "X-
 }
 ```
 
-### Sample Call      
+### Sample Call
 ```bash
 curl -X POST "http://demo.crm.alem.school/api/get_patients_within_interval/" -H "X-API-TOKEN: ${API_TOKEN}" -H "accept: application/json" -H "Content-Type: application/json" -d "{\"begin\":\"2019-02-21\",\"end\":\"2021-02-20\"}"
 ```

@@ -58,12 +58,60 @@ CREATE OR REPLACE FUNCTION change_trigger() RETURNS trigger AS $$
 $$ LANGUAGE 'plpgsql' SECURITY DEFINER;
 """
 
+createExtensionQuery = "CREATE EXTENSION postgis;"
+addGeomColumnQuery = "SELECT AddGeometryColumn('Address', 'geom', 4326, 'Point',2);"
+createGeomTriggerQuery = """
+CREATE OR REPLACE FUNCTION add_geom() RETURNS trigger AS
+    $$
+    BEGIN
+    IF TG_OP = 'UPDATE' THEN
+        IF NEW.lng IS DISTINCT FROM OLD.lng OR NEW.lat IS DISTINCT FROM OLD.lat THEN
+            UPDATE "Address" SET geom = ST_SetSRID(ST_MakePoint(NEW.lng, NEW.lat), 4326) WHERE id=NEW.id;
+        END IF;
+    ELSE 
+        UPDATE "Address" SET geom = ST_SetSRID(ST_MakePoint(NEW.lng, NEW.lat), 4326) WHERE id=NEW.id;
+    END IF;
+    RETURN NEW;
+    END;
+    $$ LANGUAGE plpgsql;
+"""
+addGeomTriggerQuery = 'CREATE TRIGGER add_geom_trigger AFTER INSERT OR UPDATE ON "Address" FOR EACH ROW EXECUTE PROCEDURE add_geom();'
+
+# logging.history trigger
 try:
     psqlCursor.execute(createSchemeQuery)
     psqlCursor.execute(createTableQuery)
     psqlCursor.execute(createTriggerQuery)
 except Exception as e:
     print(e)
+
+# POSTGIS EXTENSION
+try:
+    psqlCursor.execute(createExtensionQuery)
+    try: # ADD GEOM COLUMN
+        psqlCursor.execute(addGeomColumnQuery)
+        try: # CREATE TRIGGER FUNCTION add_geom
+            psqlCursor.execute(createGeomTriggerQuery)
+            try: # ADD TRIGGER TO ADDRESS
+                psqlCursor.execute(addGeomTriggerQuery)
+            except Exception as e:
+                print(e)
+        except Exception as e:
+            print(e)
+
+        addresses = psqlCursor.execute('SELECT * FROM "Address";')
+        for address in addresses:
+            if address["geom"] is None and address["lng"] is not None and address["lat"] is not None:
+                psqlCursor.execute('UPDATE "Address" SET geom = ST_SetSRID(ST_MakePoint(%d, %d), 4326) WHERE id=%d;' % (
+                    address["lng"],
+                    address["lat"],
+                    address["id"]
+                ))
+    except Exception as e:
+        print(e)
+except Exception as e:
+    print(e)
+
 print("init log done.")
 
 #############################
@@ -169,7 +217,6 @@ def initialize_db(db):
         'CREATE TRIGGER "triggerTravelType" BEFORE INSERT OR UPDATE OR DELETE ON "TravelType" FOR EACH ROW EXECUTE PROCEDURE change_trigger();',
         'CREATE TRIGGER "triggerInfected_Country_Category" BEFORE INSERT OR UPDATE OR DELETE ON "Infected_Country_Category" FOR EACH ROW EXECUTE PROCEDURE change_trigger();',
         'CREATE TRIGGER "triggerPatientState" BEFORE INSERT OR UPDATE OR DELETE ON "PatientState" FOR EACH ROW EXECUTE PROCEDURE change_trigger();',
-        # 'CREATE TRIGGER "triggerPatientStatus" BEFORE INSERT OR UPDATE OR DELETE ON "PatientStatus" FOR EACH ROW EXECUTE PROCEDURE change_trigger();',
         'CREATE TRIGGER "triggerCountry" BEFORE INSERT OR UPDATE OR DELETE ON "Country" FOR EACH ROW EXECUTE PROCEDURE change_trigger();',
         'CREATE TRIGGER "triggerFlightCode" BEFORE INSERT OR UPDATE OR DELETE ON "FlightCode" FOR EACH ROW EXECUTE PROCEDURE change_trigger();',
         'CREATE TRIGGER "triggerBorderControl" BEFORE INSERT OR UPDATE OR DELETE ON "BorderControl" FOR EACH ROW EXECUTE PROCEDURE change_trigger();',
@@ -177,7 +224,6 @@ def initialize_db(db):
         'CREATE TRIGGER "triggerAddress" BEFORE INSERT OR UPDATE OR DELETE ON "Address" FOR EACH ROW EXECUTE PROCEDURE change_trigger();',
         'CREATE TRIGGER "triggerUser" BEFORE INSERT OR UPDATE OR DELETE ON "User" FOR EACH ROW EXECUTE PROCEDURE change_trigger();',
         'CREATE TRIGGER "triggerHospital_Type" BEFORE INSERT OR UPDATE OR DELETE ON "Hospital_Type" FOR EACH ROW EXECUTE PROCEDURE change_trigger();',
-        # 'CREATE TRIGGER "triggerContactedPerson" BEFORE INSERT OR UPDATE OR DELETE ON "ContactedPerson" FOR EACH ROW EXECUTE PROCEDURE change_trigger();',
         'CREATE TRIGGER "triggerHospital" BEFORE INSERT OR UPDATE OR DELETE ON "Hospital" FOR EACH ROW EXECUTE PROCEDURE change_trigger();',
         'CREATE TRIGGER "triggerFlightTravel" BEFORE INSERT OR UPDATE OR DELETE ON "FlightTravel" FOR EACH ROW EXECUTE PROCEDURE change_trigger();',
         'CREATE TRIGGER "triggerVariousTravel" BEFORE INSERT OR UPDATE OR DELETE ON "VariousTravel" FOR EACH ROW EXECUTE PROCEDURE change_trigger();'

@@ -31,6 +31,9 @@ class Adress(BaseModel):
     class Config:
         orm_mode = True
 
+# class TrainTravel(BaseModel):
+
+
 class Hospital(BaseModel):
     name: str = ""
     full_name: str = ""
@@ -46,6 +49,9 @@ class PatientByPassNum(BaseModel):
     pass_num: str = "empty"
 
 class Patient(BaseModel):
+    first_name: str = None
+    second_name: str = None
+    patronymic_name: str = None
     status: Status = None
     home_address: Adress = None
     hospital: Hospital = None
@@ -55,7 +61,12 @@ class Patient(BaseModel):
     is_infected: bool = False
     is_found: bool = False
     telephone: str = ""
-
+    created_date: date = None
 
     class Config:
         orm_mode = True
+
+class PatientFrom(BaseModel):
+    from_country: str = None
+    to_region: str = None
+    patient: Patient = None

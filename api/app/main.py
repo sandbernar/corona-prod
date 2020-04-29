@@ -96,7 +96,7 @@ def get_status_by_pn(request: Request, patient: schemas.PatientByPassNum, db: Se
     db_patient.is_contacted = is_contacted(db, db_patient.id)
     return db_patient
 
-@app.post("/api/get_patients_within_interval/", response_model=List[schemas.Patient])
+@app.post("/api/get_patients_within_interval/", response_model=List[schemas.PatientFrom])
 def get_patients_within_interval(request: Request, interval: schemas.Interval, db: Session = Depends(get_db)):
     validate_token(request.headers["X-API-TOKEN"], db)
     db_patients = crud.get_patients(db, interval.begin, interval.end)
