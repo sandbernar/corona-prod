@@ -8,7 +8,10 @@ from app.main.flights_trains.models import FlightTravel, TrainTravel
 
 from collections import OrderedDict
 from app.main.util import parse_date, yes_no_html
-from sqlalchemy import func
+
+from sqlalchemy import func, cast, JSON
+import sqlalchemy
+
 from flask_babelex import _
 from app import constants as c
 
@@ -158,15 +161,20 @@ class AllPatientsTableModule(TableModule):
             filt["is_found"] = False
             self.search_form.not_found.default='checked'
 
-        if "is_infected" in request.args:
-            filt["is_infected"] = True
-            self.search_form.is_infected.default='checked'
-
         if "not_in_hospital" in request.args:
             in_hospital_id = PatientStatus.query.filter_by(value=c.in_hospital[0]).first().id
             self.q = self.q.filter(Patient.status_id != in_hospital_id)
 
             self.search_form.not_in_hospital.default='checked'
+
+        if "is_infected" in request.args:
+            filt["is_infected"] = True
+            self.search_form.is_infected.default='checked'
+
+        # if "probably_duplicate" in request.args:
+        #     print(Patient.query.first().attrs[''])
+        #     # self.q = self.q.filter(Patient.attrs['is_duplicate'])
+        #     self.search_form.probably_duplicate.default='checked'            
 
         def name_search(param, param_str, q):
             if param_str in request.args:

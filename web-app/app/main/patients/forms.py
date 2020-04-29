@@ -124,6 +124,7 @@ class PatientsSearchForm(FlaskForm):
     not_found = BooleanField(id="not_found")
     is_infected = BooleanField(id="is_infected")
     not_in_hospital = BooleanField(id="not_in_hospital")
+    probably_duplicate = BooleanField()
 
     # Flight Travel
     flight_arrival_date = SelectField('Flight Arrival Date', id='flight_arrival_date')
