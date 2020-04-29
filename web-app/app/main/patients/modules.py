@@ -191,8 +191,8 @@ class AllPatientsTableModule(TableModule):
             try:
                 travel_type_query = TravelType.query.filter_by(value=travel_type).first()
                 travel_type_id = travel_type_query.id
-            except exc.SQLAlchemyError:
-                return render_template('errors/error-400.html'), 400
+            except (exc.SQLAlchemyError, AttributeError):
+                raise exc.SQLAlchemyError("Travel Type Error - {}".format(travel_type))
 
             if travel_type_id:
                 filt["travel_type_id"] = travel_type_id
