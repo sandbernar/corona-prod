@@ -9,7 +9,7 @@ from app.main.flights_trains.models import FlightTravel, TrainTravel
 from collections import OrderedDict
 from app.main.util import parse_date, yes_no_html
 
-from sqlalchemy import func, cast, JSON
+from sqlalchemy import func, cast, JSON, exc
 import sqlalchemy
 
 from flask_babelex import _
