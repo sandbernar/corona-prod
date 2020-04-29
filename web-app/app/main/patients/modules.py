@@ -122,19 +122,7 @@ class AllPatientsTableModule(TableModule):
             self.q = self.q.filter(func.lower(func.concat(Patient.second_name, ' ', Patient.first_name, ' ', 
                                     Patient.patronymic_name)).contains(full_name_value.lower()))
             
-            self.search_form.full_name.default = full_name_value
-
-        address = self.request.args.get("address", None)
-        if address:
-            self.q = self.q.join(Address, Patient.home_address_id == Address.id)
-            self.q = self.q.join(Country, Country.id == Address.country_id)
-            self.q = self.q.group_by(Patient.id)
-
-            self.q = self.q.filter(func.lower(func.concat(
-                Country.name, ' ', Address.city, ' ', Address.street,
-                ' ', Address.house, ' ', Address.flat)).contains(address.lower()))
-
-            self.search_form.address.default = address        
+            self.search_form.full_name.default = full_name_value        
 
         region_id = self.request.args.get("region_id", -1)
         if region_id:
@@ -211,6 +199,18 @@ class AllPatientsTableModule(TableModule):
                 self.search_form.travel_type.default = travel_type
         
         self.q = self.q.filter_by(**filt)
+
+        address = self.request.args.get("address", None)
+        if address:
+            self.q = self.q.join(Address, Patient.home_address_id == Address.id)
+            self.q = self.q.join(Country, Country.id == Address.country_id)
+            self.q = self.q.group_by(Patient.id)
+
+            self.q = self.q.filter(func.lower(func.concat(
+                Country.name, ' ', Address.city, ' ', Address.street,
+                ' ', Address.house, ' ', Address.flat)).contains(address.lower()))
+
+            self.search_form.address.default = address        
 
         if travel_type and travel_type != c.all_travel_types[0]:
             # FlightTravel
