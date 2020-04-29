@@ -1,6 +1,19 @@
 import os
-import psycopg2
+import re
 
+import psycopg2
+import pandas as pd
+
+from app import create_app, db
+from app import constants as C
+from app.main.models import (Region, Country, Infected_Country_Category, 
+                            TravelType, BorderControl, VariousTravel, Address, VisitedCountry)
+from app.main.patients.models import ContactedPersons, Patient, State, PatientState
+from app.main.hospitals.models import Hospital, Hospital_Type
+from app.main.flights_trains.models import FlightTravel, FlightCode
+from config import config_dict
+
+# Database logging
 psqlConn = psycopg2.connect(dbname=os.getenv("DATABASE_NAME"),
                             user=os.getenv("DATABASE_USER"),
                             password=os.getenv("DATABASE_PASSWORD"),
@@ -8,6 +21,26 @@ psqlConn = psycopg2.connect(dbname=os.getenv("DATABASE_NAME"),
 
 psqlConn.autocommit = True
 psqlCursor = psqlConn.cursor()
+
+def psqlQuery(query_message):
+    """
+    Function that queries PostgreSQL
+    If SELECT returns key-value paired objects
+    """
+    psqlCursor.execute(query_message)
+    # print(query_message)
+    try:
+        columns = [col.name for col in psqlCursor.description]
+        returnValue = []
+        for row in psqlCursor:
+            pairs = list(zip(columns, row))
+            obj = {}
+            for pair in pairs:
+                obj[pair[0]] = pair[1]
+            returnValue.append(obj)
+    except Exception:
+        returnValue = None
+    return returnValue
 
 createSchemeQuery = "CREATE SCHEMA logging;"
 createTableQuery = """
@@ -86,7 +119,7 @@ try:
         except Exception as e:
             print(e)
 
-        addresses = psqlCursor.execute('SELECT * FROM "Address";')
+        addresses = psqlQuery('SELECT * FROM "Address";')
         for address in addresses:
             if address["geom"] is None and address["lng"] is not None and address["lat"] is not None:
                 psqlCursor.execute('UPDATE "Address" SET geom = ST_SetSRID(ST_MakePoint(%d, %d), 4326) WHERE id=%d;' % (
