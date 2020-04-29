@@ -88,7 +88,7 @@ try:
 
         addresses = psqlCursor.execute('SELECT * FROM "Address";')
         for address in addresses:
-            if address["geom"] is None:
+            if address["geom"] is None and address["lng"] is not None and address["lat"] is not None:
                 psqlCursor.execute('UPDATE "Address" SET geom = ST_SetSRID(ST_MakePoint(%d, %d), 4326) WHERE id=%d;' % (
                     address["lng"],
                     address["lat"],
