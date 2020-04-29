@@ -45,11 +45,64 @@ CREATE OR REPLACE FUNCTION change_trigger() RETURNS trigger AS $$
 $$ LANGUAGE 'plpgsql' SECURITY DEFINER;
 """
 
+createExtensionQuery = "CREATE EXTENSION postgis;"
+addGeomColumnQuery = "SELECT AddGeometryColumn('Address', 'geom', 4326, 'Point',2);"
+createGeomTriggerQuery = """
+CREATE OR REPLACE FUNCTION add_geom() RETURNS trigger AS
+    $$
+    BEGIN
+    IF TG_OP = 'UPDATE' THEN
+        IF NEW.lng IS DISTINCT FROM OLD.lng OR NEW.lat IS DISTINCT FROM OLD.lat THEN
+            UPDATE "Address" SET geom = ST_SetSRID(ST_MakePoint(NEW.lng, NEW.lat), 4326) WHERE id=NEW.id;
+        END IF;
+    ELSE 
+        UPDATE "Address" SET geom = ST_SetSRID(ST_MakePoint(NEW.lng, NEW.lat), 4326) WHERE id=NEW.id;
+    END IF;
+    RETURN NEW;
+    END;
+    $$ LANGUAGE plpgsql;
+"""
+addGeomTriggerQuery = 'CREATE TRIGGER add_geom_trigger AFTER INSERT OR UPDATE ON "Address" FOR EACH ROW EXECUTE PROCEDURE add_geom();'
+
+# logging.history trigger
 try:
     psqlCursor.execute(createSchemeQuery)
     psqlCursor.execute(createTableQuery)
     psqlCursor.execute(createTriggerQuery)
 except Exception as e:
     print(e)
+
+# POSTGIS EXTENSION
+try:
+    psqlCursor.execute(createExtensionQuery)
+except Exception as e:
+    print(e)
+
+# ADD GEOM COLUMN
+try:
+    psqlCursor.execute(addGeomColumnQuery)
+except Exception as e:
+    print(e)
+
+# CREATE TRIGGER FUNCTION add_geom
+try:
+    psqlCursor.execute(createGeomTriggerQuery)
+except Exception as e:
+    print(e)
+
+# ADD TRIGGER TO ADDRESS
+try:
+    psqlCursor.execute(addGeomTriggerQuery)
+except Exception as e:
+    print(e)
+
+addresses = psqlCursor.execute('SELECT * FROM "Address";')
+for address in addresses:
+    if address["geom"] is None:
+        psqlCursor.execute('UPDATE "Address" SET geom = ST_SetSRID(ST_MakePoint(%d, %d), 4326) WHERE id=%d;' % (
+            address["lng"],
+            address["lat"],
+            address["id"]
+        ))
 
 print("init log done.")
