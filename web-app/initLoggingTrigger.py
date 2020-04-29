@@ -119,14 +119,15 @@ try:
         except Exception as e:
             print(e)
 
-        addresses = psqlQuery('SELECT * FROM "Address";')
-        for address in addresses:
-            if address["geom"] is None and address["lng"] is not None and address["lat"] is not None:
-                psqlCursor.execute('UPDATE "Address" SET geom = ST_SetSRID(ST_MakePoint(%d, %d), 4326) WHERE id=%d;' % (
-                    address["lng"],
-                    address["lat"],
-                    address["id"]
-                ))
+        psqlQuery('UPDATE "Address" SET geom = ST_SetSRID(ST_MakePoint(lng, lat), 4326)')
+        # addresses = psqlQuery('SELECT * FROM "Address";')
+        # for address in addresses:
+        #     if address["geom"] is None and address["lng"] is not None and address["lat"] is not None:
+        #         psqlCursor.execute('UPDATE "Address" SET geom = ST_SetSRID(ST_MakePoint(%d, %d), 4326) WHERE id=%d;' % (
+        #             address["lng"],
+        #             address["lat"],
+        #             address["id"]
+        #         ))
     except Exception as e:
         print(e)
 except Exception as e:
