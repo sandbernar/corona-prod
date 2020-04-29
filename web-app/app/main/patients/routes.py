@@ -21,8 +21,9 @@ from app.main.hospitals.models import Hospital, Hospital_Type
 from app.main.flights_trains.models import FlightCode, FlightTravel, Train, TrainTravel
 
 from app.main.patients.forms import PatientForm, UpdateProfileForm, AddFlightFromExcel, \
-                                    ContactedPatientsSearchForm, PatientsSearchForm, TableSearchForm
+                                    ContactedPatientsSearchForm, PatientsSearchForm
 from app.main.patients.modules import ContactedPatientsTableModule, AllPatientsTableModule
+from app.main.forms import TableSearchForm
 
 from app.main.routes import route_template
 
