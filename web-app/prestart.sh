@@ -1,3 +1,3 @@
 
 python initLoggingTrigger.py
-# python manage.py db upgrade
+python manage.py db upgrade
