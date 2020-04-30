@@ -93,7 +93,7 @@ class AllPatientsTableModule(TableModule):
     def __init__(self, request, q, select_contacted = None, search_form = None, header_button = None,\
                     page = 1, per_page = 5):
         table_head = OrderedDict()
-        table_head[_("ФИО")] = ["first_name", "second_name", "patronymic_name"]
+        table_head[_("ФИО")] = ["second_name"]
         table_head[_("ИИН")] = ["iin"]
         table_head[_("Тип Въезда")] = ["travel_type_id"]
         table_head[_("Регион")] = []
@@ -197,8 +197,31 @@ class AllPatientsTableModule(TableModule):
             if travel_type_id:
                 filt["travel_type_id"] = travel_type_id
                 self.search_form.travel_type.default = travel_type
+
+        # Created_date range
+        date_range_start = request.args.get("date_range_start", None)
         
+        if date_range_start:
+            date_range_start = parse_date(date_range_start)
+            self.q = self.q.filter(Patient.created_date >= date_range_start)
+            self.search_form.date_range_start.default = date_range_start
+
+        date_range_end = request.args.get("date_range_end", None)
+        
+        if date_range_end:
+            date_range_end = parse_date(date_range_end) 
+            self.q = self.q.filter(Patient.created_date <= date_range_end)
+            self.search_form.date_range_end.default = date_range_end
+
         self.q = self.q.filter_by(**filt)
+
+        if "is_home_quarantine" in request.args:
+            self.q = self.q.join(PatientStatus, Patient.status_id == PatientStatus.id)
+            self.q = self.q.filter(PatientStatus.value == c.is_home[0])
+
+            self.q = self.q.group_by(Patient.id)
+
+            self.search_form.is_home_quarantine.default = 'checked'
 
         address = self.request.args.get("address", None)
         if address:
@@ -210,7 +233,7 @@ class AllPatientsTableModule(TableModule):
                 Country.name, ' ', Address.city, ' ', Address.street,
                 ' ', Address.house, ' ', Address.flat)).contains(address.lower()))
 
-            self.search_form.address.default = address        
+            self.search_form.address.default = address     
 
         if travel_type and travel_type != c.all_travel_types[0]:
             # FlightTravel

@@ -73,7 +73,7 @@ class UserTableModule(TableModule):
 class UserPatientsTableModule(TableModule):
     def __init__(self, request, q, search_form, header_button = None, page = 1, per_page = 5):
         table_head = OrderedDict()
-        table_head[_("ФИО")] = ["second_name", "first_name", "patronymic_name"]
+        table_head[_("ФИО")] = ["second_name"]
         table_head[_("ИИН")] = ["iin"]
         table_head[_("Телефон")] = ["telephone"]
         table_head[_("Регион")] = []
