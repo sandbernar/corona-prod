@@ -629,6 +629,10 @@ def delete_patient():
                 return render_template('errors/error-400.html'), 400
 
             if patient:
+                patient_states = PatientState.query.filter_by(patient_id=patient.id).all()
+                for patient_state in patient_states:
+                    db.session.delete(patient_state)
+
                 if patient.is_contacted_person:
                     q = ContactedPersons.query.filter_by(contacted_patient_id=patient_id)
                     return_url = "{}?id={}".format(url_for('main_blueprint.contacted_persons'), q.first().patient_id)
