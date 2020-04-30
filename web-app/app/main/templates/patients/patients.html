@@ -17,6 +17,7 @@
     <div class="card-header border-0">
       <h3> {{ _('Поиск Пациента') }} </h3>
       <form method="GET" id="searchForm">
+        <input type="hidden" style="display: none;" name="per_page" value="{{ all_patients_table.per_page }}">
         {% if select_contacted %}
         <input type="text" name="select_contacted_id" style="display:none;" value="{{ select_contacted }}">
         {% endif %}      
