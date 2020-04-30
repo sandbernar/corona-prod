@@ -28,6 +28,7 @@ class State(db.Model):
 
     __tablename__ = 'State'
     id = Column(Integer, primary_key=True)
+    value = Column(String, nullable=True)
     name = Column(String, nullable=False)
 
 class PatientState(db.Model):
@@ -101,19 +102,19 @@ class Patient(db.Model):
     infected_state_count = column_property(
         select([func.count(PatientState.id)]).\
             where(PatientState.patient_id==id).\
-            where(PatientState.state_id == select([State.id]).where(State.name == c.state_infec).limit(1))
+            where(PatientState.state_id == select([State.id]).where(State.value == c.state_infec[0]).limit(1))
     )
 
     found_state_count = column_property(
         select([func.count(PatientState.id)]).\
             where(PatientState.patient_id==id).\
-            where(PatientState.state_id == select([State.id]).where(State.name == c.state_found).limit(1))
+            where(PatientState.state_id == select([State.id]).where(State.value == c.state_found[0]).limit(1))
     )
 
     hosp_state_count = column_property(
         select([func.count(PatientState.id)]).\
             where(PatientState.patient_id==id).\
-            where(PatientState.state_id == select([State.id]).where(State.name == c.state_hosp).limit(1))
+            where(PatientState.state_id == select([State.id]).where(State.value == c.state_hosp[0]).limit(1))
     )
     # infected, dead, healthy
     # states = db.relationship("State", secondary=lambda: PatientState.__table__,
@@ -121,26 +122,53 @@ class Patient(db.Model):
     @hybrid_property
     def states(self):
         results = PatientState.query.filter_by(patient_id=self.id).all()
-        results = sorted(results, key=lambda k: k.detection_date, reverse=True)
+        results = sorted(results, key=lambda k: (k.detection_date, k.id), reverse=True)
         for i in range(len(results)):
-            results[i].name = State.query.filter_by(id=results[i].state_id).first().name
+            state = State.query.filter_by(id=results[i].state_id).first()
+            results[i].name = state.name
+            results[i].value = state.value
             results[i].formatted_detection_date = datetime.datetime.strftime(results[i].detection_date, "%d.%m.%Y")
             results[i].formatted_comment = results[i].comment
             if results[i].comment is None:
                 results[i].formatted_comment = "Нет деталей"
         return results
     
-    def addState(self, state: PatientState):
+    def addState(self, state: State, detection_date=None, comment=None, attrs=None):
         if self.id is None:
-            return
-        state.patient_id = self.id
-        db.session.add(state)
+            return False
+        tmpState = PatientState(patient_id=self.id, state_id=state.id)
+        tmpState.value = state.value
+        tmpState.name = state.name
+        tmpState.id = 9999999999
+        if detection_date is not None:
+            tmpState.detection_date = datetime.datetime.strptime(detection_date, "%Y-%m-%d")
+        
+        states = self.states
+        states.append(tmpState)
+        states = sorted(states, key=lambda k: (k.detection_date, k.id))
+        patientStates = [(st.value, st.name) for st in states]
+
+        print(patientStates)
+        graph = c.GraphState()
+        for st in patientStates:
+            result = graph.add(st)
+            if result == False:
+                return False
+
+        patientState = PatientState(patient_id=self.id, state_id=state.id)
+        if detection_date is not None:
+            patientState.detection_date = detection_date
+        if comment is not None:
+            patientState.comment = comment
+        if attrs is not None:
+            patientState.attrs = attrs
+        db.session.add(patientState)
         db.session.commit()
-        return state
+        return True
 
     @hybrid_property
     def in_hospital(self):
-        state = State.query.filter_by(name=c.state_hosp).first()
+        state = State.query.filter_by(value=c.state_hosp[0]).first()
         hosp = PatientState.query.filter_by(patient_id=self.id).filter_by(state_id=state.id).first()
         if hosp:
             return True
@@ -153,7 +181,7 @@ class Patient(db.Model):
     # is_found = Column(Boolean, unique=False, default=False)
     @hybrid_property
     def is_found(self):
-        state = State.query.filter_by(name=c.state_found).first()
+        state = State.query.filter_by(value=c.state_found[0]).first()
         found = PatientState.query.filter_by(patient_id=self.id).filter_by(state_id=state.id).first()
         if found:
             return True
@@ -165,19 +193,14 @@ class Patient(db.Model):
     
     @is_found.setter
     def is_found(self, value):
-        if value == True and self.id is not None:
-            state = State.query.filter_by(name=c.state_found).first()
-            patientState = PatientState(
-                state_id=state.id,
-                patient_id=self.id
-            )
-            db.session.add(patientState)
-            db.session.commit()
+        if value == True:
+            state = State.query.filter_by(value=c.state_found[0]).first()
+            self.addState(state)
 
     # is_infected = Column(Boolean, unique=False, default=False)
     @hybrid_property
     def is_infected(self):
-        state = State.query.filter_by(name=c.state_infec).first()
+        state = State.query.filter_by(value=c.state_infec[0]).first()
         infec = PatientState.query.filter_by(patient_id=self.id).filter_by(state_id=state.id).first()
         if infec:
             return True
@@ -189,14 +212,9 @@ class Patient(db.Model):
     
     @is_infected.setter
     def is_infected(self, value):
-        if value == True and self.id is not None:
-            state = State.query.filter_by(name=c.state_infec).first()
-            patientState = PatientState(
-                state_id=state.id,
-                patient_id=self.id
-            )
-            db.session.add(patientState)
-            db.session.commit()
+        if value == True:
+            state = State.query.filter_by(value=c.state_infec[0]).first()
+            self.addState(state)
     
 
     def __init__(self, **kwargs):

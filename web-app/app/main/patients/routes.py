@@ -95,9 +95,7 @@ def prepare_patient_form(patient_form, with_old_data = False):
     patient_form.hospital_type_id.choices = hospital_types
 
     # States
-    patient_status = State.query.order_by(-State.id).all()
-    if not patient_form.patient_status.choices:
-        patient_form.patient_status.choices = [(s.id, s.name) for s in patient_status]
+    patient_form.patient_status.choices = [(s[0], s[1]) for s in c.form_states]
 
     # Countries
     countries = Country.query.all()
@@ -189,17 +187,13 @@ def handle_add_update_patient(request_dict, final_dict, update_dict = {}):
     final_dict['dob'] = parse_date(request.form['dob'])    
     final_dict['gender'] = None if int(request_dict['gender']) == -1 else int(request_dict['gender']) == 1
 
-    # TODO
-    state_id = request_dict.get('patient_status')
-    if state_id:
-        state = State.query.filter_by(id=int(state_id)).first()
-        if state is not None and state.name != "Найден":
+    state_value = request_dict.get('patient_status')
+    if state_value is not None and state_value != "":
+        state = State.query.filter_by(value=state_value).first()
+        if state is not None:
             final_dict['state_id'] = state.id
     final_dict['is_found'] = int(request_dict['is_found']) == 1
-    final_dict['is_infected'] = int(request_dict['is_infected']) == 1    
-    # final_dict['is_contacted'] = int(request_dict['is_contacted']) == 1
-    # is_found
-    # is_infected
+    final_dict['is_infected'] = int(request_dict['is_infected']) == 1
 
     # 3
     travel_type = TravelType.query.filter_by(value=request_dict['travel_type']).first()
@@ -349,7 +343,7 @@ def patient_profile():
             
             # States
             states = State.query.all()
-            states = [(st.id, st.name) for st in states]
+            states = [(st.value, st.name) for st in states]
             form.state.choices = states
 
             if len(request.form):
@@ -811,9 +805,6 @@ def delete_contacted():
 @blueprint.route('/add_state', methods=['POST'])
 @login_required
 def add_state():
-    # if not current_user.is_authenticated:
-    #     return redirect(url_for('login_blueprint.login'))
-
     if len(request.form):
         patient_id = request.form["id"]
         patient = None
@@ -824,18 +815,12 @@ def add_state():
             return render_template('errors/error-400.html'), 400
 
         if patient:
-            state = {
-                "id": request.form["state"],
-                "comment": request.form["stateComment"],
-                "detection_date":request.form["stateDetectionDate"]
-            }
-            patientState = PatientState(
-                patient_id=patient_id, 
-                state_id=state["id"],
-                detection_date=state["detection_date"],
-                comment=state["comment"])
-            db.session.add(patientState)
-            db.session.commit()
+            state = State.query.filter_by(value=request.form["state"]).first()
+            result = patient.addState(state,
+                    detection_date=request.form["stateDetectionDate"],
+                    comment=request.form["stateComment"]
+                )
+            print(result)
     
     url = f"/patient_profile?id={request.form['id']}"
     return redirect(url)

@@ -144,9 +144,14 @@ def initialize_db(db):
 
     # Add states: dead, infected, healthy
     for state in C.states:
-        if not State.query.filter_by(name=state).first():
-            tmpState = State(name=state)
+        dbState = State.query.filter_by(name=state[1]).first()
+        if dbState:
+            dbState.value = state[0]
+            db.session.add(dbState)
+        else:
+            tmpState = State(value=state[0], name=state[1])
             db.session.add(tmpState)
+
 
     # Add travel types
     for typ in C.travel_types:
@@ -252,7 +257,7 @@ def initialize_db(db):
         try:
             db.engine.execute(triggerQuery)
         except Exception as e:
-            print("Message", e)
+            pass
 
 get_config_mode = os.environ.get('CONFIG_MODE', 'Debug')
 config_mode = config_dict[get_config_mode.capitalize()]
