@@ -200,6 +200,14 @@ class AllPatientsTableModule(TableModule):
         
         self.q = self.q.filter_by(**filt)
 
+        if "is_home_quarantine" in request.args:
+            self.q = self.q.join(PatientStatus, Patient.status_id == PatientStatus.id)
+            self.q = self.q.filter(PatientStatus.value == c.is_home[0])
+
+            self.q = self.q.group_by(Patient.id)
+
+            self.search_form.is_home_quarantine.default = 'checked'
+
         address = self.request.args.get("address", None)
         if address:
             self.q = self.q.join(Address, Patient.home_address_id == Address.id)
