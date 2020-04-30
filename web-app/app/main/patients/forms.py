@@ -127,6 +127,10 @@ class PatientsSearchForm(FlaskForm):
     is_home_quarantine = BooleanField()
     probably_duplicate = BooleanField()
 
+    #Date Range
+    date_range_start = DateField()
+    date_range_end = DateField()
+
     # Flight Travel
     flight_arrival_date = SelectField('Flight Arrival Date', id='flight_arrival_date')
     flight_code_id = SelectField('Flight Code', id='flight_code_id')

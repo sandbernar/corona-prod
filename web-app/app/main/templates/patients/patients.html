@@ -42,6 +42,24 @@
             </div>
           </div>
         </div>
+        <div class="row">
+          <div class="col-md-auto">
+        <div class="card shadow mt-3">
+          <div class="card-header border-0">
+            <div class="row">
+              <div class="col-md-auto">
+                <label class='form-control-label'>{{ _('Начало Периода') }}</label>
+                {{ form.date_range_start(class="form-control datepicker", type="date") }}              
+              </div>
+              <div class="col-md-auto">
+                <label class='form-control-label'>{{ _('Конец Периода') }}</label>                
+                {{ form.date_range_end(class="form-control datepicker", type="date") }}              
+              </div>                            
+            </div>
+          </div>
+        </div>
+        </div>
+        <div class="col">        
         <div class="card shadow mt-3">
           <div class="card-header border-0">
             <div class="row">
@@ -81,7 +99,9 @@
             </div>
             </div>
           </div>
-        </div>        
+        </div>
+      </div>
+    </div>
         <div class="card shadow mt-3">
           <div class="card-header border-0">        
             <div class="row">

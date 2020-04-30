@@ -197,7 +197,22 @@ class AllPatientsTableModule(TableModule):
             if travel_type_id:
                 filt["travel_type_id"] = travel_type_id
                 self.search_form.travel_type.default = travel_type
+
+        # Created_date range
+        date_range_start = request.args.get("date_range_start", None)
         
+        if date_range_start:
+            date_range_start = parse_date(date_range_start)
+            self.q = self.q.filter(Patient.created_date >= date_range_start)
+            self.search_form.date_range_start.default = date_range_start
+
+        date_range_end = request.args.get("date_range_end", None)
+        
+        if date_range_end:
+            date_range_end = parse_date(date_range_end) 
+            self.q = self.q.filter(Patient.created_date <= date_range_end)
+            self.search_form.date_range_end.default = date_range_end
+
         self.q = self.q.filter_by(**filt)
 
         if "is_home_quarantine" in request.args:
@@ -218,7 +233,7 @@ class AllPatientsTableModule(TableModule):
                 Country.name, ' ', Address.city, ' ', Address.street,
                 ' ', Address.house, ' ', Address.flat)).contains(address.lower()))
 
-            self.search_form.address.default = address        
+            self.search_form.address.default = address     
 
         if travel_type and travel_type != c.all_travel_types[0]:
             # FlightTravel
