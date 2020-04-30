@@ -93,7 +93,7 @@ class AllPatientsTableModule(TableModule):
     def __init__(self, request, q, select_contacted = None, search_form = None, header_button = None,\
                     page = 1, per_page = 5):
         table_head = OrderedDict()
-        table_head[_("ФИО")] = ["first_name", "second_name", "patronymic_name"]
+        table_head[_("ФИО")] = ["second_name"]
         table_head[_("ИИН")] = ["iin"]
         table_head[_("Тип Въезда")] = ["travel_type_id"]
         table_head[_("Регион")] = []
