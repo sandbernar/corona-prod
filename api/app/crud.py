@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 from datetime import date
+from sqlalchemy import exc
 
 from . import models, schemas
 import logging
@@ -18,11 +19,24 @@ def get_is_contacted(db: Session, id: int):
     return db.query(models.ContactedPersons).filter(models.ContactedPersons.contacted_patient_id == id).first()
 
 def get_patients(db: Session, begin: date, end: date):
-    flight = db.query(models.FlightTravel).join(models.Patient, models.FlightTravel.patient_id == models.Patient.id).filter(models.Patient.created_date >= begin).filter(models.Patient.created_date <= end).all()
-    train = db.query(models.TrainTravel).join(models.Patient, models.TrainTravel.patient_id == models.Patient.id).filter(models.Patient.created_date >= begin).filter(models.Patient.created_date <= end).all()
+    flight = None
+    try:
+        flight = db.query(models.FlightTravel).join(models.Patient, models.FlightTravel.patient_id == models.Patient.id).filter(models.Patient.created_date >= begin).filter(models.Patient.created_date <= end).all()
+    except exc.SQLAlchemyError as err:
+        logger.error(err)
+    
+    train = None
+    try:
+        train = db.query(models.TrainTravel).join(models.Patient, models.TrainTravel.patient_id == models.Patient.id).filter(models.Patient.created_date >= begin).filter(models.Patient.created_date <= end).all()
+    except exc.SQLAlchemyError as err:
+        logger.error(err)
+    
+    other = None
+    try:
+        other = db.query(models.VisitedCountry).join(models.Patient, models.VisitedCountry.patient_id == models.Patient.id).filter(models.Patient.travel_type_id != 1).filter(models.Patient.travel_type_id != 2).filter(models.Patient.created_date >= begin).filter(models.Patient.created_date <= end).all()
+    except exc.SQLAlchemyError as err:
+        logger.error(err)
 
-    other = db.query(models.VisitedCountry).join(models.Patient, models.VisitedCountry.patient_id == models.Patient.id).filter(models.Patient.travel_type_id != 1).filter(models.Patient.travel_type_id != 2).filter(models.Patient.created_date >= begin).filter(models.Patient.created_date <= end).all()
-    # other = db.query(models.Patient).filter(models.Patient.travel_type_id != 1).filter(models.Patient.travel_type_id != 2).all()
     data = []
     for a in flight:
         data.append({
