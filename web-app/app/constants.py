@@ -19,7 +19,7 @@ patient_statuses = [no_status, in_hospital, is_home, is_transit]
 out_of_rk = "Вне РК"
 
 # Travel Type
-all_types = "Все Типы"
+all_travel_types = ("all_travel_types", "Все Типы")
 train_type = ("train_type", "Поезд")
 by_auto_type = ("auto_type", "Авто")
 by_foot_type = ("by_foot", "Пешком")
@@ -28,6 +28,9 @@ flight_type = ("flight_type", "Самолет")
 local_type = ("local_type", "Местные")
 blockpost_type = ("blockpost_type", "Блокпост")
 old_data_type = ("old_data_type", "Старые Данные")
+
+all_blockposts = (-1, "Все Блокпосты")
+all_dates = (-1, "Все Даты")
 
 # State
 state_dead = "Умер"
@@ -45,6 +48,14 @@ travel_types = [flight_type, train_type, by_auto_type, by_foot_type, by_sea_type
 unknown = (None, "Неизвестно")
 
 kz_center_lat_lng = (48.191216, 68.883269)
+
+# Job Categories
+all_job_categories = (-1, "Все Категории")
+doctors_job_category = ("doctors_job_category", "Врач")
+police_job_category = ("police_job_category", "Полицейский")
+military_job_category = ("military_job_category", "Военный")
+
+job_categories = [doctors_job_category, police_job_category, military_job_category]
 
 cyrillic_to_ascii = {
 	"А": "A",

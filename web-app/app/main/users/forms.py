@@ -33,3 +33,8 @@ class UserActivityReportForm(FlaskForm):
     region_id = SelectField('Region')
     start_date = DateField('Report Start Date')
     end_date = DateField('Report End Date')
+
+class UserPatientsSearchForm(FlaskForm):
+    full_name = TextField("Full Name")
+    region_id = SelectField("Region ID")
+    iin = TextField("IIN")    

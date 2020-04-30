@@ -167,6 +167,20 @@ class VisitedCountry(db.Model):
         else:
             return _("Неизвестно")
 
+
+class JobCategory(db.Model):
+    __tablename__ = 'JobCategory'
+
+    id = Column(Integer, primary_key=True)
+    value = Column(String, unique=True, nullable=True, default=None)
+    name = Column(String, unique=True)
+
+    def __init__(self, **kwargs):
+        set_props(self, kwargs)
+
+    def __repr__(self):
+        return str(self.name)
+
 class Address(db.Model):
 
     __tablename__ = 'Address'

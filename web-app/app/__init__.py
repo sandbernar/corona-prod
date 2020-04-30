@@ -35,8 +35,8 @@ def register_blueprints(app):
                 app.register_blueprint(module.blueprint)            
 
 def configure_database(app):
-    from app.main.models import (Region, Country, Infected_Country_Category, 
-                            TravelType, BorderControl, VariousTravel, Address, VisitedCountry)
+    from app.main.models import Region, Country, Infected_Country_Category, JobCategory, \
+                            TravelType, BorderControl, VariousTravel, Address, VisitedCountry
     from app.main.patients.models import PatientStatus, ContactedPersons, Patient, State, PatientState
     from app.main.hospitals.models import  Hospital, Hospital_Type
     from app.main.flights_trains.models import FlightTravel, FlightCode
@@ -69,6 +69,11 @@ def configure_database(app):
             if not PatientStatus.query.filter_by(value=status[0], name=status[1]).first():
                 p_status = PatientStatus(value=status[0], name=status[1])
                 db.session.add(p_status)
+
+        for job_category in C.job_categories:
+            if not JobCategory.query.filter_by(value=job_category[0], name=job_category[1]).first():
+                j_category = JobCategory(value=job_category[0], name=job_category[1])
+                db.session.add(j_category)                
 
         for n in df.region.unique():
             if not Region.query.filter_by(name=n).first():
@@ -132,6 +137,7 @@ def configure_database(app):
 
         State.query.delete()
         PatientState.query.delete()
+        JobCategory.query.delete()
 
         db.session.commit()
 
