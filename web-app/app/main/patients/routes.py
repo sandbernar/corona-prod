@@ -636,12 +636,16 @@ def delete_patient():
                     return_url = "{}?id={}".format(url_for('main_blueprint.contacted_persons'), q.first().patient_id)
                     q.delete()
 
-                patient_query.delete()
+                home_address = patient.home_address
+                job_address = patient.job_address
 
-                if patient.home_address:
-                    db.session.delete(patient.home_address)
-                if patient.job_address:
-                    db.session.delete(patient.job_address)
+                patient_query.delete()                
+                db.session.commit()
+
+                if home_address:
+                    db.session.delete(home_address)
+                if job_address:
+                    db.session.delete(job_address)
                                     
                 db.session.commit()
             
