@@ -133,6 +133,49 @@ class Patient(db.Model):
                 results[i].formatted_comment = "Нет деталей"
         return results
     
+    def updateState(self, patient_state: PatientState):
+        if self.id is None:
+            return False
+        state = State.query.filter_by(id=patient_state.state_id).first()
+        if not state:
+            return False
+        patient_state.value = state.value
+        patient_state.name = state.name
+        if patient_state.detection_date == "":
+            patient_state.detection_date = datetime.datetime.now()
+        else:
+            patient_state.detection_date = datetime.datetime.strptime(patient_state.detection_date, "%Y-%m-%d")
+        states = [st for st in self.states if st.id != patient_state.id]
+        states.append(patient_state)
+        states = sorted(states, key=lambda k: (k.detection_date, k.id))
+        patientStates = [(st.value, st.name) for st in states]
+        graph = c.GraphState()
+        for st in patientStates:
+            result = graph.add(st)
+            if result == False:
+                return False
+        db.session.add(patient_state)
+        db.session.commit()
+        return True
+
+    def deleteState(self, patient_state_id: int):
+        if self.id is None:
+            return False
+        deletePatientState = PatientState.query.filter_by(id=patient_state_id).first()
+        if deletePatientState is None:
+            return False
+        states = self.states
+        states = sorted(states, key=lambda k: (k.detection_date, k.id))
+        patientStates = [(st.value, st.name) for st in states if st.id != deletePatientState.id]
+        graph = c.GraphState()
+        for st in patientStates:
+            result = graph.add(st)
+            if result == False:
+                return False
+        db.session.delete(deletePatientState)
+        db.session.commit()
+        return True
+
     def addState(self, state: State, detection_date=None, comment=None, attrs=None):
         if self.id is None:
             return False
@@ -140,9 +183,9 @@ class Patient(db.Model):
         tmpState.value = state.value
         tmpState.name = state.name
         tmpState.id = 9999999999
-        if detection_date is not None:
+        tmpState.detection_date = datetime.datetime.now()
+        if detection_date is not None and detection_date != "":
             tmpState.detection_date = datetime.datetime.strptime(detection_date, "%Y-%m-%d")
-        
         states = self.states
         states.append(tmpState)
         states = sorted(states, key=lambda k: (k.detection_date, k.id))
@@ -157,7 +200,7 @@ class Patient(db.Model):
 
         patientState = PatientState(patient_id=self.id, state_id=state.id)
         if detection_date is not None:
-            patientState.detection_date = detection_date
+            patientState.detection_date = tmpState.detection_date
         if comment is not None:
             patientState.comment = comment
         if attrs is not None:

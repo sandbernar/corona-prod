@@ -805,55 +805,97 @@ def delete_contacted():
 @blueprint.route('/add_state', methods=['POST'])
 @login_required
 def add_state():
-    if len(request.form):
-        patient_id = request.form["id"]
-        patient = None
-        try:
-            patient_query = Patient.query.filter(Patient.id == patient_id)
-            patient = patient_query.first()
-        except exc.SQLAlchemyError:
-            return render_template('errors/error-400.html'), 400
-
-        if patient:
-            state = State.query.filter_by(value=request.form["state"]).first()
-            result = patient.addState(state,
-                    detection_date=request.form["stateDetectionDate"],
-                    comment=request.form["stateComment"]
-                )
-            print(result)
-    
-    url = f"/patient_profile?id={request.form['id']}"
-    return redirect(url)
+    data = json.loads(request.data)
+    if data == None or 'value' not in data \
+                    or 'comment' not in data \
+                    or 'patient_id' not in data \
+                    or 'detection_date' not in data:
+        return jsonify({'description': 'not valid data'}), 403
+    result = False
+    patient = Patient.query.filter(Patient.id == data['patient_id']).first()
+    if not patient:
+        return jsonify({'description': 'Patient not found'}), 405
+    state = State.query.filter_by(value=data["value"]).first()
+    result = patient.addState(state,
+            detection_date=data["detection_date"],
+            comment=data["comment"])
+    if result == True:
+        states = []
+        for state in patient.states:
+            states.append({
+                "id":state.id,
+                "name":state.name,
+                "comment":state.comment,
+                "detection_date":datetime.strftime(state.detection_date, "%Y-%m-%d"),
+                "formatted_comment":state.formatted_comment,
+                "formatted_detection_date":state.formatted_detection_date
+            })
+        return jsonify({'status': 'added', 'states': states}), 200
+    return jsonify({'description': 'Couldn\'t be added'}), 300
 
 
 @blueprint.route('/delete_state', methods=['POST'])
 @login_required
 def delete_state():
-    if len(request.form):
-        patient_state_id = request.form["id"]
-        patient_state = PatientState.query.filter_by(id=patient_state_id).first()
-        if patient_state:
-            db.session.delete(patient_state)
-            db.session.commit()
-    url = f"/patient_profile?id={request.form['patientID']}"
-    return redirect(url)
+    data = json.loads(request.data)
+    if data == None or 'patient_state_id' not in data \
+                    or 'patient_id' not in data:
+        return jsonify({'description': 'not valid data'}), 403
+    result = False
+    patient = Patient.query.filter_by(id=data['patient_id']).first()
+    if not patient:
+        return jsonify({'description': 'Patient not found'}), 405
+    result = patient.deleteState(data["patient_state_id"])
+    if result == True:
+        states = []
+        for state in patient.states:
+            states.append({
+                "id":state.id,
+                "name":state.name,
+                "comment":state.comment,
+                "detection_date":datetime.strftime(state.detection_date, "%Y-%m-%d"),
+                "formatted_comment":state.formatted_comment,
+                "formatted_detection_date":state.formatted_detection_date
+            })
+        return jsonify({'status': 'deleted', 'states': states}), 200
+    return jsonify({'description': 'Couldn\'t be deleted'}), 300
 
 @blueprint.route('/update_state', methods=['POST'])
 @login_required
 def update_state():
-    if len(request.form):
-        patient_state_id = request.form["id"]
-        patient_state = PatientState.query.filter_by(id=patient_state_id).first()
-        if patient_state:
-            state = State.query.filter_by(id=request.form["state"]).first()
-            if state:
-                patient_state.state_id = state.id
-            patient_state.detection_date = request.form["detection_date"]
-            patient_state.comment = request.form["comment"]
-            db.session.add(patient_state)
-            db.session.commit()
-    url = f"/patient_profile?id={request.form['patientID']}"
-    return redirect(url)
+    data = json.loads(request.data)
+    if data == None or 'value' not in data \
+                    or 'comment' not in data \
+                    or 'patient_id' not in data \
+                    or 'detection_date' not in data \
+                    or 'patient_state_id' not in data:
+        return jsonify({'description': 'not valid data'}), 403
+    result = False
+    patient = Patient.query.filter_by(id=data['patient_id']).first()
+    if not patient:
+        return jsonify({'description': 'Patient not found'}), 405
+    patient_state = PatientState.query.filter_by(id=data["patient_state_id"]).first()
+    if not patient_state:
+        return jsonify({'description': 'PatientState not found'}), 406
+    state = State.query.filter_by(value=data["value"]).first()
+    if state:
+        patient_state.state_id = state.id
+    patient_state.detection_date = data["detection_date"]
+    patient_state.comment = data["comment"]
+    result = patient.updateState(patient_state)
+    if result == True:
+        states = []
+        for state in patient.states:
+            states.append({
+                "id":state.id,
+                "name":state.name,
+                "comment":state.comment,
+                "detection_date":datetime.strftime(state.detection_date, "%Y-%m-%d"),
+                "formatted_comment":state.formatted_comment,
+                "formatted_detection_date":state.formatted_detection_date
+            })
+        return jsonify({'status': 'updated', 'states': states}), 200
+    return jsonify({'description': 'Couldn\'t be updated'}), 300
 
 
 class RPNService:

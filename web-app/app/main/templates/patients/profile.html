@@ -51,23 +51,23 @@
             </div>
 
             <div class="modal-body">
-                <form action="/add_state" method="POST">
-                    {{ form.hidden_tag() }}
-                    <input type="hidden" name="id" value='{{ patient.id }}'>
+                <!-- <form action="/add_state" method="POST"> -->
+
+                    <input type="hidden" name="id" id="addStatePatientID" value='{{ patient.id }}'>
                     <div class="form-group">
                         <label for="name-input" class="form-control-label">Статус*</label>
-                        {{ form.state(class="form-control") }}
+                        {{ form.state(class="form-control", id="addStateStateValue") }}
                     </div>
                     <div class="form-group">
                         <label for="name-input" class="form-control-label">Комментарий</label>
-                        {{ form.stateComment(class="form-control", type="text") }}
+                        {{ form.stateComment(class="form-control", id="addStateComment", type="text") }}
                     </div>
                     <div class="form-group">
                         <label for="name-input" class="form-control-label">Дата выявления*</label>
-                        {{ form.stateDetectionDate(class="form-control datepicker", type="date", required='required') }}
+                        {{ form.stateDetectionDate(class="form-control datepicker", id="addStateDate", type="date") }}
                     </div>
-                    <button type="submit" class="btn btn-primary">Сохранить</button>
-                </form>
+                    <button type="button" id="addStateButton" class="btn btn-primary">Сохранить</button>
+                <!-- </form> -->
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
@@ -94,12 +94,12 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
-          <form action="/delete_state" method="POST">
-            {{ form.hidden_tag() }}
+          <!-- <form action="/delete_state" method="POST"> -->
+            <!-- {{ form.hidden_tag() }} -->
             <input type="hidden" name="id" id="deletePatientStateID" value=''>
-            <input type="hidden" name="patientID" value='{{ patient.id }}'>
-            <button type="submit" class="btn btn-danger">Удалить</button>
-        </form>
+            <input type="hidden" name="patientID" id="deleteStatePatientID" value='{{ patient.id }}'>
+            <button type="button" id="deleteStateButton" class="btn btn-danger">Удалить</button>
+        <!-- </form> -->
         </div>
       </div>
     </div>
@@ -117,9 +117,9 @@
             </div>
 
             <div class="modal-body">
-                <form action="/update_state" method="POST">
-                    {{ form.hidden_tag() }}
-                    <input type="hidden" name="patientID" value='{{ patient.id }}'>
+                <!-- <form action="/update_state" method="POST"> -->
+                    <!-- {{ form.hidden_tag() }} -->
+                    <input type="hidden" name="patientID" id="updatePatientPatientID" value='{{ patient.id }}'>
                     <input type="hidden" name="id" id="updatePatientStateID" value=''>
                     <div class="form-group">
                         <label for="name-input" class="form-control-label">Статус</label>
@@ -135,9 +135,9 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
-                        <button type="submit" class="btn btn-primary">Сохранить</button>
+                        <button type="button" id="updateStateButton" class="btn btn-primary">Сохранить</button>
                     </div>
-                </form>
+                <!-- </form> -->
             </div>
         </div>
     </div>
@@ -274,7 +274,7 @@
                             <th scope="col"></th>
                         </tr>
                     </thead>
-                    <tbody class="list">
+                    <tbody class="list" id="stateHistoryTable">
                         {% for state in states %}
                         <tr>
                             <td>{{ state.name }} </td>
@@ -461,6 +461,163 @@
         document.getElementById("updatePatientStateDate").value = stateDetectionDate.slice(0,10);
         document.getElementById("updatePatientStateID").value = stateID;
     }
+
+    function renderStateHistoryTable(response) {
+        let stateHistoryTable = document.getElementById("stateHistoryTable")
+        let innerHTML = ""
+        for (let i = 0; i < response.states.length; i++) {
+            innerHTML += `
+            <tr>
+                <td>${response.states[i].name} </td>
+                <td>${response.states[i].formatted_comment}</td>
+                <td>${response.states[i].formatted_detection_date}</td>
+                <td class="text-right">
+                    <div class="dropdown">
+                        <a class="btn btn-sm btn-icon-only text-light" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right dropdown-menu-arrow">
+                            <a onclick="fillUpdatePatientState(${ response.states[i].id }, '${ response.states[i].name }', '${ response.states[i].formatted_comment }', '${ response.states[i].detection_date }')" 
+                                class="dropdown-item" href="#" data-toggle="modal" data-target="#updatePatientStateModal">Изменить</a>
+                            <a onclick="fillDeletePatientState(${ response.states[i].id }, '${ response.states[i].name }', '${ response.states[i].formatted_comment }', '${ response.states[i].formatted_detection_date }')" 
+                                class="dropdown-item" href="#" data-toggle="modal" data-target="#deletePatientStateModal">Удалить</a>
+                        </div>
+                    </div>
+                </td>
+            </tr>`
+        }
+        stateHistoryTable.innerHTML = innerHTML;
+    }
+
+    $("#updateStateButton").on("click", () => {
+        let updateStateData = {
+            'value':document.getElementById("updatePatientStateState").value,
+            'comment':document.getElementById("updatePatientStateComment").value,
+            'patient_id':document.getElementById("updatePatientPatientID").value,
+            'detection_date':document.getElementById("updatePatientStateDate").value,
+            'patient_state_id':document.getElementById("updatePatientStateID").value
+        }
+        $.ajax({
+            url: "/update_state",
+            type: "post",
+            contentType: "application/json",
+            data: JSON.stringify(updateStateData),
+            success: function (response) {
+                console.log(response);
+                renderStateHistoryTable(response);
+                $('#updatePatientStateModal').modal('hide');
+                $.notify({
+                    icon: 'fa fa-thumbs-up',
+                    message: 'Успешно изменено'
+                },{
+                    type: 'info',
+                });
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+               console.log(textStatus, errorThrown, jqXHR);
+               text = 'Неизвестная ошибка';
+               if (jqXHR.status == 403)
+                   text = 'Невалидные данные';
+               if (jqXHR.status == 405)
+                   text = 'Пациент не найден';
+               if (jqXHR.status == 406)
+                   text = 'Статус не найден';
+               if (jqXHR.status == 300)
+                   text = 'Невозможно изменить, неправильная последовательность.';
+    
+               $.notify({
+                    icon: 'fa fa-times',
+                    message: text
+                },{
+                    type: 'danger',
+                });
+            }
+        })
+    });
+
+    $("#deleteStateButton").on("click", () => {
+        let deleteStateData = {
+            'patient_state_id':document.getElementById("deletePatientStateID").value,
+            'patient_id':document.getElementById("deleteStatePatientID").value
+        }
+        $.ajax({
+            url: "/delete_state",
+            type: "post",
+            contentType: "application/json",
+            data: JSON.stringify(deleteStateData),
+            success: function (response) {
+                console.log(response);
+                renderStateHistoryTable(response);
+                $('#deletePatientStateModal').modal('hide');
+                $.notify({
+                    icon: 'fa fa-thumbs-up',
+                    message: 'Успешно удалено'
+                },{
+                    type: 'info',
+                });
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+               console.log(textStatus, errorThrown, jqXHR);
+               text = 'Неизвестная ошибка';
+               if (jqXHR.status == 403)
+                   text = 'Невалидные данные';
+               if (jqXHR.status == 405)
+                   text = 'Пациент не найден';
+               if (jqXHR.status == 300)
+                   text = 'Невозможно удалить, неправильная последовательность.';
+    
+               $.notify({
+                    icon: 'fa fa-times',
+                    message: text
+                },{
+                    type: 'danger',
+                });
+            }
+        })
+    });
+
+    $("#addStateButton").on("click", () => {
+        const addStateData = {
+            'value': document.getElementById("addStateStateValue").value,
+            'comment': document.getElementById("addStateComment").value,
+            'detection_date': document.getElementById("addStateDate").value,
+            'patient_id': document.getElementById("addStatePatientID").value
+        };
+        $.ajax({
+            url: "/add_state",
+            type: "post",
+            contentType: "application/json",
+            data: JSON.stringify(addStateData),
+            success: function (response) {
+                console.log(response);
+                renderStateHistoryTable(response);
+                $('#addPatientStateModal').modal('hide');
+                $.notify({
+                    icon: 'fa fa-thumbs-up',
+                    message: 'Успешно добавлено'
+                },{
+                    type: 'info',
+                });
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+               console.log(textStatus, errorThrown, jqXHR);
+               text = 'Неизвестная ошибка';
+               if (jqXHR.status == 403)
+                   text = 'Невалидные данные';
+               if (jqXHR.status == 405)
+                   text = 'Пациент не найден';
+               if (jqXHR.status == 300)
+                   text = 'Невозможно добавить, неправильная последовательность.';
+    
+               $.notify({
+                    icon: 'fa fa-times',
+                    message: text
+                },{
+                    type: 'danger',
+                });
+            }
+        });
+    });
 
 </script>
 {% with change=change, error_msg=error_msg %}
