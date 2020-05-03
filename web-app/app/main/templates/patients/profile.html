@@ -323,15 +323,17 @@
     {% endwith %}
 
     setup_form()
+    let hospitalised = "{{ patient.in_hospital }}" == "True";
+    let is_found = "{{ patient.is_found }}" == "True";
     
     window.onload = function() {
-        found_changed($("#is_found_checkbox").prop('checked'))
-        disable_hospital_choice($("#in_hospital_checkbox").prop('checked'))
-        {% if patient.hospital %}
+        found_changed(is_found);
+        disable_hospital_choice(hospitalised);
+        {% if patient.in_hospital %}
         $("#hospital_type_id").val({{ patient.hospital.hospital_type_id }})
         {% endif %}
         update_hospitals_list(async = false)
-        {% if patient.hospital %}
+        {% if patient.in_hospital %}
         $("#hospital_id").val({{ patient.hospital_id }})
         {% endif %}       
     }
@@ -360,30 +362,10 @@
     }
     {% endif %}
 
-    $("#in_hospital_checkbox").on("change", function(){
-        status_exclusive_checkbox($("#in_hospital_checkbox"))
-        disable_hospital_choice($("#in_hospital_checkbox").prop('checked'))
-    });
-
-    function status_exclusive_checkbox(checkbox) {
-        if(checkbox.prop('checked')) {
-            checkboxes = [$("#in_hospital_checkbox"), $("#is_home"), $("#is_transit")]
-            for (i = 0; i < checkboxes.length; i++) {
-                if (!checkboxes[i].is(checkbox)) {
-                    checkboxes[i].prop('checked', false).change()
-                }
-            }
-        }
-    }
-
     function found_changed(value) {
         disable = true;
         if (value == 1 || value == true) {
             disable = false;
-        } else {
-            $("#in_hospital_checkbox").prop('checked', false)
-            $("#is_home").prop('checked', false)
-            $("#is_transit").prop('checked', false)
         }
 
         document.getElementById('in_hospital_checkbox').disabled = disable;
@@ -391,7 +373,7 @@
         document.getElementById('is_home').disabled = disable;
         document.getElementById('is_transit').disabled = disable;
         
-        disable_hospital_choice($("#in_hospital_checkbox").prop('checked'))
+        disable_hospital_choice(hospitalised);
     }
 
     function setup_form() {
