@@ -21,7 +21,7 @@
         <div class="card-header bg-transparent">
           <div class="row align-items-center">
             <div class="col">
-              <h2 class="mb-0">{{ _('Карта Контактных Пациентов') }}
+              <h2 class="mb-0">Контактные Связи для <a href="patient_profile?id={{ main_patient.id }}"> {{ main_patient }}</a>
                 {% if not main_patient.home_address.lat %}
                   {{ _("(Координаты нулевого пациента отсутствуют)") }}
                 {% endif %}
@@ -55,38 +55,39 @@
             </thead>
             <tbody>
               {% for patient in infected_contact %}
-              <tr>
-                <th scope="row">
-                  <div class="media align-items-center">
-                    <div class="media-body">
-                      <span class="mb-0 text-sm"><a href="/patient_profile?id={{patient.infected_patient.id}}">{{ patient.infected_patient }}</a></span>
-                    </div>
-                  </div>
-                </th>
-                <td>
-                  {{ patient.infected_patient.telephone }}
-                </td>
-                <td>
-                  {{ patient.infected_patient.travel_type }}
-                </td>
-                <td>
-                  {{ patient.infected_patient.region }}
-                </td>
-                <td>
-                  {% if patient.infected_patient.is_found %}
-                  <font color="green">{{ _("Да") }}</font>
-                  {% else %}
-                  <font color="red">{{ _("Нет") }}</font>
-                {% endif %}                        </td>
-                <td>
-                  {% if patient.infected_patient.status.value == constants.in_hospital[0] %}
-                  <font color="green">{{ _("Да") }}</font>
-                  {% else %}
-                  <font color="red">{{ _("Нет") }}</font>
-                {% endif %}                        </td>
-              </tr>
+                {% if patient.infected_patient %}
+                  <tr>
+                    <th scope="row">
+                      <div class="media align-items-center">
+                        <div class="media-body">
+                          <span class="mb-0 text-sm"><a href="/patient_profile?id={{patient.infected_patient.id}}">{{ patient.infected_patient }}</a></span>
+                        </div>
+                      </div>
+                    </th>
+                    <td>
+                      {{ patient.infected_patient.telephone }}
+                    </td>
+                    <td>
+                      {{ patient.infected_patient.travel_type }}
+                    </td>
+                    <td>
+                      {{ patient.infected_patient.region }}
+                    </td>
+                    <td>
+                      {% if patient.infected_patient.is_found %}
+                      <font color="green">{{ _("Да") }}</font>
+                      {% else %}
+                      <font color="red">{{ _("Нет") }}</font>
+                    {% endif %}                        </td>
+                    <td>
+                      {% if patient.infected_patient.status.value == constants.in_hospital[0] %}
+                      <font color="green">{{ _("Да") }}</font>
+                      {% else %}
+                      <font color="red">{{ _("Нет") }}</font>
+                    {% endif %}                        </td>
+                  </tr>
+                {% endif %}
               {% endfor %}
-
             </tbody>
           </table>
         </div>

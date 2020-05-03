@@ -113,7 +113,7 @@ def flights():
     form = FlightSearchForm()
 
     populate_search_form(form, request)
-    flights_table = FlightTableModule(request, form, (_("Добавить Рейс"), "/add_flight"))
+    flights_table = FlightTableModule(request, form, [(_("Добавить Рейс"), "/add_flight")])
 
     form.process()
 
@@ -130,7 +130,7 @@ def trains():
     form = TrainSearchForm()
     
     populate_search_form(form, request)
-    flights_table = TrainTableModule(request, form, (_("Добавить ЖД Рейс"), "/add_train"))
+    flights_table = TrainTableModule(request, form, [(_("Добавить ЖД Рейс"), "/add_train")])
 
     form.process()
 

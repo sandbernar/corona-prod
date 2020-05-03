@@ -346,6 +346,15 @@ def add_patient():
 
     patient_form.process()
 
+    select_contacted = None
+
+    select_contacted_id = request.args.get("select_contacted_id", None)
+    if select_contacted_id:
+        try:
+            select_contacted = Patient.query.filter_by(id=select_contacted_id).first()
+        except exc.SQLAlchemyError:
+            return render_template('errors/error-400.html'), 400             
+
     if 'create' in request.form:
         request_dict = request.form.to_dict(flat=True)
         final_dict = {'created_by_id': current_user.id}
@@ -365,9 +374,20 @@ def add_patient():
 
         handle_after_patient(request_dict, final_dict, patient)
 
+        if select_contacted:
+            try:
+                contacted = ContactedPersons(infected_patient_id=select_contacted.id, contacted_patient_id=patient.id)
+                db.session.add(contacted)
+                db.session.commit()
+            except exc.SQLAlchemyError:
+                return jsonify({"error": _("Ошибка при добавлении контактной связи")})
+
+            return jsonify({"patient_id": patient.id, "selected_patient_id": select_contacted.id})
+
         return jsonify({"patient_id": patient.id})
     else:
-        return route_template( 'patients/add_person', form=patient_form, added=False, error_msg=None, c=c)
+        return route_template( 'patients/add_person', form=patient_form, select_contacted=select_contacted,
+                                added=False, error_msg=None, c=c)
 
 @blueprint.route('/patient_profile', methods=['GET', 'POST'])
 @login_required
@@ -605,7 +625,7 @@ def patients():
 
     try:
         all_patients_table = AllPatientsTableModule(request, Patient.query, select_contacted,
-                            search_form=form, header_button=(_("Добавить Пациента"), "/add_person"))
+                            search_form=form, header_button=[(_("Добавить Пациента"), "/add_person")])
     except ValueError:
         return render_template('errors/error-500.html'), 500        
 
@@ -637,10 +657,11 @@ def delete_patient():
                 for patient_state in patient_states:
                     db.session.delete(patient_state)
 
-                if patient.is_contacted_person:
-                    q = ContactedPersons.query.filter_by(contacted_patient_id=patient_id)
-                    return_url = "{}?id={}".format(url_for('main_blueprint.contacted_persons'), q.first().patient_id)
-                    q.delete()
+                if ContactedPersons.query.filter_by(contacted_patient_id=patient_id).count():
+                    return redirect("patients?error={}".format(_("У пациента есть контактные связи с инфицированными")))
+
+                if ContactedPersons.query.filter_by(infected_patient_id=patient_id).count():
+                    return redirect("patients?error={}".format(_("Пациент является нулевым в контактных связях")))
 
                 home_address = patient.home_address
                 job_address = patient.job_address
@@ -703,7 +724,9 @@ def contacted_persons():
 
             try:
                 contacted_patients_table = ContactedPatientsTableModule(request, q, contacted_search_form,
-                                        (_("Выбрать Контактное Лицо"), "patients?select_contacted_id={}".format(patient.id)))
+                                        header_button=[(_("Добавить Контактное Лицо"), "add_person?select_contacted_id={}".format(patient.id)),
+                                            (_("Выбрать Контактное Лицо"), "patients?select_contacted_id={}".format(patient.id))]
+                                        )
             except ValueError:
                 return render_template('errors/error-500.html'), 500
 

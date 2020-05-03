@@ -23,10 +23,11 @@ class ContactedPatientsTableModule(TableModule):
         table_head[_("Тип Въезда")] = ["travel_type_id"]
         table_head[_("Регион")] = []
         table_head[_("Найден")] = ["is_found"]
-        table_head[_("Госпитализирован")] = []
+        table_head[_("В Больнице")] = []
         table_head[_("Инфицирован")] = ["is_infected"]
         table_head[_("Удалить Связь")] = []
-        table_head[_("Добавлен в течение 2-х часов")] = []
+        table_head[_("Добавлен за 2 часа")] = []
+        table_head[_("Дата Создания Пациента")] = ["created_date"]
 
         super().__init__(request, q, table_head, header_button, search_form, sort_param="contacted_patient")
 
@@ -96,8 +97,10 @@ class ContactedPatientsTableModule(TableModule):
 
         is_added_in_2_hours = yes_no_html(True if result.added_in_n_hours() else False)
 
+        created_date = patient.created_date.strftime("%d-%m-%Y %H:%M")
+
         return [patient_id, telephone, travel_type, region, is_found, \
-                in_hospital, is_infected, delete_contact_button, is_added_in_2_hours]
+                in_hospital, is_infected, delete_contact_button, is_added_in_2_hours, created_date]
 
 class AllPatientsTableModule(TableModule):
     def __init__(self, request, q, select_contacted = None, search_form = None, header_button = None,\
