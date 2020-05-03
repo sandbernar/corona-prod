@@ -175,7 +175,7 @@ def patients_content_by_id():
     lat_lon[0] = format(lat_lon[0], ".5f")
     lat_lon[1] = format(lat_lon[1], ".5f")
     try:
-        pat = q.join(Address, Patient.home_address_id == Address.id).filter(Address.lat == str(lat_lon[0])).filter(Address.lng == str(lat_lon[1])).all()
+        pat = q.join(Address, Patient.home_address_id == Address.id).filter(Address.lat == str(lat_lon[0])).filter(Address.lng == str(lat_lon[1])).filter(Patient.is_infected == True).all()
     except exc.SQLAlchemyError as err:
         return render_template('errors/error-400.html'), 400
     if not pat:
@@ -189,7 +189,7 @@ def patients_content_by_id():
             is_infected = "Да"
         response.append({
             "id": uuid.uuid1(),
-            "balloonContent": '<a href="/patient_profile?id=' + str(p.id) + '">' + repr(p) + '</a><br><strong>Регион</strong>:' + repr    (p.region) + '<br><strong>Адрес</strong>: ' + repr(p.home_address) + '<br><strong>Найден</strong>: ' + is_found +   '<br><strong>Инфицирован</strong>: ' + is_infected + '<br><strong>Статус</strong>:' + p.status.name + '<br>',
+            "balloonContent": '<a href="/patient_profile?id=' + str(p.id) + '">' + repr(p) + '</a><br><strong>Регион</strong>:' + repr(p.region) + '<br><strong>Адрес</strong>: ' + repr(p.home_address) + '<br><strong>Найден</strong>: ' + is_found +   '<br><strong>Инфицирован</strong>: ' + is_infected + '<br><strong>Статус</strong>:' + p.status.name + '<br>',
             "clusterCaption": repr(p)
         })
 
@@ -237,6 +237,7 @@ def patients_within_tiles():
         WHERE "Address".geom && ST_MakeEnvelope(%s, %s, %s, %s, 3857) AND "Patient".is_infected = true
       ) AS points
     ) f;
+    68.9063,49.1129,74.5312,52.6684,
     """ % (str(distance), bbox_y1, bbox_x1, bbox_y2, bbox_x2))
     # sql = text("""
     # SELECT id,
