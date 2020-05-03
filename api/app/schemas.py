@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel
 from datetime import date
@@ -10,7 +10,7 @@ class Interval(BaseModel):
 class Status(BaseModel):
     # id: int
     # value: str
-    name: str
+    name: Optional[str] = None
 
     class Config:
         orm_mode = True
@@ -23,10 +23,10 @@ class Status(BaseModel):
 #         orm_mode = True
 
 class Adress(BaseModel):
-    city: str = ""
-    street: str = ""
-    house: str = ""
-    flat: str = ""
+    city: Optional[str] = None
+    street: Optional[str] = None
+    house: Optional[str] = None
+    flat: Optional[str] = None
 
     class Config:
         orm_mode = True
@@ -35,33 +35,33 @@ class Adress(BaseModel):
 
 
 class Hospital(BaseModel):
-    name: str = ""
-    full_name: str = ""
-    address: str = ""
+    name: Optional[str] = ""
+    full_name: Optional[str] = ""
+    address: Optional[str] = ""
 
     class Config:
         orm_mode = True
 
 class PatientByIIN(BaseModel):
-    iin: str = "empty"
+    iin: Optional[str] = "empty"
 
 class PatientByPassNum(BaseModel):
-    pass_num: str = "empty"
+    pass_num: Optional[str] = "empty"
 
 class Patient(BaseModel):
-    first_name: str = None
-    second_name: str = None
-    patronymic_name: str = None
-    status: Status = None
-    home_address: Adress = None
-    hospital: Hospital = None
-    iin: str = ""
-    pass_num: str = ""
-    is_contacted: bool = False
-    is_infected: bool = False
-    is_found: bool = False
-    telephone: str = ""
-    created_date: date = None
+    first_name: Optional[str] = None
+    second_name: Optional[str] = None
+    patronymic_name: Optional[str] = None
+    status: Optional[Status] = None
+    home_address: Optional[Adress] = None
+    hospital: Optional[Hospital] = None
+    iin: Optional[str] = None
+    pass_num: Optional[str] = None
+    is_contacted: Optional[bool] = False
+    is_infected: Optional[bool] = False
+    is_found: Optional[bool] = False
+    telephone: Optional[str] = None
+    created_date: Optional[date] = None
 
     class Config:
         orm_mode = True
