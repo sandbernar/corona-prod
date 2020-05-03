@@ -237,7 +237,6 @@ def patients_within_tiles():
         WHERE "Address".geom && ST_MakeEnvelope(%s, %s, %s, %s, 3857) AND "Patient".is_infected = true
       ) AS points
     ) f;
-    68.9063,49.1129,74.5312,52.6684,
     """ % (str(distance), bbox_y1, bbox_x1, bbox_y2, bbox_x2))
     # sql = text("""
     # SELECT id,
