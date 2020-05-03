@@ -24,6 +24,7 @@ class ContactedPatientsTableModule(TableModule):
         table_head[_("Регион")] = []
         table_head[_("Найден")] = ["is_found"]
         table_head[_("Госпитализирован")] = []
+        table_head[_("Инфицирован")] = ["is_infected"]
         table_head[_("Удалить Связь")] = []
         table_head[_("Добавлен в течение 2-х часов")] = []
 
@@ -49,6 +50,11 @@ class ContactedPatientsTableModule(TableModule):
         if is_found != "-1":
             self.q = self.q.filter(Patient.is_found == bool(int(is_found)))
             self.search_form.is_found.default = is_found
+
+        is_infected = self.request.args.get("is_infected", "-1")
+        if is_infected != "-1":
+            self.q = self.q.filter(Patient.is_infected == bool(int(is_infected)))
+            self.search_form.is_infected.default = is_infected        
 
         is_added_in_2_hours = self.request.args.get("is_added_in_2_hours", "-1")
         if is_added_in_2_hours != "-1":
@@ -80,6 +86,10 @@ class ContactedPatientsTableModule(TableModule):
         if patient.status and patient.status.value == c.in_hospital[0]:
             in_hospital = yes_no_html(True)
 
+        is_infected = yes_no_html(False, invert_colors=True)
+        if patient.is_infected:
+            is_infected = yes_no_html(True, invert_colors=True)
+
         delete_contact_html = "<a href=\"/delete_contacted?contact_id={}\" class=\"btn btn-danger\">{}</a>".format(
                                 result.id, _("Удалить Связь"))
         delete_contact_button = (delete_contact_html, "safe")
@@ -87,7 +97,7 @@ class ContactedPatientsTableModule(TableModule):
         is_added_in_2_hours = yes_no_html(True if result.added_in_n_hours() else False)
 
         return [patient_id, telephone, travel_type, region, is_found, \
-                in_hospital, delete_contact_button, is_added_in_2_hours]
+                in_hospital, is_infected, delete_contact_button, is_added_in_2_hours]
 
 class AllPatientsTableModule(TableModule):
     def __init__(self, request, q, select_contacted = None, search_form = None, header_button = None,\
