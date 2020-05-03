@@ -67,6 +67,6 @@ class Patient(BaseModel):
         orm_mode = True
 
 class PatientFrom(BaseModel):
-    from_country: str = None
-    to_region: str = None
-    patient: Patient = None
+    from_country: Optional[str] = None
+    to_region: Optional[str] = None
+    patient: Optional[Patient] = None
