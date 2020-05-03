@@ -214,7 +214,7 @@ def patients_within_tiles():
 
     if (zoom > 19 or zoom < 0):
         return render_template('errors/error-400.html'), 400
-    distances = [0.09, 0.09, 0.09, 0.09, 0.09, 0.09, 0.09, 0.09, 0.09, 0.04, 0.03, 0.02, 0.01, 0.009,  0.008, 0.003, 0.002, 0.001, 0.001, 0.001]
+    distances = [6,6, 5, 4, 3, 2, 1, 0.5, 0.5, 0.09, 0.07, 0.02, 0.01, 0.009,  0.008, 0.003, 0.002, 0.001, 0.001, 0.001]
     distance = distances[zoom]
     
     # distance = 2
@@ -223,31 +223,35 @@ def patients_within_tiles():
         "features": []
     }
 
-    # SELECT row_number() over () AS id,
-    #   ST_NumGeometries(gc) as count,
-    #   ST_X(ST_Centroid(gc)) AS X,
-    #   ST_Y(ST_Centroid(gc)) AS Y
-    # FROM (
-    #   SELECT unnest(ST_ClusterWithin(geom, %s)) gc
-    #   FROM (
-    #     SELECT * FROM "Address" WHERE geom && ST_MakeEnvelope(%s, %s, %s, %s, 3857)
-    #   ) AS points
-    # ) f;
-    # str(distance), 
     sql = text("""
-    SELECT id,
-      count(*) as num,
-      ST_X(ST_Centroid(ST_Extent(geom))) as X,
-      ST_Y(ST_Centroid(ST_Extent(geom))) as Y
-    FROM
-    (
-        SELECT ST_ClusterKMeans(geom, 1) OVER() AS id, ST_Centroid(geom) as geom
-        FROM (
-              SELECT * FROM "Address" WHERE geom && ST_MakeEnvelope(%s, %s, %s, %s, 4326)
-        ) AS points
-    ) tsub
-    GROUP BY id;
-    """ % (bbox_y1, bbox_x1, bbox_y2, bbox_x2))
+    SELECT row_number() over () AS id,
+      ST_NumGeometries(gc) as count,
+      ST_X(ST_Centroid(gc)) AS X,
+      ST_Y(ST_Centroid(gc)) AS Y
+    FROM (
+      SELECT unnest(ST_ClusterWithin(geom, %s)) gc
+      FROM (
+        SELECT * FROM "Address" 
+        JOIN "Patient" 
+        ON "Address".id = "Patient".home_address_id
+        WHERE "Address".geom && ST_MakeEnvelope(%s, %s, %s, %s, 3857) AND "Patient".is_infected = true
+      ) AS points
+    ) f;
+    """ % (str(distance), bbox_y1, bbox_x1, bbox_y2, bbox_x2))
+    # sql = text("""
+    # SELECT id,
+    #   count(*) as num,
+    #   ST_X(ST_Centroid(ST_Extent(geom))) as X,
+    #   ST_Y(ST_Centroid(ST_Extent(geom))) as Y
+    # FROM
+    # (
+    #     SELECT ST_ClusterKMeans(geom, 1) OVER() AS id, ST_Centroid(geom) as geom
+    #     FROM (
+    #           SELECT * FROM "Address" WHERE geom && ST_MakeEnvelope(%s, %s, %s, %s, 4326)
+    #     ) AS points
+    # ) tsub
+    # GROUP BY id;
+    # """ % (bbox_y1, bbox_x1, bbox_y2, bbox_x2))
     m = db.engine.execute(sql)
     for a in m:
         features = []
