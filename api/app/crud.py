@@ -55,7 +55,7 @@ def get_patients(db: Session, begin: date, end: date):
             "patient": a.patient
         })
     for a in other:
-        if a.country = None:
+        if a.country == None:
             continue
         data.append({
             "from_country": a.country.name,
