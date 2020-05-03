@@ -38,38 +38,28 @@ def get_patients(db: Session, begin: date, end: date):
         logger.error(err)
 
     data = []
-
     for a in flight:
-        country_name = "none"
-        to_region = "none"
-        if (a.flight_code != None):
-            country_name = a.flight_code.from_country.name
-            to_region = a.flight_code.to_city
-            
+        if (a.flight_code == None or a.flight_code.from_country == None):
+            continue
         data.append({
-            "from_country": country_name,
-            "to_region": to_region,
+            "from_country": a.flight_code.from_country.name,
+            "to_region": a.flight_code.to_city,
             "patient": a.patient
         })
     for a in train:
-        country_name = "none"
-        to_region = "none"
-        if (a.train != None):
-            country_name = a.train.from_country.name
-            to_region = a.train.to_city
-
+        if a.train == None or a.train.from_country == None:
+            continue
         data.append({
-            "from_country": country_name,
-            "to_region": to_region,
+            "from_country": a.train.from_country.name,
+            "to_region": a.train.to_city,
             "patient": a.patient
         })
     for a in other:
-        country_name = "none"
-        if (a.country != None):
-            country_name = a.country.name
+        if a.country = None:
+            continue
         data.append({
-            "from_country": country_name,
-            "to_region": "none",
+            "from_country": a.country.name,
+            "to_region": "Kazakhstan",
             "patient": a.patient
         })
     
