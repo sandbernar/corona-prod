@@ -43,10 +43,10 @@ class Hospital(BaseModel):
         orm_mode = True
 
 class PatientByIIN(BaseModel):
-    iin: Optional[str] = "empty"
+    iin: str
 
 class PatientByPassNum(BaseModel):
-    pass_num: Optional[str] = "empty"
+    pass_num: str
 
 class Patient(BaseModel):
     first_name: Optional[str] = None
