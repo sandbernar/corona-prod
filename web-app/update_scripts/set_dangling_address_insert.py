@@ -64,8 +64,8 @@ for patient in patients:
         %s,
         %s,
         %s,
-        %f,
-        %f
+        %s,
+        %s
     ) RETURNING id;""" % (
         address["country_id"],
         f"\'{address['state']}\'" if address["state"] is not None else "null",
@@ -75,7 +75,7 @@ for patient in patients:
         f"\'{address['house']}\'" if address["house"] is not None else "null",
         f"\'{address['flat']}\'" if address["flat"] is not None else "null",
         f"\'{address['building']}\'" if address["building"] is not None else "null",
-        address["lat"] if address["lat"] is not None else "null",
-        address["lng"] if address["lng"] is not None else "null"
+        f"{address['lat']}" if address["lat"] is not None else "null",
+        f"{address['lng']}" if address["lng"] is not None else "null"
     ))[0]
     psqlQuery('UPDATE "Patient" SET home_address_id=%d WHERE id=%d;' % (addressID["id"], patient["id"]))
