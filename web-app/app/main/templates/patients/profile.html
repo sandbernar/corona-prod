@@ -345,7 +345,10 @@
         {% endif %}       
     }
     // Disable travel type select for profile page
-    $("#travel_type").prop('disabled', true);
+    // $("#travel_type").prop('disabled', true);
+    $("#travel_type").on("change", function(){
+  update_travel_form();
+});
 
     {% if patient.home_address.lat %}
     ymaps.ready(init);
