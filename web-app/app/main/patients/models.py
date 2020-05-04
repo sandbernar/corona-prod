@@ -10,7 +10,7 @@ from flask_login import UserMixin
 from sqlalchemy import Column, Integer, String, Date, Boolean, Float, ForeignKey, JSON, DateTime
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import column_property
-from sqlalchemy import select, func, case
+from sqlalchemy import select, func, case, and_, or_
 
 from app import db
 from app import constants as c
@@ -99,11 +99,33 @@ class Patient(db.Model):
     is_contacted_person = Column(Boolean, unique=False)
     is_contacted = Column(Boolean, unique=False, default=False)
 
+
+    """
+    Infected column_property
+    """
     infected_state_count = column_property(
         select([func.count(PatientState.id)]).\
             where(PatientState.patient_id==id).\
             where(PatientState.state_id == select([State.id]).where(State.value == c.state_infec[0]).limit(1))
     )
+
+    last_infected_state_id = column_property(
+        select([PatientState.id]).\
+            where(PatientState.patient_id==id).\
+            where(PatientState.state_id == select([State.id]).where(State.value == c.state_infec[0]).limit(1)).\
+            order_by(PatientState.detection_date.desc()).limit(1)
+    )
+
+    last_infected_state_dd = column_property(
+        select([PatientState.detection_date]).\
+            where(PatientState.patient_id==id).\
+            where(PatientState.state_id == select([State.id]).where(State.value == c.state_infec[0]).limit(1)).\
+            order_by(PatientState.detection_date.desc()).limit(1)
+    )
+
+    """
+    Found column_property
+    """
 
     found_state_count = column_property(
         select([func.count(PatientState.id)]).\
@@ -111,11 +133,99 @@ class Patient(db.Model):
             where(PatientState.state_id == select([State.id]).where(State.value == c.state_found[0]).limit(1))
     )
 
+    """
+    Hospitalised column_properties
+    """
     hosp_state_count = column_property(
         select([func.count(PatientState.id)]).\
             where(PatientState.patient_id==id).\
             where(PatientState.state_id == select([State.id]).where(State.value == c.state_hosp[0]).limit(1))
     )
+
+    last_hosp_state_id = column_property(
+        select([PatientState.id]).\
+            where(PatientState.patient_id==id).\
+            where(PatientState.state_id == select([State.id]).where(State.value == c.state_hosp[0]).limit(1)).\
+            order_by(PatientState.detection_date.desc()).limit(1)
+    )
+
+    last_hosp_state_dd = column_property(
+        select([PatientState.detection_date]).\
+            where(PatientState.patient_id==id).\
+            where(PatientState.state_id == select([State.id]).where(State.value == c.state_hosp[0]).limit(1)).\
+            order_by(PatientState.detection_date.desc()).limit(1)
+    )
+
+    """
+    Healthy (recovered) column_properties
+    """
+    healty_state_count = column_property(
+        select([func.count(PatientState.id)]).\
+            where(PatientState.patient_id==id).\
+            where(PatientState.state_id == select([State.id]).where(State.value == c.state_healthy[0]).limit(1))
+    )
+
+    last_healty_state_id = column_property(
+        select([PatientState.id]).\
+            where(PatientState.patient_id==id).\
+            where(PatientState.state_id == select([State.id]).where(State.value == c.state_healthy[0]).limit(1)).\
+            order_by(PatientState.detection_date.desc()).limit(1)
+    )
+
+    last_healty_state_dd = column_property(
+        select([PatientState.detection_date]).\
+            where(PatientState.patient_id==id).\
+            where(PatientState.state_id == select([State.id]).where(State.value == c.state_healthy[0]).limit(1)).\
+            order_by(PatientState.detection_date.desc()).limit(1)
+    )
+
+    """
+    Is home (home carantine) column_properties
+    """
+    home_state_count = column_property(
+        select([func.count(PatientState.id)]).\
+            where(PatientState.patient_id==id).\
+            where(PatientState.state_id == select([State.id]).where(State.value == c.state_is_home[0]).limit(1))
+    )
+
+    last_home_state_id = column_property(
+        select([PatientState.id]).\
+            where(PatientState.patient_id==id).\
+            where(PatientState.state_id == select([State.id]).where(State.value == c.state_is_home[0]).limit(1)).\
+            order_by(PatientState.detection_date.desc()).limit(1)
+    )
+
+    last_home_state_dd = column_property(
+        select([PatientState.detection_date]).\
+            where(PatientState.patient_id==id).\
+            where(PatientState.state_id == select([State.id]).where(State.value == c.state_is_home[0]).limit(1)).\
+            order_by(PatientState.detection_date.desc()).limit(1)
+    )
+
+    """
+    Dead column_property
+    """
+    dead_state_count = column_property(
+        select([func.count(PatientState.id)]).\
+            where(PatientState.patient_id==id).\
+            where(PatientState.state_id == select([State.id]).where(State.value == c.state_dead[0]).limit(1))
+    )
+
+    last_dead_state_id = column_property(
+        select([PatientState.id]).\
+            where(PatientState.patient_id==id).\
+            where(PatientState.state_id == select([State.id]).where(State.value == c.state_dead[0]).limit(1)).\
+            order_by(PatientState.detection_date.desc()).limit(1)
+    )
+
+    last_dead_state_dd = column_property(
+        select([PatientState.detection_date]).\
+            where(PatientState.patient_id==id).\
+            where(PatientState.state_id == select([State.id]).where(State.value == c.state_dead[0]).limit(1)).\
+            order_by(PatientState.detection_date.desc()).limit(1)
+    )
+
+
     # infected, dead, healthy
     # states = db.relationship("State", secondary=lambda: PatientState.__table__,
     #                          backref=db.backref("patients"))
@@ -211,29 +321,43 @@ class Patient(db.Model):
 
     @hybrid_property
     def in_hospital(self):
-        state = State.query.filter_by(value=c.state_hosp[0]).first()
-        hosp = PatientState.query.filter_by(patient_id=self.id).filter_by(state_id=state.id).first()
-        if hosp:
-            return True
-        return False
-    
+        if self.is_dead or self.hosp_state_count == 0:
+            return False
+        if self.home_state_count > 0:
+            if self.last_home_state_dd > self.last_hosp_state_dd:
+                return False
+            if self.last_home_state_dd == self.last_hosp_state_dd \
+                and self.last_home_state_id > self.last_hosp_state_id:
+                return False
+        if self.healty_state_count > 0:
+            if self.last_healty_state_dd > self.last_hosp_state_dd:
+                return False
+            if self.last_healty_state_dd == self.last_hosp_state_dd \
+                and self.last_healty_state_id > self.last_hosp_state_id:
+                return False
+        return self.hosp_state_count > 0
+
     @in_hospital.expression
     def in_hospital(cls):
-        return cls.hosp_state_count > 0
+        # если последний in_hospital.detection_date > is_home.detection.date OR in_hospital.detection_date > is_healthy.detection_date
+        return case([
+            (or_(cls.dead_state_count > 0, cls.hosp_state_count == 0), False),
+            (and_(cls.home_state_count > 0, cls.last_home_state_dd > cls.last_hosp_state_dd), False),
+            (and_(cls.home_state_count > 0, and_(cls.last_home_state_dd == cls.last_hosp_state_dd, cls.last_home_state_id > cls.last_hosp_state_id)), False),
+            (and_(cls.healty_state_count > 0, cls.last_healty_state_dd > cls.last_hosp_state_dd), False),
+            (and_(cls.healty_state_count > 0, and_(cls.last_healty_state_dd == cls.last_hosp_state_dd, cls.last_healty_state_id > cls.last_hosp_state_id)), False)
+        ], else_=cls.hosp_state_count > 0)
 
     # is_found = Column(Boolean, unique=False, default=False)
     @hybrid_property
     def is_found(self):
-        state = State.query.filter_by(value=c.state_found[0]).first()
-        found = PatientState.query.filter_by(patient_id=self.id).filter_by(state_id=state.id).first()
-        if found:
-            return True
-        return False
+        return self.found_state_count > 0
 
     @is_found.expression
     def is_found(cls):
         return cls.found_state_count > 0
     
+    # TODO
     @is_found.setter
     def is_found(self, value):
         if value == True:
@@ -243,22 +367,81 @@ class Patient(db.Model):
     # is_infected = Column(Boolean, unique=False, default=False)
     @hybrid_property
     def is_infected(self):
-        state = State.query.filter_by(value=c.state_infec[0]).first()
-        infec = PatientState.query.filter_by(patient_id=self.id).filter_by(state_id=state.id).first()
-        if infec:
-            return True
-        return False
+        if self.is_dead or self.infected_state_count == 0:
+            return False
+        if self.healty_state_count > 0:
+            if self.last_healty_state_dd > self.last_infected_state_dd:
+                return False
+            if self.last_healty_state_dd == self.last_infected_state_dd \
+                and self.last_healty_state_id > self.last_infected_state_id:
+                return False
+        return self.infected_state_count > 0
     
     @is_infected.expression
     def is_infected(cls):
-        return cls.infected_state_count > 0
+        return case([
+            (or_(cls.dead_state_count > 0, cls.infected_state_count == 0), False),
+            (and_(cls.healty_state_count > 0, cls.last_healty_state_dd > cls.last_infected_state_dd), False),
+            (and_(cls.healty_state_count > 0, and_(cls.last_healty_state_dd == cls.last_infected_state_dd, cls.last_healty_state_id > cls.last_infected_state_id)), False)
+        ], else_=cls.infected_state_count > 0)
     
+    # TODO
     @is_infected.setter
     def is_infected(self, value):
         if value == True:
             state = State.query.filter_by(value=c.state_infec[0]).first()
             self.addState(state)
     
+    @hybrid_property
+    def is_home(self):
+        # если последний is_home.detection_date > in_hospital.detection.date OR is_home.detection_date > is_healthy.detection_date
+        if self.is_dead or self.home_state_count == 0:
+            return False
+        if self.hosp_state_count > 0:
+            if self.last_hosp_state_dd > self.last_home_state_dd:
+                return False
+            if self.last_hosp_state_dd == self.last_home_state_dd \
+                and self.last_hosp_state_id > self.last_home_state_id:
+                return False
+        if self.healty_state_count > 0:
+            if self.last_healty_state_dd > self.last_home_state_dd:
+                return False
+            if self.last_healty_state_dd == self.last_home_state_dd \
+                and self.last_healty_state_id > self.last_home_state_id:
+                return False
+        return self.home_state_count > 0
+    
+    @is_home.expression
+    def is_home(cls):
+        return case([
+            (or_(cls.dead_state_count > 0, cls.home_state_count == 0), False),
+            (and_(cls.hosp_state_count > 0, cls.last_hosp_state_dd > cls.last_home_state_dd), False),
+            (and_(cls.hosp_state_count > 0, and_(cls.last_hosp_state_dd == cls.last_home_state_dd, cls.last_hosp_state_id > cls.last_home_state_id)), False),
+            (and_(cls.healty_state_count > 0, cls.last_healty_state_dd > cls.last_home_state_dd), False),
+            (and_(cls.healty_state_count > 0, and_(cls.last_healty_state_dd == cls.last_home_state_dd, cls.last_healty_state_id > cls.last_home_state_id)), False)
+        ], else_=cls.home_state_count > 0)
+    
+    @hybrid_property
+    def healthy(self):
+        if self.is_dead or self.healty_state_count == 0:
+            return False
+        if self.in_hospital:
+            return False
+        if self.is_home:
+            return False
+        return self.healty_state_count > 0
+    
+    @healthy.expression
+    def healthy(cls):
+        return case([
+            (or_(cls.dead_state_count > 0, cls.healty_state_count == 0), False),
+            (cls.in_hospital, False),
+            (cls.is_home, False),
+        ], else_=cls.healty_state_count > 0)
+    
+    @hybrid_property
+    def is_dead(self):
+        return self.dead_state_count > 0
 
     def __init__(self, **kwargs):
         for hybrid_property, value in kwargs.items():

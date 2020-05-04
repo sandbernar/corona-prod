@@ -88,7 +88,7 @@ def route_template(template, **kwargs):
         is_found = q.filter(Patient.is_found==True).count()
         ratio = 0 if total == 0 else is_found / total
         is_found_str = str("{}/{} ({}%)".format(is_found, total, format(ratio * 100, '.2f')))
-
+        
 
         # in_hosp_state_id = State.query.filter_by(name=c.state_hosp).first().id
         # in_hospital = PatientState.query.filter_by(state_id=in_hosp_state_id).count()
