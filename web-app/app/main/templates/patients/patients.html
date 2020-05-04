@@ -77,27 +77,17 @@
                 {{ form.job_category_id(class="form-control") }}
               </div>
               <div class="col-md-auto">
-                <br>
-                <div class="custom-control custom-checkbox">
-                  {{ form.not_found(class="custom-control-input") }}
-                  <label class="custom-control-label" for="not_found">{{ _("Не найден") }}</label>
-                </div>
-                <div class="custom-control custom-checkbox">
-                  {{ form.not_in_hospital(class="custom-control-input") }}                    
-                  <label class="custom-control-label" for="not_in_hospital">{{ _("Не госпитализирован") }}</label>
-                </div>               
+                <label class='form-control-label'>{{ _('Инфицирован') }}</label>                
+                {{ form.is_infected(class="form-control") }}
               </div>
               <div class="col-md-auto">
-                <br>
-                <div class="custom-control custom-checkbox">
-                  {{ form.is_infected(class="custom-control-input") }}                    
-                  <label class="custom-control-label" for="is_infected">{{ _("Инфицирован") }}</label>
-                </div>              
-                <div class="custom-control custom-checkbox">
-                  {{ form.is_home_quarantine(class="custom-control-input") }}                    
-                  <label class="custom-control-label" for="is_home_quarantine">{{ _("Домашний Карантин") }}</label>
-                </div>                   
-            </div>
+                <label class='form-control-label'>{{ _('Найден') }}</label>                
+                {{ form.is_found(class="form-control") }}
+              </div>
+              <div class="col-md-auto">
+                <label class='form-control-label'>{{ _('Статус Пациента') }}</label>                
+                {{ form.patient_status(class="form-control") }}
+              </div>                            
             </div>
           </div>
         </div>

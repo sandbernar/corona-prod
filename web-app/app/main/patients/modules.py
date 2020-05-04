@@ -157,20 +157,35 @@ class AllPatientsTableModule(TableModule):
             self.q = self.q.filter(Patient.job_category_id == job_category_id)
             self.search_form.job_category_id.default = job_category_id
 
+        
+        is_found = self.request.args.get("is_found", "-1")
+        if is_found != "-1":
+            filt["is_found"] = is_found == "1"
+            self.search_form.is_found.default = is_found
 
-        if "not_found" in request.args:
-            filt["is_found"] = False
-            self.search_form.not_found.default='checked'
+        is_infected = self.request.args.get("is_infected", "-1")
+        if is_infected != "-1":
+            filt["is_infected"] = is_infected == "1"
+            self.search_form.is_infected.default = is_infected
 
-        if "not_in_hospital" in request.args:
-            in_hospital_id = PatientStatus.query.filter_by(value=c.in_hospital[0]).first().id
-            self.q = self.q.filter(Patient.status_id != in_hospital_id)
+        patient_status = self.request.args.get("patient_status", "-1")
+        if patient_status != "-1":
+            if patient_status == "in_hospital" or patient_status == "not_in_hospital":
+                in_hospital = patient_status == "in_hospital"
+                in_hospital_id = PatientStatus.query.filter_by(value=c.in_hospital[0]).first().id
 
-            self.search_form.not_in_hospital.default='checked'
+                if in_hospital:
+                    self.q = self.q.filter(Patient.status_id == in_hospital_id)
+                else:
+                    self.q = self.q.filter(Patient.status_id != in_hospital_id)
+            elif patient_status == "is_home_quarantine":
+                home_quarantine_id = PatientStatus.query.filter_by(value=c.is_home[0]).first().id
+                self.q = self.q.filter(Patient.status_id == home_quarantine_id)
+            elif patient_status == "is_transit":
+                is_transit_id = PatientStatus.query.filter_by(value=c.is_transit[0]).first().id
+                self.q = self.q.filter(Patient.status_id == is_transit_id)
 
-        if "is_infected" in request.args:
-            filt["is_infected"] = True
-            self.search_form.is_infected.default='checked'
+            self.search_form.patient_status.default = patient_status
 
         # if "probably_duplicate" in request.args:
         #     print(Patient.query.first().attrs[''])
