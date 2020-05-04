@@ -64,17 +64,17 @@ for patient in patients:
         %s,
         %s,
         %s,
-        %f
+        %f,
         %f
     ) RETURNING id;""" % (
         address["country_id"],
-        f"\'{address['state']}\''" if address["state"] is not None else "null",
-        f"\'{address['county']}\''" if address["county"] is not None else "null",
-        f"\'{address['city']}\''" if address["city"] is not None else "null",
-        f"\'{address['street']}\''" if address["street"] is not None else "null",
-        f"\'{address['house']}\''" if address["house"] is not None else "null",
-        f"\'{address['flat']}\''" if address["flat"] is not None else "null",
-        f"\'{address['building']}\''" if address["building"] is not None else "null",
+        f"\'{address['state']}\'" if address["state"] is not None else "null",
+        f"\'{address['county']}\'" if address["county"] is not None else "null",
+        f"\'{address['city']}\'" if address["city"] is not None else "null",
+        f"\'{address['street']}\'" if address["street"] is not None else "null",
+        f"\'{address['house']}\'" if address["house"] is not None else "null",
+        f"\'{address['flat']}\'" if address["flat"] is not None else "null",
+        f"\'{address['building']}\'" if address["building"] is not None else "null",
         address["lat"] if address["lat"] is not None else "null",
         address["lng"] if address["lng"] is not None else "null"
     ))[0]
