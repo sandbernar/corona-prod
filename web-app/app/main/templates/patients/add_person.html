@@ -55,9 +55,23 @@
     </button>
   </div>
   {% endif %}
-  
+  {% if select_contacted %}
+  <div class="row">
+    <div class="col">
+      <div class="card shadow">
+        <div class="card-header bg-transparent">
+          <h3 class="mb-0">{{ _("Добавление Контактного Пациента к") }} <a href='patient_profile?id={{ select_contacted.id }}'> {{ select_contacted }}</a></h3>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
   <form id="add_patients" role="form" method="post" action="">
-        <div class="row">
+    {% if select_contacted %}
+    <div class="row mt-3">
+    {% else %}
+    <div class="row">
+    {% endif %}
       <div class="col">
         <div class="card shadow">
           <div class="card-header bg-transparent">
@@ -277,6 +291,10 @@
           type: 'info',
         });
         close_modal_submit()
+
+        if(res.selected_patient_id !== undefined) {
+          window.location.replace("/contacted_persons?id=" + res.selected_patient_id + "&success={{ _('Контактный успешно создан и добавлен') }}")
+        }
       }
     })
     .fail(function() {
@@ -354,6 +372,9 @@ $("#open_modal_add_patient").on("click", function(e){
   addCheckBody.innerHTML = `<b>{{ _("ФИО") }}:</b> ${$("#firstnameInput").val()} ${$("#lastnameInput").val()} ${$("#midnameInput").val()} <br>`
   addCheckBody.innerHTML += `<b>{{ _("Тип Въезда в Страну") }}:</b> ` + $("#travel_type option:selected").text() + `<br>`
   addCheckBody.innerHTML += `<b>{{ _("Регион") }}:</b> ` + $("#region_id option:selected").text() + `<br>`
+  {% if select_contacted %}
+  addCheckBody.innerHTML += `<b>{{ _("Контактный к") }}:</b> ` + `<a href='patient_profile?id={{ select_contacted.id }}'> {{ select_contacted }}</a>` + `<br>`
+  {% endif %}
 }
 });
 

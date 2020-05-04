@@ -142,7 +142,7 @@ def users():
     q = db.session.query(User, q_patient.c.patient_count).outerjoin(q_patient, User.id == q_patient.c.created_by_id)
     
     users_table = UserTableModule(request, q, users_search_form, 
-        header_button=(_("Добавить Пользователя"), "add_user"))
+        header_button=[(_("Добавить Пользователя"), "add_user")])
 
     users_search_form.process()
     form.process()

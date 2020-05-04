@@ -23,9 +23,11 @@ class ContactedPatientsTableModule(TableModule):
         table_head[_("Тип Въезда")] = ["travel_type_id"]
         table_head[_("Регион")] = []
         table_head[_("Найден")] = ["is_found"]
-        table_head[_("Госпитализирован")] = []
+        table_head[_("В Больнице")] = []
+        table_head[_("Инфицирован")] = ["is_infected"]
         table_head[_("Удалить Связь")] = []
-        table_head[_("Добавлен в течение 2-х часов")] = []
+        table_head[_("Добавлен за 2 часа")] = []
+        table_head[_("Дата Создания Пациента")] = ["created_date"]
 
         super().__init__(request, q, table_head, header_button, search_form, sort_param="contacted_patient")
 
@@ -49,6 +51,11 @@ class ContactedPatientsTableModule(TableModule):
         if is_found != "-1":
             self.q = self.q.filter(Patient.is_found == bool(int(is_found)))
             self.search_form.is_found.default = is_found
+
+        is_infected = self.request.args.get("is_infected", "-1")
+        if is_infected != "-1":
+            self.q = self.q.filter(Patient.is_infected == bool(int(is_infected)))
+            self.search_form.is_infected.default = is_infected        
 
         is_added_in_2_hours = self.request.args.get("is_added_in_2_hours", "-1")
         if is_added_in_2_hours != "-1":
@@ -80,14 +87,20 @@ class ContactedPatientsTableModule(TableModule):
         if patient.status and patient.status.value == c.in_hospital[0]:
             in_hospital = yes_no_html(True)
 
+        is_infected = yes_no_html(False, invert_colors=True)
+        if patient.is_infected:
+            is_infected = yes_no_html(True, invert_colors=True)
+
         delete_contact_html = "<a href=\"/delete_contacted?contact_id={}\" class=\"btn btn-danger\">{}</a>".format(
                                 result.id, _("Удалить Связь"))
         delete_contact_button = (delete_contact_html, "safe")
 
         is_added_in_2_hours = yes_no_html(True if result.added_in_n_hours() else False)
 
+        created_date = patient.created_date.strftime("%d-%m-%Y %H:%M")
+
         return [patient_id, telephone, travel_type, region, is_found, \
-                in_hospital, delete_contact_button, is_added_in_2_hours]
+                in_hospital, is_infected, delete_contact_button, is_added_in_2_hours, created_date]
 
 class AllPatientsTableModule(TableModule):
     def __init__(self, request, q, select_contacted = None, search_form = None, header_button = None,\
@@ -144,20 +157,35 @@ class AllPatientsTableModule(TableModule):
             self.q = self.q.filter(Patient.job_category_id == job_category_id)
             self.search_form.job_category_id.default = job_category_id
 
+        
+        is_found = self.request.args.get("is_found", "-1")
+        if is_found != "-1":
+            filt["is_found"] = is_found == "1"
+            self.search_form.is_found.default = is_found
 
-        if "not_found" in request.args:
-            filt["is_found"] = False
-            self.search_form.not_found.default='checked'
+        is_infected = self.request.args.get("is_infected", "-1")
+        if is_infected != "-1":
+            filt["is_infected"] = is_infected == "1"
+            self.search_form.is_infected.default = is_infected
 
-        if "not_in_hospital" in request.args:
-            in_hospital_id = PatientStatus.query.filter_by(value=c.in_hospital[0]).first().id
-            self.q = self.q.filter(Patient.status_id != in_hospital_id)
+        patient_status = self.request.args.get("patient_status", "-1")
+        if patient_status != "-1":
+            if patient_status == "in_hospital" or patient_status == "not_in_hospital":
+                in_hospital = patient_status == "in_hospital"
+                in_hospital_id = PatientStatus.query.filter_by(value=c.in_hospital[0]).first().id
 
-            self.search_form.not_in_hospital.default='checked'
+                if in_hospital:
+                    self.q = self.q.filter(Patient.status_id == in_hospital_id)
+                else:
+                    self.q = self.q.filter(Patient.status_id != in_hospital_id)
+            elif patient_status == "is_home_quarantine":
+                home_quarantine_id = PatientStatus.query.filter_by(value=c.is_home[0]).first().id
+                self.q = self.q.filter(Patient.status_id == home_quarantine_id)
+            elif patient_status == "is_transit":
+                is_transit_id = PatientStatus.query.filter_by(value=c.is_transit[0]).first().id
+                self.q = self.q.filter(Patient.status_id == is_transit_id)
 
-        if "is_infected" in request.args:
-            filt["is_infected"] = True
-            self.search_form.is_infected.default='checked'
+            self.search_form.patient_status.default = patient_status
 
         # if "probably_duplicate" in request.args:
         #     print(Patient.query.first().attrs[''])

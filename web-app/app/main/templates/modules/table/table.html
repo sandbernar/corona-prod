@@ -57,7 +57,13 @@
         </div>   
         <div class="col-md-auto">
           {% if table.header_button %}
-          <a href={{ table.header_button[1]}} class="btn btn-sm btn-primary btn-full-width">{{ table.header_button[0] }}</a>
+          <div class="row">
+            {% for button in table.header_button %}
+            <div class="col">
+              <a href={{ button[1]}} class="btn btn-sm btn-primary btn-full-width">{{ button[0] }}</a>
+            </div>
+            {% endfor %}
+          </div>
           {% endif %}              
         </div>      
       </div>

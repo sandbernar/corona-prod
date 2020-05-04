@@ -113,6 +113,7 @@ class ContactedPatientsSearchForm(FlaskForm):
     region_id = SelectField("Region ID")
     is_found = SelectField("Is Found", choices=[(-1, _("Неважно")), (1, _("Да")), (0, _("Нет"))], default=-1)
     is_added_in_2_hours = SelectField("Is Added in 2 Hours", choices=[(-1, _("Неважно")), (1, _("Да")), (0, _("Нет"))], default=-1)
+    is_infected = SelectField("Is Infected", choices=[(-1, _("Неважно")), (1, _("Да")), (0, _("Нет"))], default=-1)
 
 class PatientsSearchForm(FlaskForm):
     region_id = SelectField()
@@ -121,11 +122,18 @@ class PatientsSearchForm(FlaskForm):
     travel_type = SelectField()
     job_category_id = SelectField()
 
-    not_found = BooleanField(id="not_found")
-    is_infected = BooleanField(id="is_infected")
     not_in_hospital = BooleanField(id="not_in_hospital")
     is_home_quarantine = BooleanField()
     probably_duplicate = BooleanField()
+
+    is_infected = SelectField("Is Infected", choices=[(-1, _("Все")), (1, _("Да")), (0, _("Нет"))], default=-1)
+    is_found = SelectField("Is Found", choices=[(-1, _("Все")), (1, _("Да")), (0, _("Нет"))], default=-1)
+
+    patient_status = SelectField(choices=[(-1, _("Все Статусы")),
+                                          ("in_hospital", _("Госпитализирован")),
+                                          ("not_in_hospital", _("Не госпитализирован")),
+                                          ("is_home_quarantine", _("Домашний Карантин")),
+                                          ("is_transit", _("Транзит"))])
 
     #Date Range
     date_range_start = DateField()
