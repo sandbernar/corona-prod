@@ -545,13 +545,44 @@ def patient_profile():
 
             states = PatientState.query.filter_by(patient_id=patient.id).join(State).all()
 
-            regions_with_delete = [Region.query.filter_by(name="Алматы").first().id,
-                                    Region.query.filter_by(name="Нур-Султан ").first().id]
-
             return route_template('patients/profile', states=states, patient=patient, age=age, hospital_name=hospital_name,
-                                    form = form, change = change, c=c, travel=travel, regions_with_delete=regions_with_delete)
+                                    form = form, change = change, c=c, travel=travel)
     else:    
         return render_template('errors/error-500.html'), 500
+
+@blueprint.route('/patient_edit_history', methods=['GET'])
+@login_required
+def patient_edit_history():
+    if not current_user.is_authenticated:
+        return redirect(url_for('login_blueprint.login'))
+
+    if "id" in request.args:
+        patient = Patient.query.filter_by(id=request.args["id"]).first()
+      
+        if not patient:
+            return render_template('errors/error-404.html'), 404
+        else:
+            sql = "select * from logging.t_history WHERE tabname='Patient' \
+                AND new_val->>'id'='{}';".format(patient.id)
+            
+            result = db.engine.execute(sql).fetchall()
+            edit_history = []
+            insert_val = None
+
+            for r in result:
+                patient_edit = dict()
+                
+                patient_edit['date'] = r['tstamp'].strftime("%d-%m-%Y %H:%M")
+                
+                if r['operation'] == 'INSERT':
+                    insert_val = r['new_val']
+                    patient_edit['type'] = _("Создание Профиля")
+                else:
+                    patient_edit['type'] = _("Обновление Профиля")
+
+                edit_history.append(patient_edit)
+
+            return route_template('patients/patient_edit_history', patient=patient, edit_history=edit_history)
 
 def get_lat_lng(patients):
     lat_lng = []

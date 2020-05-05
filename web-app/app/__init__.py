@@ -13,6 +13,7 @@ from os import path, getenv
 import pandas as pd
 import re
 from flask_wtf.csrf import CSRFProtect
+import numpy as np
 
 from app import constants as C
 
@@ -84,7 +85,7 @@ def configure_database(app):
             region = Region(name=C.out_of_rk)
             db.session.add(region)
 
-        for n in df.TIPMO.unique():
+        for n in list(df.TIPMO.unique()) + C.hospital_additional_types:
             if not pd.isna(n):
                 if not Hospital_Type.query.filter_by(name=n).first():
                     typ = Hospital_Type(name=n)
