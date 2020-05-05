@@ -614,3 +614,5 @@ HGDBCountry = {
 	"1263":"Южный Судан",
 	"1264":"Заграница"
 }
+
+hospital_additional_types = ["другое"]
