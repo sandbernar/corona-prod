@@ -129,9 +129,15 @@
                         </div>                                                
                     </div>
                     {% endif %}
+                    <div class="col">
+                        <hr class="my-3" />
+                        <div class="text-center">
+                            <a href="/patient_edit_history?id={{ patient.id }}" class="btn btn-primary btn-full-width">{{ _("История Изменений") }}</a>
+                        </div>
+                    </div>  
                 </div>
             </div>
-               <div class="card card-profile shadow mt-3">
+            <div class="card card-profile shadow mt-3">
                 <div class="card-body pt-0 pt-md-4">
                         <h3>
                             {{ _("Возраст") }} {{ age }}<span class="font-weight-light"></span>

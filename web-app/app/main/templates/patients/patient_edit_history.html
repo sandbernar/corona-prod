@@ -1,0 +1,66 @@
+{% extends "base_site.html" %}
+
+{% block title %} Profile {% endblock title %}
+
+{% block stylesheets %}
+{{ super() }}
+{% endblock stylesheets %}
+
+{% block content %}
+
+{% include "site_template/navigation.html" %}
+
+<!-- Header -->
+{% include "site_template/top-stats.html" %}
+
+
+
+<!-- Page content -->
+<div class="container-fluid mt--7">
+    <div class="row">
+        <div class="col-xl">
+            <div class="card bg-secondary shadow mt-3">
+                <div class="card-header bg-white">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h3 class="mb-0">{{ _("История изменений пациента") }} <a href="patient_profile?id={{ patient.id }}"> {{ patient }}</a></h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <div>
+                            <table class="table align-items-center">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th scope="col">Дата</th>
+                                        <th scope="col">Тип</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="list">
+                                {% for edit in edit_history %}
+                                <tr>
+                                    <td>{{ edit.date }} </td>
+                                    <td>{{ edit.type }}</td>
+                                </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+{% include "site_template/footer.html" %}
+
+</div>    
+
+{% endblock content %}
+
+{% block javascripts %}
+{{ super()}}
+{% endblock javascripts %}
