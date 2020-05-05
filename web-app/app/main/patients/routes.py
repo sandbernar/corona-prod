@@ -545,11 +545,8 @@ def patient_profile():
 
             states = PatientState.query.filter_by(patient_id=patient.id).join(State).all()
 
-            regions_with_delete = [Region.query.filter_by(name="Алматы").first().id,
-                                    Region.query.filter_by(name="Нур-Султан ").first().id]
-
             return route_template('patients/profile', states=states, patient=patient, age=age, hospital_name=hospital_name,
-                                    form = form, change = change, c=c, travel=travel, regions_with_delete=regions_with_delete)
+                                    form = form, change = change, c=c, travel=travel)
     else:    
         return render_template('errors/error-500.html'), 500
 

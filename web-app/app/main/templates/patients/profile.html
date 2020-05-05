@@ -209,11 +209,9 @@
             <div class="col" style="text-align:center;">
                 <input class="btn btn-primary" id="submit" name="submit" type="submit" value={{ _("Сохранить") }}>
             </div>
-            {% if current_user.is_admin or current_user.region.id in regions_with_delete %}
             <div class="col" style="text-align:center;">
                 <input class="btn btn-danger" data-toggle="modal" type="button" data-target="#deletePatientModal" value={{ _("Удалить") }}>                
             </div>
-            {% endif %}
         </div>
         <!-- </div> -->
     </div>
