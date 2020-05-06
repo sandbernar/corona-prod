@@ -242,19 +242,24 @@ class AllPatientsTableModule(TableModule):
         date_range_end = request.args.get("date_range_end", None)
         
         if date_range_end:
-            date_range_end = parse_date(date_range_end) 
+            date_range_end = parse_date(date_range_end)
             self.q = self.q.filter(Patient.created_date <= date_range_end)
             self.search_form.date_range_end.default = date_range_end
 
         self.q = self.q.filter_by(**filt)
 
-        if "is_home_quarantine" in request.args:
-            self.q = self.q.join(PatientStatus, Patient.status_id == PatientStatus.id)
-            self.q = self.q.filter(PatientStatus.value == c.is_home[0])
-
-            self.q = self.q.group_by(Patient.id)
-
-            self.search_form.is_home_quarantine.default = 'checked'
+        is_iin_fail = request.args.get("is_iin_fail", None)
+        if is_iin_fail:
+            if is_iin_fail == "is_iin_empty":
+                self.q = self.q.filter_by(iin = '')
+                self.search_form.is_iin_fail.default = "is_iin_empty"
+            elif is_iin_fail == "is_iin_invalid":
+                self.q = self.q.filter(Patient.iin != '')
+                self.q = self.q.filter(func.length(Patient.iin) != 12)
+                self.search_form.is_iin_fail.default = "is_iin_invalid"
+            elif is_iin_fail == "is_iin_valid":
+                self.q = self.q.filter(func.length(Patient.iin) == 12)
+                self.search_form.is_iin_fail.default = "is_iin_valid"
 
         address = self.request.args.get("address", None)
         if address:

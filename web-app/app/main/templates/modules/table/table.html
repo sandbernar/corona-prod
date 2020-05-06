@@ -58,7 +58,7 @@
         <div class="col-md-auto">
           {% if table.header_button %}
           <div class="row">
-          {% if table.download_xls %}
+          {% if table.is_downloadable_xls %}
             <div class="col">
               <form method="POST">
                 <button name="download_xls" value='{{ table.__class__.__name__ }}' class="btn btn-sm btn-primary btn-full-width">{{ _("Скачать Выгрузку в Excel") }}</button>
