@@ -638,18 +638,19 @@ def patient_edit_history():
 
                     edit['date'] = r['tstamp']
 
-                    update_data = set(pred_val.items()) -set(r['new_val'].items())
-                    pred_val = r['new_val']
+                    if pred_val and r['new_val']:
+                        update_data = set(pred_val.items()) - set(r['new_val'].items())
+                        pred_val = r['new_val']
 
-                    if update_data:
-                        for data in update_data:
-                            data_entry = edit.copy()
-                            data_entry['update_data'] = get_field_display_name(data[0], data[1])
-                            
-                            if data_entry['update_data'][0] not in ignore_keys_dict:
-                                all_history.append(data_entry)
-                    elif r['operation'] == 'INSERT':
-                        all_history.append(edit)
+                        if update_data:
+                            for data in update_data:
+                                data_entry = edit.copy()
+                                data_entry['update_data'] = get_field_display_name(data[0], data[1])
+                                
+                                if data_entry['update_data'][0] not in ignore_keys_dict:
+                                    all_history.append(data_entry)
+                        elif r['operation'] == 'INSERT':
+                            all_history.append(edit)
 
                 return all_history
 
