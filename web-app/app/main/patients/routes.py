@@ -567,20 +567,98 @@ def patient_edit_history():
             
             result = db.engine.execute(sql).fetchall()
             edit_history = []
-            insert_val = None
 
-            for r in result:
-                patient_edit = dict()
-                
-                patient_edit['date'] = r['tstamp'].strftime("%d-%m-%Y %H:%M")
-                
-                if r['operation'] == 'INSERT':
-                    insert_val = r['new_val']
-                    patient_edit['type'] = _("Создание Профиля")
-                else:
-                    patient_edit['type'] = _("Обновление Профиля")
+            def get_field_display_name(field_name, field_data):
+                display_name_dict = {"lng": _("Долгота"),
+                                      "lat": _("Широта"),
+                                      "region_id": _("Регион"),
+                                      "gender": _("Пол"),
+                                      "travel_type_id": _("Тип Въезда"),
+                                      "job_address_id": _("Адрес Работы"),
+                                      "home_address_id": _("Домашний Адрес"),
+                                      "first_name": _("Имя"),
+                                      "second_name": _("Фамилия"),
+                                      "patronymic_name": _("Отчество"),
+                                      "is_found": _("Найден"),
+                                      "is_infected": _("Инфицирован"),
+                                      "dob": _("Дата Рождения"),
+                                      "iin": _("ИИН"),
+                                      "pass_num": _("Номер Паспорта"),
+                                      "telephone": _("Телефон"),
+                                      "email": _("Электронная Почта"),
+                                      "country_id": _("Страна")}
 
-                edit_history.append(patient_edit)
+                display_name = display_name_dict.get(field_name, None)
+                display_name = field_name if display_name is None else display_name
+
+                display_data = field_data
+                if field_name == "region_id":
+                    display_data = Region.query.filter_by(id = field_data).first().name
+                elif field_name == "gender":
+                    if display_data == True:
+                        display_data = _("Мужчина")
+                    elif display_data == False:
+                        display_data = _("Женщина")
+                    elif display_data == None:
+                        display_data = _("Неизвестно")
+                elif field_name == "home_address_id" or field_name == "job_address_id":
+                    display_data = "{} - id {}".format(_("Привязка адреса к профилю"), field_data)
+                elif field_name == "country_id":
+                    display_data = str(Country.query.filter_by(id=field_data).first())
+                elif field_name == "travel_type_id":
+                    display_data = str(TravelType.query.filter_by(id=field_data).first())
+
+                if type(display_data) == bool:
+                    if display_data == True:
+                        display_data = _("Да")
+                    elif display_data == False:
+                        display_data = _("Нет")
+                    elif display_data == None:
+                        display_data = _("Неизвестно")
+
+                return (display_name, display_data)
+
+            ignore_keys_dict = ["created_date"]
+
+            def get_edit_history(tabname, address_id, type_string):
+                sql = "select * from logging.t_history WHERE tabname='{}' \
+                    AND new_val->>'id'='{}';".format(tabname, address_id)
+
+                all_history = []
+                pred_val = None
+
+                result = db.engine.execute(sql).fetchall()
+                for r in result:
+                    edit = dict()
+                    if r['operation'] == 'INSERT':
+                        pred_val = r['new_val']
+                        edit['type'] = "{} {}".format(_("Создание"), type_string)
+                    else:
+                        edit['type'] = "{} {}".format(_("Обновление"), type_string)
+
+                    edit['date'] = r['tstamp']
+
+                    update_data = set(pred_val.items()) -set(r['new_val'].items())
+                    pred_val = r['new_val']
+
+                    if update_data:
+                        for data in update_data:
+                            data_entry = edit.copy()
+                            data_entry['update_data'] = get_field_display_name(data[0], data[1])
+                            
+                            if data_entry['update_data'][0] not in ignore_keys_dict:
+                                all_history.append(data_entry)
+                    elif r['operation'] == 'INSERT':
+                        all_history.append(edit)
+
+                return all_history
+
+            edit_history += get_edit_history("Patient", patient.id, "Профиля")
+            edit_history += get_edit_history("Address", patient.home_address_id, "Домашнего Адреса")
+            edit_history += get_edit_history("Address", patient.job_address_id, "Рабочего Адреса")
+
+
+            edit_history = sorted(edit_history, key=lambda k: k['date'])
 
             return route_template('patients/patient_edit_history', patient=patient, edit_history=edit_history)
 
