@@ -152,105 +152,129 @@ CREATE OR REPLACE FUNCTION set_patient_state() RETURNS trigger AS
     found_state_count = (SELECT count(*) FROM "PatientState" WHERE patient_id=NEW.patient_id AND state_id=(SELECT id FROM "State" WHERE value='found'));
     
     infected_state_count = (SELECT count(*) FROM "PatientState" WHERE patient_id=NEW.patient_id AND state_id=(SELECT id FROM "State" WHERE value='infected'));
-    last_infected_state_id = (SELECT id FROM "PatientState" WHERE patient_id=NEW.patient_id AND state_id=(SELECT id FROM "State" WHERE value='infected') ORDER BY detection_date DESC);
-    last_infected_state_dd = (SELECT detection_date FROM "PatientState" WHERE patient_id=NEW.patient_id AND state_id=(SELECT id FROM "State" WHERE value='infected') ORDER BY detection_date DESC);
+    last_infected_state_id = (SELECT id FROM "PatientState" WHERE patient_id=NEW.patient_id AND state_id=(SELECT id FROM "State" WHERE value='infected') ORDER BY detection_date DESC LIMIT 1);
+    last_infected_state_dd = (SELECT detection_date FROM "PatientState" WHERE patient_id=NEW.patient_id AND state_id=(SELECT id FROM "State" WHERE value='infected') ORDER BY detection_date DESC LIMIT 1);
     
     healty_state_count = (SELECT count(*) FROM "PatientState" WHERE patient_id=NEW.patient_id AND state_id=(SELECT id FROM "State" WHERE value='recovery'));
-    last_healty_state_id = (SELECT id FROM "PatientState" WHERE patient_id=NEW.patient_id AND state_id=(SELECT id FROM "State" WHERE value='recovery') ORDER BY detection_date DESC);
-    last_healty_state_dd = (SELECT detection_date FROM "PatientState" WHERE patient_id=NEW.patient_id AND state_id=(SELECT id FROM "State" WHERE value='recovery') ORDER BY detection_date DESC);
+    last_healty_state_id = (SELECT id FROM "PatientState" WHERE patient_id=NEW.patient_id AND state_id=(SELECT id FROM "State" WHERE value='recovery') ORDER BY detection_date DESC LIMIT 1);
+    last_healty_state_dd = (SELECT detection_date FROM "PatientState" WHERE patient_id=NEW.patient_id AND state_id=(SELECT id FROM "State" WHERE value='recovery') ORDER BY detection_date DESC LIMIT 1);
     
     hosp_state_count = (SELECT count(*) FROM "PatientState" WHERE patient_id=NEW.patient_id AND state_id=(SELECT id FROM "State" WHERE value='hospitalized'));
-    last_hosp_state_id = (SELECT id FROM "PatientState" WHERE patient_id=NEW.patient_id AND state_id=(SELECT id FROM "State" WHERE value='hospitalized') ORDER BY detection_date DESC);
-    last_hosp_state_dd = (SELECT detection_date FROM "PatientState" WHERE patient_id=NEW.patient_id AND state_id=(SELECT id FROM "State" WHERE value='hospitalized') ORDER BY detection_date DESC);
+    last_hosp_state_id = (SELECT id FROM "PatientState" WHERE patient_id=NEW.patient_id AND state_id=(SELECT id FROM "State" WHERE value='hospitalized') ORDER BY detection_date DESC LIMIT 1);
+    last_hosp_state_dd = (SELECT detection_date FROM "PatientState" WHERE patient_id=NEW.patient_id AND state_id=(SELECT id FROM "State" WHERE value='hospitalized') ORDER BY detection_date DESC LIMIT 1);
     
     home_state_count = (SELECT count(*) FROM "PatientState" WHERE patient_id=NEW.patient_id AND state_id=(SELECT id FROM "State" WHERE value='is_home'));
-    last_home_state_id = (SELECT id FROM "PatientState" WHERE patient_id=NEW.patient_id AND state_id=(SELECT id FROM "State" WHERE value='is_home') ORDER BY detection_date DESC);
-    last_home_state_dd = (SELECT detection_date FROM "PatientState" WHERE patient_id=NEW.patient_id AND state_id=(SELECT id FROM "State" WHERE value='is_home') ORDER BY detection_date DESC);
+    last_home_state_id = (SELECT id FROM "PatientState" WHERE patient_id=NEW.patient_id AND state_id=(SELECT id FROM "State" WHERE value='is_home') ORDER BY detection_date DESC LIMIT 1);
+    last_home_state_dd = (SELECT detection_date FROM "PatientState" WHERE patient_id=NEW.patient_id AND state_id=(SELECT id FROM "State" WHERE value='is_home') ORDER BY detection_date DESC LIMIT 1);
 
     -- dead
-    IF state_val='dead' AND dead_state_count > 0 THEN
+    IF dead_state_count > 0 THEN
         UPDATE "Patient" SET is_dead=true WHERE id=NEW.patient_id;
         UPDATE "Patient" SET in_hospital=false WHERE id=NEW.patient_id;
         UPDATE "Patient" SET is_home=false WHERE id=NEW.patient_id;
         UPDATE "Patient" SET is_infected=false WHERE id=NEW.patient_id;
         UPDATE "Patient" SET is_healthy=false WHERE id=NEW.patient_id;
+        RETURN NEW;
+    ELSE
+        UPDATE "Patient" SET is_dead=false WHERE id=NEW.patient_id;
     END IF;
 
     -- found
-    IF state_val='found' AND found_state_count > 0 THEN
+    IF found_state_count > 0 THEN
         UPDATE "Patient" SET is_found=true WHERE id=NEW.patient_id;
+    ELSE
+        UPDATE "Patient" SET is_found=false WHERE id=NEW.patient_id;
     END IF;
 
     -- infected
-    IF state_val='infected' AND infected_state_count > 0 THEN
+    IF infected_state_count > 0 THEN
         IF dead_state_count > 0 THEN
             -- pass infected
         ELSIF healty_state_count > 0 AND last_healty_state_dd > last_infected_state_dd THEN
             -- pass infected
-        ELSIF healty_state_count > 0 AND last_healty_state_dd == last_infected_state_dd AND last_healty_state_id > last_infected_state_id THEN
+        ELSIF healty_state_count > 0 AND last_healty_state_dd = last_infected_state_dd AND last_healty_state_id > last_infected_state_id THEN
             -- pass infected
         ELSE
             UPDATE "Patient" SET is_infected=true WHERE id=NEW.patient_id;
             UPDATE "Patient" SET is_healthy=false WHERE id=NEW.patient_id;
         END IF;
+    ELSE
+        UPDATE "Patient" SET is_infected=false WHERE id=NEW.patient_id;
     END IF;
 
     -- is_home
-    IF state_val='is_home' AND home_state_count > 0 THEN
+    IF home_state_count > 0 THEN
         IF dead_state_count > 0 THEN
             -- pass is_home
         ELSIF hosp_state_count > 0 AND last_hosp_state_dd > last_home_state_dd THEN
             -- pass is_home
-        ELSIF hosp_state_count > 0 AND last_hosp_state_dd == last_home_state_dd AND last_hosp_state_id > last_home_state_id THEN
+        ELSIF hosp_state_count > 0 AND last_hosp_state_dd = last_home_state_dd AND last_hosp_state_id > last_home_state_id THEN
             -- pass is_home
         ELSIF healty_state_count > 0 AND last_healty_state_dd > last_home_state_dd THEN
             -- pass is_home
-        ELSIF healty_state_count > 0 AND last_healty_state_dd == last_home_state_dd AND last_healty_state_id > last_home_state_id THEN
+        ELSIF healty_state_count > 0 AND last_healty_state_dd = last_home_state_dd AND last_healty_state_id > last_home_state_id THEN
             -- pass is_home
         ELSE
             UPDATE "Patient" SET is_home=true WHERE id=NEW.patient_id;
             UPDATE "Patient" SET in_hospital=false WHERE id=NEW.patient_id;
             UPDATE "Patient" SET is_healthy=false WHERE id=NEW.patient_id;
         END IF;
+    ELSE
+        UPDATE "Patient" SET is_home=false WHERE id=NEW.patient_id;
     END IF;
 
     -- in_hospital
-    IF state_val='hospitalized' AND home_state_count > 0 THEN
+    IF hosp_state_count > 0 THEN
         IF dead_state_count > 0 THEN
             -- pass in_hospital
         ELSIF home_state_count > 0 AND last_home_state_dd > last_hosp_state_dd THEN
             -- pass in_hospital
-        ELSIF home_state_count > 0 AND last_home_state_dd == last_hosp_state_dd AND last_home_state_id > last_hosp_state_id THEN
+        ELSIF home_state_count > 0 AND last_home_state_dd = last_hosp_state_dd AND last_home_state_id > last_hosp_state_id THEN
             -- pass in_hospital
         ELSIF healty_state_count > 0 AND last_healty_state_dd > last_hosp_state_dd THEN
             -- pass in_hospital
-        ELSIF healty_state_count > 0 AND last_healty_state_dd == last_hosp_state_dd AND last_healty_state_id > last_hosp_state_id THEN
+        ELSIF healty_state_count > 0 AND last_healty_state_dd = last_hosp_state_dd AND last_healty_state_id > last_hosp_state_id THEN
             -- pass in_hospital
         ELSE
             UPDATE "Patient" SET in_hospital=true WHERE id=NEW.patient_id;
-            UPDATE "Patient" SET in_hospital=false WHERE id=NEW.patient_id;
+            UPDATE "Patient" SET is_home=false WHERE id=NEW.patient_id;
             UPDATE "Patient" SET is_healthy=false WHERE id=NEW.patient_id;
         END IF;
+    ELSE
+        UPDATE "Patient" SET in_hospital=false WHERE id=NEW.patient_id;
     END IF;
 
     -- is_healthy
-    IF state_val='recovery' AND healty_state_count > 0 THEN
-        patient_in_hospital = (SELECT in_hospital FROM "Patient" WHERE id=NEW.patient_id);
-        patient_is_home = (SELECT is_home FROM "Patient" WHERE id=NEW.patient_id);
-        IF patient_in_hospital = true OR patient_is_home = true THEN
+    IF healty_state_count > 0 THEN
+        IF dead_state_count > 0 THEN
+            -- pass is_healthy
+        ELSIF home_state_count > 0 AND last_home_state_dd > last_healty_state_dd THEN
+            -- pass is_healthy
+        ELSIF home_state_count > 0 AND last_home_state_dd = last_healty_state_dd AND last_home_state_id > last_healty_state_id THEN
+            -- pass is_healthy
+        ELSIF hosp_state_count > 0 AND last_hosp_state_dd > last_healty_state_dd THEN
+            -- pass is_healthy
+        ELSIF hosp_state_count > 0 AND last_hosp_state_dd = last_healty_state_dd AND last_hosp_state_id > last_healty_state_id THEN
+            -- pass is_healthy
+        ELSIF infected_state_count > 0 AND last_infected_state_dd > last_healty_state_dd THEN
+            -- pass is_healthy
+        ELSIF infected_state_count > 0 AND last_infected_state_dd = last_healty_state_dd AND last_infected_state_id > last_healty_state_id THEN
             -- pass is_healthy
         ELSE
             UPDATE "Patient" SET is_healthy=true WHERE id=NEW.patient_id;
             UPDATE "Patient" SET in_hospital=false WHERE id=NEW.patient_id;
             UPDATE "Patient" SET is_home=false WHERE id=NEW.patient_id;
+            UPDATE "Patient" SET is_infected=false WHERE id=NEW.patient_id;
         END IF;
+    ELSE
+        UPDATE "Patient" SET is_healthy=false WHERE id=NEW.patient_id;
     END IF;
 
     RETURN NEW;
     END;
     $$ LANGUAGE plpgsql;
 """
-addSetPatientStateTriggerQuery = 'CREATE TRIGGER set_patient_state_trigger AFTER INSERT OR UPDATE ON "PatientState" FOR EACH ROW EXECUTE PROCEDURE set_patient_state();'
+addSetPatientStateTriggerQuery = 'CREATE TRIGGER set_patient_state_trigger AFTER INSERT OR UPDATE OR DELETE ON "PatientState" FOR EACH ROW EXECUTE PROCEDURE set_patient_state();'
 # logging.history trigger
 try:
     psqlCursor.execute(createSetPatientStateTriggerQuery)
