@@ -56,7 +56,7 @@ def getDetectionDate(patient_id, status_name):
         result = psqlQuery("""
             SELECT * FROM logging.t_history 
             WHERE tabname='Patient' AND new_val->>'id'='%d' AND 
-                  new_val->>'is_found'='true' AND (old_val IS NULL OR old_val->>'is_found'='false')
+                  new_val->>'is_found'='true' AND (old_val IS NULL OR old_val->>'is_found'='false') ORDER BY tstamp
             ;""" % (
             patient_id
         ))
@@ -67,7 +67,7 @@ def getDetectionDate(patient_id, status_name):
         result = psqlQuery("""
             SELECT * FROM logging.t_history 
             WHERE tabname='Patient' AND new_val->>'id'='%d' AND 
-                  new_val->>'is_infected'='true' AND (old_val IS NULL OR old_val->>'is_infected'='false')
+                  new_val->>'is_infected'='true' AND (old_val IS NULL OR old_val->>'is_infected'='false') ORDER BY tstamp
             ;""" % (
             patient_id
         ))
@@ -77,7 +77,7 @@ def getDetectionDate(patient_id, status_name):
     result = psqlQuery("""
         SELECT * FROM logging.t_history 
         WHERE tabname='Patient' AND new_val->>'id'='%d' AND 
-                new_val->>'status_id'='%d' AND (old_val IS NULL OR old_val->>'status_id'!='%d')
+                new_val->>'status_id'='%d' AND (old_val IS NULL OR old_val->>'status_id'!='%d') ORDER BY tstamp
         ;""" % (
         patient_id,
         status[status_name],
