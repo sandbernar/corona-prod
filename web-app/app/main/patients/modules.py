@@ -34,7 +34,68 @@ class ContactedPatientsTableModule(TableModule):
         table_head[_("Добавлен за 2 часа")] = []
         table_head[_("Дата Создания Пациента")] = ["created_date"]
 
-        super().__init__(request, q, table_head, header_button, search_form, sort_param="contacted_patient")
+        super().__init__(request, q, table_head, header_button, search_form, sort_param="contacted_patient",
+                            is_downloadable_xls=True)
+
+    def download_xls(self):
+        data = []
+        for row in self.q.all():
+            patient = row.contacted_patient
+
+            is_infected = yes_no(patient.is_infected)
+            is_found = yes_no(patient.is_found)
+
+            data.append([patient.id, str(patient), patient.iin, str(patient.home_address),
+                        patient.telephone, is_found, is_infected ])
+
+        data = pd.DataFrame(data, columns=[_("ID"), _("ФИО"), _("ИИН"), _("Домашний Адрес"), _("Телефон"),
+                                           _("Найден"), _("Инфицирован") ])
+
+        output = io.BytesIO()
+        writer = pd.ExcelWriter(output, engine='xlsxwriter')
+        data.to_excel(writer, index=False)
+
+        def get_col_widths(df):
+            widths = []
+            for col in df.columns:
+                col_data_width = max(df[col].map(str).map(len).max(), len(col))
+                col_data_width *= 1.2
+
+                widths.append(col_data_width)
+            
+            return widths
+
+        for i, width in enumerate(get_col_widths(data)):
+            writer.sheets['Sheet1'].set_column(i, i, width)
+
+        writer.save()
+        xlsx_data = output.getvalue()
+
+        region_id = int(request.args.get("region_id", -1))
+        region_name = c.all_regions
+        
+        region_query = Region.query.filter_by(id = region_id)
+        if region_query.count():
+            region_name = region_query.first().name
+
+        filename_xls = "{}_{}".format(_("пациенты"), region_name)
+
+        date_range_start = request.args.get("date_range_start", None)
+        if date_range_start:
+            filename_xls = "{}_{}".format(filename_xls, date_range_start)
+
+        date_range_end = request.args.get("date_range_end", None)
+        if date_range_end:
+            filename_xls = "{}_{}".format(filename_xls, date_range_end)
+
+        filename_xls = "{}.xls".format(filename_xls)
+        
+        response = Response(xlsx_data, mimetype="application/vnd.ms-excel")
+        response.headers["Content-Disposition"] = \
+            "attachment;" \
+            "filename*=UTF-8''{}".format(urllib.parse.quote(filename_xls.encode('utf-8')))
+
+        return response
 
     def search_table(self):
         full_name_value = self.request.args.get("full_name", None)

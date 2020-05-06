@@ -847,6 +847,9 @@ def contacted_persons():
                                         header_button=[(_("Добавить Контактное Лицо"), "add_person?select_contacted_id={}".format(patient.id)),
                                             (_("Выбрать Контактное Лицо"), "patients?select_contacted_id={}".format(patient.id))]
                                         )
+                if "download_xls" in request.args:
+                    return contacted_patients_table.download_xls()
+
             except ValueError:
                 return render_template('errors/error-500.html'), 500
 
