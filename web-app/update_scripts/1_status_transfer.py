@@ -61,12 +61,12 @@ def psqlQuery(query_message):
     Transfer is_found, is_infected, status_id (PatientStatus) to attrs
 """
 
-patients = psqlQuery('SELECT * FROM "Patient"')
+patients = psqlQuery('SELECT * FROM "Patient" WHERE is_found = true OR is_infected = true OR status_id IS NOT NULL OR status_id != 1;')
 for patient in patients:
     attrs = {}
-    if patient['is_found']:
+    if patient['is_found'] == True:
         attrs['is_found'] = True
-    if patient['is_infected']:
+    if patient['is_infected'] == True:
         attrs['is_infected'] = True
     status_id = patient['status_id']
     status = psqlQuery('SELECT * FROM "PatientStatus" WHERE id=%d' % status_id)
