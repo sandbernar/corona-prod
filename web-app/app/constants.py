@@ -40,6 +40,7 @@ state_healthy = "Выздоровление"
 states = [state_dead, state_infec, state_hosp, state_healthy]
 
 various_travel_types = [by_auto_type, by_foot_type, by_sea_type]
+various_travel_types_values = [val[0] for val in various_travel_types]
 
 board_team = "экипаж"
 

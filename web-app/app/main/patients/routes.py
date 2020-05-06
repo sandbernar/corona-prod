@@ -741,6 +741,10 @@ def patients():
     try:
         all_patients_table = AllPatientsTableModule(request, Patient.query, select_contacted,
                             search_form=form, header_button=[(_("Добавить Пациента"), "/add_person")])
+
+        if "download_xls" in request.args:
+            return all_patients_table.download_xls()
+
     except ValueError:
         return render_template('errors/error-500.html'), 500        
 

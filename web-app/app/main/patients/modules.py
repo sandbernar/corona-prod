@@ -1,19 +1,24 @@
-from flask import request
+from flask import request, Response
 import math
 from app.main.modules import TableModule
 
 from app.main.patients.models import Patient, ContactedPersons, PatientStatus
-from app.main.models import TravelType, VariousTravel, BlockpostTravel, Address, Country
+from app.main.models import TravelType, VariousTravel, BlockpostTravel, Address, Country, Region
 from app.main.flights_trains.models import FlightTravel, TrainTravel
+from app.login.models import User
 
 from collections import OrderedDict
-from app.main.util import parse_date, yes_no_html
+from app.main.util import parse_date, yes_no_html, yes_no
 
 from sqlalchemy import func, cast, JSON, exc
 import sqlalchemy
 
 from flask_babelex import _
 from app import constants as c
+
+import pandas as pd
+import io
+import urllib
 
 class ContactedPatientsTableModule(TableModule):
     def __init__(self, request, q, search_form, header_button = None, page = 1, per_page = 5):
@@ -127,7 +132,7 @@ class AllPatientsTableModule(TableModule):
             contacted_infected = ContactedPersons.query.filter_by(contacted_patient_id=select_contacted)
             self.contacted_infected_ids = [c.infected_patient_id for c in contacted_infected]
 
-        super().__init__(request, q, table_head, header_button, search_form)
+        super().__init__(request, q, table_head, header_button, search_form, is_downloadable_xls=True)
 
     def search_table(self):
         full_name_value = self.request.args.get("full_name", None)
@@ -380,3 +385,117 @@ class AllPatientsTableModule(TableModule):
                 row_to_print.append(select_contacted_button)
 
         return row_to_print
+
+
+    def download_xls(self):
+        data = []
+        for row in self.q.all():
+            gender = _("Неизвестно")
+            if row.gender != None:
+                gender = _("Женский") if row.gender == True else _("Мужской")
+
+            contacted_id = [c.infected_patient_id for c in ContactedPersons.query.filter_by(contacted_patient_id=row.id).all()]
+            contacted_bool = _("Да") if len(contacted_id) else _("Нет")
+            user_created = User.query.filter_by(id=row.created_by_id).first()
+
+            travel_date = ""
+            travel_info = ""
+
+            if row.travel_type:
+                if row.travel_type.value == c.flight_type[0]:
+                    flight_travel = FlightTravel.query.filter_by(patient_id=row.id)
+                    if flight_travel.count():
+                        flight_travel = flight_travel.first()
+                        travel_date = flight_travel.flight_code.date
+                        travel_info = flight_travel.flight_code.code
+                elif row.travel_type.value == c.train_type[0]:
+                    train_travel = TrainTravel.query.filter_by(patient_id=row.id)
+                    if train_travel.count():
+                        train_travel = train_travel.first()
+                        train = train_travel.train
+
+                        travel_date = train.arrival_date
+                        travel_info = "{}, {} - {},{}".format(train.from_country, train.from_city,
+                                                              train.to_country, train.to_city)
+                elif row.travel_type.value in c.various_travel_types_values:
+                    various_travel = VariousTravel.query.filter_by(patient_id=row.id)
+                    if various_travel.count():
+                        various_travel = various_travel.first()
+
+                        travel_date = various_travel.date
+                        travel_info = various_travel.border_control
+                elif row.travel_type.value == c.blockpost_type[0]:
+                    blockpost_travel = BlockPost.query.filter_by(patient_id=row.id)
+                    if blockpost_travel.count():
+                        blockpost_travel = blockpost_travel.first()
+
+                        travel_date = blockpost_travel.date
+                        travel_info = str(blockpost_travel.region)
+
+                is_infected = yes_no(row.is_infected)
+                is_found = yes_no(row.is_found)
+
+            data.append([row.id, str(row), row.iin, gender, row.dob, str(row.region), 
+                        row.pass_num, str(row.citizenship), str(row.country_of_residence),
+                        str(row.travel_type), travel_date, travel_info,
+                        str(row.home_address), row.telephone, row.email, str(row.status),
+                        is_found, is_infected, row.hospital,
+                        row.job, row.job_position, row.job_category, row.job_address,
+                        contacted_bool, contacted_id,
+                        row.created_date.strftime("%d-%m-%Y %H:%M"), user_created.organization, user_created.username])
+
+        data = pd.DataFrame(data, columns=[_("ID"), _("ФИО"), _("ИИН"), _("Пол"), _("Дата Рождения"), _("Регион"),
+                                           _("Номер Паспорта"), _("Гражданство"), _("Страна Проживания"),
+                                           _("Тип Въезда"), _("Дата Въезда"), _("Инфо о Въезде"),
+                                           _("Домашний Адрес"), _("Телефон"), _("E-Mail"), _("Статус"),
+                                           _("Найден"), _("Инфицирован"), _("Госпиталь"),
+                                           _("Место Работы/Учебы"), _("Должность"), _("Категория Работы"),
+                                           _("Адрес Работы"),
+                                           _("Контактный?"), _("Нулевой Пациент ID (Контакт)"),
+                                           _("Дата Создания"), _("Организация"), _("Логин Специалиста")])
+
+        output = io.BytesIO()
+        writer = pd.ExcelWriter(output, engine='xlsxwriter')
+        data.to_excel(writer, index=False)
+
+        def get_col_widths(df):
+            widths = []
+            for col in df.columns:
+                col_data_width = max(df[col].map(str).map(len).max(), len(col))
+                col_data_width *= 1.2
+
+                widths.append(col_data_width)
+            
+            return widths
+
+        for i, width in enumerate(get_col_widths(data)):
+            writer.sheets['Sheet1'].set_column(i, i, width)
+
+        writer.save()
+        xlsx_data = output.getvalue()
+
+        region_id = int(request.args.get("region_id", -1))
+        region_name = c.all_regions
+        
+        region_query = Region.query.filter_by(id = region_id)
+        if region_query.count():
+            region_name = region_query.first().name
+
+        filename_xls = "{}_{}".format(_("пациенты"), region_name)
+
+        date_range_start = request.args.get("date_range_start", None)
+        if date_range_start:
+            filename_xls = "{}_{}".format(filename_xls, date_range_start)
+
+        date_range_end = request.args.get("date_range_end", None)
+        if date_range_end:
+            filename_xls = "{}_{}".format(filename_xls, date_range_end)
+
+        filename_xls = "{}.xls".format(filename_xls)
+        
+        response = Response(xlsx_data, mimetype="application/vnd.ms-excel")
+        response.headers["Content-Disposition"] = \
+            "attachment;" \
+            "filename*=UTF-8''{}".format(urllib.parse.quote(filename_xls.encode('utf-8')))
+
+        return response
