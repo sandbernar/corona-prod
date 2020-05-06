@@ -359,11 +359,11 @@ class Patient(db.Model):
     #     return cls.found_state_count > 0
     
     # TODO
-    @is_found.setter
-    def is_found(self, value):
-        if value == True:
-            state = State.query.filter_by(value=c.state_found[0]).first()
-            self.addState(state)
+    # @is_found.setter
+    # def is_found(self, value):
+    #     if value == True:
+    #         state = State.query.filter_by(value=c.state_found[0]).first()
+    #         self.addState(state)
 
     # is_infected = Column(Boolean, unique=False, default=False)
     # @hybrid_property
@@ -389,11 +389,11 @@ class Patient(db.Model):
     #     ], else_=cls.infected_state_count > 0)
     
     # TODO
-    @is_infected.setter
-    def is_infected(self, value):
-        if value == True:
-            state = State.query.filter_by(value=c.state_infec[0]).first()
-            self.addState(state)
+    # @is_infected.setter
+    # def is_infected(self, value):
+    #     if value == True:
+    #         state = State.query.filter_by(value=c.state_infec[0]).first()
+    #         self.addState(state)
     
     # @hybrid_property
     # def is_home(self):

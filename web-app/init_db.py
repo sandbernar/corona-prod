@@ -169,16 +169,16 @@ CREATE OR REPLACE FUNCTION set_patient_state() RETURNS trigger AS
 
     -- dead
     IF state_val='dead' AND dead_state_count > 0 THEN
-        UPDATE "Patient" is_dead=true SET WHERE id=NEW.patient_id;
-        UPDATE "Patient" in_hospital=false SET WHERE id=NEW.patient_id;
-        UPDATE "Patient" is_home=false SET WHERE id=NEW.patient_id;
-        UPDATE "Patient" is_infected=false SET WHERE id=NEW.patient_id;
-        UPDATE "Patient" is_healthy=false SET WHERE id=NEW.patient_id;
+        UPDATE "Patient" SET is_dead=true WHERE id=NEW.patient_id;
+        UPDATE "Patient" SET in_hospital=false WHERE id=NEW.patient_id;
+        UPDATE "Patient" SET is_home=false WHERE id=NEW.patient_id;
+        UPDATE "Patient" SET is_infected=false WHERE id=NEW.patient_id;
+        UPDATE "Patient" SET is_healthy=false WHERE id=NEW.patient_id;
     END IF;
 
     -- found
     IF state_val='found' AND found_state_count > 0 THEN
-        UPDATE "Patient" is_found=true SET WHERE id=NEW.patient_id;
+        UPDATE "Patient" SET is_found=true WHERE id=NEW.patient_id;
     END IF;
 
     -- infected
@@ -190,8 +190,8 @@ CREATE OR REPLACE FUNCTION set_patient_state() RETURNS trigger AS
         ELSIF healty_state_count > 0 AND last_healty_state_dd == last_infected_state_dd AND last_healty_state_id > last_infected_state_id THEN
             -- pass infected
         ELSE
-            UPDATE "Patient" is_infected=true SET WHERE id=NEW.patient_id;
-            UPDATE "Patient" is_healthy=false SET WHERE id=NEW.patient_id;
+            UPDATE "Patient" SET is_infected=true WHERE id=NEW.patient_id;
+            UPDATE "Patient" SET is_healthy=false WHERE id=NEW.patient_id;
         END IF;
     END IF;
 
@@ -208,9 +208,9 @@ CREATE OR REPLACE FUNCTION set_patient_state() RETURNS trigger AS
         ELSIF healty_state_count > 0 AND last_healty_state_dd == last_home_state_dd AND last_healty_state_id > last_home_state_id THEN
             -- pass is_home
         ELSE
-            UPDATE "Patient" is_home=true SET WHERE id=NEW.patient_id;
-            UPDATE "Patient" in_hospital=false SET WHERE id=NEW.patient_id;
-            UPDATE "Patient" is_healthy=false SET WHERE id=NEW.patient_id;
+            UPDATE "Patient" SET is_home=true WHERE id=NEW.patient_id;
+            UPDATE "Patient" SET in_hospital=false WHERE id=NEW.patient_id;
+            UPDATE "Patient" SET is_healthy=false WHERE id=NEW.patient_id;
         END IF;
     END IF;
 
@@ -227,9 +227,9 @@ CREATE OR REPLACE FUNCTION set_patient_state() RETURNS trigger AS
         ELSIF healty_state_count > 0 AND last_healty_state_dd == last_hosp_state_dd AND last_healty_state_id > last_hosp_state_id THEN
             -- pass in_hospital
         ELSE
-            UPDATE "Patient" in_hospital=true SET WHERE id=NEW.patient_id;
-            UPDATE "Patient" in_hospital=false SET WHERE id=NEW.patient_id;
-            UPDATE "Patient" is_healthy=false SET WHERE id=NEW.patient_id;
+            UPDATE "Patient" SET in_hospital=true WHERE id=NEW.patient_id;
+            UPDATE "Patient" SET in_hospital=false WHERE id=NEW.patient_id;
+            UPDATE "Patient" SET is_healthy=false WHERE id=NEW.patient_id;
         END IF;
     END IF;
 
@@ -240,9 +240,9 @@ CREATE OR REPLACE FUNCTION set_patient_state() RETURNS trigger AS
         IF patient_in_hospital = true OR patient_is_home = true THEN
             -- pass is_healthy
         ELSE
-            UPDATE "Patient" is_healthy=true SET WHERE id=NEW.patient_id;
-            UPDATE "Patient" in_hospital=false SET WHERE id=NEW.patient_id;
-            UPDATE "Patient" is_home=false SET WHERE id=NEW.patient_id;
+            UPDATE "Patient" SET is_healthy=true WHERE id=NEW.patient_id;
+            UPDATE "Patient" SET in_hospital=false WHERE id=NEW.patient_id;
+            UPDATE "Patient" SET is_home=false WHERE id=NEW.patient_id;
         END IF;
     END IF;
 
