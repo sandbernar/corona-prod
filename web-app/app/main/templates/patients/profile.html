@@ -156,9 +156,56 @@
                <div class="card card-profile shadow mt-3">
                 {% else %}
                 <div class="card card-profile shadow mt-0">
-               {% endif %}
+                 {% endif %}
+                 <div class="card-body pt-0">
+                    <div class="row mt-3">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="name-input" class="form-control-label">{{ _("Время Добавления") }}</label>
+                                <div>{{ patient.created_date.strftime("%d-%m-%Y %H:%M") }}</div>
+                            </div>
+                        </div>
+                        {% if patient.created_by %}
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="name-input" class="form-control-label">{{ _("Логин Специалиста") }}</label>
+                                <div>
+                                {% if current_user.is_admin %}
+                                    <a href="/user_profile?id={{ patient.created_by_id }}">{{ patient.created_by.username }}</a>
+                                {% else %}
+                                    {{ patient.created_by.username }}
+                                {% endif %}
+                                </div>
+                            </div>             
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% if patient.created_by %}
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="name-input" class="form-control-label">{{ _("Регион Специалиста") }}</label>
+                                <div>{{ patient.created_by.region }}</div>
+                            </div>             
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="name-input" class="form-control-label">{{ _("Организация") }}</label>
+                                <div>{{ patient.created_by.organization }}</div>
+                            </div>             
+                        </div>                                                
+                    </div>
+                    {% endif %}
+                    <div class="col">
+                        <hr class="my-3" />
+                        <div class="text-center">
+                            <a href="/patient_edit_history?id={{ patient.id }}" class="btn btn-primary btn-full-width">{{ _("История Изменений") }}</a>
+                        </div>
+                    </div>  
+                </div>
+            </div>
+            <div class="card card-profile shadow mt-3">
                 <div class="card-body pt-0 pt-md-4">
-                    <!-- <div class="text-center">             -->
                         <h3>
                             {{ _("Возраст") }} {{ age }}<span class="font-weight-light"></span>
                         </h3>
@@ -212,9 +259,9 @@
             <div class="col" style="text-align:center;">
                 <input class="btn btn-primary" id="submit" name="submit" type="submit" value={{ _("Сохранить") }}>
             </div>
-<!--             <div class="col" style="text-align:center;">
+            <div class="col" style="text-align:center;">
                 <input class="btn btn-danger" data-toggle="modal" type="button" data-target="#deletePatientModal" value={{ _("Удалить") }}>                
-            </div> -->
+            </div>
         </div>
         <!-- </div> -->
     </div>
@@ -222,9 +269,20 @@
 
 </div>
 <div class="col-xl-9 order-xl-1">
-    {% with form=form %}
-    {% include "patients/modules/travel_form.html" %}
-    {% endwith %} 
+    <div class="row">
+      <div class="col">
+        <div class="card shadow">
+          <div class="card-header bg-transparent">
+            <h3 class="mb-0">{{ _("Тип Въезда") }}</h3>
+          </div>    
+          <div class="card-body">
+            {% with form=form %}
+            {% include "patients/modules/travel_form.html" %}
+            {% endwith %}
+        </div>
+        </div>
+      </div>
+    </div>            
     <div class="card bg-secondary shadow mt-3">
         <div class="card-header bg-white">
             <div class="row align-items-center">
@@ -338,7 +396,10 @@
         {% endif %}       
     }
     // Disable travel type select for profile page
-    $("#travel_type").prop('disabled', true);
+    // $("#travel_type").prop('disabled', true);
+    $("#travel_type").on("change", function(){
+  update_travel_form();
+});
 
     {% if patient.home_address.lat %}
     ymaps.ready(init);

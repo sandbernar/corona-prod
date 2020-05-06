@@ -55,11 +55,36 @@
     </button>
   </div>
   {% endif %}
-  
+  {% if select_contacted %}
+  <div class="row">
+    <div class="col">
+      <div class="card shadow">
+        <div class="card-header bg-transparent">
+          <h3 class="mb-0">{{ _("Добавление Контактного Пациента к") }} <a href='patient_profile?id={{ select_contacted.id }}'> {{ select_contacted }}</a></h3>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
   <form id="add_patients" role="form" method="post" action="">
-    {% with form=form %}
-      {% include "patients/modules/travel_form.html" %}
-    {% endwith %}  
+    {% if select_contacted %}
+    <div class="row mt-3">
+    {% else %}
+    <div class="row">
+    {% endif %}
+      <div class="col">
+        <div class="card shadow">
+          <div class="card-header bg-transparent">
+            <h3 class="mb-0">{{ _("Выбрать Тип Въезда") }}</h3>
+          </div>
+              <div class="card-body">
+                {% with form=form %}
+                  {% include "patients/modules/travel_form.html" %}
+                {% endwith %}
+              </div>
+            </div>
+      </div>
+    </div>  
     <div class="row mt-3">
       <div class="col">
         <div class="card shadow">
@@ -234,6 +259,18 @@
 
     $.post($("#add_patients").attr('action'), $("#add_patients").serialize() + '&create', function(res){
       // Do something with the response `res`
+      if (res.error !== undefined) {
+          $.notify({
+          // options
+          icon: 'fa fa-exclamation-circle',
+          message: res.error
+        },{
+          // settings
+          type: 'danger',
+        });
+        close_modal_submit(reset=false)
+        return
+      }
       if (res.patient_id !== undefined) {
         $.notify({
           // options
@@ -244,6 +281,10 @@
           type: 'info',
         });
         close_modal_submit()
+
+        if(res.selected_patient_id !== undefined) {
+          window.location.replace("/contacted_persons?id=" + res.selected_patient_id + "&success={{ _('Контактный успешно создан и добавлен') }}")
+        }
       }
     })
     .fail(function() {
@@ -320,6 +361,10 @@ $("#open_modal_add_patient").on("click", function(e){
   var addCheckBody = document.getElementById("add_check_body")
   addCheckBody.innerHTML = `<b>{{ _("ФИО") }}:</b> ${$("#firstnameInput").val()} ${$("#lastnameInput").val()} ${$("#midnameInput").val()} <br>`
   addCheckBody.innerHTML += `<b>{{ _("Тип Въезда в Страну") }}:</b> ` + $("#travel_type option:selected").text() + `<br>`
+  addCheckBody.innerHTML += `<b>{{ _("Регион") }}:</b> ` + $("#region_id option:selected").text() + `<br>`
+  {% if select_contacted %}
+  addCheckBody.innerHTML += `<b>{{ _("Контактный к") }}:</b> ` + `<a href='patient_profile?id={{ select_contacted.id }}'> {{ select_contacted }}</a>` + `<br>`
+  {% endif %}
 }
 });
 

@@ -130,7 +130,7 @@ class TestCase(unittest.TestCase):
         assert "Рейс успешно добавлен" in str(rv.data.decode('utf-8'))
 
     def test_new_patient(self):
-        self.login("adm", "paswd")
+        self.login("adm", "pass")
         for i in range(1000):
             rv = self.add_patient()
             assert "patient_id" in str(rv.data)
@@ -363,7 +363,7 @@ class TestCase(unittest.TestCase):
             "telephone": "",
             "email": "",
             "is_found": 0,
-            "is_infected": 0,
+            "is_infected": 1,
             "is_contacted": 0,
             "create": ""
         }

@@ -6,7 +6,7 @@ import pandas as pd
 
 from app import create_app, db
 from app import constants as C
-from app.main.models import (Region, Country, Infected_Country_Category, 
+from app.main.models import (Region, Country, Infected_Country_Category, JobCategory, 
                             TravelType, BorderControl, VariousTravel, Address, VisitedCountry)
 from app.main.patients.models import ContactedPersons, Patient, State, PatientState
 from app.main.hospitals.models import Hospital, Hospital_Type
@@ -105,6 +105,7 @@ try:
 except Exception as e:
     print(e)
 
+
 # POSTGIS EXTENSION
 try:
     psqlCursor.execute(createExtensionQuery)
@@ -119,19 +120,143 @@ try:
         except Exception as e:
             print(e)
 
-        addresses = psqlQuery('SELECT * FROM "Address";')
-        for address in addresses:
-            if address["geom"] is None and address["lng"] is not None and address["lat"] is not None:
-                psqlCursor.execute('UPDATE "Address" SET geom = ST_SetSRID(ST_MakePoint(%d, %d), 4326) WHERE id=%d;' % (
-                    address["lng"],
-                    address["lat"],
-                    address["id"]
-                ))
+        psqlQuery('UPDATE "Address" SET geom = ST_SetSRID(ST_MakePoint(lng, lat), 4326);')
     except Exception as e:
         print(e)
 except Exception as e:
     print(e)
 
+createSetPatientStateTriggerQuery = """
+CREATE OR REPLACE FUNCTION set_patient_state() RETURNS trigger AS
+    $$
+    DECLARE dead_state_count INTEGER;
+    DECLARE found_state_count INTEGER;
+    DECLARE infected_state_count INTEGER;
+    DECLARE last_infected_state_id INTEGER;
+    DECLARE last_infected_state_dd TIMESTAMP;
+    DECLARE healty_state_count INTEGER;
+    DECLARE last_healty_state_id INTEGER;
+    DECLARE last_healty_state_dd TIMESTAMP;
+    DECLARE hosp_state_count INTEGER;
+    DECLARE last_hosp_state_id INTEGER;
+    DECLARE last_hosp_state_dd TIMESTAMP;
+    DECLARE home_state_count INTEGER;
+    DECLARE last_home_state_id INTEGER;
+    DECLARE last_home_state_dd TIMESTAMP;
+    DECLARE patient_in_hospital BOOLEAN;
+    DECLARE patient_is_home BOOLEAN;
+    DECLARE state_val varchar;
+    BEGIN
+    state_val = (SELECT value FROM "State" WHERE id=NEW.state_id);
+    dead_state_count = (SELECT count(*) FROM "PatientState" WHERE patient_id=NEW.patient_id AND state_id=(SELECT id FROM "State" WHERE value='dead'));
+    found_state_count = (SELECT count(*) FROM "PatientState" WHERE patient_id=NEW.patient_id AND state_id=(SELECT id FROM "State" WHERE value='found'));
+    
+    infected_state_count = (SELECT count(*) FROM "PatientState" WHERE patient_id=NEW.patient_id AND state_id=(SELECT id FROM "State" WHERE value='infected'));
+    last_infected_state_id = (SELECT id FROM "PatientState" WHERE patient_id=NEW.patient_id AND state_id=(SELECT id FROM "State" WHERE value='infected') ORDER BY detection_date DESC);
+    last_infected_state_dd = (SELECT detection_date FROM "PatientState" WHERE patient_id=NEW.patient_id AND state_id=(SELECT id FROM "State" WHERE value='infected') ORDER BY detection_date DESC);
+    
+    healty_state_count = (SELECT count(*) FROM "PatientState" WHERE patient_id=NEW.patient_id AND state_id=(SELECT id FROM "State" WHERE value='recovery'));
+    last_healty_state_id = (SELECT id FROM "PatientState" WHERE patient_id=NEW.patient_id AND state_id=(SELECT id FROM "State" WHERE value='recovery') ORDER BY detection_date DESC);
+    last_healty_state_dd = (SELECT detection_date FROM "PatientState" WHERE patient_id=NEW.patient_id AND state_id=(SELECT id FROM "State" WHERE value='recovery') ORDER BY detection_date DESC);
+    
+    hosp_state_count = (SELECT count(*) FROM "PatientState" WHERE patient_id=NEW.patient_id AND state_id=(SELECT id FROM "State" WHERE value='hospitalized'));
+    last_hosp_state_id = (SELECT id FROM "PatientState" WHERE patient_id=NEW.patient_id AND state_id=(SELECT id FROM "State" WHERE value='hospitalized') ORDER BY detection_date DESC);
+    last_hosp_state_dd = (SELECT detection_date FROM "PatientState" WHERE patient_id=NEW.patient_id AND state_id=(SELECT id FROM "State" WHERE value='hospitalized') ORDER BY detection_date DESC);
+    
+    home_state_count = (SELECT count(*) FROM "PatientState" WHERE patient_id=NEW.patient_id AND state_id=(SELECT id FROM "State" WHERE value='is_home'));
+    last_home_state_id = (SELECT id FROM "PatientState" WHERE patient_id=NEW.patient_id AND state_id=(SELECT id FROM "State" WHERE value='is_home') ORDER BY detection_date DESC);
+    last_home_state_dd = (SELECT detection_date FROM "PatientState" WHERE patient_id=NEW.patient_id AND state_id=(SELECT id FROM "State" WHERE value='is_home') ORDER BY detection_date DESC);
+
+    -- dead
+    IF state_val='dead' AND dead_state_count > 0 THEN
+        UPDATE "Patient" is_dead=true SET WHERE id=NEW.patient_id;
+        UPDATE "Patient" in_hospital=false SET WHERE id=NEW.patient_id;
+        UPDATE "Patient" is_home=false SET WHERE id=NEW.patient_id;
+        UPDATE "Patient" is_infected=false SET WHERE id=NEW.patient_id;
+        UPDATE "Patient" is_healthy=false SET WHERE id=NEW.patient_id;
+    END IF;
+
+    -- found
+    IF state_val='found' AND found_state_count > 0 THEN
+        UPDATE "Patient" is_found=true SET WHERE id=NEW.patient_id;
+    END IF;
+
+    -- infected
+    IF state_val='infected' AND infected_state_count > 0 THEN
+        IF dead_state_count > 0 THEN
+            -- pass infected
+        ELSIF healty_state_count > 0 AND last_healty_state_dd > last_infected_state_dd THEN
+            -- pass infected
+        ELSIF healty_state_count > 0 AND last_healty_state_dd == last_infected_state_dd AND last_healty_state_id > last_infected_state_id THEN
+            -- pass infected
+        ELSE
+            UPDATE "Patient" is_infected=true SET WHERE id=NEW.patient_id;
+            UPDATE "Patient" is_healthy=false SET WHERE id=NEW.patient_id;
+        END IF;
+    END IF;
+
+    -- is_home
+    IF state_val='is_home' AND home_state_count > 0 THEN
+        IF dead_state_count > 0 THEN
+            -- pass is_home
+        ELSIF hosp_state_count > 0 AND last_hosp_state_dd > last_home_state_dd THEN
+            -- pass is_home
+        ELSIF hosp_state_count > 0 AND last_hosp_state_dd == last_home_state_dd AND last_hosp_state_id > last_home_state_id THEN
+            -- pass is_home
+        ELSIF healty_state_count > 0 AND last_healty_state_dd > last_home_state_dd THEN
+            -- pass is_home
+        ELSIF healty_state_count > 0 AND last_healty_state_dd == last_home_state_dd AND last_healty_state_id > last_home_state_id THEN
+            -- pass is_home
+        ELSE
+            UPDATE "Patient" is_home=true SET WHERE id=NEW.patient_id;
+            UPDATE "Patient" in_hospital=false SET WHERE id=NEW.patient_id;
+            UPDATE "Patient" is_healthy=false SET WHERE id=NEW.patient_id;
+        END IF;
+    END IF;
+
+    -- in_hospital
+    IF state_val='hospitalized' AND home_state_count > 0 THEN
+        IF dead_state_count > 0 THEN
+            -- pass in_hospital
+        ELSIF home_state_count > 0 AND last_home_state_dd > last_hosp_state_dd THEN
+            -- pass in_hospital
+        ELSIF home_state_count > 0 AND last_home_state_dd == last_hosp_state_dd AND last_home_state_id > last_hosp_state_id THEN
+            -- pass in_hospital
+        ELSIF healty_state_count > 0 AND last_healty_state_dd > last_hosp_state_dd THEN
+            -- pass in_hospital
+        ELSIF healty_state_count > 0 AND last_healty_state_dd == last_hosp_state_dd AND last_healty_state_id > last_hosp_state_id THEN
+            -- pass in_hospital
+        ELSE
+            UPDATE "Patient" in_hospital=true SET WHERE id=NEW.patient_id;
+            UPDATE "Patient" in_hospital=false SET WHERE id=NEW.patient_id;
+            UPDATE "Patient" is_healthy=false SET WHERE id=NEW.patient_id;
+        END IF;
+    END IF;
+
+    -- is_healthy
+    IF state_val='recovery' AND healty_state_count > 0 THEN
+        patient_in_hospital = (SELECT in_hospital FROM "Patient" WHERE id=NEW.patient_id);
+        patient_is_home = (SELECT is_home FROM "Patient" WHERE id=NEW.patient_id);
+        IF patient_in_hospital = true OR patient_is_home = true THEN
+            -- pass is_healthy
+        ELSE
+            UPDATE "Patient" is_healthy=true SET WHERE id=NEW.patient_id;
+            UPDATE "Patient" in_hospital=false SET WHERE id=NEW.patient_id;
+            UPDATE "Patient" is_home=false SET WHERE id=NEW.patient_id;
+        END IF;
+    END IF;
+
+    RETURN NEW;
+    END;
+    $$ LANGUAGE plpgsql;
+"""
+addSetPatientStateTriggerQuery = 'CREATE TRIGGER set_patient_state_trigger AFTER INSERT OR UPDATE ON "PatientState" FOR EACH ROW EXECUTE PROCEDURE set_patient_state();'
+# logging.history trigger
+try:
+    psqlCursor.execute(createSetPatientStateTriggerQuery)
+    psqlCursor.execute(addSetPatientStateTriggerQuery)
+except Exception as e:
+    print(e)
 print("init log done.")
 
 #############################
@@ -169,6 +294,11 @@ def initialize_db(db):
             new_country = Country(code=country[0], name=country[1])
             db.session.add(new_country)
 
+    for job_category in C.job_categories:
+        if not JobCategory.query.filter_by(value=job_category[0], name=job_category[1]).first():
+            j_category = JobCategory(value=job_category[0], name=job_category[1])
+            db.session.add(j_category)   
+
     for n in df.region.unique():
         if not Region.query.filter_by(name=n).first():
             region = Region(name=n)
@@ -178,12 +308,13 @@ def initialize_db(db):
         region = Region(name=C.out_of_rk)
         db.session.add(region)
 
-    for n in df.TIPMO.unique():
+    for n in list(df.TIPMO.unique()) + C.hospital_additional_types:
         if not pd.isna(n):
             if not Hospital_Type.query.filter_by(name=n).first():
                 typ = Hospital_Type(name=n)
                 db.session.add(typ)
 
+    
     db.session.commit()
 
     # We need to get ids of TravelType for by auto and by foot types
@@ -256,7 +387,7 @@ def initialize_db(db):
     for triggerQuery in triggerQueries:
         try:
             db.engine.execute(triggerQuery)
-        except Exception as e:
+        except Exception:
             pass
 
 get_config_mode = os.environ.get('CONFIG_MODE', 'Debug')

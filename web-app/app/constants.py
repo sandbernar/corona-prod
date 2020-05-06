@@ -3,6 +3,7 @@ hospitals_list_xlsx = "app/data/hospitals_list.xlsx"
 all_hospital_types = "Все Типы"
 all_hospital_nomenklatura = "Все Номенклатуры"
 no_hospital = "Не Госпитализирован"
+hospital_additional_types = ["другое"]
 
 # Flight Code
 all_flight_codes = "Все Рейсы"
@@ -13,7 +14,7 @@ all_flight_codes = "Все Рейсы"
 out_of_rk = "Вне РК"
 
 # Travel Type
-all_types = "Все Типы"
+all_travel_types = ("all_travel_types", "Все Типы")
 train_type = ("train_type", "Поезд")
 by_auto_type = ("auto_type", "Авто")
 by_foot_type = ("by_foot", "Пешком")
@@ -22,6 +23,10 @@ flight_type = ("flight_type", "Самолет")
 local_type = ("local_type", "Местные")
 blockpost_type = ("blockpost_type", "Блокпост")
 old_data_type = ("old_data_type", "Старые Данные")
+
+all_blockposts = (-1, "Все Блокпосты")
+all_dates = (-1, "Все Даты")
+
 various_travel_types = [by_auto_type, by_foot_type, by_sea_type]
 
 board_team = "экипаж"
@@ -31,6 +36,14 @@ travel_types = [flight_type, train_type, by_auto_type, by_foot_type, by_sea_type
 unknown = (None, "Неизвестно")
 
 kz_center_lat_lng = (48.191216, 68.883269)
+
+# Job Categories
+all_job_categories = (-1, "Все Категории")
+doctors_job_category = ("doctors_job_category", "Врач")
+police_job_category = ("police_job_category", "Полицейский")
+military_job_category = ("military_job_category", "Военный")
+
+job_categories = [doctors_job_category, police_job_category, military_job_category]
 
 cyrillic_to_ascii = {
     "А": "A",
@@ -590,8 +603,8 @@ HGDBCountry = {
     "1264":"Заграница"
 }
 
-
 # State
+in_hospital = ("hospitalized", "Госпитализирован")
 state_dead = ("dead", "Умер")
 state_infec = ("infected", "Инфицирован")
 state_hosp = ("hospitalized", "Госпитализирован")

@@ -7,8 +7,14 @@
 {% endblock stylesheets %}
 
 {% block content %}
-
-    <div class="container">
+    {% include "site_template/navigation.html" %}
+    <div class="header bg-gradient-primary pb-8 pt-5 pt-md-8">
+      <div class="container-fluid">
+        <div class="header-body">
+       </div>
+      </div>
+    </div>            
+    <div class="container-fluid mt--9">
         <div class="row">
             <div class="card shadow" style="width: 100%; margin-top: 1.5rem; padding: 2rem;">
                 <div>
@@ -23,24 +29,39 @@
                         </div>
                     </div>
                     <div style="text-align: center; margin: 1rem 0;">
-                        <h3>Добавление пациента, прибывшего на борту самолета</h3>
-                        <iframe width="560" height="315" src="https://www.youtube.com/embed/rAHNxtjKNQk" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                        <div class="row">
+                            <div class="col">
+                                <h3>Добавление пациента, прибывшего на борту самолета</h3>
+                                <iframe width="560" height="315" src="https://www.youtube.com/embed/rAHNxtjKNQk" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            </div>
 
-                        <h3>Добавление пациента, прибывшего поездом</h3>
-                        <iframe width="560" height="315" src="https://www.youtube.com/embed/Np9gpblfiAg" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            <div class="col">
+                                <h3>Добавление пациента, прибывшего поездом</h3>
+                                <iframe width="560" height="315" src="https://www.youtube.com/embed/Np9gpblfiAg" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col">
+                                <h3>Изменение информации пациента</h3>
+                                <iframe width="560" height="315" src="https://www.youtube.com/embed/14djMa0D2uE" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            </div>
+                            <div class="col">
+                                <h3>Обновление статуса пациента</h3>
+                                <iframe width="560" height="315" src="https://www.youtube.com/embed/qwimi-QYpLk" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            </div>
+                        </div>
 
-                        <h3>Изменение информации пациента</h3>
-                        <iframe width="560" height="315" src="https://www.youtube.com/embed/14djMa0D2uE" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-
-                        <h3>Обновление статуса пациента</h3>
-                        <iframe width="560" height="315" src="https://www.youtube.com/embed/qwimi-QYpLk" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-
-                        <h3>Использование фильтров</h3>
-                        <iframe width="560" height="315" src="https://www.youtube.com/embed/KIq2s5vaqRU" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-
-                        <h3>Добавление контактировавшего</h3>
-                        <iframe width="560" height="315" src="https://www.youtube.com/embed/PBshuAcETMw" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                    </div>
+                        <div class="row">
+                            <div class="col">
+                                <h3>Использование фильтров</h3>
+                                <iframe width="560" height="315" src="https://www.youtube.com/embed/KIq2s5vaqRU" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            </div>
+                            <div class="col">
+                                <h3>Добавление контактировавшего</h3>
+                                <iframe width="560" height="315" src="https://www.youtube.com/embed/PBshuAcETMw" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            </div>
+                        </div>
                     <hr>
                     <div class="card-body">
                         <div id="commento"></div>

@@ -12,6 +12,7 @@ from flask import Flask, url_for
 from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect
+import numpy as np
 
 db = SQLAlchemy()
 login_manager = LoginManager()

@@ -1,3 +1,8 @@
+{% if search_fields %}
+<div class="card shadow">
+   <div class="card-header border-0">
+{% endif %}
+
 <form method="GET">
 {% for hidden_val in hidden_values %}
   <input type="hidden" style="display: none;" name="{{ hidden_val[0] }}" value="{{ hidden_val[1] }}">
@@ -35,16 +40,30 @@
     <div class="card-header border-0">
       <div class="row">
         <div class="col">
+          <h3 class="mb-0">
+          {% if table.table_title %}
+            {{ table.table_title }} | 
+          {% endif %}
+
+          {{ _("Всего") }} {{table.total_len}}, {{ _("показано") }}
+
           {% if table.entries %}
-          <h3 class="mb-0">{{ _("Всего") }} {{table.total_len}}, {{ _("показано") }} {{ table.entries | length }}</h3>
+            {{ table.entries | length }}
           {% else %}
-          <h3 class="mb-0">{{ _("Всего") }} {{table.total_len}}, {{ _("показано") }} 0</h3>
+            0
           {% endif %}
           
+          </h3>
         </div>   
         <div class="col-md-auto">
           {% if table.header_button %}
-          <a href={{ table.header_button[1]}} class="btn btn-sm btn-primary btn-full-width">{{ table.header_button[0] }}</a>
+          <div class="row">
+            {% for button in table.header_button %}
+            <div class="col">
+              <a href={{ button[1]}} class="btn btn-sm btn-primary btn-full-width">{{ button[0] }}</a>
+            </div>
+            {% endfor %}
+          </div>
           {% endif %}              
         </div>      
       </div>
@@ -104,8 +123,16 @@
       </table>
     </div>   
     {% endif %}
-    {% if table.max_page > 1%}
     <div class="card-footer py-4">
+      <div class="row">
+        <div class="col">
+            <label for="name-input" class="form-control-label">{{ _("Строк на Странице") }}</label>
+            {{ table.table_form.per_page(class="form-control", style="width:initial;", 
+                onchange="setSearchParam('per_page', $('#per_page option:selected').text());setSearchParam('page')") }}
+          </div>
+      <div class="col">
+      <br>
+    {% if table.max_page > 1%}
       <nav aria-label="...">
         <ul class="pagination justify-content-end mb-0">
           <li class="page-item {% if table.page == 1%}disabled{%endif%}">
@@ -123,7 +150,14 @@
           </li>
         </ul>
       </nav>
-    </div>
     {% endif %}
+    </div>
+  </div>
+    </div>
   </div>
 </form>
+
+{% if search_fields %}
+</div>
+</div>
+{% endif %}

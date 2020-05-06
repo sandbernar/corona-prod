@@ -1,19 +1,19 @@
 <div class="card bg-secondary shadow">
 	<div class="card-header bg-white">
 		<div class="row">
-	  		<div class="col">
+	  		<div class="col-lg">
 				<div class="form-group">
 					<label for="name-input" class="form-control-label">{{ _("Фамилия") }}*</label>
 					{{ form.second_name(placeholder=_("Иванов"),class="form-control", id="lastnameInput", type="text") }}
 				</div>
 	  		</div>
-			<div class="col">
+			<div class="col-lg">
 				<div class="form-group">
 					<label for="name-input" class="form-control-label">{{ _("Имя") }}*</label>
 					{{ form.first_name(placeholder=_("Иван"),class="form-control", id="firstnameInput", type="text") }}
 				</div>
 			</div>						  
-			<div class="col">
+			<div class="col-lg">
 				<div class="form-group">
 					<label for="name-input" class="form-control-label">{{ _("Отчество") }}</label>
 					{{ form.patronymic_name(placeholder=_("Иванович"),class="form-control", id="midnameInput", type="text") }}
@@ -44,7 +44,7 @@
 <div class="card bg-secondary shadow mt-3">
 	<div class="card-header bg-white">
 		<div class="row">
-			<div class="col">
+			<div class="col-xl">
 				<div class="form-group">
 					<label for="iin-input" class="form-control-label">{{ _("ИИН") }}</label>
 					<div class="input-group">
@@ -55,7 +55,7 @@
 					</div>
 	  			</div>
 	  		</div>
-	  <div class="col">
+	  <div class="col-xl">
 	  <div class="form-group">
 		<label for="citizenship-input" class="form-control-label">{{ _("Страна Проживания") }}*</label>
 		{{ form.country_of_residence_id(class="form-control") }}
@@ -63,13 +63,13 @@
 	  </div>
 	</div>
 	<div class="row">
-	  <div class="col">
+	  <div class="col-xl">
 	  <div class="form-group">
 		<label for="citizenship-input" class="form-control-label">{{ _("Гражданство") }}*</label>
 		{{ form.citizenship_id(class="form-control", id="countryInput") }}
 	  </div>
 	  </div>
-	  <div class="col">
+	  <div class="col-xl">
 	  <div class="form-group">
 		<label for="npass-input" class="form-control-label">{{ _("Номер Паспорта") }}</label>
 		{{ form.pass_num(placeholder=_("N12345678"), class="form-control", type="text") }}

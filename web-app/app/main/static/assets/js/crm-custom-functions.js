@@ -24,15 +24,14 @@ var setSearchParam = function(key, value, go = true) {
 function tableSort(value) {
   arrow_up = '↑';
   arrow_down = '↓';
-  sort_arg = "sort_by_desc"
+  sort_arg = "sort_by_asc"
 
-  if(event.toElement.innerHTML.includes(arrow_down))  {
-    sort_arg = "sort_by_asc"
-    setSearchParam("sort_by_desc", null)
-  } else{
+  if(event.target.innerHTML.includes(arrow_up))  {
+    sort_arg = "sort_by_desc"
     setSearchParam("sort_by_asc", null)
+  } else{
+    setSearchParam("sort_by_desc", null)
   }
-  console.log(sort_arg)
 
   setSearchParam(sort_arg, value)
 }

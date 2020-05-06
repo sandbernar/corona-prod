@@ -127,3 +127,8 @@ input {
 .sub-label {
   font-weight: 500;
 }
+
+#userAgreement {
+    overflow: auto;
+    height: 300px;
+}

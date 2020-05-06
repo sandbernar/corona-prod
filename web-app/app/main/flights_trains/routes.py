@@ -41,11 +41,13 @@ def get_flights_by_date():
         return redirect(url_for('login_blueprint.login'))
 
     date = request.form.get("date")
+    flights_options = ""
 
-    flights = FlightCode.query.filter_by(date=date)
+    if date != "-1":
+        flights = FlightCode.query.filter_by(date=parse_date(date))
 
-    flights_options = "".join([ "<option value='{}'>{}</option>".format(
-        f.id, "{}, {} - {}".format(f.code, f.from_city, f.to_city)) for f in flights ])
+        flights_options = "".join([ "<option value='{}'>{}</option>".format(
+            f.id, "{}, {} - {}".format(f.code, f.from_city, f.to_city)) for f in flights ])
 
     return json.dumps(flights_options, ensure_ascii=False)
 
@@ -57,10 +59,12 @@ def get_trains_by_date_range():
     departure_date = request.form.get("departure_date", None)
     arrival_date = request.form.get("arrival_date", None)
 
-    if departure_date:
+    if departure_date or arrival_date:
         trains = Train.query
 
-        trains = trains.filter(Train.departure_date >= departure_date)
+        if departure_date:
+            trains = trains.filter(Train.departure_date >= departure_date)
+
         if arrival_date:
             trains = trains.filter(Train.arrival_date <= arrival_date)
 
@@ -109,7 +113,7 @@ def flights():
     form = FlightSearchForm()
 
     populate_search_form(form, request)
-    flights_table = FlightTableModule(request, form, (_("Добавить Рейс"), "/add_flight"))
+    flights_table = FlightTableModule(request, form, [(_("Добавить Рейс"), "/add_flight")])
 
     form.process()
 
@@ -126,7 +130,7 @@ def trains():
     form = TrainSearchForm()
     
     populate_search_form(form, request)
-    flights_table = TrainTableModule(request, form, (_("Добавить ЖД Рейс"), "/add_train"))
+    flights_table = TrainTableModule(request, form, [(_("Добавить ЖД Рейс"), "/add_train")])
 
     form.process()
 

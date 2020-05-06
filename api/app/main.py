@@ -6,6 +6,7 @@ from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
 
+
 from . import crud, models, schemas
 from .database import SessionLocal, engine
 
@@ -16,6 +17,7 @@ import logging
 # bind models
 models.Base.metadata.create_all(bind=engine)
 
+
 # origins for cors
 origins = [
     "*"
@@ -24,8 +26,8 @@ origins = [
 # init на "боевой машине" LMAO
 app = FastAPI()
 
-# lets setup some logs
 logger = logging.getLogger("api")
+
 
 # model for JSONEXCEPTIONS
 class UnicornException(Exception):

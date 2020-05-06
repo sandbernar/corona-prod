@@ -29,16 +29,22 @@
                                         {{ form.region_id(class="form-control", id="region_id") }}                          
                                       </div>
                                       <div class="row">
-                                        <div class="col">
+                                        <div class="col-lg">
                                           <div class="form-group">
                                             <label for="job-input" class="form-control-label">{{ _("Место Работы/Учебы") }}</label>
                                             {{ form.job(class="form-control", type="text", placeholder=_("Школа 20") ) }}
                                           </div>
                                         </div>
-                                        <div class="col">
+                                        <div class="col-lg">
                                           <div class="form-group">
                                             <label for="job-input" class="form-control-label">{{ _("Должность") }}</label>
                                             {{ form.job_position(class="form-control", type="text", placeholder=_("Директор") ) }}
+                                          </div>
+                                        </div>
+                                        <div class="col-lg">
+                                          <div class="form-group">
+                                            <label for="job-input" class="form-control-label">{{ _("Категория Работы") }}</label>
+                                            {{ form.job_category_id(class="form-control") }}
                                           </div>
                                         </div>
                                       </div>
@@ -110,13 +116,13 @@
                                   <div class="card shadow mt-3">
                                     <div class="card-header bg-transparent">                              
                                       <div class="row">
-                                        <div class="col">
+                                        <div class="col-xl">
                                           <div class="form-group">
                                             <label for="phone-input" class="form-control-label">{{ _("Телефон") }}</label>
                                             {{ form.telephone(placeholder=_("77017123456"), id="phoneInput", class="form-control", type="tel") }}
                                           </div>
                                         </div>                        
-                                        <div class="col">
+                                        <div class="col-xl">
                                           <div class="form-group">
                                             <label for="phone-input" class="form-control-label">{{ _("E-Mail") }}</label>
                                             {{ form.email(placeholder=_("test@gmail.com"), class="form-control", type="email") }}

@@ -101,6 +101,9 @@ def route_template(template, **kwargs):
         # Is Infected
         # infected_state_id = State.query.filter_by(name=c.state_infec).first().id
         # is_infected = PatientState.query.filter_by(state_id=infected_state_id).count()
+        print("LOL")
+        print(q.filter(Patient.is_infected==True))
+        print("LOL")
         is_infected = q.filter(Patient.is_infected==True).count()
         ratio = 0 if total == 0 else is_infected / total
         is_infected_str = str("{}/{} ({}%)".format(is_infected, total, format(ratio * 100, '.2f')))
@@ -181,7 +184,7 @@ def patients_content_by_id():
     lat_lon[0] = format(lat_lon[0], ".5f")
     lat_lon[1] = format(lat_lon[1], ".5f")
     try:
-        pat = q.join(Address, Patient.home_address_id == Address.id).filter(Address.lat == str(lat_lon[0])).filter(Address.lng == str(lat_lon[1])).all()
+        pat = q.join(Address, Patient.home_address_id == Address.id).filter(Address.lat == str(lat_lon[0])).filter(Address.lng == str(lat_lon[1])).filter(Patient.is_infected == True).all()
     except exc.SQLAlchemyError as err:
         return render_template('errors/error-400.html'), 400
     if not pat:
@@ -220,26 +223,44 @@ def patients_within_tiles():
 
     if (zoom > 19 or zoom < 0):
         return render_template('errors/error-400.html'), 400
-    distances = [50,50, 10, 4, 3, 2, 1, 0.5, 0.5, 0.09, 0.07, 0.02, 0.01, 0.009,  0.008, 0.003, 0.002, 0.001, 0.001, 0.001]
+    distances = [6,6, 5, 4, 3, 2, 1, 0.5, 0.5, 0.09, 0.07, 0.02, 0.01, 0.009,  0.008, 0.003, 0.002, 0.001, 0.001, 0.001]
     distance = distances[zoom]
     
-
+    # distance = 2
     coordinates_patients = {
         "type": "FeatureCollection",
         "features": []
     }
+
     sql = text("""
     SELECT row_number() over () AS id,
-      ST_NumGeometries(gc),
+      ST_NumGeometries(gc) as count,
       ST_X(ST_Centroid(gc)) AS X,
       ST_Y(ST_Centroid(gc)) AS Y
     FROM (
       SELECT unnest(ST_ClusterWithin(geom, %s)) gc
       FROM (
-        SELECT * FROM "Address" WHERE geom && ST_MakeEnvelope(%s, %s, %s, %s, 4326)
+        SELECT * FROM "Address" 
+        JOIN "Patient" 
+        ON "Address".id = "Patient".home_address_id
+        WHERE "Address".geom && ST_MakeEnvelope(%s, %s, %s, %s, 3857)
       ) AS points
     ) f;
     """ % (str(distance), bbox_y1, bbox_x1, bbox_y2, bbox_x2))
+    # sql = text("""
+    # SELECT id,
+    #   count(*) as num,
+    #   ST_X(ST_Centroid(ST_Extent(geom))) as X,
+    #   ST_Y(ST_Centroid(ST_Extent(geom))) as Y
+    # FROM
+    # (
+    #     SELECT ST_ClusterKMeans(geom, 1) OVER() AS id, ST_Centroid(geom) as geom
+    #     FROM (
+    #           SELECT * FROM "Address" WHERE geom && ST_MakeEnvelope(%s, %s, %s, %s, 4326)
+    #     ) AS points
+    # ) tsub
+    # GROUP BY id;
+    # """ % (bbox_y1, bbox_x1, bbox_y2, bbox_x2))
     m = db.engine.execute(sql)
     for a in m:
         features = []

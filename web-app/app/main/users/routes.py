@@ -13,7 +13,8 @@ import io
 
 from app.main.models import Region
 from app.main.patients.models import Patient
-from app.main.users.forms import CreateUserForm, UpdateUserForm, UserActivityReportForm, UserSearchForm
+from app.main.users.forms import CreateUserForm, UpdateUserForm, UserActivityReportForm,\
+                                    UserSearchForm, UserPatientsSearchForm
 from app.main.forms import TableSearchForm
 import math
 from app.login.models import User
@@ -28,7 +29,7 @@ from sqlalchemy.sql import select
 import urllib
 from datetime import datetime, timedelta
 
-from app.main.users.modules import UserTableModule
+from app.main.users.modules import UserTableModule, UserPatientsTableModule
 
 @blueprint.route('/export_users_activity_xls', methods=['POST'])
 @login_required
@@ -141,7 +142,7 @@ def users():
     q = db.session.query(User, q_patient.c.patient_count).outerjoin(q_patient, User.id == q_patient.c.created_by_id)
     
     users_table = UserTableModule(request, q, users_search_form, 
-        header_button=(_("Добавить Пользователя"), "add_user"))
+        header_button=[(_("Добавить Пользователя"), "add_user")])
 
     users_search_form.process()
     form.process()
@@ -270,7 +271,14 @@ def user_profile():
   
             form.process()
 
-            return route_template('users/add_user_and_profile', form = form, change=change, user=user, error_msg=error_msg, is_profile=True)
+            user_patients_search_form = UserPatientsSearchForm()
+            user_patients_search_form.region_id.choices = get_regions_choices(current_user)
+
+            patients_table = UserPatientsTableModule(request, Patient.query.filter_by(created_by_id=user.id),
+                                                    user_patients_search_form)
+
+            return route_template('users/add_user_and_profile', form = form, change=change, user=user,
+                                    patients_table=patients_table, error_msg=error_msg, is_profile=True)
     else:    
         return render_template('errors/error-500.html'), 500
 
