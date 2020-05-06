@@ -6,6 +6,7 @@ from datetime import date
 class Interval(BaseModel):
     begin: date
     end: date
+    page: int
 
 class Status(BaseModel):
     # id: int

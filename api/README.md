@@ -195,6 +195,7 @@ curl -v -X POST "http://demo.crm.alem.school/api/get_status_by_pass_num/" -H "X-
 { 
     "begin": [datetime YYYY-MM-DD],
     "end": [datetime YYYY-MM-DD],
+    "page" [int] - страница состоит из 100 записей
 }
 ```
 ### Success Response Code

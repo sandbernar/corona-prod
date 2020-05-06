@@ -18,22 +18,22 @@ def get_token_id_by_token(db: Session, token: str):
 def get_is_contacted(db: Session, id: int):
     return db.query(models.ContactedPersons).filter(models.ContactedPersons.contacted_patient_id == id).first()
 
-def get_patients(db: Session, begin: date, end: date):
+def get_patients(db: Session, begin: date, end: date, page: int):
     flight = None
     try:
-        flight = db.query(models.FlightTravel).join(models.Patient, models.FlightTravel.patient_id == models.Patient.id).filter(models.Patient.created_date >= begin).filter(models.Patient.created_date <= end).all()
+        flight = db.query(models.FlightTravel).join(models.Patient, models.FlightTravel.patient_id == models.Patient.id).filter(models.Patient.created_date >= begin).filter(models.Patient.created_date <= end).order_by(models.Patient.id).limit(100).offset(100 * (page - 1)).all()
     except exc.SQLAlchemyError as err:
         logger.error(err)
     
     train = None
     try:
-        train = db.query(models.TrainTravel).join(models.Patient, models.TrainTravel.patient_id == models.Patient.id).filter(models.Patient.created_date >= begin).filter(models.Patient.created_date <= end).all()
+        train = db.query(models.TrainTravel).join(models.Patient, models.TrainTravel.patient_id == models.Patient.id).filter(models.Patient.created_date >= begin).filter(models.Patient.created_date <= end).order_by(models.Patient.id).limit(100).offset(100 * (page - 1)).all()
     except exc.SQLAlchemyError as err:
         logger.error(err)
     
     other = None
     try:
-        other = db.query(models.VisitedCountry).join(models.Patient, models.VisitedCountry.patient_id == models.Patient.id).filter(models.Patient.travel_type_id != 1).filter(models.Patient.travel_type_id != 2).filter(models.Patient.created_date >= begin).filter(models.Patient.created_date <= end).all()
+        other = db.query(models.VisitedCountry).join(models.Patient, models.VisitedCountry.patient_id == models.Patient.id).filter(models.Patient.travel_type_id != 1).filter(models.Patient.travel_type_id != 2).filter(models.Patient.created_date >= begin).filter(models.Patient.created_date <= end).order_by(models.Patient.id).limit(100).offset(100 * (page - 1)).all()
     except exc.SQLAlchemyError as err:
         logger.error(err)
 
