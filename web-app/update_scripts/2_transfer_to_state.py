@@ -51,6 +51,7 @@ for state in statesResult:
 print("states:",states)
 
 def getDetectionDate(patient_id, status_name):
+    print(status_name)
     if status_name == "Найден":
         result = psqlQuery("""
             SELECT * FROM logging.t_history 
@@ -106,6 +107,7 @@ for patient in patients:
     patientStates = psqlQuery('SELECT * FROM "PatientState" WHERE patient_id=%d' % patient["id"])
     for st in statuses:
         found = False
+        detection_date = getDetectionDate(patient["id"], st)
         for patientState in patientStates:
             if states.get(patientState["state_id"]) == st:
                 found = True
