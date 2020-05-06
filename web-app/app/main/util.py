@@ -79,11 +79,14 @@ def populate_countries_select(select_input, default = None, default_state=None):
         select_input.choices += [(c.id, c.name) for c in countries]
         select_input.default = default
 
+def yes_no(yes=True):
+    return _("Да") if yes else _("Нет")
+
 def yes_no_html(yes=True, invert_colors=False):
     yes_color = "red" if invert_colors else "green"
     no_color = "green" if invert_colors else "red"
 
     if yes:
-        return ("<font color='{}'>{}</font>".format(yes_color, _("Да")), "safe")
+        return ("<font color='{}'>{}</font>".format(yes_color, yes_no(yes)), "safe")
 
-    return ("<font color='{}'>{}</font>".format(no_color, _("Нет")), "safe")
+    return ("<font color='{}'>{}</font>".format(no_color, yes_no(yes)), "safe")

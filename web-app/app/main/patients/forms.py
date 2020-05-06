@@ -135,6 +135,11 @@ class PatientsSearchForm(FlaskForm):
                                           ("is_home_quarantine", _("Домашний Карантин")),
                                           ("is_transit", _("Транзит"))])
 
+    is_iin_fail = SelectField(choices=[(-1, _("Все ИИНы")),
+                                       ("is_iin_empty", _("ИИН Пустой")),
+                                       ("is_iin_invalid", _("ИИН Неправильный")),
+                                       ("is_iin_valid", _("ИИН Правильный"))])
+
     #Date Range
     date_range_start = DateField()
     date_range_end = DateField()

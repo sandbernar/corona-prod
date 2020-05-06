@@ -638,18 +638,19 @@ def patient_edit_history():
 
                     edit['date'] = r['tstamp']
 
-                    update_data = set(pred_val.items()) -set(r['new_val'].items())
-                    pred_val = r['new_val']
+                    if pred_val and r['new_val']:
+                        update_data = set(pred_val.items()) - set(r['new_val'].items())
+                        pred_val = r['new_val']
 
-                    if update_data:
-                        for data in update_data:
-                            data_entry = edit.copy()
-                            data_entry['update_data'] = get_field_display_name(data[0], data[1])
-                            
-                            if data_entry['update_data'][0] not in ignore_keys_dict:
-                                all_history.append(data_entry)
-                    elif r['operation'] == 'INSERT':
-                        all_history.append(edit)
+                        if update_data:
+                            for data in update_data:
+                                data_entry = edit.copy()
+                                data_entry['update_data'] = get_field_display_name(data[0], data[1])
+                                
+                                if data_entry['update_data'][0] not in ignore_keys_dict:
+                                    all_history.append(data_entry)
+                        elif r['operation'] == 'INSERT':
+                            all_history.append(edit)
 
                 return all_history
 
@@ -741,6 +742,10 @@ def patients():
     try:
         all_patients_table = AllPatientsTableModule(request, Patient.query, select_contacted,
                             search_form=form, header_button=[(_("Добавить Пациента"), "/add_person")])
+
+        if "download_xls" in request.args:
+            return all_patients_table.download_xls()
+
     except ValueError:
         return render_template('errors/error-500.html'), 500        
 
@@ -842,6 +847,9 @@ def contacted_persons():
                                         header_button=[(_("Добавить Контактное Лицо"), "add_person?select_contacted_id={}".format(patient.id)),
                                             (_("Выбрать Контактное Лицо"), "patients?select_contacted_id={}".format(patient.id))]
                                         )
+                if "download_xls" in request.args:
+                    return contacted_patients_table.download_xls()
+
             except ValueError:
                 return render_template('errors/error-500.html'), 500
 
