@@ -101,9 +101,6 @@ def route_template(template, **kwargs):
         # Is Infected
         # infected_state_id = State.query.filter_by(name=c.state_infec).first().id
         # is_infected = PatientState.query.filter_by(state_id=infected_state_id).count()
-        print("LOL")
-        print(q.filter(Patient.is_infected==True))
-        print("LOL")
         is_infected = q.filter(Patient.is_infected==True).count()
         ratio = 0 if total == 0 else is_infected / total
         is_infected_str = str("{}/{} ({}%)".format(is_infected, total, format(ratio * 100, '.2f')))
@@ -243,7 +240,7 @@ def patients_within_tiles():
         SELECT * FROM "Address" 
         JOIN "Patient" 
         ON "Address".id = "Patient".home_address_id
-        WHERE "Address".geom && ST_MakeEnvelope(%s, %s, %s, %s, 3857)
+        WHERE "Address".geom && ST_MakeEnvelope(%s, %s, %s, %s, 3857) AND "Patient".is_infected = true
       ) AS points
     ) f;
     """ % (str(distance), bbox_y1, bbox_x1, bbox_y2, bbox_x2))

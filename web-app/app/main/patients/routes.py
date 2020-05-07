@@ -249,11 +249,18 @@ def handle_add_update_patient(request_dict, final_dict, update_dict = {}):
     final_dict['job_address_id'] = job_address.id
 
 def handle_after_patient(request_dict, final_dict, patient, update_dict = {}):
-    patient.is_found = final_dict['is_found']
-    patient.is_infected = final_dict['is_infected']
+    if final_dict['is_found'] == True:
+        patient.is_found = patient.addState(State.query.filter_by(value=c.state_found[0]).first())
+    
+    if final_dict['is_infected'] == True:
+        if final_dict['is_found'] != True:
+            patient.is_found = patient.addState(State.query.filter_by(value=c.state_found[0]).first())
+        patient.is_infected = patient.addState(State.query.filter_by(value=c.state_infec[0]).first())
+
     if 'state_id' in final_dict:
-        patientState = PatientState(state_id=final_dict['state_id'])
-        patient.addState(patientState)
+        if final_dict['is_found'] != True:
+            patient.is_found = patient.addState(State.query.filter_by(value=c.state_found[0]).first())
+        patient.addState(State.query.filter_by(id=final_dict['state_id']).first())
 
     travel_type = request_dict['travel_type']
     if travel_type:

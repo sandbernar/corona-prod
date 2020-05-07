@@ -335,11 +335,11 @@ class AllPatientsTableModule(TableModule):
             is_found = yes_no_html(True)
 
         in_hospital = yes_no_html(False)
-        if patient.status and patient.status.value == c.in_hospital[0]:
+        if patient.in_hospital:
             in_hospital = yes_no_html(True)
 
         is_infected = yes_no_html(False, invert_colors=True)
-        if patient.status and patient.is_infected:
+        if patient.is_infected:
             is_infected = yes_no_html(True, invert_colors=True)
 
         created_date = patient.created_date.strftime("%d-%m-%Y %H:%M")
