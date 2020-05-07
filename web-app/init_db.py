@@ -145,43 +145,49 @@ CREATE OR REPLACE FUNCTION set_patient_state() RETURNS trigger AS
     DECLARE last_home_state_dd TIMESTAMP;
     DECLARE patient_in_hospital BOOLEAN;
     DECLARE patient_is_home BOOLEAN;
+    DECLARE pat_id INTEGER;
     BEGIN
-    dead_state_count = (SELECT count(*) FROM "PatientState" WHERE patient_id=NEW.patient_id AND state_id=(SELECT id FROM "State" WHERE value='dead'));
-    found_state_count = (SELECT count(*) FROM "PatientState" WHERE patient_id=NEW.patient_id AND state_id=(SELECT id FROM "State" WHERE value='found'));
+    IF TG_OP = 'UPDATE' OR TG_OP = 'INSERT' THEN
+        pat_id = (SELECT id FROM "Patient" WHERE id=NEW.patient_id LIMIT 1);
+    ELSE
+        pat_id = (SELECT id FROM "Patient" WHERE id=OLD.patient_id LIMIT 1);
+    END IF;
+    dead_state_count = (SELECT count(*) FROM "PatientState" WHERE patient_id=pat_id AND state_id=(SELECT id FROM "State" WHERE value='dead'));
+    found_state_count = (SELECT count(*) FROM "PatientState" WHERE patient_id=pat_id AND state_id=(SELECT id FROM "State" WHERE value='found'));
     
-    infected_state_count = (SELECT count(*) FROM "PatientState" WHERE patient_id=NEW.patient_id AND state_id=(SELECT id FROM "State" WHERE value='infected'));
-    last_infected_state_id = (SELECT id FROM "PatientState" WHERE patient_id=NEW.patient_id AND state_id=(SELECT id FROM "State" WHERE value='infected') ORDER BY detection_date DESC LIMIT 1);
-    last_infected_state_dd = (SELECT detection_date FROM "PatientState" WHERE patient_id=NEW.patient_id AND state_id=(SELECT id FROM "State" WHERE value='infected') ORDER BY detection_date DESC LIMIT 1);
+    infected_state_count = (SELECT count(*) FROM "PatientState" WHERE patient_id=pat_id AND state_id=(SELECT id FROM "State" WHERE value='infected'));
+    last_infected_state_id = (SELECT id FROM "PatientState" WHERE patient_id=pat_id AND state_id=(SELECT id FROM "State" WHERE value='infected') ORDER BY detection_date DESC LIMIT 1);
+    last_infected_state_dd = (SELECT detection_date FROM "PatientState" WHERE patient_id=pat_id AND state_id=(SELECT id FROM "State" WHERE value='infected') ORDER BY detection_date DESC LIMIT 1);
     
-    healty_state_count = (SELECT count(*) FROM "PatientState" WHERE patient_id=NEW.patient_id AND state_id=(SELECT id FROM "State" WHERE value='recovery'));
-    last_healty_state_id = (SELECT id FROM "PatientState" WHERE patient_id=NEW.patient_id AND state_id=(SELECT id FROM "State" WHERE value='recovery') ORDER BY detection_date DESC LIMIT 1);
-    last_healty_state_dd = (SELECT detection_date FROM "PatientState" WHERE patient_id=NEW.patient_id AND state_id=(SELECT id FROM "State" WHERE value='recovery') ORDER BY detection_date DESC LIMIT 1);
+    healty_state_count = (SELECT count(*) FROM "PatientState" WHERE patient_id=pat_id AND state_id=(SELECT id FROM "State" WHERE value='recovery'));
+    last_healty_state_id = (SELECT id FROM "PatientState" WHERE patient_id=pat_id AND state_id=(SELECT id FROM "State" WHERE value='recovery') ORDER BY detection_date DESC LIMIT 1);
+    last_healty_state_dd = (SELECT detection_date FROM "PatientState" WHERE patient_id=pat_id AND state_id=(SELECT id FROM "State" WHERE value='recovery') ORDER BY detection_date DESC LIMIT 1);
     
-    hosp_state_count = (SELECT count(*) FROM "PatientState" WHERE patient_id=NEW.patient_id AND state_id=(SELECT id FROM "State" WHERE value='hospitalized'));
-    last_hosp_state_id = (SELECT id FROM "PatientState" WHERE patient_id=NEW.patient_id AND state_id=(SELECT id FROM "State" WHERE value='hospitalized') ORDER BY detection_date DESC LIMIT 1);
-    last_hosp_state_dd = (SELECT detection_date FROM "PatientState" WHERE patient_id=NEW.patient_id AND state_id=(SELECT id FROM "State" WHERE value='hospitalized') ORDER BY detection_date DESC LIMIT 1);
+    hosp_state_count = (SELECT count(*) FROM "PatientState" WHERE patient_id=pat_id AND state_id=(SELECT id FROM "State" WHERE value='hospitalized'));
+    last_hosp_state_id = (SELECT id FROM "PatientState" WHERE patient_id=pat_id AND state_id=(SELECT id FROM "State" WHERE value='hospitalized') ORDER BY detection_date DESC LIMIT 1);
+    last_hosp_state_dd = (SELECT detection_date FROM "PatientState" WHERE patient_id=pat_id AND state_id=(SELECT id FROM "State" WHERE value='hospitalized') ORDER BY detection_date DESC LIMIT 1);
     
-    home_state_count = (SELECT count(*) FROM "PatientState" WHERE patient_id=NEW.patient_id AND state_id=(SELECT id FROM "State" WHERE value='is_home'));
-    last_home_state_id = (SELECT id FROM "PatientState" WHERE patient_id=NEW.patient_id AND state_id=(SELECT id FROM "State" WHERE value='is_home') ORDER BY detection_date DESC LIMIT 1);
-    last_home_state_dd = (SELECT detection_date FROM "PatientState" WHERE patient_id=NEW.patient_id AND state_id=(SELECT id FROM "State" WHERE value='is_home') ORDER BY detection_date DESC LIMIT 1);
+    home_state_count = (SELECT count(*) FROM "PatientState" WHERE patient_id=pat_id AND state_id=(SELECT id FROM "State" WHERE value='is_home'));
+    last_home_state_id = (SELECT id FROM "PatientState" WHERE patient_id=pat_id AND state_id=(SELECT id FROM "State" WHERE value='is_home') ORDER BY detection_date DESC LIMIT 1);
+    last_home_state_dd = (SELECT detection_date FROM "PatientState" WHERE patient_id=pat_id AND state_id=(SELECT id FROM "State" WHERE value='is_home') ORDER BY detection_date DESC LIMIT 1);
 
     -- dead
     IF dead_state_count > 0 THEN
-        UPDATE "Patient" SET is_dead=true WHERE id=NEW.patient_id;
-        UPDATE "Patient" SET in_hospital=false WHERE id=NEW.patient_id;
-        UPDATE "Patient" SET is_home=false WHERE id=NEW.patient_id;
-        UPDATE "Patient" SET is_infected=false WHERE id=NEW.patient_id;
-        UPDATE "Patient" SET is_healthy=false WHERE id=NEW.patient_id;
+        UPDATE "Patient" SET is_dead=true WHERE id=pat_id;
+        UPDATE "Patient" SET in_hospital=false WHERE id=pat_id;
+        UPDATE "Patient" SET is_home=false WHERE id=pat_id;
+        UPDATE "Patient" SET is_infected=false WHERE id=pat_id;
+        UPDATE "Patient" SET is_healthy=false WHERE id=pat_id;
         RETURN NEW;
     ELSE
-        UPDATE "Patient" SET is_dead=false WHERE id=NEW.patient_id;
+        UPDATE "Patient" SET is_dead=false WHERE id=pat_id;
     END IF;
 
     -- found
     IF found_state_count > 0 THEN
-        UPDATE "Patient" SET is_found=true WHERE id=NEW.patient_id;
+        UPDATE "Patient" SET is_found=true WHERE id=pat_id;
     ELSE
-        UPDATE "Patient" SET is_found=false WHERE id=NEW.patient_id;
+        UPDATE "Patient" SET is_found=false WHERE id=pat_id;
     END IF;
 
     -- infected
@@ -193,11 +199,11 @@ CREATE OR REPLACE FUNCTION set_patient_state() RETURNS trigger AS
         ELSIF healty_state_count > 0 AND last_healty_state_dd = last_infected_state_dd AND last_healty_state_id > last_infected_state_id THEN
             -- pass infected
         ELSE
-            UPDATE "Patient" SET is_infected=true WHERE id=NEW.patient_id;
-            UPDATE "Patient" SET is_healthy=false WHERE id=NEW.patient_id;
+            UPDATE "Patient" SET is_infected=true WHERE id=pat_id;
+            UPDATE "Patient" SET is_healthy=false WHERE id=pat_id;
         END IF;
     ELSE
-        UPDATE "Patient" SET is_infected=false WHERE id=NEW.patient_id;
+        UPDATE "Patient" SET is_infected=false WHERE id=pat_id;
     END IF;
 
     -- is_home
@@ -213,12 +219,12 @@ CREATE OR REPLACE FUNCTION set_patient_state() RETURNS trigger AS
         ELSIF healty_state_count > 0 AND last_healty_state_dd = last_home_state_dd AND last_healty_state_id > last_home_state_id THEN
             -- pass is_home
         ELSE
-            UPDATE "Patient" SET is_home=true WHERE id=NEW.patient_id;
-            UPDATE "Patient" SET in_hospital=false WHERE id=NEW.patient_id;
-            UPDATE "Patient" SET is_healthy=false WHERE id=NEW.patient_id;
+            UPDATE "Patient" SET is_home=true WHERE id=pat_id;
+            UPDATE "Patient" SET in_hospital=false WHERE id=pat_id;
+            UPDATE "Patient" SET is_healthy=false WHERE id=pat_id;
         END IF;
     ELSE
-        UPDATE "Patient" SET is_home=false WHERE id=NEW.patient_id;
+        UPDATE "Patient" SET is_home=false WHERE id=pat_id;
     END IF;
 
     -- in_hospital
@@ -234,12 +240,12 @@ CREATE OR REPLACE FUNCTION set_patient_state() RETURNS trigger AS
         ELSIF healty_state_count > 0 AND last_healty_state_dd = last_hosp_state_dd AND last_healty_state_id > last_hosp_state_id THEN
             -- pass in_hospital
         ELSE
-            UPDATE "Patient" SET in_hospital=true WHERE id=NEW.patient_id;
-            UPDATE "Patient" SET is_home=false WHERE id=NEW.patient_id;
-            UPDATE "Patient" SET is_healthy=false WHERE id=NEW.patient_id;
+            UPDATE "Patient" SET in_hospital=true WHERE id=pat_id;
+            UPDATE "Patient" SET is_home=false WHERE id=pat_id;
+            UPDATE "Patient" SET is_healthy=false WHERE id=pat_id;
         END IF;
     ELSE
-        UPDATE "Patient" SET in_hospital=false WHERE id=NEW.patient_id;
+        UPDATE "Patient" SET in_hospital=false WHERE id=pat_id;
     END IF;
 
     -- is_healthy
@@ -259,13 +265,13 @@ CREATE OR REPLACE FUNCTION set_patient_state() RETURNS trigger AS
         ELSIF infected_state_count > 0 AND last_infected_state_dd = last_healty_state_dd AND last_infected_state_id > last_healty_state_id THEN
             -- pass is_healthy
         ELSE
-            UPDATE "Patient" SET is_healthy=true WHERE id=NEW.patient_id;
-            UPDATE "Patient" SET in_hospital=false WHERE id=NEW.patient_id;
-            UPDATE "Patient" SET is_home=false WHERE id=NEW.patient_id;
-            UPDATE "Patient" SET is_infected=false WHERE id=NEW.patient_id;
+            UPDATE "Patient" SET is_healthy=true WHERE id=pat_id;
+            UPDATE "Patient" SET in_hospital=false WHERE id=pat_id;
+            UPDATE "Patient" SET is_home=false WHERE id=pat_id;
+            UPDATE "Patient" SET is_infected=false WHERE id=pat_id;
         END IF;
     ELSE
-        UPDATE "Patient" SET is_healthy=false WHERE id=NEW.patient_id;
+        UPDATE "Patient" SET is_healthy=false WHERE id=pat_id;
     END IF;
 
     RETURN NEW;
