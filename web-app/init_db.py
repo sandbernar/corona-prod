@@ -145,9 +145,7 @@ CREATE OR REPLACE FUNCTION set_patient_state() RETURNS trigger AS
     DECLARE last_home_state_dd TIMESTAMP;
     DECLARE patient_in_hospital BOOLEAN;
     DECLARE patient_is_home BOOLEAN;
-    DECLARE state_val varchar;
     BEGIN
-    state_val = (SELECT value FROM "State" WHERE id=NEW.state_id);
     dead_state_count = (SELECT count(*) FROM "PatientState" WHERE patient_id=NEW.patient_id AND state_id=(SELECT id FROM "State" WHERE value='dead'));
     found_state_count = (SELECT count(*) FROM "PatientState" WHERE patient_id=NEW.patient_id AND state_id=(SELECT id FROM "State" WHERE value='found'));
     
