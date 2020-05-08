@@ -28,7 +28,7 @@
         {% endfor %}
       </div>
       </div>
-              <div class="row-md-auto mt-3">
+        <div class="row-md-auto mt-3">
           <button type="submit" class="btn btn-primary btn-full-width">{{ _("Поиск") }}</button>
         </div>
     </div>
@@ -104,8 +104,8 @@
         </thead>
         <tbody>
           {% for entry in table.entries %}
-          <tr>
-            {% for column in entry %}
+          <tr  class="{{ entry['class'] }}">
+            {% for column in entry["data"] %}
             {% if column is iterable and column is not string %}
             {% if column[1] == "safe" %}
             <td>

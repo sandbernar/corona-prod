@@ -73,11 +73,17 @@ class TableModule:
             self.total_len = self.q.count()
             
             for result in self.q.offset((self.page-1)*self.per_page).limit(self.per_page).all():
-                entries.append(self.print_entry(result))
+                entry = {"data": self.print_entry(result)}
+                entries.append(entry)
+
+            entries = self.preprocess_entries(entries)
 
             self.max_page = math.ceil(self.total_len/self.per_page)
 
             return entries
+
+    def preprocess_entries(self, entries):
+        return entries
 
     def search_table(self):
         pass

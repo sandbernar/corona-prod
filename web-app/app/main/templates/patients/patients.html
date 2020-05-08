@@ -61,7 +61,12 @@
                 <div class="col">
                   <label class='form-control-label'>{{ _('Фильтр по ИИН') }}</label>
                   {{ form.is_iin_fail(class="form-control") }}
-                </div>             
+                </div>
+                <div class="custom-control custom-checkbox">
+                  <br>
+                  {{ form.probably_duplicate(class="custom-control-input") }}                    
+                  <label class="custom-control-label" for="probably_duplicate">{{ _("Возможные Дубли") }}</label>
+                </div>                
               </div>
             </div>
           </div>

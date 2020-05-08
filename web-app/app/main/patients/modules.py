@@ -9,6 +9,7 @@ from app.login.models import User
 
 from collections import OrderedDict
 from app.main.util import parse_date, yes_no_html, yes_no
+from app.main.patients.util import measure_patient_similarity
 
 from sqlalchemy import func, cast, JSON, exc
 import sqlalchemy
@@ -194,6 +195,19 @@ class AllPatientsTableModule(TableModule):
             self.contacted_infected_ids = [c.infected_patient_id for c in contacted_infected]
 
         super().__init__(request, q, table_head, header_button, search_form, is_downloadable_xls=True)
+
+    def preprocess_entries(self, entries):
+        if "probably_duplicate" in self.request.args:
+            for i, entry in zip(range(len(entries)), entries):
+                if entry.get("class", None) != "duplicateRow":
+                    for a in range(i + 1, len(entries)):
+                        if measure_patient_similarity(entry["data"][0][0], entries[a]["data"][0][0]) >= 0.95:
+                            entry["class"] = "duplicateRow"
+                            entries[a]["class"] = "duplicateRow"
+
+            self.search_form.probably_duplicate.checked = True
+
+        return entries
 
     def search_table(self):
         full_name_value = self.request.args.get("full_name", None)

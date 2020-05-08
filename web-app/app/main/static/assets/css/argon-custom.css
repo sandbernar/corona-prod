@@ -132,3 +132,7 @@ input {
     overflow: auto;
     height: 300px;
 }
+
+.duplicateRow {
+  background-color: rgba(255, 249, 74, 0.3);
+}
