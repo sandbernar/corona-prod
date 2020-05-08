@@ -5,7 +5,7 @@ Copyright (c) 2019 - present AppSeed.us
 """
 import os
 from app.main import blueprint
-
+import collections
 from flask import render_template, redirect, url_for, request
 from flask_login import login_required, current_user
 from flask_babelex import _
@@ -638,8 +638,16 @@ def patient_edit_history():
 
                     edit['date'] = r['tstamp']
 
+                    def get_rid_of_unhashable(dictionary):
+                        items = list(dictionary.items())
+                        for i, item in zip(range(len(items)), items):
+                            if not isinstance(item[1], collections.Hashable):
+                                items[i] = (item[0], None)
+
+                        return items
+
                     if pred_val and r['new_val']:
-                        update_data = set(pred_val.items()) - set(r['new_val'].items())
+                        update_data =  set(get_rid_of_unhashable(r['new_val'])) - set(get_rid_of_unhashable(pred_val))
                         pred_val = r['new_val']
 
                         if update_data:
