@@ -474,64 +474,66 @@ class AllPatientsTableModule(TableModule):
             if row.gender != None:
                 gender = _("Женский") if row.gender == True else _("Мужской")
 
-            contacted_id = [c.infected_patient_id for c in ContactedPersons.query.filter_by(contacted_patient_id=row.id).all()]
-            contacted_bool = _("Да") if len(contacted_id) else _("Нет")
+            # contacted_id = [c.infected_patient_id for c in ContactedPersons.query.filter_by(contacted_patient_id=row.id).all()]
+            # contacted_bool = _("Да") if len(contacted_id) else _("Нет")
             user_created = User.query.filter_by(id=row.created_by_id).first()
+            user_organization = "" if not user_created else user_created.organization
+            username = "" if not user_created else user_created.username
 
-            travel_date = ""
-            travel_info = ""
+            # travel_date = ""
+            # travel_info = ""
 
-            if row.travel_type:
-                if row.travel_type.value == c.flight_type[0]:
-                    flight_travel = FlightTravel.query.filter_by(patient_id=row.id)
-                    if flight_travel.count():
-                        flight_travel = flight_travel.first()
-                        travel_date = flight_travel.flight_code.date
-                        travel_info = flight_travel.flight_code.code
-                elif row.travel_type.value == c.train_type[0]:
-                    train_travel = TrainTravel.query.filter_by(patient_id=row.id)
-                    if train_travel.count():
-                        train_travel = train_travel.first()
-                        train = train_travel.train
+            # if row.travel_type:
+            #     if row.travel_type.value == c.flight_type[0]:
+            #         flight_travel = FlightTravel.query.filter_by(patient_id=row.id)
+            #         if flight_travel.count():
+            #             flight_travel = flight_travel.first()
+            #             travel_date = flight_travel.flight_code.date
+            #             travel_info = flight_travel.flight_code.code
+            #     elif row.travel_type.value == c.train_type[0]:
+            #         train_travel = TrainTravel.query.filter_by(patient_id=row.id)
+            #         if train_travel.count():
+            #             train_travel = train_travel.first()
+            #             train = train_travel.train
 
-                        travel_date = train.arrival_date
-                        travel_info = "{}, {} - {},{}".format(train.from_country, train.from_city,
-                                                              train.to_country, train.to_city)
-                elif row.travel_type.value in c.various_travel_types_values:
-                    various_travel = VariousTravel.query.filter_by(patient_id=row.id)
-                    if various_travel.count():
-                        various_travel = various_travel.first()
+            #             travel_date = train.arrival_date
+            #             travel_info = "{}, {} - {},{}".format(train.from_country, train.from_city,
+            #                                                   train.to_country, train.to_city)
+            #     elif row.travel_type.value in c.various_travel_types_values:
+            #         various_travel = VariousTravel.query.filter_by(patient_id=row.id)
+            #         if various_travel.count():
+            #             various_travel = various_travel.first()
 
-                        travel_date = various_travel.date
-                        travel_info = various_travel.border_control
-                elif row.travel_type.value == c.blockpost_type[0]:
-                    blockpost_travel = BlockPost.query.filter_by(patient_id=row.id)
-                    if blockpost_travel.count():
-                        blockpost_travel = blockpost_travel.first()
+            #             travel_date = various_travel.date
+            #             travel_info = various_travel.border_control
+            #     elif row.travel_type.value == c.blockpost_type[0]:
+            #         blockpost_travel = BlockpostTravel.query.filter_by(patient_id=row.id)
+            #         if blockpost_travel.count():
+            #             blockpost_travel = blockpost_travel.first()
 
-                        travel_date = blockpost_travel.date
-                        travel_info = str(blockpost_travel.region)
+            #             travel_date = blockpost_travel.date
+            #             travel_info = str(blockpost_travel.region)
 
-                is_infected = yes_no(row.is_infected)
-                is_found = yes_no(row.is_found)
+            is_infected = yes_no(row.is_infected)
+            is_found = yes_no(row.is_found)
 
             data.append([row.id, str(row), row.iin, gender, row.dob, str(row.region), 
                         row.pass_num, str(row.citizenship), str(row.country_of_residence),
-                        str(row.travel_type), travel_date, travel_info,
+                        str(row.travel_type), #travel_date, travel_info,
                         str(row.home_address), row.telephone, row.email, str(row.status),
                         is_found, is_infected, row.hospital,
                         row.job, row.job_position, row.job_category, row.job_address,
-                        contacted_bool, contacted_id,
-                        row.created_date.strftime("%d-%m-%Y %H:%M"), user_created.organization, user_created.username])
+                        # contacted_bool, contacted_id,
+                        row.created_date.strftime("%d-%m-%Y %H:%M"), user_organization, username])
 
         data = pd.DataFrame(data, columns=[_("ID"), _("ФИО"), _("ИИН"), _("Пол"), _("Дата Рождения"), _("Регион"),
                                            _("Номер Паспорта"), _("Гражданство"), _("Страна Проживания"),
-                                           _("Тип Въезда"), _("Дата Въезда"), _("Инфо о Въезде"),
+                                           _("Тип Въезда"), #_("Дата Въезда"), _("Инфо о Въезде"),
                                            _("Домашний Адрес"), _("Телефон"), _("E-Mail"), _("Статус"),
                                            _("Найден"), _("Инфицирован"), _("Госпиталь"),
                                            _("Место Работы/Учебы"), _("Должность"), _("Категория Работы"),
                                            _("Адрес Работы"),
-                                           _("Контактный?"), _("Нулевой Пациент ID (Контакт)"),
+                                           #_("Контактный?"), _("Нулевой Пациент ID (Контакт)"),
                                            _("Дата Создания"), _("Организация"), _("Логин Специалиста")])
 
         output = io.BytesIO()
