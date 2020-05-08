@@ -201,7 +201,7 @@ class AllPatientsTableModule(TableModule):
             for i, entry in zip(range(len(entries)), entries):
                 if entry.get("class", None) != "duplicateRow":
                     for a in range(i + 1, len(entries)):
-                        if measure_patient_similarity(entry["data"][0][0], entries[a]["data"][0][0]) >= 0.95:
+                        if measure_patient_similarity(entry["data"][0][0], entries[a]["data"][0][0]) >= 0.90:
                             entry["class"] = "duplicateRow"
                             entries[a]["class"] = "duplicateRow"
 
