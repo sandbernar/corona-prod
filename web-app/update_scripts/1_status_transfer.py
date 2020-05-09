@@ -69,12 +69,12 @@ for patient in patients:
     if patient['is_infected'] == True:
         attrs['is_infected'] = True
     status_id = patient['status_id']
-    status = psqlQuery('SELECT * FROM "PatientStatus" WHERE id=%d' % status_id)
-    if len(status) > 0:
-        status = status[0]
-        if status != "Нет Статуса":
-            attrs['status'] = status['name']
-    
+    if status_id is not None:
+        status = psqlQuery('SELECT * FROM "PatientStatus" WHERE id=%d' % status_id)
+        if len(status) > 0:
+            status = status[0]
+            if status != "Нет Статуса":
+                attrs['status'] = status['name']
     concat_attrs = ""
     if patient['attrs']:
         concat_attrs = "attrs::jsonb ||"
