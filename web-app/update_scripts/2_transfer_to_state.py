@@ -115,6 +115,8 @@ for patient in patients:
             now = datetime.now()
             now = datetime.strftime(now, "%Y-%m-%dT%H:%M:%S")
             detection_date = getDetectionDate(patient["id"], st)
+            if st == "Нет Статуса":
+                continue
             psqlQuery('INSERT INTO "PatientState" (state_id, patient_id, created_at, detection_date, attrs) VALUES (%d, %d, \'%s\',\'%s\', \'{}\');' % (
                 states.get(st), patient["id"], now, detection_date
             ))
