@@ -91,8 +91,9 @@ def getDetectionDate(patient_id, status_name):
     Transfer is_found, is_infected, status_id (PatientStatus) to attrs
 """
 
-patients = psqlQuery('SELECT * FROM "Patient"')
+patients = psqlQuery('SELECT * FROM "Patient" ORDER BY id;')
 for patient in patients:
+    print(patient["id"])
     statuses = []
     if patient["attrs"].get("is_found", False):
         statuses.append("Найден")
