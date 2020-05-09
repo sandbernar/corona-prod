@@ -123,7 +123,7 @@ for patient in patients:
         WHERE tabname='Patient' AND new_val->>'id'='%d' AND 
                 new_val->>'is_infected'='false' AND old_val->>'is_infected'='true' ORDER BY tstamp
         ;""" % (patient["id"]))
-    if result is not None or len(result) != 0:
+    if result is not None or len(result) > 0:
         now = datetime.now()
         now = datetime.strftime(now, "%Y-%m-%dT%H:%M:%S")
         detection_date = datetime.strftime(result[0]["tstamp"], "%Y-%m-%dT%H:%M:%S")
