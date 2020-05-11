@@ -4,6 +4,7 @@ import os
 import json
 from datetime import datetime, timedelta
 import threading
+import time
 
 import psycopg2
 
@@ -140,6 +141,8 @@ patients = psqlQuery('SELECT * FROM "Patient" ORDER BY id;')
 for patient in patients:
     thread = threading.Thread(target=addPatientStates, args=(patient,))
     threads.append(thread)
+    while threading.active_count()>150:
+        time.sleep(5)
     thread.start()
 
 for index, thread in enumerate(threads):
