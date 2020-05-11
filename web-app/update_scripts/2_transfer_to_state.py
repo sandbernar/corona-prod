@@ -34,7 +34,8 @@ def psqlQuery(query_message):
             for pair in pairs:
                 obj[pair[0]] = pair[1]
             returnValue.append(obj)
-    except Exception:
+    except Exception as e:
+        print(e)
         returnValue = None
     return returnValue
 
@@ -109,10 +110,11 @@ def addPatientStates(patient):
     for st in statuses:
         found = False
         detection_date = getDetectionDate(patient["id"], st)
-        for patientState in patientStates:
-            if states.get(patientState["state_id"]) == st:
-                found = True
-                break
+        if patientStates is not None:
+            for patientState in patientStates:
+                if states.get(patientState.get("state_id")) == st:
+                    found = True
+                    break
         if not found:
             now = datetime.now()
             now = datetime.strftime(now, "%Y-%m-%dT%H:%M:%S")
