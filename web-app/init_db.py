@@ -148,9 +148,9 @@ CREATE OR REPLACE FUNCTION set_patient_state() RETURNS trigger AS
     DECLARE pat_id INTEGER;
     BEGIN
     IF TG_OP = 'UPDATE' OR TG_OP = 'INSERT' THEN
-        pat_id = (SELECT id FROM "Patient" WHERE id=NEW.patient_id LIMIT 1);
+        pat_id = NEW.patient_id;
     ELSE
-        pat_id = (SELECT id FROM "Patient" WHERE id=OLD.patient_id LIMIT 1);
+        pat_id = OLD.patient_id;
     END IF;
     dead_state_count = (SELECT count(*) FROM "PatientState" WHERE patient_id=pat_id AND state_id=(SELECT id FROM "State" WHERE value='dead'));
     found_state_count = (SELECT count(*) FROM "PatientState" WHERE patient_id=pat_id AND state_id=(SELECT id FROM "State" WHERE value='found'));

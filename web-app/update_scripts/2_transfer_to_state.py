@@ -3,6 +3,7 @@
 import os
 import json
 from datetime import datetime, timedelta
+import threading
 
 import psycopg2
 
@@ -91,8 +92,7 @@ def getDetectionDate(patient_id, status_name):
     Transfer is_found, is_infected, status_id (PatientStatus) to attrs
 """
 
-patients = psqlQuery('SELECT * FROM "Patient" ORDER BY id;')
-for patient in patients:
+def addPatientStates(patient):
     print(patient["id"])
     statuses = []
     if patient["attrs"].get("is_found", False):
@@ -135,4 +135,14 @@ for patient in patients:
         ))
 
 
+threads = []
+patients = psqlQuery('SELECT * FROM "Patient" ORDER BY id;')
+for patient in patients:
+    thread = threading.Thread(target=addPatientStates, args=(patient,))
+    threads.append(thread)
+    thread.start()
 
+for index, thread in enumerate(threads):
+    thread.join()
+
+print("done")
