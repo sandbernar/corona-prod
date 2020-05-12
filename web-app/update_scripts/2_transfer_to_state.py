@@ -124,18 +124,18 @@ def addPatientStates(patient):
             psqlQuery('INSERT INTO "PatientState" (state_id, patient_id, created_at, detection_date, attrs) VALUES (%d, %d, \'%s\',\'%s\', \'{}\');' % (
                 states.get(st), patient["id"], now, detection_date
             ))
-    result = psqlQuery("""
-        SELECT * FROM logging.t_history 
-        WHERE tabname='Patient' AND new_val->>'id'='%d' AND 
-                new_val->>'is_infected'='false' AND old_val->>'is_infected'='true' ORDER BY tstamp
-        ;""" % (patient["id"]))
-    if result is not None and len(result) > 0:
-        now = datetime.now()
-        now = datetime.strftime(now, "%Y-%m-%dT%H:%M:%S")
-        detection_date = datetime.strftime(result[0]["tstamp"], "%Y-%m-%dT%H:%M:%S")
-        psqlQuery('INSERT INTO "PatientState" (state_id, patient_id, created_at, detection_date, attrs) VALUES (%d, %d, \'%s\',\'%s\', \'{}\');' % (
-            states.get("Выздоровление"), patient["id"], now, detection_date
-        ))
+    # result = psqlQuery("""
+    #     SELECT * FROM logging.t_history 
+    #     WHERE tabname='Patient' AND new_val->>'id'='%d' AND 
+    #             new_val->>'is_infected'='false' AND old_val->>'is_infected'='true' ORDER BY tstamp
+    #     ;""" % (patient["id"]))
+    # if result is not None and len(result) > 0:
+    #     now = datetime.now()
+    #     now = datetime.strftime(now, "%Y-%m-%dT%H:%M:%S")
+    #     detection_date = datetime.strftime(result[0]["tstamp"], "%Y-%m-%dT%H:%M:%S")
+    #     psqlQuery('INSERT INTO "PatientState" (state_id, patient_id, created_at, detection_date, attrs) VALUES (%d, %d, \'%s\',\'%s\', \'{}\');' % (
+    #         states.get("Выздоровление"), patient["id"], now, detection_date
+    #     ))
 
 
 threads = []
