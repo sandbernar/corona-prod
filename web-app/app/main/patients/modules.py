@@ -170,9 +170,27 @@ class ContactedPatientsTableModule(TableModule):
                 in_hospital, is_infected, delete_contact_button, is_added_in_2_hours, created_date]
 
 class AllPatientsTableModule(TableModule):
-    def __init__(self, request, q, select_contacted = None, search_form = None, header_button = None,\
-                    page = 1, per_page = 5):
+    def __init__(self, request, q, select_contacted = None, search_form = None, page = 1, per_page = 5):
         table_head = OrderedDict()
+        self.select_contacted = select_contacted
+
+        is_downloadable_xls = True
+        header_button = [(_("Добавить Пациента"), "/add_person")]
+        table_head_info = dict()
+
+        if select_contacted:
+            table_head[_("Выбрать контактных")] = []
+            table_head_info[_("Выбрать контактных")] = ("checkbox", "contacted_all_checkboxes")
+
+            infected_contacted = ContactedPersons.query.filter_by(infected_patient_id=select_contacted)
+            self.infected_contacted_ids = [c.contacted_patient_id for c in infected_contacted]
+
+            contacted_infected = ContactedPersons.query.filter_by(contacted_patient_id=select_contacted)
+            self.contacted_infected_ids = [c.infected_patient_id for c in contacted_infected]
+
+            is_downloadable_xls = False
+            header_button = [(_("Добавить Контактных"), "#", "add_contacted", "disabled")]
+
         table_head[_("ФИО")] = ["second_name"]
         table_head[_("ИИН")] = ["iin"]
         table_head[_("Тип Въезда")] = ["travel_type_id"]
@@ -183,18 +201,10 @@ class AllPatientsTableModule(TableModule):
         table_head[_("Контактов (найдено/всего)")] = []
         table_head[_("Время Добавления")] = ["created_date"]
 
-        self.select_contacted = select_contacted
+        print(request.args)
 
-        if select_contacted:
-            table_head[_("Выбрать контактных")] = []
-
-            infected_contacted = ContactedPersons.query.filter_by(infected_patient_id=select_contacted)
-            self.infected_contacted_ids = [c.contacted_patient_id for c in infected_contacted]
-
-            contacted_infected = ContactedPersons.query.filter_by(contacted_patient_id=select_contacted)
-            self.contacted_infected_ids = [c.infected_patient_id for c in contacted_infected]
-
-        super().__init__(request, q, table_head, header_button, search_form, is_downloadable_xls=True)
+        super().__init__(request, q, table_head, header_button, search_form, is_downloadable_xls=is_downloadable_xls, 
+                        table_head_info = table_head_info)
 
     def preprocess_entries(self, entries):
         if "probably_duplicate" in self.request.args:
@@ -439,9 +449,7 @@ class AllPatientsTableModule(TableModule):
                 contacted_found_count += 1
 
         contacted_count = "{}/{}".format(contacted_found_count, len(contacted))
-
-        row_to_print = [patient_id, iin, travel_type, region, is_found, \
-                in_hospital, is_infected, contacted_count, created_date]
+        row_to_print = []
 
         if self.select_contacted:
             select_contacted_button = None
@@ -459,10 +467,13 @@ class AllPatientsTableModule(TableModule):
             else:
                 select_contacted_html = "<a href=\"/select_contacted?infected_patient_id={}&contacted_patient_id={}\" class=\"btn btn-primary\">{}</a>".format(
                                         self.select_contacted, patient.id, _("Выбрать Контактным"))
-                select_contacted_button = (select_contacted_html, "safe")
+                select_contacted_button = (patient.id, "checkbox", "add_contacted_patient_id")
 
             if select_contacted_button:
                 row_to_print.append(select_contacted_button)
+
+        row_to_print += [patient_id, iin, travel_type, region, is_found, \
+                in_hospital, is_infected, contacted_count, created_date]
 
         return row_to_print
 
