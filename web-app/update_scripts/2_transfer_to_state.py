@@ -56,7 +56,6 @@ print("states:",states)
 """
 
 def addPatientStates(patient, psqlCursor):
-    print(patient["id"])
     statuses = []
     if patient.get("is_found", False):
         statuses.append("Найден")
@@ -78,7 +77,6 @@ def addPatientStates(patient, psqlCursor):
             now = datetime.strftime(datetime.now(), "%Y-%m-%dT%H:%M:%S")
             if st == "Нет Статуса":
                 continue
-            print(st, states.get(st))
             psqlQuery('INSERT INTO "PatientState" (state_id, patient_id, created_at, detection_date, attrs) VALUES (%d, %d, \'%s\',\'%s\', \'{}\');' % (
                 states.get(st), patient["id"], now, now
             ), psqlCursor)
@@ -100,7 +98,8 @@ def handlePatients(patients):
     psqlConn.autocommit = True
     psqlCursor = psqlConn.cursor()
 
-    for patient in patients:
+    for i, patient in enumerate(patients):
+        print(i+1, "/", len(patients))
         addPatientStates(patient, psqlCursor)
 
 patients = psqlQuery('SELECT * FROM "Patient" ORDER BY id;', psqlCursor)
