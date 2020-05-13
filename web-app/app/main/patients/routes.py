@@ -68,6 +68,9 @@ def prepare_patient_form(patient_form, with_old_data = False, with_all_travel_ty
                     patient_form.travel_type.choices.append((typ.value, typ.name))
             else:
                 patient_form.travel_type.choices.append((typ.value, typ.name))
+        
+        if not search_form:
+            patient_form.travel_type.default = c.local_type[0]
 
     # Flight Travel
     if not patient_form.flight_arrival_date.choices:

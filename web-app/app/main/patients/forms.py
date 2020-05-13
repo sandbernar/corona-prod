@@ -153,6 +153,10 @@ class PatientsSearchForm(FlaskForm):
     train_arrival_date = DateField('Train Arrival Date')
     train_id = SelectField('Train', choices=[])
 
+    travel_departure_outer = SelectField(choices=[("all_travel", _("Все Рейсы")),
+                                                  ("outer_travel", _("Внешние Рейсы")),
+                                                  ("domestic_travel", _("Внутренние Рейсы"))], default="all_travel")
+
     # Travel by auto, foot, sea
     arrival_date = DateField('Arrival Date')
     auto_border_id = SelectField('By Auto Border')

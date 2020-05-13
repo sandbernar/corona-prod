@@ -4,7 +4,7 @@ from app.main.modules import TableModule
 
 from app.main.patients.models import Patient, ContactedPersons, PatientStatus
 from app.main.models import TravelType, VariousTravel, BlockpostTravel, Address, Country, Region
-from app.main.flights_trains.models import FlightTravel, TrainTravel
+from app.main.flights_trains.models import FlightTravel, TrainTravel, FlightCode, Train
 from app.login.models import User
 
 from collections import OrderedDict
@@ -348,6 +348,8 @@ class AllPatientsTableModule(TableModule):
 
             self.search_form.address.default = address     
 
+        current_country = Country.query.filter_by(code=c.current_country).first()
+
         if travel_type and travel_type != c.all_travel_types[0]:
             # FlightTravel
             if travel_type_query.value == c.flight_type[0]:
@@ -356,6 +358,17 @@ class AllPatientsTableModule(TableModule):
                 flight_code_id = request.args.get("flight_code_id", None)
                 if flight_code_id != None:
                     self.q = self.q.filter(FlightTravel.flight_code_id == flight_code_id)
+
+                travel_in_out = request.args.get("travel_departure_outer", "all_travel")
+                if travel_in_out != "all_travel":
+                    self.q = self.q.join(FlightCode, FlightTravel.flight_code_id == FlightCode.id)
+                    
+                    if travel_in_out == "outer_travel":
+                        self.q = self.q.filter(FlightCode.from_country != current_country)
+                    elif travel_in_out == "domestic_travel":
+                        self.q = self.q.filter(FlightCode.from_country == current_country)
+
+                    self.search_form.travel_departure_outer.default = travel_in_out
             
             # TrainTravel
             elif travel_type_query.value == c.train_type[0]:
@@ -364,6 +377,17 @@ class AllPatientsTableModule(TableModule):
                 train_id = request.args.get("train_id", None)
                 if train_id != None:
                     self.q = self.q.filter(TrainTravel.train_id == train_id)
+
+                travel_in_out = request.args.get("travel_departure_outer", "all_travel")
+                if travel_in_out != "all_travel":
+                    self.q = self.q.join(Train, TrainTravel.train_id == Train.id)
+                    
+                    if travel_in_out == "outer_travel":
+                        self.q = self.q.filter(Train.from_country != current_country)
+                    elif travel_in_out == "domestic_travel":
+                        self.q = self.q.filter(Train.from_country == current_country)
+
+                    self.search_form.travel_departure_outer.default = travel_in_out                
 
             # Blockpost
             elif travel_type_query.value == c.blockpost_type[0]:
