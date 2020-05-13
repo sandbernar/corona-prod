@@ -16,7 +16,7 @@ class TableModule:
                                 default=5, validators=[DataRequired()])
 
     def __init__(self, request, q, table_head, header_button = None, search_form = None, sort_param = None,
-                page = 1, per_page = 5, table_title = "", is_downloadable_xls = False):
+                page = 1, per_page = 5, table_title = "", is_downloadable_xls = False, table_head_info = dict()):
         if "page" in request.args:
             try:
                 page = int(request.args["page"])
@@ -33,6 +33,7 @@ class TableModule:
         self.search_form = search_form
         self.sort_param = sort_param
         self.is_downloadable_xls = is_downloadable_xls
+        self.table_head_info = table_head_info
 
         self.table_title = table_title
 

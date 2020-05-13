@@ -752,7 +752,7 @@ def patients():
 
     try:
         all_patients_table = AllPatientsTableModule(request, Patient.query, select_contacted,
-                            search_form=form, header_button=[(_("Добавить Пациента"), "/add_person")])
+                            search_form=form)
 
         if "download_xls" in request.args:
             return all_patients_table.download_xls()
@@ -874,27 +874,41 @@ def contacted_persons():
 
     return render_template('errors/error-500.html'), 500
 
-@blueprint.route('/select_contacted', methods=['GET'])
+@blueprint.route('/select_contacted', methods=['POST'])
 def select_contacted():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))
 
-    if "infected_patient_id" and "contacted_patient_id" in request.args:
-        try:
-            infected_patient = Patient.query.filter_by(id = request.args["infected_patient_id"]).first()
-            contacted_patient = Patient.query.filter_by(id = request.args["contacted_patient_id"]).first()
-        except exc.SQLAlchemyError:
-            return render_template('errors/error-400.html'), 400
+    print(request.form)
 
-    if not ContactedPersons.query.filter_by(infected_patient_id=infected_patient.id).filter_by(contacted_patient_id=contacted_patient.id).count():
-        contacted = ContactedPersons(infected_patient_id=infected_patient.id, contacted_patient_id=contacted_patient.id)
-    
-        db.session.add(contacted)
-        db.session.commit()
+    try:
+        if "infected_patient_id" and "contacted_patients[]" in request.form:
+            infected_patient = Patient.query.filter_by(id = request.form["infected_patient_id"]).first()
+            contacted_patients_ids = request.form.getlist('contacted_patients[]')
 
-        return redirect("/contacted_persons?id={}&success={}".format(infected_patient.id, _("Контактный успешно добавлен")))
-    else:
-        return render_template('errors/error-400.html'), 400
+            contacted_patients = list()
+
+            for cont_patient_id in contacted_patients_ids:
+                contacted_patient = Patient.query.filter_by(id = cont_patient_id).first()
+                
+                if contacted_patient and ContactedPersons.query.filter_by(
+                                        infected_patient_id=infected_patient.id).filter_by(
+                                        contacted_patient_id=contacted_patient.id).count():
+                    
+                    return jsonify({"redirect_url": "/contacted_persons?id={}&error={}".format(infected_patient.id, _("Одна из контактных связей уже существует"))})
+
+                contacted_patients.append(contacted_patient)
+
+            for contacted_patient in contacted_patients:                
+                    contacted = ContactedPersons(infected_patient_id=infected_patient.id, contacted_patient_id=contacted_patient.id)
+                
+                    db.session.add(contacted)
+                    db.session.commit()
+            
+            return jsonify({"redirect_url": "/contacted_persons?id={}&success={}".format(infected_patient.id, "{} {}".format(len(contacted_patients), _("связей были успешно добавлены")))})
+    except exc.SQLAlchemyError:
+        return jsonify({"redirect_url": "/contacted_persons?id={}&error={}".format(infected_patient.id, _("Неизвестная Ошибка"))})
+
 
 @blueprint.route('/delete_contacted', methods=['GET'])
 def delete_contacted():

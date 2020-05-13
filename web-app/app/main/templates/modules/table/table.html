@@ -52,24 +52,27 @@
           {% else %}
             0
           {% endif %}
-          
           </h3>
         </div>   
         <div class="col-md-auto">
           {% if table.header_button %}
           <div class="row">
-          {% if table.is_downloadable_xls %}
-            {% if current_user.region.name == "Алматы" or current_user.region.name == "Нур-Султан " or current_user.is_admin %}
-            <div class="col">
-              <form method="POST">
-                <button name="download_xls" value='{{ table.__class__.__name__ }}' class="btn btn-sm btn-primary btn-full-width">{{ _("Скачать Выгрузку в Excel") }}</button>
-              </form>
-            </div>
-          {% endif %}
+            {% if table.is_downloadable_xls %}
+              {% if current_user.region.name == "Алматы" or current_user.region.name == "Нур-Султан " or current_user.is_admin %}
+              <div class="col">
+                <form method="POST">
+                  <button name="download_xls" value='{{ table.__class__.__name__ }}' class="btn btn-sm btn-primary btn-full-width">{{ _("Скачать Выгрузку в Excel") }}</button>
+                </form>
+              </div>
+            {% endif %}
           {% endif %}
             {% for button in table.header_button %}
             <div class="col">
+              {% if button[2] %}
+              <button class="btn btn-primary btn-full-width" id='{{ button[2] }}' {{ button[3] }}>{{ button[0] }}</button>
+              {% else %}
               <a href={{ button[1]}} class="btn btn-sm btn-primary btn-full-width">{{ button[0] }}</a>
+              {% endif %}
             </div>
             {% endfor %}
           </div>
@@ -83,33 +86,51 @@
         <thead class="thead-light">
           <tr>
             {% for th in table.table_head %}
-            {% if th is string %}
-            <th scope="col">{{ th }}</th>
+            {% if th in table.table_head_info %}
+              {% if table.table_head_info[th][0] == "checkbox" %}
+              <th scope="col">
+                <div class="custom-control custom-checkbox">
+                  <input class="custom-control-input" id="{{ table.table_head_info[th][1] }}" type="checkbox">
+                  <label class="custom-control-label" for='{{ table.table_head_info[th][1] }}'>{{ th }}</label>
+                </div>
+              </th>
+              {% endif %}
             {% else %}
-            <th scope="col">
-              <a onclick="tableSort('{{ th[0] }}')" href="#">
-                {{ th[0] }}
-                {% if th[0] == table.sort_by %}
-                {% if table.sort_by_asc %}
-                ↑
-                {% else %}
-                ↓
-                {% endif %}
-                {% endif %}
-              </a>
-            </th>
+              {% if th is string %}
+              <th scope="col">{{ th }}</th>
+              {% else %}
+              <th scope="col">
+                <a onclick="tableSort('{{ th[0] }}')" href="#">
+                  {{ th[0] }}
+                  {% if th[0] == table.sort_by %}
+                  {% if table.sort_by_asc %}
+                  ↑
+                  {% else %}
+                  ↓
+                  {% endif %}
+                  {% endif %}
+                </a>
+              </th>
+              {% endif %}
             {% endif %}
             {% endfor %}
           </tr>
         </thead>
         <tbody>
           {% for entry in table.entries %}
-          <tr  class="{{ entry['class'] }}">
+          <tr class="{{ entry['class'] }}">
             {% for column in entry["data"] %}
             {% if column is iterable and column is not string %}
             {% if column[1] == "safe" %}
             <td>
               {{ column[0] |safe }}
+            </td>
+            {% elif column[1] == "checkbox" %}
+            <td>
+              <div class="custom-control custom-checkbox ">
+                <input class="custom-control-input" id="{{ column[2] }}_{{ column[0] }}" name="{{ column[2] }}" value="{{ column[0] }}" type="checkbox">
+                <label class="custom-control-label" for="{{ column[2] }}_{{ column[0] }}">{{ _("Выбрать Контактным") }}</label>
+              </div>
             </td>
             {% else %}
             <th scope="row">

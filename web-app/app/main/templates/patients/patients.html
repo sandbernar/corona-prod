@@ -112,6 +112,7 @@
           </button>
     </div>
   </div>
+</form>
 
   <!-- Table -->
   <div class="row mt-3">
@@ -124,7 +125,6 @@
   <!-- Footer -->
   {% include "site_template/footer.html" %}
 </div>        
-</form>
 
 {% endblock content %}
 
@@ -175,6 +175,53 @@
       }
     }
   }
+
+// Contacted Select Checkbox
+$("#contacted_all_checkboxes").on("change", function() {
+  var group = $('input[name="add_contacted_patient_id"]');
+
+  if (group.length > 1) {
+    group.each(function () {
+      $(this).prop('checked', ($('#contacted_all_checkboxes').is(":checked")));
+      $(this).trigger('change');
+    });
+  }
+});
+
+$("input[name='add_contacted_patient_id']"), submitButt = $("input[id='add_contacted']");
+
+var checkboxes = $("input[name='add_contacted_patient_id']"),
+submitButtList = $("#add_contacted");
+
+checkboxes.change(function() {
+  submitButt.attr("disabled", !checkboxes.is(":checked"));
+  if (!checkboxes.is(":checked")) {
+    submitButtList.prop("disabled", true);
+  } else {
+    submitButtList.prop("disabled", false);
+  }
+});
+
+$("#add_contacted").on("click", function(e) {
+  e.preventDefault();
+  
+  var checkedArrays = [];
+  
+  $("input:checkbox[name=add_contacted_patient_id]:checked").each(function(){
+    checkedArrays.push($(this).val());
+  });
+
+  $.ajax({
+    type: 'POST',
+    url: "/select_contacted",
+    async: false,
+    data: {infected_patient_id: {{ select_contacted }}, contacted_patients: checkedArrays},
+    dataType: "text",
+    success: function(res) {
+      window.location.href = JSON.parse(res).redirect_url;
+    }
+  });
+});
 
 </script>
 
