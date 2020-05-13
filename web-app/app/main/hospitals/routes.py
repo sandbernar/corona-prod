@@ -14,12 +14,13 @@ from jinja2 import TemplateNotFound
 from app.main.hospitals.models import Hospital, Hospital_Type
 from app.main.patients.models import Patient
 from app.main.models import Region
+from app.main.hospitals.modules import HospitalPatientsTableModule
 
 from datetime import datetime
 import pandas as pd
 import numpy as np
 import math, re
-from app.main.hospitals.forms import AddHospitalForm, HospitalSearchForm
+from app.main.hospitals.forms import AddHospitalForm, HospitalSearchForm, HospitalPatientsSearchForm
 from app.main.util import get_regions, get_regions_choices, populate_form, disable_form_fields
 from flask_babelex import _
 from app.main.routes import route_template
@@ -203,7 +204,14 @@ def hospital_profile():
 
             form.process()
 
-            return route_template('hospitals/add_hospital_and_profile', form = form, change=change, hospital=hospital, error_msg=error_msg, is_profile=True)
+            search_form = HospitalPatientsSearchForm()
+            if not search_form.region_id.choices:
+                search_form.region_id.choices = get_regions_choices(current_user, with_all_regions=True)
+
+            patients_table = HospitalPatientsTableModule(request, Patient.query, search_form, hospital.id)
+
+            return route_template('hospitals/add_hospital_and_profile', form = form, change=change, hospital=hospital, error_msg=error_msg,
+                                    is_profile=True, patients_table=patients_table)
     else:    
         return render_template('errors/error-500.html'), 500
 
@@ -214,7 +222,7 @@ def delete_hospital():
         return redirect(url_for('login_blueprint.login'))
 
     if not current_user.is_admin:
-        return render_template('errors/error-500.html'), 500        
+        return render_template('errors/error-500.html'), 500
     
     if len(request.form):
         if "delete" in request.form:

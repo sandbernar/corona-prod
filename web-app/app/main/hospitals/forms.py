@@ -18,3 +18,8 @@ class AddHospitalForm(UploadDataForm):
 class HospitalSearchForm(FlaskForm):
 	region = SelectField(id='region')
 	hospital_type = SelectField(id='hospital_type')
+
+class HospitalPatientsSearchForm(FlaskForm):
+    full_name = TextField("Full Name")
+    region_id = SelectField("Region ID")
+    iin = TextField("IIN")  
