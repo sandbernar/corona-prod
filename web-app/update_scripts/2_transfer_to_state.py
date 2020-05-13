@@ -3,14 +3,14 @@
 import os
 import json
 from datetime import datetime, timedelta
-import threading
+from multiprocessing import Pool
+import numpy as np
 import time
 
 import psycopg2
 
 from app import constants as C
 
-# Connect to our PostgreSQL
 psqlConn = psycopg2.connect(dbname=os.getenv("DATABASE_NAME"),
                             user=os.getenv("DATABASE_USER"),
                             password=os.getenv("DATABASE_PASSWORD"),
@@ -18,7 +18,7 @@ psqlConn = psycopg2.connect(dbname=os.getenv("DATABASE_NAME"),
 psqlConn.autocommit = True
 psqlCursor = psqlConn.cursor()
 
-def psqlQuery(query_message):
+def psqlQuery(query_message, psqlCursor):
     """
     Function that queries PostgreSQL
     If SELECT returns key-value paired objects
@@ -37,14 +37,14 @@ def psqlQuery(query_message):
         returnValue = None
     return returnValue
 
-statusResult = psqlQuery('SELECT * FROM "PatientStatus"')
+statusResult = psqlQuery('SELECT * FROM "PatientStatus"', psqlCursor)
 status = {}
 for state in statusResult:
     status[state["id"]] = state["name"]
     status[state["name"]] = state["id"]
 print("status:",status)
 
-statesResult = psqlQuery('SELECT * FROM "State"')
+statesResult = psqlQuery('SELECT * FROM "State"', psqlCursor)
 states = {}
 for state in statesResult:
     states[state["id"]] = state["name"]
@@ -55,7 +55,7 @@ print("states:",states)
     Transfer is_found, is_infected, status_id (PatientStatus) to attrs
 """
 
-def addPatientStates(patient):
+def addPatientStates(patient, psqlCursor):
     print(patient["id"])
     statuses = []
     if patient.get("is_found", False):
@@ -66,7 +66,7 @@ def addPatientStates(patient):
         statuses.append(status.get(patient["status_id"]))
     if patient.get("is_infected", False):
         statuses.append("Инфицирован")
-    patientStates = psqlQuery('SELECT * FROM "PatientState" WHERE patient_id=%d' % patient["id"])
+    patientStates = psqlQuery('SELECT * FROM "PatientState" WHERE patient_id=%d' % patient["id"], psqlCursor)
     for st in statuses:
         found = False
         if patientStates is not None:
@@ -81,7 +81,7 @@ def addPatientStates(patient):
             print(st, states.get(st))
             psqlQuery('INSERT INTO "PatientState" (state_id, patient_id, created_at, detection_date, attrs) VALUES (%d, %d, \'%s\',\'%s\', \'{}\');' % (
                 states.get(st), patient["id"], now, now
-            ))
+            ), psqlCursor)
     is_found = "false"
     if patient.get("is_found", False):
         is_found = "true"
@@ -89,11 +89,25 @@ def addPatientStates(patient):
     is_infected = "false"
     if patient.get("is_infected", False):
         is_infected = "true"
-    psqlQuery('UPDATE "Patient" SET is_found=%s, is_infected=%s WHERE id=%d;' % (is_found, is_infected, patient["id"]))
+    psqlQuery('UPDATE "Patient" SET is_found=%s, is_infected=%s WHERE id=%d;' % (is_found, is_infected, patient["id"]), psqlCursor)
 
+def handlePatients(patients):
+    # Connect to our PostgreSQL
+    psqlConn = psycopg2.connect(dbname=os.getenv("DATABASE_NAME"),
+                                user=os.getenv("DATABASE_USER"),
+                                password=os.getenv("DATABASE_PASSWORD"),
+                                host=os.getenv("DATABASE_HOST"))
+    psqlConn.autocommit = True
+    psqlCursor = psqlConn.cursor()
 
-patients = psqlQuery('SELECT * FROM "Patient" ORDER BY id;')
-for patient in patients:
-    addPatientStates(patient)
+    for patient in patients:
+        addPatientStates(patient, psqlCursor)
+
+patients = psqlQuery('SELECT * FROM "Patient" ORDER BY id;', psqlCursor)
+
+process_num = 4
+
+pool = Pool(process_num)
+pool.map(handlePatients, np.array_split(patients, process_num))
 
 print("done")
