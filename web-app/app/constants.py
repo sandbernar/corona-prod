@@ -4,6 +4,8 @@ all_hospital_types = "Все Типы"
 all_hospital_nomenklatura = "Все Номенклатуры"
 no_hospital = "Не Госпитализирован"
 
+current_country = "KZ"
+
 # Flight Code
 all_flight_codes = "Все Рейсы"
 

@@ -131,7 +131,7 @@
 {% block javascripts %}
 {{ super()}}
 <script type="text/javascript">
-  {% with form=form, c=constants %}
+  {% with form=form, c=constants, search_form=True %}
   {% include "js/travel_form.html" %}
   {% endwith %}
 

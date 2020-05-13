@@ -92,7 +92,15 @@ var trainForm = `  <div class='col-xl'>
                     </div>
                     {% endif %}
                     `;
-
+{% if search_form %}
+var outerTravelCheckBox = `<div class='col-xl'>
+                      <div class='form-group'>
+                        <label class='form-control-label'>{{ _('Тип Рейса') }}</label>
+                        {{ form.travel_departure_outer(class='form-control') }}
+                        </div>
+                      </div>  
+                    `;                    
+{% endif %}
 var blockpostForm = `  <div class='col-xl'>
                       <div class='form-group'>
                         <label for='arrival-date-input' class='form-control-label'>{{ _('Регион Блокпоста') }}</label>
@@ -138,6 +146,11 @@ if (travel_type !== '{{c.local_type[0]}}' && travel_type !== '{{c.all_travel_typ
     $("#flight_arrival_date").on("change", function(){
     get_flights_by_date();
     });
+    
+    {% if search_form %}
+      addToTravelForm(outerTravelCheckBox)
+    {% endif %}
+
   } else if(travel_type === '{{c.train_type[0]}}') {
     addToTravelForm(trainForm)
 
@@ -147,6 +160,11 @@ if (travel_type !== '{{c.local_type[0]}}' && travel_type !== '{{c.all_travel_typ
     $("#train_arrival_date").on("change", function(){
       get_trains_by_date_range();
     });
+    
+    {% if search_form %}
+      addToTravelForm(outerTravelCheckBox)
+    {% endif %}
+
   } else if(travel_type === '{{c.blockpost_type[0]}}') {
     addToTravelForm(borderForm)
     addToTravelForm(blockpostForm)
