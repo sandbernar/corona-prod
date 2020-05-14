@@ -77,9 +77,18 @@ def addPatientStates(patient, psqlCursor):
             now = datetime.strftime(datetime.now(), "%Y-%m-%dT%H:%M:%S")
             if st == "Нет Статуса":
                 continue
-            psqlQuery('INSERT INTO "PatientState" (state_id, patient_id, created_at, detection_date, attrs) VALUES (%d, %d, \'%s\',\'%s\', \'{}\');' % (
-                states.get(st), patient["id"], now, now
-            ), psqlCursor)
+            if st == "Госпитализирован" and patient.get("hospital_id") is not None:
+                psqlQuery("""
+                    INSERT INTO "PatientState" 
+                        (state_id, patient_id, created_at, detection_date, attrs) 
+                    VALUES 
+                        (%d, %d, \'%s\',\'%s\', \'{"hospital_id": %d}\');""" % (
+                    states.get(st), patient["id"], now, now, patient["hospital_id"]
+                ), psqlCursor)
+            else:
+                psqlQuery('INSERT INTO "PatientState" (state_id, patient_id, created_at, detection_date, attrs) VALUES (%d, %d, \'%s\',\'%s\', \'{}\');' % (
+                    states.get(st), patient["id"], now, now
+                ), psqlCursor)
     is_found = "false"
     if patient.get("is_found", False):
         is_found = "true"
