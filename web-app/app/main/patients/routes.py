@@ -879,8 +879,6 @@ def select_contacted():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))
 
-    print(request.form)
-
     try:
         if "infected_patient_id" and "contacted_patients[]" in request.form:
             infected_patient = Patient.query.filter_by(id = request.form["infected_patient_id"]).first()
