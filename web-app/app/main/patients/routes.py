@@ -754,8 +754,8 @@ def patients():
         all_patients_table = AllPatientsTableModule(request, Patient.query, select_contacted,
                             search_form=form)
 
-        if "download_xls" in request.args:
-            return all_patients_table.download_xls()
+        if "download_xls" in request.args and all_patients_table.xls_response:
+            return all_patients_table.xls_response
 
     except ValueError:
         return render_template('errors/error-500.html'), 500        

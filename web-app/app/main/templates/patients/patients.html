@@ -11,12 +11,12 @@
 {% include "site_template/navigation.html" %}
 
 {% include "site_template/top-stats.html" %}
-
+      <form method="GET" id="searchForm">
 <div class="container-fluid mt--7">
   <div class="card shadow">
     <div class="card-header border-0">
       <h3> {{ _('Поиск Пациента') }} </h3>
-      <form method="GET" id="searchForm">
+
         <input type="hidden" style="display: none;" name="per_page" value="{{ all_patients_table.per_page }}">
         {% if select_contacted %}
         <input type="text" name="select_contacted_id" style="display:none;" value="{{ select_contacted }}">
@@ -112,7 +112,6 @@
           </button>
     </div>
   </div>
-</form>
 
   <!-- Table -->
   <div class="row mt-3">
@@ -125,6 +124,7 @@
   <!-- Footer -->
   {% include "site_template/footer.html" %}
 </div>        
+</form>
 
 {% endblock content %}
 

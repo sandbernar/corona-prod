@@ -109,7 +109,6 @@ class ContactedPatientsTableModule(TableModule):
         region_id = self.request.args.get("region_id", -1)
         if region_id:
             region_id = int(region_id)
-
             if region_id != -1:
                 self.q = self.q.filter(Patient.region_id == region_id)
                 self.search_form.region_id.default = region_id
@@ -200,8 +199,6 @@ class AllPatientsTableModule(TableModule):
         table_head[_("Инфицирован")] = ["is_infected"]
         table_head[_("Контактов (найдено/всего)")] = []
         table_head[_("Время Добавления")] = ["created_date"]
-
-        print(request.args)
 
         super().__init__(request, q, table_head, header_button, search_form, is_downloadable_xls=is_downloadable_xls, 
                         table_head_info = table_head_info)
@@ -438,7 +435,6 @@ class AllPatientsTableModule(TableModule):
                 
                             self.q = self.q.filter(VariousTravel.border_control_id == border_id)
                             break
-
         self.search_form.process()
 
     def print_entry(self, result):
@@ -504,6 +500,7 @@ class AllPatientsTableModule(TableModule):
 
     def download_xls(self):
         data = []
+
         for row in self.q.all():
             gender = _("Неизвестно")
             if row.gender != None:

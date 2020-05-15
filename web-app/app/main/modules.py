@@ -32,7 +32,10 @@ class TableModule:
         self.header_button = header_button
         self.search_form = search_form
         self.sort_param = sort_param
+        
         self.is_downloadable_xls = is_downloadable_xls
+        self.xls_response = None
+
         self.table_head_info = table_head_info
 
         self.table_title = table_title
@@ -59,7 +62,7 @@ class TableModule:
 
         download_xls = request.args.get("download_xls", None)
         if download_xls == self.__class__.__name__:
-            return self.download_xls()
+            self.xls_response = self.download_xls()
 
         # Should always be the last one to be called
         self.entries = self.get_entries()
