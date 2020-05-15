@@ -4,7 +4,7 @@ from app.main.modules import TableModule
 
 import app.constants as c
 from app.login.models import User
-from app.main.patients.models import Patient
+from app.main.patients.models import Patient, PatientStatus
 
 from collections import OrderedDict
 from app.main.util import parse_date
@@ -22,6 +22,7 @@ class HospitalPatientsTableModule(TableModule):
         table_head[_("Время Добавления")] = ["created_date"]
 
         q = q.filter_by(hospital_id = hospital_id)
+        q = q.filter(PatientStatus.value == c.in_hospital[0])
         
         super().__init__(request, q, table_head, header_button, search_form, 
                         table_title=_("Пациенты, госпитализированные в данном стационаре"))     

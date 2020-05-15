@@ -12,7 +12,7 @@ from app import constants as c
 from jinja2 import TemplateNotFound
 
 from app.main.hospitals.models import Hospital, Hospital_Type
-from app.main.patients.models import Patient
+from app.main.patients.models import Patient, PatientStatus
 from app.main.models import Region
 from app.main.hospitals.modules import HospitalPatientsTableModule
 
@@ -92,7 +92,7 @@ def hospitals():
     total_len = q.count()
 
     for h in q.offset((page-1)*per_page).limit(per_page).all():
-        patients_num = Patient.query.filter_by(hospital_id=h.id).count()
+        patients_num = Patient.query.filter_by(hospital_id=h.id).filter(PatientStatus.value == c.in_hospital[0]).count()
         hospitals.append((h, patients_num))
 
     max_page = math.ceil(total_len/per_page)
