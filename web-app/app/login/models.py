@@ -80,8 +80,25 @@ class UserRole(db.Model):
     can_add_sea = Column(Boolean, default=False)
     can_add_local = Column(Boolean, default=False)
     can_add_blockpost = Column(Boolean, default=False)
+
     can_lookup_own_patients = Column(Boolean, default=False)
     can_lookup_other_patients = Column(Boolean, default=False)
+
+    can_found_by_default = Column(Boolean, default=False) 
+    can_set_infected = Column(Boolean, default=False) 
+    can_set_hospital_home_quarant = Column(Boolean, default=False) 
+    can_set_transit = Column(Boolean, default=False) 
+    can_access_contacted = Column(Boolean, default=False)    
+    can_delete_own_patients = Column(Boolean, default=False)
+    can_delete_other_patients = Column(Boolean, default=False)
+
+    can_export_patients = Column(Boolean, default=False)
+    can_export_contacted = Column(Boolean, default=False)
+    can_add_edit_hospital = Column(Boolean, default=False)
+    
+    can_block_own_region_accounts = Column(Boolean, default=False)
+    can_block_all_accounts = Column(Boolean, default=False)
+    can_access_roles = Column(Boolean, default=False)
 
     def __init__(self, **kwargs):
         set_props(self, kwargs)

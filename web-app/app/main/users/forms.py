@@ -43,6 +43,8 @@ class UserPatientsSearchForm(FlaskForm):
 class CreateUserRoleForm(FlaskForm):
     name = TextField("Role Name", validators=[DataRequired()])
     value = TextField("Role Value", validators=[DataRequired()])
+    
+    # Travel Types
     can_add_air = BooleanField()
     can_add_train = BooleanField()
     can_add_auto = BooleanField()
@@ -50,5 +52,26 @@ class CreateUserRoleForm(FlaskForm):
     can_add_sea = BooleanField()
     can_add_local = BooleanField()
     can_add_blockpost = BooleanField()
+
+    # Patient Profile Access
     can_lookup_own_patients = BooleanField()
     can_lookup_other_patients = BooleanField()
+    can_access_contacted = BooleanField()
+    can_delete_own_patients = BooleanField()
+    can_delete_other_patients = BooleanField()
+
+    # Profile Edit
+    can_found_by_default = BooleanField()
+    can_set_infected = BooleanField()
+    can_set_hospital_home_quarant = BooleanField()
+    can_set_transit = BooleanField()
+
+    # Manager's Functions
+    can_export_patients = BooleanField()
+    can_export_contacted = BooleanField()
+    can_add_edit_hospital = BooleanField()
+
+    # Admin Function
+    can_block_own_region_accounts = BooleanField()
+    can_block_all_accounts = BooleanField()
+    can_access_roles = BooleanField()
