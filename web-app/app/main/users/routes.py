@@ -17,7 +17,7 @@ from app.main.users.forms import CreateUserForm, UpdateUserForm, UserActivityRep
                                     UserSearchForm, UserPatientsSearchForm
 from app.main.forms import TableSearchForm
 import math
-from app.login.models import User
+from app.login.models import User, UserRole
 from app.main.util import get_regions, get_regions_choices, populate_form, disable_form_fields, parse_date
 from app.login.util import hash_pass
 from flask_babelex import _
@@ -30,6 +30,14 @@ import urllib
 from datetime import datetime, timedelta
 
 from app.main.users.modules import UserTableModule, UserPatientsTableModule
+
+def setup_user_form(form):
+    if not form.region_id.choices:
+        form.region_id.choices = get_regions_choices(current_user)
+
+    if not form.role_id.choices:
+        roles = UserRole.query.all()
+        form.role_id.choices = [(r.value, r.name) for r in roles]
 
 @blueprint.route('/export_users_activity_xls', methods=['POST'])
 @login_required
@@ -158,9 +166,7 @@ def add_user():
         return render_template('errors/error-500.html'), 500
 
     form = CreateUserForm()
-
-    if not form.region_id.choices:
-        form.region_id.choices = get_regions_choices(current_user)
+    setup_user_form(form)
 
     form.process()
 
@@ -268,6 +274,10 @@ def user_profile():
 
             populate_form(form, user_parameters)
             form.region_id.choices = get_regions_choices(current_user)
+
+            if not form.role_id.choices:
+                roles = UserRole.query.all()
+                form.role_id.choices = [(r.value, r.name) for r in roles]
   
             form.process()
 

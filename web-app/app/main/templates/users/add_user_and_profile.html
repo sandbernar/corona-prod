@@ -94,13 +94,8 @@
                           {% if current_user.is_admin %}
                           <div class="col-md-auto">
                             <div class="form-group">
-                              <label for="region-input" class="form-control-label">{{ _("Администратор?") }}*</label><br>
-                              {% for subfield in form.is_admin %}
-                              <div class="custom-control custom-radio custom-control-inline">
-                                {{ subfield(type="radio", id=subfield.id, class="custom-control-input") }}
-                                <label class="custom-control-label" for='{{ subfield.id }}'>{{ subfield.label }}</label>
-                              </div>
-                              {% endfor %}
+                              <label for="region-input" class="form-control-label">{{ _("Роль") }}*</label>
+                              {{ form.role_id(class="form-control") }}                          
                             </div>
                           </div>
                           {% endif %}                          

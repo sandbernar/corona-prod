@@ -19,6 +19,7 @@ class CreateUserForm(FlaskForm):
 
     region_id = SelectField('Region', validators=[DataRequired()])
     organization = TextField('Organization', validators=[DataRequired()])
+    role_id = SelectField('Region', validators=[DataRequired()])
     is_admin = RadioField("Is Admin", choices=[(1, _("Да")), (0, _("Нет"))], default=0, validators=[DataRequired()])
 
 class UpdateUserForm(CreateUserForm):

@@ -549,6 +549,8 @@ class AllPatientsTableModule(TableModule):
             is_infected = yes_no(row.is_infected)
             is_found = yes_no(row.is_found)
 
+            print(row.id)
+
             data.append([row.id, str(row), row.iin, gender, row.dob, str(row.region), 
                         row.pass_num, str(row.citizenship), str(row.country_of_residence),
                         str(row.travel_type), #travel_date, travel_info,

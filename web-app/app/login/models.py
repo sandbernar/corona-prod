@@ -27,7 +27,16 @@ class User(db.Model, UserMixin):
     region_id = Column(Integer, ForeignKey('Region.id'))
     region = db.relationship('Region')
 
+    @property
+    def is_admin(self):
+        admin_role = UserRole.query.filter_by(value="admin").first()
+
+        return user_role_id == admin_role.id
+    
     is_admin = Column(Boolean, default=True)
+
+    user_role_id = Column(Integer, ForeignKey('UserRole.id'), nullable=False)
+    user_role = db.relationship('UserRole')
 
     def __init__(self, **kwargs):
         for property, value in kwargs.items():
@@ -49,6 +58,28 @@ class User(db.Model, UserMixin):
     def __repr__(self):
         return str(self.username)
 
+class UserRole(db.Model):
+    __tablename__ = 'UserRole'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String, unique=True)
+    value = Column(String, unique=True)
+
+    #User Rights
+    can_add_air = Column(Boolean, default=False)
+    can_add_train = Column(Boolean, default=False)
+    can_add_auto = Column(Boolean, default=False)
+    can_add_foot = Column(Boolean, default=False)
+    can_add_sea = Column(Boolean, default=False)
+    can_add_blockpost = Column(Boolean, default=False)
+    can_lookup_own_patients = Column(Boolean, default=False)
+    can_lookup_other_patients = Column(Boolean, default=False)
+
+    def __init__(self, **kwargs):
+        set_props(self, kwargs)
+
+    def __repr__(self):
+        return str(self.name)
 
 @login_manager.user_loader
 def user_loader(id):
