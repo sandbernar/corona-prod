@@ -4,7 +4,7 @@ License: MIT
 """
 
 from flask_wtf import FlaskForm
-from wtforms import TextField, SelectField, RadioField, DateField
+from wtforms import TextField, SelectField, RadioField, DateField, BooleanField
 from wtforms.validators import DataRequired
 from flask_babelex import _
 
@@ -43,3 +43,12 @@ class UserPatientsSearchForm(FlaskForm):
 class CreateUserRoleForm(FlaskForm):
     name = TextField("Role Name", validators=[DataRequired()])
     value = TextField("Role Value", validators=[DataRequired()])
+    can_add_air = BooleanField()
+    can_add_train = BooleanField()
+    can_add_auto = BooleanField()
+    can_add_foot = BooleanField()
+    can_add_sea = BooleanField()
+    can_add_local = BooleanField()
+    can_add_blockpost = BooleanField()
+    can_lookup_own_patients = BooleanField()
+    can_lookup_other_patients = BooleanField()

@@ -78,6 +78,7 @@ class UserRole(db.Model):
     can_add_auto = Column(Boolean, default=False)
     can_add_foot = Column(Boolean, default=False)
     can_add_sea = Column(Boolean, default=False)
+    can_add_local = Column(Boolean, default=False)
     can_add_blockpost = Column(Boolean, default=False)
     can_lookup_own_patients = Column(Boolean, default=False)
     can_lookup_other_patients = Column(Boolean, default=False)

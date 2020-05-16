@@ -43,6 +43,10 @@ from app.main.util import get_regions, get_regions_choices, get_flight_code, pop
 from app.login.util import hash_pass
 from sqlalchemy import func, exc
 
+def process_travel_type(typ, type_value, user_right, patient_form):
+    if typ.value == type_value and user_right:
+        patient_form.travel_type.choices.append((typ.value, typ.name))
+
 def prepare_patient_form(patient_form, with_old_data = False, with_all_travel_type=False, search_form=False):
     regions_choices = get_regions_choices(current_user, False)
 
@@ -62,12 +66,19 @@ def prepare_patient_form(patient_form, with_old_data = False, with_all_travel_ty
 
     if not patient_form.travel_type.choices:
         patient_form.travel_type.choices = [] if not with_all_travel_type else [c.all_travel_types]
+
         for typ in TravelType.query.all():
+            process_travel_type(typ, c.flight_type[0], current_user.user_role.can_add_air, patient_form)
+            process_travel_type(typ, c.train_type[0], current_user.user_role.can_add_train, patient_form)
+            process_travel_type(typ, c.by_auto_type[0], current_user.user_role.can_add_auto, patient_form)
+            process_travel_type(typ, c.by_foot_type[0], current_user.user_role.can_add_foot, patient_form)
+            process_travel_type(typ, c.by_sea_type[0], current_user.user_role.can_add_sea, patient_form)
+            # process_travel_type(c.local_type[0], current_user.user_role.can_add_air, patient_form)
+            process_travel_type(typ, c.blockpost_type[0], current_user.user_role.can_add_blockpost, patient_form)
+
             if typ.value == c.old_data_type[0]:
                 if with_old_data:
                     patient_form.travel_type.choices.append((typ.value, typ.name))
-            else:
-                patient_form.travel_type.choices.append((typ.value, typ.name))
         
         if not search_form:
             patient_form.travel_type.default = c.local_type[0]

@@ -336,7 +336,11 @@ def add_user_role():
         new_dict = request.form.to_dict(flat=True)
         
         del new_dict["csrf_token"]
-        del new_dict["create"] 
+        del new_dict["create"]
+
+        for key in new_dict.keys():
+            if new_dict[key] == "y":
+                new_dict[key] = True
 
         print(new_dict)
         
