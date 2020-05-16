@@ -31,7 +31,7 @@
       <div class="modal-footer">
         <form action="/delete_user" method="POST">
           {{ form.hidden_tag() }}
-          <input type="hidden" name="delete" value='{{ user.id }}'>
+          <input type="hidden" name="delete" value='{{ role.id }}'>
           <button type="submit" class="btn btn-primary">{{ _("Да") }}</button>
         </form>
         <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ _("Нет") }}</button>
@@ -47,11 +47,22 @@
     <div class="col">
       <div class="card shadow">
         <div class="card-header bg-transparent">
-          {% if is_profile %}
-            <h3 class="mb-0">{{ _("Профиль Роли") }}</h3>
-          {% else %}
-            <h3 class="mb-0">{{ _("Добавить Роль") }}</h3>
-          {% endif %}
+          <div class="row">
+            <div class="col">
+              {% if is_profile %}
+              <h3 class="mb-0">{{ _("Профиль Роли") }}</h3>
+              {% else %}
+              <h3 class="mb-0">{{ _("Добавить Роль") }}</h3>
+              {% endif %}
+            </div>
+            <div class="col-md-auto">
+              <div class="row">
+                <div class="col">
+                  <a href="/users/roles" class="btn btn-sm btn-primary btn-full-width">{{ _("Вернуться в \"Управление Ролями\"") }}</a>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
         <div class="card-body">
           <div class="row">
@@ -181,7 +192,7 @@
                     </div>
                   </div>
                   <div class="col">
-<div class="card shadow">
+                    <div class="card shadow">
                     <div class="card-header bg-transparent">
                         <h3 class="mb-0">{{ _("Профили Пациентов") }}</h3>
                     </div>
