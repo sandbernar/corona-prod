@@ -135,6 +135,11 @@ class PatientsSearchForm(FlaskForm):
                                           ("is_home_quarantine", _("Домашний Карантин")),
                                           ("is_transit", _("Транзит"))])
 
+    is_iin_fail = SelectField(choices=[(-1, _("Все ИИНы")),
+                                       ("is_iin_empty", _("ИИН Пустой")),
+                                       ("is_iin_invalid", _("ИИН Неправильный")),
+                                       ("is_iin_valid", _("ИИН Правильный"))])
+
     #Date Range
     date_range_start = DateField()
     date_range_end = DateField()
@@ -147,6 +152,10 @@ class PatientsSearchForm(FlaskForm):
     train_departure_date = DateField('Train Departure Date')
     train_arrival_date = DateField('Train Arrival Date')
     train_id = SelectField('Train', choices=[])
+
+    travel_departure_outer = SelectField(choices=[("all_travel", _("Все Рейсы")),
+                                                  ("outer_travel", _("Внешние Рейсы")),
+                                                  ("domestic_travel", _("Внутренние Рейсы"))], default="all_travel")
 
     # Travel by auto, foot, sea
     arrival_date = DateField('Arrival Date')

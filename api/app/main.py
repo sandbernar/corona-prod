@@ -83,6 +83,8 @@ def is_contacted(db, id):
 @app.post("/api/get_status_by_iin/", response_model=schemas.Patient)
 def get_status_by_iin(request: Request, patient: schemas.PatientByIIN, db: Session = Depends(get_db)):
     validate_token(request.headers["X-API-TOKEN"], db)
+    logger.error(request.headers["X-API-TOKEN"][:5])
+    logger.error("/api/get_status_by_iin/")
     db_patient = crud.get_patient_by_iin(db, patient.iin)
     if db_patient is None:
         raise HTTPException(status_code=404, detail="Patient not found")
@@ -92,6 +94,8 @@ def get_status_by_iin(request: Request, patient: schemas.PatientByIIN, db: Sessi
 @app.post("/api/get_status_by_pass_num/", response_model=schemas.Patient)
 def get_status_by_pn(request: Request, patient: schemas.PatientByPassNum, db: Session = Depends(get_db)):
     validate_token(request.headers["X-API-TOKEN"], db)
+    logger.error(request.headers["X-API-TOKEN"][:5])
+    logger.error("api/get_status_by_pass_num/")
     db_patient = crud.get_patient_by_pass_num(db, patient.pass_num)
     if db_patient is None:
         raise HTTPException(status_code=404, detail="Patient not found")
@@ -101,5 +105,8 @@ def get_status_by_pn(request: Request, patient: schemas.PatientByPassNum, db: Se
 @app.post("/api/get_patients_within_interval/", response_model=List[schemas.PatientFrom])
 def get_patients_within_interval(request: Request, interval: schemas.Interval, db: Session = Depends(get_db)):
     validate_token(request.headers["X-API-TOKEN"], db)
-    db_patients = crud.get_patients(db, interval.begin, interval.end)
+    logger.error(request.headers["X-API-TOKEN"][:5])
+    logger.error("/api/get_patients_within_interval/")
+
+    db_patients = crud.get_patients(db, interval.begin, interval.end, interval.page)
     return db_patients

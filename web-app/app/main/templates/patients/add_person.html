@@ -248,6 +248,10 @@
     loader.css("z-index", z)
   }
 
+  var submitting_patient = false;
+
+  var ajaxLock = false;
+
   function submit_new_patient() {
     show_loader(true)
 
@@ -257,49 +261,59 @@
       $("#addPatientModal").modal('hide');  
     }
 
-    $.post($("#add_patients").attr('action'), $("#add_patients").serialize() + '&create', function(res){
-      // Do something with the response `res`
-      if (res.error !== undefined) {
-          $.notify({
-          // options
-          icon: 'fa fa-exclamation-circle',
-          message: res.error
-        },{
-          // settings
-          type: 'danger',
-        });
-        close_modal_submit(reset=false)
-        return
-      }
-      if (res.patient_id !== undefined) {
-        $.notify({
-          // options
-          icon: 'fa fa-thumbs-up',
-          message: `<a href="\patient_profile?id=${res.patient_id}">{{ _("Пациент") }}</a> {{ _("добавлен в базу данных") }}`
-        },{
-          // settings
-          type: 'info',
-        });
-        close_modal_submit()
-
-        if(res.selected_patient_id !== undefined) {
-          window.location.replace("/contacted_persons?id=" + res.selected_patient_id + "&success={{ _('Контактный успешно создан и добавлен') }}")
+    if(ajaxLock === false) {
+      $.ajax({type: 'POST',
+              url: $("#add_patients").attr('action'),
+              data: $("#add_patients").serialize() + '&create',
+              success: function(res) {
+        // Do something with the response `res`
+        if (res.error !== undefined) {
+            $.notify({
+            // options
+            icon: 'fa fa-exclamation-circle',
+            message: res.error
+          },{
+            // settings
+            type: 'danger',
+          });
+          close_modal_submit(reset=false)
+          return
         }
+        if (res.patient_id !== undefined) {
+          $.notify({
+            // options
+            icon: 'fa fa-thumbs-up',
+            message: `<a href="\patient_profile?id=${res.patient_id}">{{ _("Пациент") }}</a> {{ _("добавлен в базу данных") }}`
+          },{
+            // settings
+            type: 'info',
+          });
+          close_modal_submit()
+
+          if(res.selected_patient_id !== undefined) {
+            window.location.replace("/contacted_persons?id=" + res.selected_patient_id + "&success={{ _('Контактный успешно создан и добавлен') }}")
+          }
+        }
+      },
+      beforeSend:function(){
+             ajaxLock = true;
+        },
+      complete: function(){
+             ajaxLock = false;
+        },
+      error: function() {
+          $.notify({
+            // options
+            icon: 'fa fa-exclamation-circle',
+            message: '{{ _("Произошла ошибка. Обратитесь к администратору") }}'
+          },{
+            // settings
+            type: 'danger',
+          });
+          close_modal_submit(false)
       }
-    })
-    .fail(function() {
-        $.notify({
-          // options
-          icon: 'fa fa-exclamation-circle',
-          message: '{{ _("Произошла ошибка. Обратитесь к администратору") }}'
-        },{
-          // settings
-          type: 'danger',
-        });
-        close_modal_submit(false)
     });
-
-
+    }
   }
 
   function reset_add_patient_form() {

@@ -209,9 +209,10 @@ class Address(db.Model):
     def __repr__(self):
         display_str = ""
 
-        for param in [self.country, self.city, self.street, self.house, self.building]:
-            if param != None and param != "":
-                display_str = display_str + "{}, ".format(param)
+        for param in [("", self.country), ("", self.city), ("", self.street), (_("дом"), self.house),
+                        (_("кв."), self.flat), (_("корпус"), self.building)]:
+            if param[1] != None and param[1] != "":
+                display_str = display_str + "{} {}, ".format(param[0], param[1])
         
         # Get rid of the last comma
         display_str = str(display_str).rstrip().rstrip(",")

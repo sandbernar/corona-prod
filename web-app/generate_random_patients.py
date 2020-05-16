@@ -129,6 +129,14 @@ gc = geonamescache.GeonamesCache()
 cities = gc.get_cities()
 kzcities = [cities[city] for city in cities if cities[city].get('countrycode') == 'KZ']
 
+travel_types = psqlQuery("SELECT * FROM \"TravelType\";")
+local_type_id = None
+
+for t in travel_types:
+    if t["value"] == "local_type":
+        local_type_id = t["id"]
+
+
 for i in range(int(args['number'])):
     patient = Patient()
     patient.first_name = names.get_first_name()
@@ -137,7 +145,9 @@ for i in range(int(args['number'])):
     bornDate = randomDate(datetime.strptime('01.01.1950', '%d.%m.%Y'), datetime.strptime('31.12.2001', '%d.%m.%Y'))
     bornDate = datetime.strftime(bornDate, "%Y-%m-%dT00:00:00+06:00")
     patient.dob = bornDate
-
+    patient.created_date = datetime.strftime(datetime.today(), "%Y-%m-%dT00:00:00+06:00")
+    patient.travel_type_id = local_type_id
+    
     toPoint = kzcities[randint(0, len(kzcities)-1)]
     # insert address
     additionalLat = randint(0, 200)

@@ -195,6 +195,7 @@ curl -v -X POST "http://demo.crm.alem.school/api/get_status_by_pass_num/" -H "X-
 { 
     "begin": [datetime YYYY-MM-DD],
     "end": [datetime YYYY-MM-DD],
+    "page" [int] - страница состоит из 100 записей, начинается с 1
 }
 ```
 ### Success Response Code
@@ -252,5 +253,5 @@ curl -v -X POST "http://demo.crm.alem.school/api/get_status_by_pass_num/" -H "X-
 
 ### Sample Call
 ```bash
-curl -X POST "http://demo.crm.alem.school/api/get_patients_within_interval/" -H "X-API-TOKEN: ${API_TOKEN}" -H "accept: application/json" -H "Content-Type: application/json" -d "{\"begin\":\"2019-02-21\",\"end\":\"2021-02-20\"}"
+curl -X POST "http://demo.crm.alem.school/api/get_patients_within_interval/" -H "X-API-TOKEN: ${API_TOKEN}" -H "accept: application/json" -H "Content-Type: application/json" -d "{\"begin\":\"2019-02-21\",\"end\":\"2021-02-20\", \"page\":1}"
 ```

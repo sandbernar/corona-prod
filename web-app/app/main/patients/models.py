@@ -60,7 +60,7 @@ class Patient(db.Model):
     created_by = db.relationship('User')
     travel_type_id = Column(Integer, ForeignKey('TravelType.id'), nullable=True, default=None)
     travel_type = db.relationship('TravelType')
-    travel_id = Column(Integer, nullable=True, default=None, unique=False)
+    travel_id = Column(Integer, nullable=True, default=None, unique=False) #obsolete
     first_name = Column(String, unique=False)
     second_name = Column(String, unique=False)
     patronymic_name = Column(String, unique=False, nullable=True)

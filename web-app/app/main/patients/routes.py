@@ -6,6 +6,7 @@ Copyright (c) 2019 - present AppSeed.us
 import os
 import dateutil.parser
 import math, json, re, itertools
+import collections
 from datetime import datetime
 from multiprocessing.pool import ThreadPool as threadpool
 
@@ -63,6 +64,9 @@ def prepare_patient_form(patient_form, with_old_data = False, with_all_travel_ty
                     patient_form.travel_type.choices.append((typ.value, typ.name))
             else:
                 patient_form.travel_type.choices.append((typ.value, typ.name))
+        
+        if not search_form:
+            patient_form.travel_type.default = c.local_type[0]
 
     # Flight Travel
     if not patient_form.flight_arrival_date.choices:
@@ -562,20 +566,107 @@ def patient_edit_history():
             
             result = db.engine.execute(sql).fetchall()
             edit_history = []
-            insert_val = None
 
-            for r in result:
-                patient_edit = dict()
-                
-                patient_edit['date'] = r['tstamp'].strftime("%d-%m-%Y %H:%M")
-                
-                if r['operation'] == 'INSERT':
-                    insert_val = r['new_val']
-                    patient_edit['type'] = _("Создание Профиля")
-                else:
-                    patient_edit['type'] = _("Обновление Профиля")
+            def get_field_display_name(field_name, field_data):
+                display_name_dict = {"lng": _("Долгота"),
+                                      "lat": _("Широта"),
+                                      "region_id": _("Регион"),
+                                      "gender": _("Пол"),
+                                      "travel_type_id": _("Тип Въезда"),
+                                      "job_address_id": _("Адрес Работы"),
+                                      "home_address_id": _("Домашний Адрес"),
+                                      "first_name": _("Имя"),
+                                      "second_name": _("Фамилия"),
+                                      "patronymic_name": _("Отчество"),
+                                      "is_found": _("Найден"),
+                                      "is_infected": _("Инфицирован"),
+                                      "dob": _("Дата Рождения"),
+                                      "iin": _("ИИН"),
+                                      "pass_num": _("Номер Паспорта"),
+                                      "telephone": _("Телефон"),
+                                      "email": _("Электронная Почта"),
+                                      "country_id": _("Страна")}
 
-                edit_history.append(patient_edit)
+                display_name = display_name_dict.get(field_name, None)
+                display_name = field_name if display_name is None else display_name
+
+                display_data = field_data
+                if field_name == "region_id":
+                    display_data = Region.query.filter_by(id = field_data).first().name
+                elif field_name == "gender":
+                    if display_data == True:
+                        display_data = _("Мужчина")
+                    elif display_data == False:
+                        display_data = _("Женщина")
+                    elif display_data == None:
+                        display_data = _("Неизвестно")
+                elif field_name == "home_address_id" or field_name == "job_address_id":
+                    display_data = "{} - id {}".format(_("Привязка адреса к профилю"), field_data)
+                elif field_name == "country_id":
+                    display_data = str(Country.query.filter_by(id=field_data).first())
+                elif field_name == "travel_type_id":
+                    display_data = str(TravelType.query.filter_by(id=field_data).first())
+
+                if type(display_data) == bool:
+                    if display_data == True:
+                        display_data = _("Да")
+                    elif display_data == False:
+                        display_data = _("Нет")
+                    elif display_data == None:
+                        display_data = _("Неизвестно")
+
+                return (display_name, display_data)
+
+            ignore_keys_dict = ["created_date"]
+
+            def get_edit_history(tabname, address_id, type_string):
+                sql = "select * from logging.t_history WHERE tabname='{}' \
+                    AND new_val->>'id'='{}';".format(tabname, address_id)
+
+                all_history = []
+                pred_val = None
+
+                result = db.engine.execute(sql).fetchall()
+                for r in result:
+                    edit = dict()
+                    if r['operation'] == 'INSERT':
+                        pred_val = r['new_val']
+                        edit['type'] = "{} {}".format(_("Создание"), type_string)
+                    else:
+                        edit['type'] = "{} {}".format(_("Обновление"), type_string)
+
+                    edit['date'] = r['tstamp']
+
+                    def get_rid_of_unhashable(dictionary):
+                        items = list(dictionary.items())
+                        for i, item in zip(range(len(items)), items):
+                            if not isinstance(item[1], collections.Hashable):
+                                items[i] = (item[0], None)
+
+                        return items
+
+                    if pred_val and r['new_val']:
+                        update_data =  set(get_rid_of_unhashable(r['new_val'])) - set(get_rid_of_unhashable(pred_val))
+                        pred_val = r['new_val']
+
+                        if update_data:
+                            for data in update_data:
+                                data_entry = edit.copy()
+                                data_entry['update_data'] = get_field_display_name(data[0], data[1])
+                                
+                                if data_entry['update_data'][0] not in ignore_keys_dict:
+                                    all_history.append(data_entry)
+                        elif r['operation'] == 'INSERT':
+                            all_history.append(edit)
+
+                return all_history
+
+            edit_history += get_edit_history("Patient", patient.id, "Профиля")
+            edit_history += get_edit_history("Address", patient.home_address_id, "Домашнего Адреса")
+            edit_history += get_edit_history("Address", patient.job_address_id, "Рабочего Адреса")
+
+
+            edit_history = sorted(edit_history, key=lambda k: k['date'])
 
             return route_template('patients/patient_edit_history', patient=patient, edit_history=edit_history)
 
@@ -657,7 +748,11 @@ def patients():
 
     try:
         all_patients_table = AllPatientsTableModule(request, Patient.query, select_contacted,
-                            search_form=form, header_button=[(_("Добавить Пациента"), "/add_person")])
+                            search_form=form)
+
+        if "download_xls" in request.args and all_patients_table.xls_response:
+            return all_patients_table.xls_response
+
     except ValueError:
         return render_template('errors/error-500.html'), 500        
 
@@ -756,6 +851,9 @@ def contacted_persons():
                                         header_button=[(_("Добавить Контактное Лицо"), "add_person?select_contacted_id={}".format(patient.id)),
                                             (_("Выбрать Контактное Лицо"), "patients?select_contacted_id={}".format(patient.id))]
                                         )
+                if "download_xls" in request.args:
+                    return contacted_patients_table.download_xls()
+
             except ValueError:
                 return render_template('errors/error-500.html'), 500
 
@@ -769,27 +867,39 @@ def contacted_persons():
 
     return render_template('errors/error-500.html'), 500
 
-@blueprint.route('/select_contacted', methods=['GET'])
+@blueprint.route('/select_contacted', methods=['POST'])
 def select_contacted():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))
 
-    if "infected_patient_id" and "contacted_patient_id" in request.args:
-        try:
-            infected_patient = Patient.query.filter_by(id = request.args["infected_patient_id"]).first()
-            contacted_patient = Patient.query.filter_by(id = request.args["contacted_patient_id"]).first()
-        except exc.SQLAlchemyError:
-            return render_template('errors/error-400.html'), 400
+    try:
+        if "infected_patient_id" and "contacted_patients[]" in request.form:
+            infected_patient = Patient.query.filter_by(id = request.form["infected_patient_id"]).first()
+            contacted_patients_ids = request.form.getlist('contacted_patients[]')
 
-    if not ContactedPersons.query.filter_by(infected_patient_id=infected_patient.id).filter_by(contacted_patient_id=contacted_patient.id).count():
-        contacted = ContactedPersons(infected_patient_id=infected_patient.id, contacted_patient_id=contacted_patient.id)
-    
-        db.session.add(contacted)
-        db.session.commit()
+            contacted_patients = list()
 
-        return redirect("/contacted_persons?id={}&success={}".format(infected_patient.id, _("Контактный успешно добавлен")))
-    else:
-        return render_template('errors/error-400.html'), 400
+            for cont_patient_id in contacted_patients_ids:
+                contacted_patient = Patient.query.filter_by(id = cont_patient_id).first()
+                
+                if contacted_patient and ContactedPersons.query.filter_by(
+                                        infected_patient_id=infected_patient.id).filter_by(
+                                        contacted_patient_id=contacted_patient.id).count():
+                    
+                    return jsonify({"redirect_url": "/contacted_persons?id={}&error={}".format(infected_patient.id, _("Одна из контактных связей уже существует"))})
+
+                contacted_patients.append(contacted_patient)
+
+            for contacted_patient in contacted_patients:                
+                    contacted = ContactedPersons(infected_patient_id=infected_patient.id, contacted_patient_id=contacted_patient.id)
+                
+                    db.session.add(contacted)
+                    db.session.commit()
+            
+            return jsonify({"redirect_url": "/contacted_persons?id={}&success={}".format(infected_patient.id, "{} {}".format(len(contacted_patients), _("связей были успешно добавлены")))})
+    except exc.SQLAlchemyError:
+        return jsonify({"redirect_url": "/contacted_persons?id={}&error={}".format(infected_patient.id, _("Неизвестная Ошибка"))})
+
 
 @blueprint.route('/delete_contacted', methods=['GET'])
 def delete_contacted():

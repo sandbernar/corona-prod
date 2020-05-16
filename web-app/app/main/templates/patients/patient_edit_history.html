@@ -33,15 +33,21 @@
                             <table class="table align-items-center">
                                 <thead class="thead-light">
                                     <tr>
-                                        <th scope="col">Дата</th>
-                                        <th scope="col">Тип</th>
+                                        <th scope="col">{{ _("Дата") }}</th>
+                                        <th scope="col">{{ _("Тип") }}</th>
+                                        <th scope="col">{{ _("Изменение") }}</th>
                                     </tr>
                                 </thead>
                                 <tbody class="list">
                                 {% for edit in edit_history %}
                                 <tr>
-                                    <td>{{ edit.date }} </td>
+                                    <td>{{ edit.date.strftime("%d-%m-%Y %H:%M") }} </td>
                                     <td>{{ edit.type }}</td>
+                                    {% if edit.update_data %}
+                                    <td>
+                                        <b>{{ edit.update_data[0] }}</b>: {{ edit.update_data[1] }}
+                                    </td>
+                                    {% endif %}
                                 </tr>
                                 {% endfor %}
                                 </tbody>

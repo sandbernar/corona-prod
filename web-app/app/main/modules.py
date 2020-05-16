@@ -16,7 +16,7 @@ class TableModule:
                                 default=5, validators=[DataRequired()])
 
     def __init__(self, request, q, table_head, header_button = None, search_form = None, sort_param = None,
-                page = 1, per_page = 5, table_title = ""):
+                page = 1, per_page = 5, table_title = "", is_downloadable_xls = False, table_head_info = dict()):
         if "page" in request.args:
             try:
                 page = int(request.args["page"])
@@ -32,6 +32,11 @@ class TableModule:
         self.header_button = header_button
         self.search_form = search_form
         self.sort_param = sort_param
+        
+        self.is_downloadable_xls = is_downloadable_xls
+        self.xls_response = None
+
+        self.table_head_info = table_head_info
 
         self.table_title = table_title
 
@@ -52,6 +57,13 @@ class TableModule:
         self.total_len = q.count()
         self.max_page = 0
 
+        self.search_table()
+        self.sort_table()
+
+        download_xls = request.args.get("download_xls", None)
+        if download_xls == self.__class__.__name__:
+            self.xls_response = self.download_xls()
+
         # Should always be the last one to be called
         self.entries = self.get_entries()
 
@@ -60,20 +72,27 @@ class TableModule:
 
     def get_entries(self):
         if self.total_len:
-            self.search_table()
-            self.sort_table()
             entries = []
 
             self.total_len = self.q.count()
             
             for result in self.q.offset((self.page-1)*self.per_page).limit(self.per_page).all():
-                entries.append(self.print_entry(result))
+                entry = {"data": self.print_entry(result)}
+                entries.append(entry)
+
+            entries = self.preprocess_entries(entries)
 
             self.max_page = math.ceil(self.total_len/self.per_page)
 
             return entries
 
+    def preprocess_entries(self, entries):
+        return entries
+
     def search_table(self):
+        pass
+
+    def download_xls(self):
         pass
 
     def sort_table(self):

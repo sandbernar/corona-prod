@@ -5,6 +5,8 @@ all_hospital_nomenklatura = "Все Номенклатуры"
 no_hospital = "Не Госпитализирован"
 hospital_additional_types = ["другое"]
 
+current_country = "KZ"
+
 # Flight Code
 all_flight_codes = "Все Рейсы"
 
@@ -28,6 +30,7 @@ all_blockposts = (-1, "Все Блокпосты")
 all_dates = (-1, "Все Даты")
 
 various_travel_types = [by_auto_type, by_foot_type, by_sea_type]
+various_travel_types_values = [val[0] for val in various_travel_types]
 
 board_team = "экипаж"
 
