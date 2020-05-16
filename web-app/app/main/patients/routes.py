@@ -765,8 +765,18 @@ def patients():
     elif "error" in request.args:
         error_msg = request.args['error']
 
+    patient_query = Patient.query
+
+    can_lookup_other_patients = current_user.user_role.can_lookup_other_patients
+    can_lookup_own_patients = current_user.user_role.can_lookup_own_patients
+
+    if not can_lookup_other_patients and not can_lookup_own_patients:
+        return render_template('errors/error-400.html'), 400
+    elif can_lookup_own_patients and not can_lookup_other_patients:
+        patient_query = patient_query.filter_by(created_by_id = current_user.id)
+
     try:
-        all_patients_table = AllPatientsTableModule(request, Patient.query, select_contacted,
+        all_patients_table = AllPatientsTableModule(request, patient_query, select_contacted,
                             search_form=form)
 
         if "download_xls" in request.args and all_patients_table.xls_response:

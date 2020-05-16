@@ -73,11 +73,13 @@
               <i class="ni ni-fat-add text-blue"></i> {{ _('Добавить Пациента') }}
             </a>
           </li>
+          {% if current_user.user_role.can_lookup_other_patients or current_user.user_role.can_lookup_own_patients%}
           <li class="nav-item">
             <a class="nav-link" href="/patients">
               <i class="ni ni-bullet-list-67 text-blue"></i> {{ _('Все Пациенты') }}
             </a>
           </li>       
+          {% endif %}
         </ul>
         <hr class="my-3">
         <ul class="navbar-nav">
