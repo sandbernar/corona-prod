@@ -113,7 +113,7 @@ def handlePatients(patients):
 
 patients = psqlQuery('SELECT * FROM "Patient" ORDER BY id;', psqlCursor)
 
-process_num = 4
+process_num = 16
 
 pool = Pool(process_num)
 pool.map(handlePatients, np.array_split(patients, process_num))
