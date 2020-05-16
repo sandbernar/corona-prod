@@ -18,7 +18,7 @@ import math
 from functools import lru_cache
 
 
-from app.main.patients.models import Patient, PatientStatus
+from app.main.patients.models import Patient, PatientState, State
 from app.main.models import Region, Infected_Country_Category, Address
 from app.main.hospitals.models import Hospital, Hospital_Type
 
@@ -52,17 +52,17 @@ def index():
     #     if p.home_address.lat:
     #         coordinates_patients.append(p)
 
-    patients = q.all()
+    # patients = q.all()
     regions_list = Region.query.all()
 
     regions = dict()
-    in_hospital_id = PatientStatus.query.filter_by(value=c.in_hospital[0]).first().id
+    # in_hospital_id = PatientStatus.query.filter_by(value=c.in_hospital[0]).first().id
 
     for region in regions_list:
         patient_region_query = Patient.query.filter_by(region_id=region.id)
 
-        found_count = patient_region_query.filter_by(is_found=True).count()
-        infected_count = patient_region_query.filter_by(is_infected=True).count()
+        found_count = patient_region_query.filter(Patient.is_found==True).count()
+        infected_count = patient_region_query.filter(Patient.is_infected==True).count()
 
         regions[region.name] = (found_count, infected_count)
 
@@ -83,19 +83,25 @@ def route_template(template, **kwargs):
         total = q.filter_by().count()
 
         # Is Found
-        is_found = q.filter_by(is_found=True).count()
+        # found_state_id = State.query.filter_by(name=c.state_found).first().id
+        # is_found = PatientState.query.filter_by(state_id=found_state_id).count()
+        is_found = q.filter(Patient.is_found==True).count()
         ratio = 0 if total == 0 else is_found / total
         is_found_str = str("{}/{} ({}%)".format(is_found, total, format(ratio * 100, '.2f')))
+        
 
-        # In Hospital
-        in_hospital_status_id = PatientStatus.query.filter_by(value=c.in_hospital[0]).first().id
-        in_hospital = q.filter_by(status_id=in_hospital_status_id).count()
+        # in_hosp_state_id = State.query.filter_by(name=c.state_hosp).first().id
+        # in_hospital = PatientState.query.filter_by(state_id=in_hosp_state_id).count()
+        in_hospital = q.filter(Patient.in_hospital==True).count()
+        # in_hospital = 0
         ratio = 0 if is_found == 0 else in_hospital / is_found
         in_hospital_str = str("{}/{} ({}%)".format(in_hospital,
                                                    is_found, format(ratio * 100, '.2f')))
 
         # Is Infected
-        is_infected = q.filter_by(is_infected=True).count()
+        # infected_state_id = State.query.filter_by(name=c.state_infec).first().id
+        # is_infected = PatientState.query.filter_by(state_id=infected_state_id).count()
+        is_infected = q.filter(Patient.is_infected==True).count()
         ratio = 0 if total == 0 else is_infected / total
         is_infected_str = str("{}/{} ({}%)".format(is_infected, total, format(ratio * 100, '.2f')))
 
@@ -189,7 +195,7 @@ def patients_content_by_id():
             is_infected = "Да"
         response.append({
             "id": uuid.uuid1(),
-            "balloonContent": '<a href="/patient_profile?id=' + str(p.id) + '">' + repr(p) + '</a><br><strong>Регион</strong>:' + repr(p.region) + '<br><strong>Адрес</strong>: ' + repr(p.home_address) + '<br><strong>Найден</strong>: ' + is_found +   '<br><strong>Инфицирован</strong>: ' + is_infected + '<br><strong>Статус</strong>:' + p.status.name + '<br>',
+            "balloonContent": '<a href="/patient_profile?id=' + str(p.id) + '">' + repr(p) + '</a><br><strong>Регион</strong>:' + repr    (p.region) + '<br><strong>Адрес</strong>: ' + repr(p.home_address) + '<br><strong>Найден</strong>: ' + is_found +   '<br><strong>Инфицирован</strong>: ' + is_infected + '<br>',
             "clusterCaption": repr(p)
         })
 
