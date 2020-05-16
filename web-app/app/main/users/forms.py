@@ -19,7 +19,7 @@ class CreateUserForm(FlaskForm):
 
     region_id = SelectField('Region', validators=[DataRequired()])
     organization = TextField('Organization', validators=[DataRequired()])
-    role_id = SelectField('Region', validators=[DataRequired()])
+    user_role_id = SelectField('Region', validators=[DataRequired()])
     is_admin = RadioField("Is Admin", choices=[(1, _("Да")), (0, _("Нет"))], default=0, validators=[DataRequired()])
 
 class UpdateUserForm(CreateUserForm):
@@ -39,3 +39,7 @@ class UserPatientsSearchForm(FlaskForm):
     full_name = TextField("Full Name")
     region_id = SelectField("Region ID")
     iin = TextField("IIN")    
+
+class CreateUserRoleForm(FlaskForm):
+    name = TextField("Role Name", validators=[DataRequired()])
+    value = TextField("Role Value", validators=[DataRequired()])

@@ -14,7 +14,7 @@ import io
 from app.main.models import Region
 from app.main.patients.models import Patient
 from app.main.users.forms import CreateUserForm, UpdateUserForm, UserActivityReportForm,\
-                                    UserSearchForm, UserPatientsSearchForm
+                                    UserSearchForm, UserPatientsSearchForm, CreateUserRoleForm
 from app.main.forms import TableSearchForm
 import math
 from app.login.models import User, UserRole
@@ -35,9 +35,9 @@ def setup_user_form(form):
     if not form.region_id.choices:
         form.region_id.choices = get_regions_choices(current_user)
 
-    if not form.role_id.choices:
+    if not form.user_role_id.choices:
         roles = UserRole.query.all()
-        form.role_id.choices = [(r.value, r.name) for r in roles]
+        form.user_role_id.choices = [(r.id, r.name) for r in roles]
 
 @blueprint.route('/export_users_activity_xls', methods=['POST'])
 @login_required
@@ -175,7 +175,7 @@ def add_user():
         
         user = User.query.filter_by(username=new_dict['username']).first()
         if user:
-            return route_template( 'users/add_user', error_msg=_('Имя пользователя уже зарегистрировано'), form=form, change=None)
+            return route_template( 'users/add_user_and_profile', error_msg=_('Имя пользователя уже зарегистрировано'), form=form, change=None)
 
         if "is_admin" in new_dict:
             new_dict["is_admin"] = int(new_dict["is_admin"]) == 1
@@ -275,9 +275,9 @@ def user_profile():
             populate_form(form, user_parameters)
             form.region_id.choices = get_regions_choices(current_user)
 
-            if not form.role_id.choices:
+            if not form.user_role_id.choices:
                 roles = UserRole.query.all()
-                form.role_id.choices = [(r.value, r.name) for r in roles]
+                form.user_role_id.choices = [(r.id, r.name) for r in roles]
   
             form.process()
 
@@ -319,3 +319,36 @@ def delete_user():
                 db.session.commit()
 
     return redirect("{}?delete_user".format(url_for('main_blueprint.users')))
+
+@blueprint.route('/add_user_role', methods=['GET', 'POST'])
+def add_user_role():
+    if not current_user.is_authenticated:
+        return redirect(url_for('login_blueprint.login'))
+
+    if not current_user.is_admin:
+        return render_template('errors/error-500.html'), 500
+
+    form = CreateUserRoleForm()
+
+    form.process()
+
+    if 'create' in request.form:
+        new_dict = request.form.to_dict(flat=True)
+        
+        del new_dict["csrf_token"]
+        del new_dict["create"] 
+
+        print(new_dict)
+        
+        user_role = UserRole.query.filter_by(name=new_dict['name']).first()
+        if user_role:
+            return route_template( 'users/add_role_and_profile', error_msg=_('Роль с таким именем или кодом уже существует'), form=form, change=None)
+        print(new_dict)
+        user = UserRole(**new_dict)
+        
+        db.session.add(user)
+        db.session.commit()
+
+        return redirect("{}?added_user_role".format(url_for('main_blueprint.users')))
+    else:
+        return route_template( 'users/add_role_and_profile', form=form, change=None, error_msg=None, is_profile=False)

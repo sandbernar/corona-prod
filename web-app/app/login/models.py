@@ -58,12 +58,19 @@ class User(db.Model, UserMixin):
     def __repr__(self):
         return str(self.username)
 
+def set_props(model, kwargs):
+    for property, value in kwargs.items():
+        if hasattr(value, '__iter__') and not isinstance(value, str):
+            value = value[0]
+            
+        setattr(model, property, value)
+
 class UserRole(db.Model):
     __tablename__ = 'UserRole'
 
     id = Column(Integer, primary_key=True)
-    name = Column(String, unique=True)
-    value = Column(String, unique=True)
+    name = Column(String, unique=True, nullable=False)
+    value = Column(String, unique=True, nullable=False)
 
     #User Rights
     can_add_air = Column(Boolean, default=False)
