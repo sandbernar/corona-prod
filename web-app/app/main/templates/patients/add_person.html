@@ -135,17 +135,7 @@
                                 {% endfor %}
                               </div>
                             </div>
-                            <!-- <div class="col">
-                              <div class="form-group">
-                                <label class="form-control-label">{{ _("Контактный?") }}</label><br>
-                                {% for subfield in form.is_contacted %}
-                                <div class="custom-control custom-radio custom-control-inline">
-                                  {{ subfield(type="radio", id=subfield.id, class="custom-control-input") }}
-                                  <label class="custom-control-label" for='{{ subfield.id }}'>{{ subfield.label }}</label>
-                                </div>
-                                {% endfor %}
-                              </div>
-                            </div> -->
+                            <!-- HERE WAS form.is_contacted -->
                             <div class="col">
                               <div class="form-group">
                                 <label class="form-control-label">{{ _("Статус Нахождения") }}</label><br>
@@ -374,7 +364,7 @@ $("#travel_type").on("change", function(){
 });
 
 $("#patient_status").on("change", function(){
-  disable_hospital_choice($(this).val() === 'in_hospital')
+  disable_hospital_choice($(this).val() === 'hospitalized')
 });
 
 $("#open_modal_add_patient").on("click", function(e){

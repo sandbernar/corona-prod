@@ -4,12 +4,12 @@ License: MIT
 Copyright (c) 2019 - present AppSeed.us
 """
 
-from flask_wtf import FlaskForm
-from wtforms import TextField, DateField, SelectField, RadioField, BooleanField
-from wtforms.validators import DataRequired
-from app.main.forms import UploadDataForm
 from app import constants as c
+from app.main.forms import UploadDataForm
+from flask_wtf import FlaskForm
 from flask_babelex import _
+from wtforms.validators import DataRequired
+from wtforms import TextField, DateField, SelectField, RadioField, BooleanField, SelectMultipleField
 
 class PatientForm(FlaskForm):
     travel_type = SelectField('Travel Type', id='travel_type', validators=[DataRequired()])
@@ -46,7 +46,6 @@ class PatientForm(FlaskForm):
 
     citizenship_id = SelectField('Citizenship', validators=[DataRequired()])
     pass_num = TextField('Pass No.', id='pass_num')
-
     country_of_residence_id = SelectField('Residence Country', validators=[DataRequired()])
 
     home_address_country_id = SelectField('Home Address Country', validators=[DataRequired()])
@@ -84,16 +83,17 @@ class PatientForm(FlaskForm):
     hospital_type_id = SelectField('Hospital Type' , validators=[DataRequired()])
     hospital_id = SelectField('Hospital', choices = [], validators=[DataRequired()])  
 
-    patient_status = SelectField('Patient Status', id='patient_status' , validators=[DataRequired()])
+    # patient_states = SelectField(id='patient_states')
     is_found = RadioField("Is Found", id="is_found", choices=[(1, _("Да")),(0, _("Нет"))], default=0, validators=[DataRequired()])
     is_infected = RadioField("Is Infected", id="is_infected", choices=[(1, _("Да")),(0, _("Нет"))], default=0, validators=[DataRequired()])
-    is_contacted = RadioField("Is Contacted", id="is_contacted", choices=[(1, _("Да")),(0, _("Нет"))], default=0, validators=[DataRequired()])
+    patient_status = SelectField('Patient Status', id='patient_status' , validators=[DataRequired()])
+    # is_contacted = RadioField("Is Contacted", id="is_contacted", choices=[(1, _("Да")),(0, _("Нет"))], default=0, validators=[DataRequired()])
 
 
 class UpdateProfileForm(PatientForm):
     is_found = BooleanField(id="is_found")
     is_infected = BooleanField(id="is_infected")
-    is_contacted = BooleanField(id="is_contacted")
+    # is_contacted = BooleanField(id="is_contacted")
     in_hospital = BooleanField(id="in_hospital")
     is_home = BooleanField(id="is_home")
     is_transit = BooleanField(id="is_transit")
