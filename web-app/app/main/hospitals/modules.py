@@ -22,7 +22,7 @@ class HospitalPatientsTableModule(TableModule):
         table_head[_("Время Добавления")] = ["created_date"]
 
         q = q.filter_by(hospital_id = hospital_id)
-        q = q.filter(PatientStatus.value == c.in_hospital[0])
+        q = q.filter(Patient.in_hospital == True)
         
         super().__init__(request, q, table_head, header_button, search_form, 
                         table_title=_("Пациенты, госпитализированные в данном стационаре"))     

@@ -45,33 +45,33 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="exampleModalLabel">{{ _("Добавить статус") }}</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <button id="openAddStatusButton" type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true"></span>
                 </button>
             </div>
 
-            <div class="modal-body">
-                <!-- <form action="/add_state" method="POST"> -->
-
-                    <input type="hidden" name="id" id="addStatePatientID" value='{{ patient.id }}'>
-                    <div class="form-group">
-                        <label for="name-input" class="form-control-label">{{ _("Статус") }}*</label>
-                        {{ form.state(class="form-control", id="addStateStateValue") }}
-                    </div>
-                    <div class="form-group">
-                        <label for="name-input" class="form-control-label">{{ _("Комментарий") }}</label>
-                        {{ form.stateComment(class="form-control", id="addStateComment", type="text") }}
-                    </div>
-                    <div class="form-group">
-                        <label for="name-input" class="form-control-label">{{ _("Дата выявления") }}*</label>
-                        {{ form.stateDetectionDate(class="form-control datepicker", id="addStateDate", type="date") }}
-                    </div>
-                <!-- </form> -->
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ _("Отмена") }}</button>
-                <button type="button" id="addStateButton" class="btn btn-primary">{{ _("Добавить") }}</button>
-            </div>
+            <form id="addStateForm">
+                <div class="modal-body" id="addStateModalBody">
+                        <input type="hidden" name="id" id="addStatePatientID" value='{{ patient.id }}'>
+                        <div class="form-group">
+                            <label for="name-input" class="form-control-label">{{ _("Статус") }}*</label>
+                            {{ form.state(class="form-control", id="addStateStateValue") }}
+                        </div>
+                        <div class="form-group">
+                            <label for="name-input" class="form-control-label">{{ _("Комментарий") }}</label>
+                            {{ form.stateComment(class="form-control", id="addStateComment", type="text") }}
+                        </div>
+                        <div class="form-group">
+                            <label for="name-input" class="form-control-label">{{ _("Дата выявления") }}*</label>
+                            {{ form.stateDetectionDate(class="form-control datepicker", id="addStateDate", type="date") }}
+                        </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ _("Отмена") }}</button>
+                    <button type="button" id="addStateButton" class="btn btn-primary">{{ _("Добавить") }}</button>
+                    <input type="submit" id="hiddenAddState" class="btn btn-primary" style="display:none;"></input>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -116,29 +116,29 @@
                 </button>
             </div>
 
-            <div class="modal-body">
-                <!-- <form action="/update_state" method="POST"> -->
-                    <!-- {{ form.hidden_tag() }} -->
-                    <input type="hidden" name="patientID" id="updatePatientPatientID" value='{{ patient.id }}'>
-                    <input type="hidden" name="id" id="updatePatientStateID" value=''>
-                    <div class="form-group">
-                        <label for="name-input" class="form-control-label">{{ _("Статус") }}</label>
-                        {{ form.state(class="form-control", id="updatePatientStateState") }}
-                    </div>
-                    <div class="form-group">
-                        <label for="name-input" class="form-control-label">{{ _("Комментарий") }}</label>
-                        <input class="form-control" id="updatePatientStateComment" name="comment" type="text" value="">
-                    </div>
-                    <div class="form-group">
-                        <label for="name-input" class="form-control-label">{{ _("Дата выявления") }}</label>
-                        <input class="form-control datepicker" id="updatePatientStateDate" name="detection_date" type="date" value="">
-                    </div>
-                    <div class="modal-footer">
+            <form id="editStateForm">
+                <div class="modal-body" id="editStateModalBody">
+                        <input type="hidden" name="patientID" id="updatePatientPatientID" value='{{ patient.id }}'>
+                        <input type="hidden" name="id" id="updatePatientStateID" value=''>
+                        <div class="form-group">
+                            <label for="name-input" class="form-control-label">{{ _("Статус") }}</label>
+                            {{ form.state(class="form-control", id="updatePatientStateState") }}
+                        </div>
+                        <div class="form-group">
+                            <label for="name-input" class="form-control-label">{{ _("Комментарий") }}</label>
+                            <input class="form-control" id="updatePatientStateComment" name="comment" type="text" value="">
+                        </div>
+                        <div class="form-group">
+                            <label for="name-input" class="form-control-label">{{ _("Дата выявления") }}</label>
+                            <input class="form-control datepicker" id="updatePatientStateDate" name="detection_date" type="date" value="">
+                        </div>
+                        </div>
+                <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ _("Отмена") }}</button>
                         <button type="button" id="updateStateButton" class="btn btn-primary">{{ _("Сохранить") }}</button>
-                    </div>
-                <!-- </form> -->
-            </div>
+                        <input type="submit" id="hiddenEditState" class="btn btn-primary" style="display:none;"></input>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -196,11 +196,13 @@
                         </div>                                                
                     </div>
                     {% endif %}
-                    <div class="col">
+                    <div class="row">
+                        <div class="col">
                         <hr class="my-3" />
                         <div class="text-center">
                             <a href="/patient_edit_history?id={{ patient.id }}" class="btn btn-primary btn-full-width">{{ _("История Изменений") }}</a>
                         </div>
+                    </div>
                     </div>  
                 </div>
             </div>
@@ -219,32 +221,27 @@
                             {% if patient.is_infected %}
                                 <span style="margin-top: 0.5rem; margin-left: 0.5rem;"class="badge badge-danger">{{ _("Инфицирован") }}</span>
                             {% endif %}                        
-                        <!-- HERE WAS form.is_contacted -->
-                        </div>              
+                        </div>
                         <hr class="my-4" />
-                        <div class="col mt-3">
-                          <div class="form-group">
-                            <label for="job-input" class="form-control-label">{{ _("Регион Госпитализации") }}</label>
-                            {{ form.hospital_region_id(class="form-control") }}
+                    {% if patient.in_hospital %}    
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="name-input" class="form-control-label">{{ _("Регион Госпитализации") }}</label>
+                                <div>{{ patient.hospital.region }}</div>
+                            </div>             
                         </div>
-                        <div class="form-group">
-                            <label for="job-input" class="form-control-label">{{ _("Тип Больницы") }}</label>
-                            {{ form.hospital_type_id(class="form-control") }}
-                        </div>
-                        <div class="form-group">
-                            <label for="job-input" class="form-control-label">
-                                {% if patient.hospital_id %} 
-                                <a href="/hospital_profile?id={{ patient.hospital_id }}">{{ _("Место Госпитализации") }}</a>
-                                {% else %}
-                                {{ _("Место Госпитализации") }}
-                                {% endif %}
-                            </label>
-                            <meta name="csrf-token" content="{{ csrf_token() }}">
-                            {{ form.hospital_id(class="form-control") }}
-                        </div>
-                        <hr class="my-4" />                    
-                    </div>
-            <div class="col">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="name-input" class="form-control-label">{{ _("Место Госпитализации") }}</label>
+                                <div><a href="/hospital_profile?id={{ patient.hospital.id }}">{{ patient.hospital }}</a></div>
+                            </div>             
+                        </div>                                                
+                    </div>                                        
+                    <hr class="my-4" />               
+                    {% endif %}
+            <div class="row">
+                <div class="col">
                 <div class="text-center">
                     <a href="/contacted_persons?id={{ patient.id }}" class="btn btn-primary btn-full-width">{{ _("Контактные Лица") }}</a>
                  {% if patient.travel_type.value == c.flight_type[0] %}
@@ -253,8 +250,9 @@
                  <a href="/train_profile?id={{ travel.train.id }}" class="btn btn-primary btn-full-width mt-3">{{ _("Прибывшие Вместе") }}</a>
                  {% endif %}
              </div>
-             <hr class="my-4" />               
+         </div>
          </div>            
+             <hr class="my-4" />               
          <div class="row mt-3">
             <div class="col" style="text-align:center;">
                 <input class="btn btn-primary" id="submit" name="submit" type="submit" value={{ _("Сохранить") }}>
@@ -293,27 +291,8 @@
                         </tr>
                     </thead>
                     <tbody class="list" id="stateHistoryTable">
-                        {% for state in states %}
-                        <tr>
-                            <td>{{ state.name }} </td>
-                            <td>{{ state.formatted_comment }}</td>
-                            <td>{{ state.formatted_detection_date }}</td>
-                            <td class="text-right">
-                                <div class="dropdown">
-                                    <a class="btn btn-sm btn-icon-only text-light" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                        <i class="fas fa-ellipsis-v"></i>
-                                    </a>
-                                    <div class="dropdown-menu dropdown-menu-right dropdown-menu-arrow">
-                                        <a onclick="fillUpdatePatientState({{ state.id }}, '{{ state.name }}', '{{ state.formatted_comment }}', '{{ state.detection_date }}')" 
-                                            class="dropdown-item" href="#" data-toggle="modal" data-target="#updatePatientStateModal">Изменить</a>
-                                        <a onclick="fillDeletePatientState({{ state.id }}, '{{ state.name }}', '{{ state.formatted_comment }}', '{{ state.formatted_detection_date }}')" 
-                                            class="dropdown-item" href="#" data-toggle="modal" data-target="#deletePatientStateModal">Удалить</a>
-                                    </div>
-                                </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                        </tbody>
+  
+                    </tbody>
                     </table>
                 </div>
             </div>
@@ -384,21 +363,11 @@
     let hospitalised = "{{ patient.in_hospital }}" == "True";
     let is_found = "{{ patient.is_found }}" == "True";
     
-    window.onload = function() {
-        found_changed(is_found);
-        disable_hospital_choice(hospitalised);
-        {% if patient.in_hospital %}
-        $("#hospital_type_id").val({{ patient.hospital.hospital_type_id }})
-        {% endif %}
-        update_hospitals_list(async = false)
-        {% if patient.in_hospital %}
-        $("#hospital_id").val({{ patient.hospital_id }})
-        {% endif %}       
-    }
     // Disable travel type select for profile page
     // $("#travel_type").prop('disabled', true);
     $("#travel_type").on("change", function(){
-  update_travel_form();
+    update_travel_form();
+    renderStateHistoryTable()
 });
 
     {% if patient.home_address.lat %}
@@ -423,19 +392,19 @@
     }
     {% endif %}
 
-    function found_changed(value) {
-        disable = true;
-        if (value == 1 || value == true) {
-            disable = false;
-        }
+    // function found_changed(value) {
+    //     disable = true;
+    //     if (value == 1 || value == true) {
+    //         disable = false;
+    //     }
 
-        document.getElementById('in_hospital_checkbox').disabled = disable;
+    //     document.getElementById('in_hospital_checkbox').disabled = disable;
 
-        document.getElementById('is_home').disabled = disable;
-        document.getElementById('is_transit').disabled = disable;
+    //     document.getElementById('is_home').disabled = disable;
+    //     document.getElementById('is_transit').disabled = disable;
         
-        disable_hospital_choice(hospitalised);
-    }
+    //     disable_hospital_choice(hospitalised);
+    // }
 
     function setup_form() {
         update_travel_form();
@@ -484,14 +453,14 @@
         {% endif %}
     }
 
-    function fillDeletePatientState(stateID, stateName, stateComment, stateDetectionDate) {
+    function fillDeletePatientState(stateID, stateName, stateComment, stateDetectionDate, stateAttrs) {
         document.getElementById("deletePatientStateState").innerText = stateName;
         document.getElementById("deletePatientStateComment").innerText = stateComment;
         document.getElementById("deletePatientStateDate").innerText = stateDetectionDate;
         document.getElementById("deletePatientStateID").value = stateID;
     }
 
-    function fillUpdatePatientState(stateID, stateName, stateComment, stateDetectionDate) {
+    function fillUpdatePatientState(stateID, stateName, stateComment, stateDetectionDate, stateAttrs) {
         let stateValue = null;
         for (let i = 0; i < document.getElementById("updatePatientStateState").options.length; i++) {
             if (document.getElementById("updatePatientStateState").options[i].text == stateName) {
@@ -503,12 +472,24 @@
         document.getElementById("updatePatientStateComment").value = stateComment;
         document.getElementById("updatePatientStateDate").value = stateDetectionDate.slice(0,10);
         document.getElementById("updatePatientStateID").value = stateID;
+
+        $("#updatePatientStateState").trigger("change")
+        stateAttrs = JSON.parse(unescape(stateAttrs))
+
+        if (stateValue === '{{ c.state_hosp[0] }}') {
+            $("#hospital_region_id").val(stateAttrs["hospital_region_id"])            
+            $("#hospital_type_id").val(stateAttrs["hospital_type_id"])
+            update_hospitals_list(false)
+
+            $("#hospital_id").val(stateAttrs["hospital_id"])
+        }
     }
 
     function renderStateHistoryTable(response) {
         let stateHistoryTable = document.getElementById("stateHistoryTable")
         let innerHTML = ""
         for (let i = 0; i < response.states.length; i++) {
+            var attrs = escape(JSON.stringify(response.states[i].attrs))
             innerHTML += `
             <tr>
                 <td>${response.states[i].name} </td>
@@ -520,9 +501,10 @@
                             <i class="fas fa-ellipsis-v"></i>
                         </a>
                         <div class="dropdown-menu dropdown-menu-right dropdown-menu-arrow">
-                            <a onclick="fillUpdatePatientState(${ response.states[i].id }, '${ response.states[i].name }', '${ response.states[i].formatted_comment }', '${ response.states[i].detection_date }')" 
-                                class="dropdown-item" href="#" data-toggle="modal" data-target="#updatePatientStateModal">Изменить</a>
-                            <a onclick="fillDeletePatientState(${ response.states[i].id }, '${ response.states[i].name }', '${ response.states[i].formatted_comment }', '${ response.states[i].formatted_detection_date }')" 
+                            <a onclick="fillUpdatePatientState(${ response.states[i].id }, '${ response.states[i].name }', '${ response.states[i].formatted_comment }', '${ response.states[i].detection_date }',
+                                '${attrs}')" class="dropdown-item" href="#" data-toggle="modal" data-target="#updatePatientStateModal">Изменить</a>
+                            <a onclick="fillDeletePatientState(${ response.states[i].id }, '${ response.states[i].name }', '${ response.states[i].formatted_comment }', '${ response.states[i].formatted_detection_date }',
+                                '${response.states[i].attrs}')" 
                                 class="dropdown-item" href="#" data-toggle="modal" data-target="#deletePatientStateModal">Удалить</a>
                         </div>
                     </div>
@@ -530,6 +512,12 @@
             </tr>`
         }
         stateHistoryTable.innerHTML = innerHTML;
+    }
+
+    function handle_state_add_update(stateData) {
+        if (stateData["value"] == '{{ c.state_hosp[0] }}') {
+            stateData["hospital_id"] = $("#hospital_id").val()
+        }
     }
 
     $("#updateStateButton").on("click", () => {
@@ -540,42 +528,47 @@
             'detection_date':document.getElementById("updatePatientStateDate").value,
             'patient_state_id':document.getElementById("updatePatientStateID").value
         }
-        $.ajax({
-            url: "/update_state",
-            type: "post",
-            contentType: "application/json",
-            data: JSON.stringify(updateStateData),
-            success: function (response) {
-                console.log(response);
-                renderStateHistoryTable(response);
-                $('#updatePatientStateModal').modal('hide');
-                $.notify({
-                    icon: 'fa fa-thumbs-up',
-                    message: 'Успешно изменено'
-                },{
-                    type: 'info',
-                });
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-               console.log(textStatus, errorThrown, jqXHR);
-               text = 'Неизвестная ошибка';
-               if (jqXHR.status == 403)
-                   text = 'Невалидные данные';
-               if (jqXHR.status == 405)
-                   text = 'Пациент не найден';
-               if (jqXHR.status == 406)
-                   text = 'Статус не найден';
-               if (jqXHR.status == 300)
-                   text = 'Невозможно изменить, неправильная последовательность.';
-    
-               $.notify({
-                    icon: 'fa fa-times',
-                    message: text
-                },{
-                    type: 'danger',
-                });
-            }
-        })
+        if ($("#editStateForm")[0].checkValidity() === false) {
+            $("#hiddenEditState")[0].click();
+        } else {
+            handle_state_add_update(updateStateData)
+
+            $.ajax({
+                url: "/update_state",
+                type: "post",
+                contentType: "application/json",
+                data: JSON.stringify(updateStateData),
+                success: function (response) {
+                    renderStateHistoryTable(response);
+                    $('#updatePatientStateModal').modal('hide');
+                    $.notify({
+                        icon: 'fa fa-thumbs-up',
+                        message: 'Успешно изменено'
+                    },{
+                        type: 'info',
+                    });
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                   console.log(textStatus, errorThrown, jqXHR);
+                   text = 'Неизвестная ошибка';
+                   if (jqXHR.status == 403)
+                       text = 'Невалидные данные';
+                   if (jqXHR.status == 405)
+                       text = 'Пациент не найден';
+                   if (jqXHR.status == 406)
+                       text = 'Статус не найден';
+                   if (jqXHR.status == 300)
+                       text = 'Невозможно изменить, неправильная последовательность.';
+        
+                   $.notify({
+                        icon: 'fa fa-times',
+                        message: text
+                    },{
+                        type: 'danger',
+                    });
+                }
+            })
+        }
     });
 
     $("#deleteStateButton").on("click", () => {
@@ -626,41 +619,118 @@
             'detection_date': document.getElementById("addStateDate").value,
             'patient_id': document.getElementById("addStatePatientID").value
         };
-        $.ajax({
-            url: "/add_state",
-            type: "post",
-            contentType: "application/json",
-            data: JSON.stringify(addStateData),
-            success: function (response) {
-                console.log(response);
-                renderStateHistoryTable(response);
-                $('#addPatientStateModal').modal('hide');
-                $.notify({
-                    icon: 'fa fa-thumbs-up',
-                    message: 'Успешно добавлено'
-                },{
-                    type: 'info',
-                });
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-               console.log(textStatus, errorThrown, jqXHR);
-               text = 'Неизвестная ошибка';
-               if (jqXHR.status == 403)
-                   text = 'Невалидные данные';
-               if (jqXHR.status == 405)
-                   text = 'Пациент не найден';
-               if (jqXHR.status == 300)
-                   text = 'Невозможно добавить, неправильная последовательность.';
-    
-               $.notify({
-                    icon: 'fa fa-times',
-                    message: text
-                },{
-                    type: 'danger',
-                });
-            }
-        });
+
+        if ($("#addStateForm")[0].checkValidity() === false) {
+            $("#hiddenAddState")[0].click();
+        } else {
+            handle_state_add_update(addStateData)
+
+            $.ajax({
+                url: "/add_state",
+                type: "post",
+                contentType: "application/json",
+                data: JSON.stringify(addStateData),
+                success: function (response) {
+                    console.log(response);
+                    renderStateHistoryTable(response);
+                    $('#addPatientStateModal').modal('hide');
+                    $.notify({
+                        icon: 'fa fa-thumbs-up',
+                        message: 'Успешно добавлено'
+                    },{
+                        type: 'info',
+                    });
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                   console.log(textStatus, errorThrown, jqXHR);
+                   text = 'Неизвестная ошибка';
+                   if (jqXHR.status == 403)
+                       text = 'Невалидные данные';
+                   if (jqXHR.status == 405)
+                       text = 'Пациент не найден';
+                   if (jqXHR.status == 300)
+                       text = 'Невозможно добавить, неправильная последовательность.';
+        
+                   $.notify({
+                        icon: 'fa fa-times',
+                        message: text
+                    },{
+                        type: 'danger',
+                    });
+                }
+            });
+        }
     });
+
+var hospitalForm = `<div class="form-group">
+                        <label for="job-input" class="form-control-label">{{ _("Регион Госпитализации") }}</label>
+                    {{ form.hospital_region_id(class="form-control", onchange="update_hospitals_list()") }}
+                    </div>
+                    <div class="form-group">
+                        <label for="job-input" class="form-control-label">{{ _("Тип Больницы") }}</label>
+                        {{ form.hospital_type_id(class="form-control", onchange="update_hospitals_list()") }}
+                    </div>
+                    <div class="form-group">
+                        <label for="job-input" class="form-control-label">
+                            {% if patient.hospital_id %} 
+                            <a href="/hospital_profile?id={{ patient.hospital_id }}">{{ _("Место Госпитализации") }}</a>
+                            {% else %}
+                            {{ _("Место Госпитализации") }}
+                            {% endif %}
+                        </label>
+                        <meta name="csrf-token" content="{{ csrf_token() }}">
+                        {{ form.hospital_id(class="form-control") }}
+                    </div>`
+
+    function handleHospitalizedStateForm(modalBodyID, stateSelectID, modalFormLen, updateHospitalsList=true) {
+        var stateModalBody = document.getElementById(modalBodyID)
+        if (stateModalBody.children.length !== modalFormLen) {
+            while (stateModalBody.children.length > modalFormLen) {
+                stateModalBody.removeChild(stateModalBody.lastChild);
+            }
+        }
+
+        if ($("#" + stateSelectID).val() === "{{ c.state_hosp[0] }}") {
+            document.getElementById(modalBodyID).insertAdjacentHTML('beforeend', hospitalForm)
+            if (updateHospitalsList) update_hospitals_list()
+        }
+    }
+
+    $("#addStateStateValue").change(function() {
+        handleHospitalizedStateForm("addStateModalBody", "addStateStateValue", 4);
+    });
+
+    $("#addPatientStateModal").on("hidden.bs.modal", function () {
+        $('#addStateStateValue').val($("#addStateStateValue option:first").val());
+        $('#addStateStateValue').trigger('change');
+    });
+
+    $("#updatePatientStateState").change(function() {
+        handleHospitalizedStateForm("editStateModalBody", "updatePatientStateState", 5, false);
+    });
+    
+    $.ajax({
+        url: "/get_states",
+        type: "post",
+        contentType: "application/json",
+        data: JSON.stringify({"patient_id": '{{ patient.id }}' }),
+        success: function (response) {
+            renderStateHistoryTable(response);
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+           console.log(textStatus, errorThrown, jqXHR);
+           text = 'Неизвестная ошибка';
+           if (jqXHR.status == 405)
+               text = 'Пациент не найден';
+
+           $.notify({
+                icon: 'fa fa-times',
+                message: text
+            },{
+                type: 'danger',
+            });
+        }
+    })
 
 </script>
 {% with change=change, error_msg=error_msg %}

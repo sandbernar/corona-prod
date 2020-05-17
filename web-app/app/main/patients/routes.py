@@ -923,6 +923,48 @@ def delete_contacted():
     message = _("Не удалось удалить контактную связь")
     return redirect("/patients?error={}".format(message))
 
+def get_all_states(patient_states):
+    states = []
+
+    for state in patient_states:
+        attrs = state.attrs
+        
+        if state.value == c.state_hosp[0]:
+            try:
+                hospital = Hospital.query.filter_by(id = state.attrs["hospital_id"]).first()
+            except exc.SQLAlchemyError:
+                return jsonify({'description': _("Hospital not found")}), 405
+            
+            attrs["hospital_id"] = hospital.id
+            attrs["hospital_region_id"] = hospital.region_id
+            attrs["hospital_type_id"] = hospital.hospital_type_id
+            print(attrs)
+
+        states.append({
+            "id":state.id,
+            "name":state.name,
+            "comment":state.comment,
+            "detection_date":datetime.strftime(state.detection_date, "%Y-%m-%d"),
+            "formatted_comment":state.formatted_comment,
+            "formatted_detection_date":state.formatted_detection_date,
+            "attrs":attrs
+        })
+
+    return states  
+
+@blueprint.route('/get_states', methods=['POST'])
+@login_required
+def get_states():
+    data = json.loads(request.data)
+    patient = Patient.query.filter(Patient.id == data['patient_id']).first()
+
+    if not patient:
+        return jsonify({'description': 'Patient not found'}), 405
+
+    states = get_all_states(patient.states)
+
+    return jsonify({'status': 'loaded', 'states': states}), 200
+
 @blueprint.route('/add_state', methods=['POST'])
 @login_required
 def add_state():
@@ -932,25 +974,33 @@ def add_state():
                     or 'patient_id' not in data \
                     or 'detection_date' not in data:
         return jsonify({'description': 'not valid data'}), 403
+
     result = False
     patient = Patient.query.filter(Patient.id == data['patient_id']).first()
     if not patient:
         return jsonify({'description': 'Patient not found'}), 405
     state = State.query.filter_by(value=data["value"]).first()
+    attrs = {}
+    
+    if data["value"] == c.state_hosp[0]:
+        try:
+            hospital = Hospital.query.filter_by(id = data["hospital_id"]).first()
+            patient.hospital_id = hospital.id
+            
+            db.session.add(patient)
+            db.session.commit()
+        except exc.SQLAlchemyError:
+            return jsonify({'description': _("Hospital not found")}), 405
+
+        attrs["hospital_id"] = hospital.id
+
     result = patient.addState(state,
             detection_date=data["detection_date"],
-            comment=data["comment"])
+            comment=data["comment"],
+            attrs=attrs)
     if result == True:
-        states = []
-        for state in patient.states:
-            states.append({
-                "id":state.id,
-                "name":state.name,
-                "comment":state.comment,
-                "detection_date":datetime.strftime(state.detection_date, "%Y-%m-%d"),
-                "formatted_comment":state.formatted_comment,
-                "formatted_detection_date":state.formatted_detection_date
-            })
+        states = get_all_states(patient.states)
+
         return jsonify({'status': 'added', 'states': states}), 200
     return jsonify({'description': 'Couldn\'t be added'}), 300
 
@@ -968,16 +1018,8 @@ def delete_state():
         return jsonify({'description': 'Patient not found'}), 405
     result = patient.deleteState(data["patient_state_id"])
     if result == True:
-        states = []
-        for state in patient.states:
-            states.append({
-                "id":state.id,
-                "name":state.name,
-                "comment":state.comment,
-                "detection_date":datetime.strftime(state.detection_date, "%Y-%m-%d"),
-                "formatted_comment":state.formatted_comment,
-                "formatted_detection_date":state.formatted_detection_date
-            })
+        states = get_all_states(patient.states)
+
         return jsonify({'status': 'deleted', 'states': states}), 200
     return jsonify({'description': 'Couldn\'t be deleted'}), 300
 
@@ -999,22 +1041,33 @@ def update_state():
     if not patient_state:
         return jsonify({'description': 'PatientState not found'}), 406
     state = State.query.filter_by(value=data["value"]).first()
+
+    attrs = {}
+    
+    if data["value"] == c.state_hosp[0]:
+        if patient_state.attrs["hospital_id"] != data["hospital_id"]:
+            try:
+                hospital = Hospital.query.filter_by(id = data["hospital_id"]).first()
+                patient.hospital_id = hospital.id
+                
+                db.session.add(patient)
+                db.session.commit()
+            except exc.SQLAlchemyError:
+                return jsonify({'description': _("Hospital not found")}), 405
+
+        attrs["hospital_id"] = hospital.id
+
+    patient_state.attrs = attrs
+
     if state:
         patient_state.state_id = state.id
     patient_state.detection_date = data["detection_date"]
     patient_state.comment = data["comment"]
+
     result = patient.updateState(patient_state)
     if result == True:
-        states = []
-        for state in patient.states:
-            states.append({
-                "id":state.id,
-                "name":state.name,
-                "comment":state.comment,
-                "detection_date":datetime.strftime(state.detection_date, "%Y-%m-%d"),
-                "formatted_comment":state.formatted_comment,
-                "formatted_detection_date":state.formatted_detection_date
-            })
+        states = get_all_states(patient.states)
+
         return jsonify({'status': 'updated', 'states': states}), 200
     return jsonify({'description': 'Couldn\'t be updated'}), 300
 

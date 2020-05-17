@@ -16,28 +16,21 @@
       dataType: "text",
       async: async,
       success: function(data){
+        console.log($("#hospital_region_id").val(),$("#hospital_type_id").val())
         document.getElementById("hospital_id").innerHTML = data.toString();
       }
     });
   };
 
-  function disable_hospital_choice(value) {
-    disable = true;
-    if (value == 1) {
-      disable = false;
-    }
+  // function disable_hospital_choice(value) {
+  //   disable = true;
+  //   if (value == 1) {
+  //     disable = false;
+  //   }
 
-    document.getElementById('hospital_region_id').disabled = disable;
-    document.getElementById('hospital_type_id').disabled = disable;
-    document.getElementById('hospital_id').disabled = disable;
-  }
-
-$("#hospital_region_id").on("change", function(){
-  update_hospitals_list();
-});
-
-$("#hospital_type_id").on("change", function(){
-  update_hospitals_list();
-});
+  //   document.getElementById('hospital_region_id').disabled = disable;
+  //   document.getElementById('hospital_type_id').disabled = disable;
+  //   document.getElementById('hospital_id').disabled = disable;
+  // }
 
 </script>
