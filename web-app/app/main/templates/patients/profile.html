@@ -44,7 +44,7 @@
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Добавить статус</h5>
+                <h5 class="modal-title" id="exampleModalLabel">{{ _("Добавить статус") }}</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true"></span>
                 </button>
@@ -55,22 +55,22 @@
 
                     <input type="hidden" name="id" id="addStatePatientID" value='{{ patient.id }}'>
                     <div class="form-group">
-                        <label for="name-input" class="form-control-label">Статус*</label>
+                        <label for="name-input" class="form-control-label">{{ _("Статус") }}*</label>
                         {{ form.state(class="form-control", id="addStateStateValue") }}
                     </div>
                     <div class="form-group">
-                        <label for="name-input" class="form-control-label">Комментарий</label>
+                        <label for="name-input" class="form-control-label">{{ _("Комментарий") }}</label>
                         {{ form.stateComment(class="form-control", id="addStateComment", type="text") }}
                     </div>
                     <div class="form-group">
-                        <label for="name-input" class="form-control-label">Дата выявления*</label>
+                        <label for="name-input" class="form-control-label">{{ _("Дата выявления") }}*</label>
                         {{ form.stateDetectionDate(class="form-control datepicker", id="addStateDate", type="date") }}
                     </div>
-                    <button type="button" id="addStateButton" class="btn btn-primary">Сохранить</button>
                 <!-- </form> -->
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ _("Отмена") }}</button>
+                <button type="button" id="addStateButton" class="btn btn-primary">{{ _("Добавить") }}</button>
             </div>
         </div>
     </div>
@@ -81,24 +81,24 @@
     <div class="modal-dialog modal-dialog-centered" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="deletePatientStateModalLabel">Удаление статуса</h5>
+          <h5 class="modal-title" id="deletePatientStateModalLabel">{{ _("Удаление статуса") }}</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
         <div class="modal-body">
-          <h2>Вы уверены что хотите удалить статус?</h2>
-          <p>Статус: <span id="deletePatientStateState"></span></p>
-          <p>Комментарий: <span id="deletePatientStateComment"></span></p>
-          <p>Дата выявление: <span id="deletePatientStateDate"></span></p>
+          <h2>{{ _("Вы уверены что хотите удалить статус?") }}</h2>
+          <p>{{ _("Статус:") }} <span id="deletePatientStateState"></span></p>
+          <p>{{ _("Комментарий:") }} <span id="deletePatientStateComment"></span></p>
+          <p>{{ _("Дата выявление:") }} <span id="deletePatientStateDate"></span></p>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ _("Отмена") }}</button>
           <!-- <form action="/delete_state" method="POST"> -->
             <!-- {{ form.hidden_tag() }} -->
             <input type="hidden" name="id" id="deletePatientStateID" value=''>
             <input type="hidden" name="patientID" id="deleteStatePatientID" value='{{ patient.id }}'>
-            <button type="button" id="deleteStateButton" class="btn btn-danger">Удалить</button>
+            <button type="button" id="deleteStateButton" class="btn btn-danger">{{ _("Удалить") }}</button>
         <!-- </form> -->
         </div>
       </div>
@@ -110,7 +110,7 @@
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="updatePatientStateModalLabel">Изменить статус</h5>
+                <h5 class="modal-title" id="updatePatientStateModalLabel">{{ _("Изменить статус") }}</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true"></span>
                 </button>
@@ -122,20 +122,20 @@
                     <input type="hidden" name="patientID" id="updatePatientPatientID" value='{{ patient.id }}'>
                     <input type="hidden" name="id" id="updatePatientStateID" value=''>
                     <div class="form-group">
-                        <label for="name-input" class="form-control-label">Статус</label>
+                        <label for="name-input" class="form-control-label">{{ _("Статус") }}</label>
                         {{ form.state(class="form-control", id="updatePatientStateState") }}
                     </div>
                     <div class="form-group">
-                        <label for="name-input" class="form-control-label">Комментарий</label>
+                        <label for="name-input" class="form-control-label">{{ _("Комментарий") }}</label>
                         <input class="form-control" id="updatePatientStateComment" name="comment" type="text" value="">
                     </div>
                     <div class="form-group">
-                        <label for="name-input" class="form-control-label">Дата выявления</label>
+                        <label for="name-input" class="form-control-label">{{ _("Дата выявления") }}</label>
                         <input class="form-control datepicker" id="updatePatientStateDate" name="detection_date" type="date" value="">
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
-                        <button type="button" id="updateStateButton" class="btn btn-primary">Сохранить</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ _("Отмена") }}</button>
+                        <button type="button" id="updateStateButton" class="btn btn-primary">{{ _("Сохранить") }}</button>
                     </div>
                 <!-- </form> -->
             </div>
@@ -221,29 +221,29 @@
                             {% endif %}                        
                         <!-- HERE WAS form.is_contacted -->
                         </div>              
-                <hr class="my-4" />
-                <div class="col mt-3">
-                  <div class="form-group">
-                    <label for="job-input" class="form-control-label">{{ _("Регион Госпитализации") }}</label>
-                    {{ form.hospital_region_id(class="form-control") }}
-                </div>
-                <div class="form-group">
-                    <label for="job-input" class="form-control-label">{{ _("Тип Больницы") }}</label>
-                    {{ form.hospital_type_id(class="form-control") }}
-                </div>
-                <div class="form-group">
-                    <label for="job-input" class="form-control-label">
-                        {% if patient.hospital_id %} 
-                        <a href="/hospital_profile?id={{ patient.hospital_id }}">{{ _("Место Госпитализации") }}</a>
-                        {% else %}
-                        {{ _("Место Госпитализации") }}
-                        {% endif %}
-                    </label>
-                    <meta name="csrf-token" content="{{ csrf_token() }}">
-                    {{ form.hospital_id(class="form-control") }}
-                </div>
-                <hr class="my-4" />                    
-            </div>
+                        <hr class="my-4" />
+                        <div class="col mt-3">
+                          <div class="form-group">
+                            <label for="job-input" class="form-control-label">{{ _("Регион Госпитализации") }}</label>
+                            {{ form.hospital_region_id(class="form-control") }}
+                        </div>
+                        <div class="form-group">
+                            <label for="job-input" class="form-control-label">{{ _("Тип Больницы") }}</label>
+                            {{ form.hospital_type_id(class="form-control") }}
+                        </div>
+                        <div class="form-group">
+                            <label for="job-input" class="form-control-label">
+                                {% if patient.hospital_id %} 
+                                <a href="/hospital_profile?id={{ patient.hospital_id }}">{{ _("Место Госпитализации") }}</a>
+                                {% else %}
+                                {{ _("Место Госпитализации") }}
+                                {% endif %}
+                            </label>
+                            <meta name="csrf-token" content="{{ csrf_token() }}">
+                            {{ form.hospital_id(class="form-control") }}
+                        </div>
+                        <hr class="my-4" />                    
+                    </div>
             <div class="col">
                 <div class="text-center">
                     <a href="/contacted_persons?id={{ patient.id }}" class="btn btn-primary btn-full-width">{{ _("Контактные Лица") }}</a>
