@@ -104,10 +104,8 @@
                   <div class="col-xl">
                         {% with form=form %}
                           {% include "patients/modules/patient_form_right.html" %}
-                        {% endwith %}                         
-                  </div>
-                </div>
-                <div class="row mt-2">
+                        {% endwith %}
+                                        <div class="row mt-2">
                   <div class="col">
                     <div class="card shadow">
                       <div class="card-header bg-transparent">
@@ -115,19 +113,8 @@
                           <div class="row">
                             <div class="col">
                               <div class="form-group">
-                                <label class="form-control-label">{{ _("Найден?") }}</label><br>
-                                {% for subfield in form.is_found %}
-                                <div class="custom-control custom-radio custom-control-inline">
-                                  {{ subfield(type="radio", id=subfield.id, class="custom-control-input", onchange="disable_status(value)" ) }}
-                                  <label class="custom-control-label" for='{{ subfield.id }}'>{{ subfield.label }}</label>
-                                </div>
-                                {% endfor %}
-                              </div>
-                            </div>
-                            <div class="col">
-                              <div class="form-group">
-                                <label class="form-control-label">{{ _("Инфицирован?") }}</label><br>
-                                {% for subfield in form.is_infected %}
+                                <label class="form-control-label">{{ _("Транзит?") }}</label><br>
+                                {% for subfield in form.is_transit %}
                                 <div class="custom-control custom-radio custom-control-inline">
                                   {{ subfield(type="radio", id=subfield.id, class="custom-control-input") }}
                                   <label class="custom-control-label" for='{{ subfield.id }}'>{{ subfield.label }}</label>
@@ -135,52 +122,19 @@
                                 {% endfor %}
                               </div>
                             </div>
-                            <!-- HERE WAS form.is_contacted -->
-                            <div class="col">
-                              <div class="form-group">
-                                <label class="form-control-label">{{ _("Статус Нахождения") }}</label><br>
-                                {{ form.patient_status(class="form-control", id="patient_status") }}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="col-lg-7">
-                    <div class="card shadow" style="height:100%;">
-                      <div class="card-header bg-transparent" style="height:100%;">
-                        <div class="card-body" style="height:100%;">
-                          <div class="row">
-                            <div class="col">
-                              <div class="form-group">
-                                <label for="job-input" class="form-control-label">{{ _("Регион Госпитализации") }}</label>
-                                {{ form.hospital_region_id(class="form-control") }}
-                              </div>
-                            </div>
-                            <div class="col">
-                              <div class="form-group">
-                                <label for="job-input" class="form-control-label">{{ _("Тип Больницы") }}</label>
-                                {{ form.hospital_type_id(class="form-control") }}
-                              </div>
-                            </div>                            
-                            <div class="col">
-                              <div class="form-group">
-                                <label for="job-input" class="form-control-label">{{ _("Место Госпитализации") }}</label>
-                                {{ form.hospital_id(class="form-control") }}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>                  
-                  <div class="col-md-auto">
-                    <button id="open_modal_add_patient" class="btn btn-primary" data-toggle="modal" data-target="#addPatientModal" class="btn btn-primary" type="button" style="height:100%; width:100%;">
+                  <div class="col">
+                    <button id="open_modal_add_patient" class="btn btn-primary" data-toggle="modal" data-target="#addPatientModal" class="btn btn-primary" type="button" style="width:100%;height:100%;">
                       {{ _("Отправить") }}
                     </button>
-                  </div>
+                  </div>                            
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>                 
                   <button type="submit" id="hiddenSubmit" style="display:none;"></button>
+                </div>                      
+                  </div>
                 </div>
               </form>
             </div>
@@ -206,27 +160,9 @@
   {% include "js/travel_form.html" %}
   {% endwith %}
 
-  disable_hospital_choice(0)
-  
-  update_hospitals_list()
+
   update_travel_form()
 
-  disable_status($("#hospital_id").val())
-
-  function disable_status(value) {
-    disable = true
-    if (value == 1) {
-      disable = false
-    } else {
-      $('#patient_status').prop('selectedIndex', 0).change();
-      // document.getElementById('in_hospital-0').checked = false;
-      // document.getElementById('in_hospital-1').checked = false;
-      // disable_hospital_choice(value)
-    }
-
-    document.getElementById('patient_status').disabled = disable;
-    // document.getElementById('in_hospital-1').disabled = disable;    
-  }
 
   function show_loader(show) {
     var loader = $("#submit_loader")
@@ -353,19 +289,12 @@
   }
 }
 
-$("#add_patients").on("reset", function(){
-  $("#is_found-0").change()
-  $("#is_found-1").change()
-});
 
 
 $("#travel_type").on("change", function(){
   update_travel_form();
 });
 
-$("#patient_status").on("change", function(){
-  disable_hospital_choice($(this).val() === 'hospitalized')
-});
 
 $("#open_modal_add_patient").on("click", function(e){
  if ($("#add_patients")[0].checkValidity() === false) {

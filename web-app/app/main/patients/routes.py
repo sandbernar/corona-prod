@@ -226,13 +226,7 @@ def handle_add_update_patient(request_dict, final_dict, update_dict = {}):
     final_dict['dob'] = parse_date(request.form['dob'])    
     final_dict['gender'] = None if int(request_dict['gender']) == -1 else int(request_dict['gender']) == 1
 
-    state_value = request_dict.get('patient_status')
-    if state_value is not None and state_value != "":
-        state = State.query.filter_by(value=state_value).first()
-        if state is not None:
-            final_dict['state_id'] = state.id
-    final_dict['is_found'] = int(request_dict['is_found']) == 1
-    final_dict['is_infected'] = int(request_dict['is_infected']) == 1
+    final_dict['is_transit'] = int(request_dict['is_transit']) == 1
 
     if 'job_category_id' in request_dict:
         job_category_id = None if request_dict['job_category_id'] == "None" else request_dict['job_category_id']
@@ -252,19 +246,13 @@ def handle_add_update_patient(request_dict, final_dict, update_dict = {}):
     job_address = process_address(request_dict, "job", False, address=update_dict.get("job_address", None))
     final_dict['job_address_id'] = job_address.id
 
-def handle_after_patient(request_dict, final_dict, patient, update_dict = {}):
-    if final_dict['is_found'] == True:
+def handle_after_patient(request_dict, final_dict, patient, update_dict = {}, update_patient=True):
+    if not update_patient:
         patient.is_found = patient.addState(State.query.filter_by(value=c.state_found[0]).first())
-    
-    if final_dict['is_infected'] == True:
-        if final_dict['is_found'] != True:
-            patient.is_found = patient.addState(State.query.filter_by(value=c.state_found[0]).first())
-        patient.is_infected = patient.addState(State.query.filter_by(value=c.state_infec[0]).first())
-
-    if 'state_id' in final_dict:
-        if final_dict['is_found'] != True:
-            patient.is_found = patient.addState(State.query.filter_by(value=c.state_found[0]).first())
-        patient.addState(State.query.filter_by(id=final_dict['state_id']).first())
+        print(final_dict)
+        
+        if final_dict['is_transit'] == True:
+            patient.addState(State.query.filter_by(value=c.state_is_transit[0]).first())
 
     travel_type = request_dict['travel_type']
     if travel_type:
@@ -380,7 +368,7 @@ def add_patient():
         db.session.commit()
 
         # Create Travels and VisitedCountries to created Patient
-        handle_after_patient(request_dict, final_dict, patient)
+        handle_after_patient(request_dict, final_dict, patient, update_patient=False)
         if select_contacted:
             try:
                 contacted = ContactedPersons(infected_patient_id=select_contacted.id, contacted_patient_id=patient.id)

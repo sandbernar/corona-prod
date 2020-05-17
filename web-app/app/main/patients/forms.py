@@ -84,8 +84,7 @@ class PatientForm(FlaskForm):
     hospital_id = SelectField('Hospital', choices = [], validators=[DataRequired()])  
 
     # patient_states = SelectField(id='patient_states')
-    is_found = RadioField("Is Found", id="is_found", choices=[(1, _("Да")),(0, _("Нет"))], default=0, validators=[DataRequired()])
-    is_infected = RadioField("Is Infected", id="is_infected", choices=[(1, _("Да")),(0, _("Нет"))], default=0, validators=[DataRequired()])
+    is_transit = RadioField("Is Transit", choices=[(1, _("Да")),(0, _("Нет"))], default=0, validators=[DataRequired()])
     patient_status = SelectField('Patient Status', id='patient_status' , validators=[DataRequired()])
     # is_contacted = RadioField("Is Contacted", id="is_contacted", choices=[(1, _("Да")),(0, _("Нет"))], default=0, validators=[DataRequired()])
 
@@ -96,7 +95,6 @@ class UpdateProfileForm(PatientForm):
     # is_contacted = BooleanField(id="is_contacted")
     in_hospital = BooleanField(id="in_hospital")
     is_home = BooleanField(id="is_home")
-    is_transit = BooleanField(id="is_transit")
     citizenship = TextField('Citizenship', id='citizenship', validators=[DataRequired()])
     flight_code_id = SelectField('Flight Code', id='flight_code_id')
 
