@@ -109,7 +109,7 @@ def prepare_patient_form(patient_form, with_old_data = False, with_all_travel_ty
         patient_form.hospital_type_id.choices = hospital_types
 
     # States
-    patient_form.patient_status.choices = [(s[0], s[1]) for s in c.form_states]
+    # patient_form.patient_status.choices = [(s[0], s[1]) for s in c.form_states]
 
     # Countries
     countries = Country.query.all()

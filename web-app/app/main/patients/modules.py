@@ -2,7 +2,7 @@ from flask import request, Response
 import math
 from app.main.modules import TableModule
 
-from app.main.patients.models import Patient, ContactedPersons, PatientStatus
+from app.main.patients.models import Patient, ContactedPersons, PatientStatus, PatientState, State
 from app.main.models import TravelType, VariousTravel, BlockpostTravel, Address, Country, Region
 from app.main.flights_trains.models import FlightTravel, TrainTravel, FlightCode, Train
 from app.login.models import User
@@ -259,18 +259,19 @@ class AllPatientsTableModule(TableModule):
         if patient_status != "-1":
             if patient_status == "in_hospital" or patient_status == "not_in_hospital":
                 in_hospital = patient_status == "in_hospital"
-                in_hospital_id = PatientStatus.query.filter_by(value=c.in_hospital[0]).first().id
 
                 if in_hospital:
-                    self.q = self.q.filter(Patient.status_id == in_hospital_id)
+                    self.q = self.q.filter(Patient.in_hospital == True)
                 else:
-                    self.q = self.q.filter(Patient.status_id != in_hospital_id)
+                    self.q = self.q.filter(Patient.in_hospital == False)
             elif patient_status == "is_home_quarantine":
-                home_quarantine_id = PatientStatus.query.filter_by(value=c.is_home[0]).first().id
-                self.q = self.q.filter(Patient.status_id == home_quarantine_id)
+                self.q = self.q.filter(Patient.is_home == True)
             elif patient_status == "is_transit":
-                is_transit_id = PatientStatus.query.filter_by(value=c.is_transit[0]).first().id
-                self.q = self.q.filter(Patient.status_id == is_transit_id)
+                self.q = self.q.join(PatientState, PatientState.patient_id == Patient.id)
+                self.q = self.q.join(State, State.id == PatientState.state_id)
+                self.q = self.q.filter(State.value == c.state_is_transit[0])
+                # is_transit_id = PatientStatus.query.filter_by(value=c.is_transit[0]).first().id
+                # self.q = self.q.filter(Patient.status_id == is_transit_id)
 
             self.search_form.patient_status.default = patient_status
 
