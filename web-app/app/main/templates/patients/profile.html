@@ -269,55 +269,15 @@
 
 </div>
 <div class="col-xl-9 order-xl-1">
-    <div class="row">
-      <div class="col">
-        <div class="card shadow">
-          <div class="card-header bg-transparent">
-            <h3 class="mb-0">{{ _("Тип Въезда") }}</h3>
-          </div>    
-          <div class="card-body">
-            {% with form=form %}
-            {% include "patients/modules/travel_form.html" %}
-            {% endwith %}
-        </div>
-        </div>
-      </div>
-    </div>            
-    <div class="card bg-secondary shadow mt-3">
-        <div class="card-header bg-white">
-            <div class="row align-items-center">
-                <div class="col">
-                    <h3 class="mb-0">{{ patient }}</h3>
-                </div>
-                <div class="col" style="text-align: end;">
-                    <button data-toggle="modal" type="button" data-target="#addPatientStateModal"  class="btn btn-primary btn-sm">Добавить статус</button>
-                </div>
-            </div>
-        </div>
-        <div class="card-body">
-            <div class="col">
-              <div class="col">
-                {% with form=form %}
-                {% include "patients/modules/patient_form_left.html" %}
-                {% endwith %} 
-            </div>
-            <div class="col mt-3">
-                {% with form=form %}
-                {% include "patients/modules/patient_form_right.html" %}
-                {% endwith %}                         
-            </div>
-        </div>
-
-
-        
-    </div>
-</div>
-<div class="card bg-secondary shadow mt-3">
+    <div class="card bg-secondary shadow">
     <div class="card-header bg-white">
         <div class="row align-items-center">
             <div class="col">
                 <h3 class="mb-0">История статусов</h3>
             </div>
+            <div class="col" style="text-align: end;">
+                <button data-toggle="modal" type="button" data-target="#addPatientStateModal"  class="btn btn-primary btn-sm">Добавить статус</button>
+            </div>            
         </div>
     </div>
     <div class="card-body">
@@ -359,6 +319,46 @@
             </div>
         </div>
     </div>
+    <div class="row mt-3">
+      <div class="col">
+        <div class="card shadow">
+          <div class="card-header bg-transparent">
+            <h3 class="mb-0">{{ _("Тип Въезда") }}</h3>
+          </div>    
+          <div class="card-body">
+            {% with form=form %}
+            {% include "patients/modules/travel_form.html" %}
+            {% endwith %}
+        </div>
+        </div>
+      </div>
+    </div>            
+    <div class="card bg-secondary shadow mt-3">
+        <div class="card-header bg-white">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h3 class="mb-0">{{ patient }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="col">
+              <div class="col">
+                {% with form=form %}
+                {% include "patients/modules/patient_form_left.html" %}
+                {% endwith %} 
+            </div>
+            <div class="col mt-3">
+                {% with form=form %}
+                {% include "patients/modules/patient_form_right.html" %}
+                {% endwith %}                         
+            </div>
+        </div>
+
+
+        
+    </div>
+</div>
 </div>
 </div>
 </form>
