@@ -92,21 +92,25 @@ def route_template(template, **kwargs):
 
         # in_hosp_state_id = State.query.filter_by(name=c.state_hosp).first().id
         # in_hospital = PatientState.query.filter_by(state_id=in_hosp_state_id).count()
-        in_hospital = q.filter(Patient.in_hospital==True).count()
-        # in_hospital = 0
-        ratio = 0 if is_found == 0 else in_hospital / is_found
-        in_hospital_str = str("{}/{} ({}%)".format(in_hospital,
-                                                   is_found, format(ratio * 100, '.2f')))
+        # in_hospital = q.filter(Patient.in_hospital==True).count()
+        # # in_hospital = 0
+        # ratio = 0 if is_found == 0 else in_hospital / is_found
+        # in_hospital_str = str("{}/{} ({}%)".format(in_hospital,
+        #                                            is_found, format(ratio * 100, '.2f')))
 
         # Is Infected
-        # infected_state_id = State.query.filter_by(name=c.state_infec).first().id
-        # is_infected = PatientState.query.filter_by(state_id=infected_state_id).count()
-        is_infected = q.filter(Patient.is_infected==True).count()
-        ratio = 0 if total == 0 else is_infected / total
+        infected_state_id = State.query.filter_by(value=c.state_infec[0]).first().id
+        is_infected = PatientState.query.filter_by(state_id=infected_state_id).count()
         is_infected_str = str("{}/{} ({}%)".format(is_infected, total, format(ratio * 100, '.2f')))
 
+        # Is Currently Infected
+        is_currently_infected = q.filter(Patient.is_infected==True).count()
+        ratio = 0 if total == 0 else is_infected / total
+        is_currently_infected_str = str("{}/{} ({}%)".format(is_currently_infected, total, format(ratio * 100, '.2f')))
+
         return render_template(template + '.html', total_kz_patients=str(total), is_found_str=is_found_str,
-                               in_hospital_str=in_hospital_str, is_infected_str=is_infected_str, **kwargs)
+                                is_currently_infected_str=is_currently_infected_str, 
+                                is_infected_str=is_infected_str, **kwargs)
 
     except TemplateNotFound:
         return render_template('errors/error-404.html'), 404

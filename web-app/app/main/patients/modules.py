@@ -196,7 +196,7 @@ class AllPatientsTableModule(TableModule):
         table_head[_("Регион")] = []
         table_head[_("Найден")] = ["is_found"]
         table_head[_("Госпитализирован")] = []
-        table_head[_("Инфицирован")] = ["is_infected"]
+        table_head[_("Сейчас Инфицирован")] = ["is_infected"]
         table_head[_("Контактов (найдено/всего)")] = []
         table_head[_("Время Добавления")] = ["created_date"]
 
@@ -248,12 +248,12 @@ class AllPatientsTableModule(TableModule):
         is_found = self.request.args.get("is_found", "-1")
         if is_found != "-1":
             filt["is_found"] = is_found == "1"
-            self.search_form.is_found.default = is_found
+            self.search_form.is_found.default = is_found         
 
-        is_infected = self.request.args.get("is_infected", "-1")
-        if is_infected != "-1":
-            filt["is_infected"] = is_infected == "1"
-            self.search_form.is_infected.default = is_infected
+        is_currently_infected = self.request.args.get("is_currently_infected", "-1")
+        if is_currently_infected != "-1":
+            filt["is_currently_infected"] = is_currently_infected == "1"
+            self.search_form.is_currently_infected.default = is_currently_infected
 
         patient_status = self.request.args.get("patient_status", "-1")
         if patient_status != "-1":
@@ -354,7 +354,17 @@ class AllPatientsTableModule(TableModule):
                 Country.name, ' ', Address.city, ' ', Address.street,
                 ' ', Address.house, ' ', Address.flat)).contains(address.lower()))
 
-            self.search_form.address.default = address     
+            self.search_form.address.default = address
+
+        is_infected = self.request.args.get("is_infected", "-1")
+        if is_infected != "-1":
+            infected_state_id = State.query.filter_by(value=c.state_infec[0]).first().id
+            is_infected = PatientState.query.filter_by(state_id=infected_state_id).count()
+
+            self.q = self.q.join(PatientState, PatientState.patient_id == Patient.id)
+            self.q = self.q.filter(PatientState.state_id == infected_state_id)
+
+            self.search_form.is_infected.default = is_infected            
 
         current_country = Country.query.filter_by(code=c.current_country).first()
 

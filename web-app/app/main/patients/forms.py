@@ -124,6 +124,8 @@ class PatientsSearchForm(FlaskForm):
     is_home_quarantine = BooleanField()
     probably_duplicate = BooleanField()
 
+    is_currently_infected = SelectField("Is Currently Infected",
+                            choices=[(-1, _("Все")), (1, _("Да")), (0, _("Нет"))], default=-1)
     is_infected = SelectField("Is Infected", choices=[(-1, _("Все")), (1, _("Да")), (0, _("Нет"))], default=-1)
     is_found = SelectField("Is Found", choices=[(-1, _("Все")), (1, _("Да")), (0, _("Нет"))], default=-1)
 
