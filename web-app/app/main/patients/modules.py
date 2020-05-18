@@ -252,7 +252,7 @@ class AllPatientsTableModule(TableModule):
 
         is_currently_infected = self.request.args.get("is_currently_infected", "-1")
         if is_currently_infected != "-1":
-            filt["is_currently_infected"] = is_currently_infected == "1"
+            filt["is_infected"] = is_currently_infected == "1"
             self.search_form.is_currently_infected.default = is_currently_infected
 
         patient_status = self.request.args.get("patient_status", "-1")

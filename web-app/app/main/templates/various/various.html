@@ -46,6 +46,14 @@
                     <div class="col-xl">
                       <p class="mb-0" style="font-weight:400;">{{ _("Инфицированные с геолокацией и возрастом") }}</p>
                     </div>
+                    <div class="col">
+                      <label class="form-control-label">{{ _("Начало диапазона") }}</label>
+                      {{ form.start_count(class="form-control") }}              
+                    </div>
+                    <div class="col">
+                      <label class="form-control-label">{{ _("Конец диапазона") }}</label>
+                      {{ form.end_count(class="form-control") }}              
+                    </div>
                     <div class="col-auto">
                       <button class="btn btn-primary" name="value" type="submit" value="region_geo_age" style="height:100%">
                         {{ _('Скачать') }}

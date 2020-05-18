@@ -9,4 +9,5 @@ from wtforms.validators import DataRequired
 from flask_babelex import _
 
 class DownloadVariousData(FlaskForm):
-    pass
+	start_count = TextField()
+	end_count = TextField() 
