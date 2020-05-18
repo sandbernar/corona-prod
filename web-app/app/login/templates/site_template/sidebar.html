@@ -108,6 +108,11 @@
               <i class="fas fa-users text-blue"></i> {{ _('Управление Аккаунтами') }}
             </a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/various">
+              <i class="fas fa-align-justify text-blue"></i> {{ _('Разное') }}
+            </a>
+          </li>         
         {% else %}
           <li class="nav-item">
             <a class="nav-link" href="/user_profile?id={{ current_user.id }}">

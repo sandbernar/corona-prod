@@ -705,6 +705,10 @@ var hospitalForm = `<div class="form-group">
         $('#addStateStateValue').trigger('change');
     });
 
+    $("#addPatientStateModal").on("shown.bs.modal", function () {
+        $('#addStateDate').val(new Date().toISOString().slice(0, 10));
+    });
+
     $("#updatePatientStateState").change(function() {
         handleHospitalizedStateForm("editStateModalBody", "updatePatientStateState", 5, false);
     });

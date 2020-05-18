@@ -82,7 +82,11 @@
                 {{ form.region_id(class="form-control") }}
               </div>
               <div class="col-md-auto">
-                <label class='form-control-label'>{{ _('Инфицирован') }}</label>                
+                <label class='form-control-label'>{{ _('Инфицирован (Текущее)') }}</label>                
+                {{ form.is_currently_infected(class="form-control") }}
+              </div>              
+              <div class="col-md-auto">
+                <label class='form-control-label'>{{ _('Инфицирован (Все)') }}</label>                
                 {{ form.is_infected(class="form-control") }}
               </div>
               <div class="col-md-auto">
