@@ -250,7 +250,6 @@ def handle_add_update_patient(request_dict, final_dict, update_dict = {}):
 def handle_after_patient(request_dict, final_dict, patient, update_dict = {}, update_patient=True):
     if not update_patient:
         patient.is_found = patient.addState(State.query.filter_by(value=c.state_found[0]).first())
-        print(final_dict)
         
         if final_dict['is_transit'] == True:
             patient.addState(State.query.filter_by(value=c.state_is_transit[0]).first())

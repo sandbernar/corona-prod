@@ -100,12 +100,14 @@ def route_template(template, **kwargs):
 
         # Is Infected
         infected_state_id = State.query.filter_by(value=c.state_infec[0]).first().id
-        is_infected = PatientState.query.filter_by(state_id=infected_state_id).count()
+
+        is_infected = q.join(PatientState, PatientState.patient_id == Patient.id)
+        is_infected = is_infected.filter(PatientState.state_id == infected_state_id).count()
         is_infected_str = str("{}/{} ({}%)".format(is_infected, total, format(ratio * 100, '.2f')))
 
         # Is Currently Infected
         is_currently_infected = q.filter(Patient.is_infected==True).count()
-        ratio = 0 if total == 0 else is_infected / total
+        ratio = 0 if total == 0 else is_currently_infected / total
         is_currently_infected_str = str("{}/{} ({}%)".format(is_currently_infected, total, format(ratio * 100, '.2f')))
 
         return render_template(template + '.html', total_kz_patients=str(total), is_found_str=is_found_str,
