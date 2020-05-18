@@ -226,7 +226,8 @@ def handle_add_update_patient(request_dict, final_dict, update_dict = {}):
     final_dict['dob'] = parse_date(request.form['dob'])    
     final_dict['gender'] = None if int(request_dict['gender']) == -1 else int(request_dict['gender']) == 1
 
-    final_dict['is_transit'] = int(request_dict['is_transit']) == 1
+    if 'is_transit' in request_dict:
+        final_dict['is_transit'] = int(request_dict['is_transit']) == 1
 
     if 'job_category_id' in request_dict:
         job_category_id = None if request_dict['job_category_id'] == "None" else request_dict['job_category_id']
