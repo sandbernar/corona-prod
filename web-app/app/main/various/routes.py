@@ -97,7 +97,6 @@ def export_various_data_xls():
             hospital_state_id = State.query.filter_by(value=c.state_hosp[0]).first().id
 
             if patient.region and patient.region.name != "Вне РК" and patient.home_address:
-                print(count)
                 count += 1
                 if start_count != "" and end_count != "":
                     if count < int(start_count):
@@ -110,7 +109,6 @@ def export_various_data_xls():
                 entry = [patient.region, patient.home_address.lat, patient.home_address.lng,
                         calculate_age(patient.dob), patient.travel_type, yes_no(were_hospitalized)]
                 
-
                 if start_count != "" and end_count != "":
                     if count >= int(start_count) and count <= int(end_count):
                         data.append(entry)

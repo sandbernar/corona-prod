@@ -183,13 +183,14 @@ class Patient(db.Model):
         tmpState.value = state.value
         tmpState.name = state.name
         tmpState.id = 9999999999
-        tmpState.detection_date = datetime.datetime.now()
+        tmpState.detection_date = datetime.datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
         if detection_date is not None and detection_date != "":
             tmpState.detection_date = datetime.datetime.strptime(detection_date, "%Y-%m-%d")
         states = self.states
         states.append(tmpState)
         states = sorted(states, key=lambda k: (k.detection_date, k.id))
         patientStates = [(st.value, st.name) for st in states]
+        print([st.detection_date for st in states])
 
         print(patientStates)
         graph = c.GraphState()
