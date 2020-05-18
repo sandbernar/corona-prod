@@ -919,15 +919,15 @@ def get_all_states(patient_states):
         attrs = state.attrs
         
         if state.value == c.state_hosp[0]:
-            try:
-                hospital = Hospital.query.filter_by(id = state.attrs["hospital_id"]).first()
-            except exc.SQLAlchemyError:
-                return jsonify({'description': _("Hospital not found")}), 405
-            
-            attrs["hospital_id"] = hospital.id
-            attrs["hospital_region_id"] = hospital.region_id
-            attrs["hospital_type_id"] = hospital.hospital_type_id
-            print(attrs)
+            if "hospital_id" in attrs:
+                try:
+                    hospital = Hospital.query.filter_by(id = state.attrs["hospital_id"]).first()
+                except exc.SQLAlchemyError:
+                    return jsonify({'description': _("Hospital not found")}), 405
+                
+                attrs["hospital_id"] = hospital.id
+                attrs["hospital_region_id"] = hospital.region_id
+                attrs["hospital_type_id"] = hospital.hospital_type_id
 
         states.append({
             "id":state.id,
@@ -1034,15 +1034,14 @@ def update_state():
     attrs = {}
     
     if data["value"] == c.state_hosp[0]:
-        if patient_state.attrs["hospital_id"] != data["hospital_id"]:
-            try:
-                hospital = Hospital.query.filter_by(id = data["hospital_id"]).first()
-                patient.hospital_id = hospital.id
-                
-                db.session.add(patient)
-                db.session.commit()
-            except exc.SQLAlchemyError:
-                return jsonify({'description': _("Hospital not found")}), 405
+        try:
+            hospital = Hospital.query.filter_by(id = data["hospital_id"]).first()
+            patient.hospital_id = hospital.id
+            
+            db.session.add(patient)
+            db.session.commit()
+        except exc.SQLAlchemyError:
+            return jsonify({'description': _("Hospital not found")}), 405
 
         attrs["hospital_id"] = hospital.id
 

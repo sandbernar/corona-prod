@@ -123,11 +123,13 @@ def get_hospital_by_region():
     region_id = request.form.get("region_id")
     hospital_type_id = request.form.get("hospital_type_id")
 
-    hospitals = Hospital.query.filter_by(region_id=int(
-        region_id), hospital_type_id=int(hospital_type_id))
+    hospitals_options = ""
 
-    hospitals_options = "".join(
-        ["<option value='{}'>{}</option>".format(h.id, h.name) for h in hospitals])
+    if region_id != '' and hospital_type_id != '':
+        hospitals = Hospital.query.filter_by(region_id=int(region_id), hospital_type_id=int(hospital_type_id))
+
+        hospitals_options = "".join(
+            ["<option value='{}'>{}</option>".format(h.id, h.name) for h in hospitals])
 
     return json.dumps(hospitals_options, ensure_ascii=False)
 
