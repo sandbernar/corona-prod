@@ -43,9 +43,9 @@ def export_various_data_xls():
     
     infected_state_id = State.query.filter_by(value=c.state_infec[0]).first().id
 
-    # q = q.join(PatientState, PatientState.patient_id == Patient.id)
-    # q = q.filter(PatientState.state_id == infected_state_id)
-    # q = q.group_by(Patient.id)
+    q = q.join(PatientState, PatientState.patient_id == Patient.id)
+    q = q.filter(PatientState.state_id == infected_state_id)
+    q = q.group_by(Patient.id)
 
     data = []
 
@@ -97,6 +97,7 @@ def export_various_data_xls():
             hospital_state_id = State.query.filter_by(value=c.state_hosp[0]).first().id
 
             if patient.region and patient.region.name != "Вне РК" and patient.home_address:
+                print(count)
                 count += 1
                 if start_count != "" and end_count != "":
                     if count < int(start_count):
