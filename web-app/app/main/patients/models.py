@@ -142,7 +142,7 @@ class Patient(db.Model):
         patient_state.value = state.value
         patient_state.name = state.name
         if patient_state.detection_date == "":
-            patient_state.detection_date = datetime.datetime.now()
+            patient_state.detection_date = datetime.datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
         else:
             patient_state.detection_date = datetime.datetime.strptime(patient_state.detection_date, "%Y-%m-%d")
         states = [st for st in self.states if st.id != patient_state.id]
@@ -186,6 +186,8 @@ class Patient(db.Model):
         tmpState.detection_date = datetime.datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
         if detection_date is not None and detection_date != "":
             tmpState.detection_date = datetime.datetime.strptime(detection_date, "%Y-%m-%d")
+
+        print(state, tmpState.detection_date)
         states = self.states
         states.append(tmpState)
         states = sorted(states, key=lambda k: (k.detection_date, k.id))
@@ -200,8 +202,8 @@ class Patient(db.Model):
                 return False
 
         patientState = PatientState(patient_id=self.id, state_id=state.id)
-        if detection_date is not None:
-            patientState.detection_date = tmpState.detection_date
+        # if detection_date is not None:
+        patientState.detection_date = tmpState.detection_date
         if comment is not None:
             patientState.comment = comment
         if attrs is not None:
