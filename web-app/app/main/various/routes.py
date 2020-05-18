@@ -43,9 +43,9 @@ def export_various_data_xls():
     
     infected_state_id = State.query.filter_by(value=c.state_infec[0]).first().id
 
-    q = q.join(PatientState, PatientState.patient_id == Patient.id)
-    q = q.filter(PatientState.state_id == infected_state_id)
-    q = q.group_by(Patient.id)
+    # q = q.join(PatientState, PatientState.patient_id == Patient.id)
+    # q = q.filter(PatientState.state_id == infected_state_id)
+    # q = q.group_by(Patient.id)
 
     data = []
 
@@ -97,6 +97,14 @@ def export_various_data_xls():
             hospital_state_id = State.query.filter_by(value=c.state_hosp[0]).first().id
 
             if patient.region and patient.region.name != "Вне РК" and patient.home_address:
+                count += 1
+                print(count, int(end_count))
+                if start_count != "" and end_count != "":
+                    if count < int(start_count):
+                        continue
+                    if count > int(end_count):
+                        break
+
                 were_hospitalized = PatientState.query.filter_by(patient_id = patient.id).filter_by(state_id = hospital_state_id).count()
 
                 entry = [patient.region, patient.home_address.lat, patient.home_address.lng,
@@ -104,40 +112,39 @@ def export_various_data_xls():
                 
 
                 if start_count != "" and end_count != "":
-                    print(int(start_count) >= count, count <= int(end_count))
                     if count >= int(start_count) and count <= int(end_count):
+                        print("Adding")
                         data.append(entry)
                 else:
                     data.append(entry)
 
-                count += 1
-
         data = pd.DataFrame(data, columns=[_("Регион"), _("Latitude"), _("Longitude"), _("Возраст"), _("Тип Въезда"), _("Был ли Госпитализирован")])        
 
-    output = io.BytesIO()
-    writer = pd.ExcelWriter(output, engine='xlsxwriter')
-    data.to_excel(writer, index=False)
+    # output = io.BytesIO()
+    # # writer = pd.ExcelWriter(output, engine='xlsxwriter')
+    # data.to_excel(writer, index=False)
+    # data.to_csv()
 
-    def get_col_widths(df):
-        widths = []
-        for col in df.columns:
-            col_data_width = max(df[col].map(str).map(len).max(), len(col))
-            col_data_width *= 1.2
+    # def get_col_widths(df):
+    #     widths = []
+    #     for col in df.columns:
+    #         col_data_width = max(df[col].map(str).map(len).max(), len(col))
+    #         col_data_width *= 1.2
 
-            widths.append(col_data_width)
+    #         widths.append(col_data_width)
         
-        return widths
+    #     return widths
 
-    for i, width in enumerate(get_col_widths(data)):
-        writer.sheets['Sheet1'].set_column(i, i, width)
+    # for i, width in enumerate(get_col_widths(data)):
+    #     writer.sheets['Sheet1'].set_column(i, i, width)
 
-    writer.save()
-    xlsx_data = output.getvalue()
+    # writer.save()
+    # xlsx_data = output.getvalue()
 
     # region_name = Region.query.filter_by(id = region_id).first().name if region_id != -1 else c.all_regions
-    filename_xls = "{}.xls".format(_("РК_Инфицированные_Возраст_Пол"))
+    filename_xls = "выгрузка.csv"
     
-    response = Response(xlsx_data, mimetype="application/vnd.ms-excel")
+    response = Response(data.to_csv(), mimetype="text/csv")
     response.headers["Content-Disposition"] = \
         "attachment;" \
         "filename*=UTF-8''{}".format(urllib.parse.quote(filename_xls.encode('utf-8')))
