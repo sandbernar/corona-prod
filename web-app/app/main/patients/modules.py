@@ -359,7 +359,6 @@ class AllPatientsTableModule(TableModule):
         is_infected = self.request.args.get("is_infected", "-1")
         if is_infected != "-1":
             infected_state_id = State.query.filter_by(value=c.state_infec[0]).first().id
-            is_infected = PatientState.query.filter_by(state_id=infected_state_id).count()
 
             self.q = self.q.join(PatientState, PatientState.patient_id == Patient.id)
             self.q = self.q.filter(PatientState.state_id == infected_state_id)

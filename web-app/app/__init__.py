@@ -28,7 +28,7 @@ def register_blueprints(app):
         app.register_blueprint(module.blueprint)
 
         if module_name == "main":
-            for submodule_name in ["users", "hospitals", "patients", "flights_trains"]:
+            for submodule_name in ["users", "hospitals", "patients", "flights_trains", "various"]:
                 module = import_module('app.{}.{}.routes'.format(module_name, submodule_name))
                 app.register_blueprint(module.blueprint)            
 

@@ -1,0 +1,77 @@
+{% extends "base_site.html" %}
+
+{% block title %} Tables {% endblock title %}
+
+{% block stylesheets %}
+{{ super() }}
+{% endblock stylesheets %}
+
+{% block content %}
+
+{% include "site_template/navigation.html" %}
+
+{% include "site_template/top-stats.html" %}
+
+<div class="container-fluid mt--7">
+  <form method="POST" id="export_xls" action="/export_various_data_xls">
+    {{ form.hidden_tag() }}
+  <div class="row">
+    <div class="col">
+      <div class="card shadow">
+        <div class="card-header bg-transparent">
+          <h3>{{ _("Разные Выгрузки и Функции (только для Администраторов)") }}</h3>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col">
+              <div class="card bg-secondary shadow">
+                <div class="card-header bg-white">
+                  <div class="row">
+                    <div class="col-xl">
+                      <p class="mb-0" style="font-weight:400;">{{ _("Статистика инфицирований по регионам по возрасту и полу") }}</p>
+                    </div>
+                    <div class="col-auto">
+                      <button class="btn btn-primary" type="submit" value="region_age_sex_infected" style="height:100%">
+                        {{ _('Скачать') }}
+                      </button>                      
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col">
+<!--               <div class="card bg-secondary shadow">
+                <div class="card-header bg-white">
+                  <div class="row">
+                    <div class="col-lg">
+                      <div class="form-group">
+                        <label for="name-input" class="form-control-label">Фамилия*</label>
+                        <input class="form-control" id="lastnameInput" name="second_name" placeholder="Иванов" required="" type="text" value="">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div> -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+
+
+  {% include "site_template/footer.html" %}
+
+</div>
+
+  {% endblock content %}
+
+  {% block javascripts %}
+  {{ super()}}
+
+  {% with change=change, error_msg=error_msg %}
+  {% include "site_template/change_notification.html" %}
+  {% endwith %}
+
+  {% endblock javascripts %}
