@@ -31,7 +31,7 @@
                       <p class="mb-0" style="font-weight:400;">{{ _("Статистика инфицирований по регионам по возрасту и полу") }}</p>
                     </div>
                     <div class="col-auto">
-                      <button class="btn btn-primary" type="submit" value="region_age_sex_infected" style="height:100%">
+                      <button class="btn btn-primary" name="value" type="submit" value="region_age_sex_infected" style="height:100%">
                         {{ _('Скачать') }}
                       </button>                      
                     </div>
@@ -40,18 +40,20 @@
               </div>
             </div>
             <div class="col">
-<!--               <div class="card bg-secondary shadow">
+              <div class="card bg-secondary shadow">
                 <div class="card-header bg-white">
                   <div class="row">
-                    <div class="col-lg">
-                      <div class="form-group">
-                        <label for="name-input" class="form-control-label">Фамилия*</label>
-                        <input class="form-control" id="lastnameInput" name="second_name" placeholder="Иванов" required="" type="text" value="">
-                      </div>
+                    <div class="col-xl">
+                      <p class="mb-0" style="font-weight:400;">{{ _("Инфицированные с геолокацией и возрастом") }}</p>
+                    </div>
+                    <div class="col-auto">
+                      <button class="btn btn-primary" name="value" type="submit" value="region_geo_age" style="height:100%">
+                        {{ _('Скачать') }}
+                      </button>                      
                     </div>
                   </div>
                 </div>
-              </div> -->
+              </div>
             </div>
           </div>
         </div>

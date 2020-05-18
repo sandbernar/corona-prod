@@ -17,7 +17,7 @@ from app.main.various.forms import DownloadVariousData
 from app.main.forms import TableSearchForm
 import math
 from app.login.models import User
-from app.main.util import get_regions, get_regions_choices, populate_form, disable_form_fields, parse_date
+from app.main.util import get_regions, get_regions_choices, populate_form, disable_form_fields, parse_date, yes_no
 from app.login.util import hash_pass
 from flask_babelex import _
 from app.main.routes import route_template
@@ -26,7 +26,7 @@ from app import constants as c
 from sqlalchemy import exc, extract, func
 from sqlalchemy.sql import select
 import urllib
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 from app.main.users.modules import UserTableModule, UserPatientsTableModule
 
@@ -49,28 +49,58 @@ def export_various_data_xls():
 
     data = []
 
-    def get_age_filter(age_start, age_end):
-        date_start = datetime.today() - timedelta(days=age_start*365)
-        date_end = datetime.today() - timedelta(days=age_end*365)
+    value = request.form.get("value", None)
+    print(request.form)
 
-        return Patient.dob.between(date_start, date_end)
+    if value == "region_age_sex_infected":
+        def get_age_filter(age_start, age_end):
+            date_start = datetime.today() - timedelta(days=age_start*365)
+            date_end = datetime.today() - timedelta(days=age_end*365)
 
-    for region in Region.query.all():
-        if region.name != "Вне РК":
-            infected_count = q.filter(Patient.region_id == region.id).count()
+            return Patient.dob.between(date_start, date_end)
 
-            entry = [region.name, infected_count]
-            
-            for age_range in [(0, 9), (10, 19), (20, 29), (30, 39), (40, 49), (50, 59), (60, 69)
-                              , (70, 79), (80, 89), (90, 99)]:
-                entry.append(q.filter(get_age_filter(age_range[0], age_range[1])).count())
+        for region in Region.query.all():
+            if region.name != "Вне РК":
+                infected_count = q.filter(Patient.region_id == region.id).count()
 
+                entry = [region.name, infected_count]
+                
+                for age_range in [(0, 9), (10, 19), (20, 29), (30, 39), (40, 49), (50, 59), (60, 69)
+                                  , (70, 79), (80, 89), (90, 99)]:
+                    
+                    age_query = q.filter(get_age_filter(age_range[0], age_range[1]))          
+                    
+                    entry.append(age_query.filter(Patient.gender == False).count())
+                    entry.append(age_query.filter(Patient.gender == True).count())
 
-            data.append(entry)
+                data.append(entry)
 
-    data = pd.DataFrame(data, columns=[_("Регион"), _("Общее Число Инфицированных"), _("0-9"), _("10-19"),
-                                       _("20-29"), _("30-39"), _("40-49"), _("50-59"), _("60-69"), _("70-79"),
-                                       _("80-89"), _("90-99")])
+        age_ranges = [ _("0-9"), _("10-19"), _("20-29"), _("30-39"), _("40-49"), _("50-59"), _("60-69"),
+                       _("70-79"), _("80-89"), _("90-99")]
+
+        gender_age_ranges = [["М {}".format(age_r), "Ж {}".format(age_r)] for age_r in age_ranges]
+        gender_age_ranges = [x for l in gender_age_ranges for x in l]
+
+        data = pd.DataFrame(data, columns=[_("Регион"), _("Все"), *gender_age_ranges])
+    
+    elif value == "region_geo_age":
+        def calculate_age(born):
+            today = date.today()
+            return today.year - born.year - ((today.month, today.day) < (born.month, born.day))
+
+        for patient in q.all():
+            entry = []
+            hospital_state_id = State.query.filter_by(value=c.state_hosp[0]).first().id
+
+            if patient.region and patient.region.name != "Вне РК" and patient.home_address:
+                were_hospitalized = q.filter(PatientState.state_id == hospital_state_id).count()
+
+                entry = [patient.region, patient.home_address.lat, patient.home_address.lng,
+                        calculate_age(patient.dob), patient.travel_type, yes_no(were_hospitalized)]
+                
+                data.append(entry)
+
+        data = pd.DataFrame(data, columns=[_("Регион"), _("Latitude"), _("Longitude"), _("Возраст"), _("Тип Въезда"), _("Был ли Госпитализирован")])        
 
     output = io.BytesIO()
     writer = pd.ExcelWriter(output, engine='xlsxwriter')
@@ -93,9 +123,7 @@ def export_various_data_xls():
     xlsx_data = output.getvalue()
 
     # region_name = Region.query.filter_by(id = region_id).first().name if region_id != -1 else c.all_regions
-    filename_xls = "{}".format(_("пользователи"))
-
-    filename_xls = "{}.xls".format(filename_xls)
+    filename_xls = "{}.xls".format(_("РК_Инфицированные_Возраст_Пол"))
     
     response = Response(xlsx_data, mimetype="application/vnd.ms-excel")
     response.headers["Content-Disposition"] = \
