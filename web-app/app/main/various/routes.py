@@ -98,7 +98,6 @@ def export_various_data_xls():
 
             if patient.region and patient.region.name != "Вне РК" and patient.home_address:
                 count += 1
-                print(count, int(end_count))
                 if start_count != "" and end_count != "":
                     if count < int(start_count):
                         continue
@@ -113,7 +112,6 @@ def export_various_data_xls():
 
                 if start_count != "" and end_count != "":
                     if count >= int(start_count) and count <= int(end_count):
-                        print("Adding")
                         data.append(entry)
                 else:
                     data.append(entry)
