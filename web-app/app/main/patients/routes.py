@@ -582,9 +582,9 @@ def patient_edit_history():
                 if field_name == "region_id":
                     display_data = Region.query.filter_by(id = field_data).first().name
                 elif field_name == "gender":
-                    if display_data == True:
+                    if display_data == False:
                         display_data = _("Мужчина")
-                    elif display_data == False:
+                    elif display_data == True:
                         display_data = _("Женщина")
                     elif display_data == None:
                         display_data = _("Неизвестно")
