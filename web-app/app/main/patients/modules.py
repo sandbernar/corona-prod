@@ -523,19 +523,21 @@ class AllPatientsTableModule(TableModule):
             username = "" if not user_created else user_created.username
 
             # travel_date = ""
-            # travel_info = ""
+            travel_info = ""
 
-            # if row.travel_type:
-            #     if row.travel_type.value == c.flight_type[0]:
-            #         flight_travel = FlightTravel.query.filter_by(patient_id=row.id)
-            #         if flight_travel.count():
-            #             flight_travel = flight_travel.first()
+            if row.travel_type:
+                if row.travel_type.value == c.flight_type[0]:
+                    flight_travel = FlightTravel.query.filter_by(patient_id=row.id)
+                    if flight_travel.count():
+                        flight_travel = flight_travel.first()
+                        travel_info = flight_travel.seat
             #             travel_date = flight_travel.flight_code.date
             #             travel_info = flight_travel.flight_code.code
-            #     elif row.travel_type.value == c.train_type[0]:
-            #         train_travel = TrainTravel.query.filter_by(patient_id=row.id)
-            #         if train_travel.count():
-            #             train_travel = train_travel.first()
+                elif row.travel_type.value == c.train_type[0]:
+                    train_travel = TrainTravel.query.filter_by(patient_id=row.id)
+                    if train_travel.count():
+                        train_travel = train_travel.first()
+                        travel_info = "{}-{} {}-{}".format(_("Вагон"), train_travel.wagon, _("Место"), train_travel.seat)
             #             train = train_travel.train
 
             #             travel_date = train.arrival_date
@@ -561,7 +563,7 @@ class AllPatientsTableModule(TableModule):
 
             data.append([row.id, str(row), row.iin, gender, row.dob, str(row.region), 
                         row.pass_num, str(row.citizenship), str(row.country_of_residence),
-                        str(row.travel_type), #travel_date, travel_info,
+                        str(row.travel_type), travel_info, #travel_date,
                         str(row.home_address), row.telephone, row.email, str(row.status),
                         is_found, is_infected, row.hospital,
                         row.job, row.job_position, row.job_category, row.job_address,
@@ -570,7 +572,7 @@ class AllPatientsTableModule(TableModule):
 
         data = pd.DataFrame(data, columns=[_("ID"), _("ФИО"), _("ИИН"), _("Пол"), _("Дата Рождения"), _("Регион"),
                                            _("Номер Паспорта"), _("Гражданство"), _("Страна Проживания"),
-                                           _("Тип Въезда"), #_("Дата Въезда"), _("Инфо о Въезде"),
+                                           _("Тип Въезда"), _("Инфо о Въезде"), #_("Дата Въезда"), 
                                            _("Домашний Адрес"), _("Телефон"), _("E-Mail"), _("Статус"),
                                            _("Найден"), _("Инфицирован"), _("Госпиталь"),
                                            _("Место Работы/Учебы"), _("Должность"), _("Категория Работы"),

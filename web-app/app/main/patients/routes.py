@@ -582,9 +582,9 @@ def patient_edit_history():
                 if field_name == "region_id":
                     display_data = Region.query.filter_by(id = field_data).first().name
                 elif field_name == "gender":
-                    if display_data == True:
+                    if display_data == False:
                         display_data = _("Мужчина")
-                    elif display_data == False:
+                    elif display_data == True:
                         display_data = _("Женщина")
                     elif display_data == None:
                         display_data = _("Неизвестно")
@@ -939,6 +939,23 @@ def get_all_states(patient_states):
         })
 
     return states  
+
+@blueprint.route('/get_patient_badges', methods=['POST'])
+@login_required
+def get_patient_badges():
+    data = json.loads(request.data)
+    patient = Patient.query.filter(Patient.id == data['patient_id']).first()
+
+    badges = {"is_found": patient.is_found,
+              "in_hospital": patient.in_hospital,
+              "is_infected": patient.is_infected,
+              "is_home": patient.is_home,
+              "is_dead": patient.is_dead}
+
+    if not patient:
+        return jsonify({'description': 'Patient not found'}), 405
+
+    return jsonify({'badges': badges}), 200
 
 @blueprint.route('/get_states', methods=['POST'])
 @login_required

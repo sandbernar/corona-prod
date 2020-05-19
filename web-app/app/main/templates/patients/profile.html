@@ -211,17 +211,7 @@
                         <h3>
                             {{ _("Возраст") }} {{ age }}<span class="font-weight-light"></span>
                         </h3>
-                        <div class="row">
-                            {% if patient.is_found %}
-                                <span style="margin-top: 0.5rem; margin-left: 0.5rem;"class="badge badge-primary">{{ _("Найден") }}</span>
-                            {% endif %}                        
-                            {% if patient.in_hospital %}
-                            <span style="margin-top: 0.5rem; margin-left: 0.5rem;"class="badge badge-success">{{ _("Госпитализирован") }}</span>
-                            {% endif %}                        
-                            {% if patient.is_infected %}
-                                <span style="margin-top: 0.5rem; margin-left: 0.5rem;"class="badge badge-danger">{{ _("Инфицирован") }}</span>
-                            {% endif %}                        
-                        </div>
+                        <div class="row" id="patientBadgesRow"></div>
                         <hr class="my-4" />
                     {% if patient.in_hospital %}    
                     <div class="row">
@@ -485,6 +475,39 @@
         }
     }
 
+    function get_patient_badges() {
+        $.ajax({
+            url: "/get_patient_badges",
+            type: "post",
+            contentType: "application/json",
+            data: JSON.stringify({"patient_id": '{{ patient.id }}' }),
+            success: function (response) {
+                $("#patientBadgesRow").empty()
+                
+                if(response["badges"]["is_found"]) {
+                    var badge = $("<span style='margin-top: 0.5rem; margin-left: 0.5rem;' class='badge badge-primary'>{{ _("Найден") }}</span>")
+                    $("#patientBadgesRow").append(badge)
+                }
+                if(response["badges"]["is_infected"]) {
+                    var badge = $("<span style='margin-top: 0.5rem; margin-left: 0.5rem;' class='badge badge-danger'>{{ _("Инфицирован") }}</span>")
+                    $("#patientBadgesRow").append(badge)
+                }                
+                if(response["badges"]["in_hospital"]) {
+                    var badge = $("<span style='margin-top: 0.5rem; margin-left: 0.5rem;' class='badge badge-success'>{{ _("Госпитализирован") }}</span>")
+                    $("#patientBadgesRow").append(badge)
+                }
+                if(response["badges"]["is_home"]) {
+                    var badge = $("<span style='margin-top: 0.5rem; margin-left: 0.5rem;' class='badge badge-info'>{{ _("Домашний Карантин") }}</span>")
+                    $("#patientBadgesRow").append(badge)
+                }
+                if(response["badges"]["is_dead"]) {
+                    var badge = $("<span style='margin-top: 0.5rem; margin-left: 0.5rem;' class='badge badge-warning'>{{ _("Умер") }}</span>")
+                    $("#patientBadgesRow").append(badge)
+                }                                
+            },
+        })        
+    }
+
     function renderStateHistoryTable(response) {
         let stateHistoryTable = document.getElementById("stateHistoryTable")
         let innerHTML = ""
@@ -512,6 +535,7 @@
             </tr>`
         }
         stateHistoryTable.innerHTML = innerHTML;
+        get_patient_badges()
     }
 
     function handle_state_add_update(stateData) {

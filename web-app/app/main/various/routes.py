@@ -12,7 +12,7 @@ import pandas as pd
 import io
 
 from app.main.models import Region
-from app.main.patients.models import Patient, PatientState, State
+from app.main.patients.models import Patient, PatientState, State, ContactedPersons
 from app.main.various.forms import DownloadVariousData
 from app.main.forms import TableSearchForm
 import math
@@ -106,8 +106,22 @@ def export_various_data_xls():
 
                 were_hospitalized = PatientState.query.filter_by(patient_id = patient.id).filter_by(state_id = hospital_state_id).count()
 
+                gender = _("Неизвестно")
+
+                if patient.gender == False:
+                    gender = _("Мужчина")
+                elif patient.gender == True:
+                    gender = _("Женщина")
+
+                contacted_count = ContactedPersons.query.filter_by(infected_patient_id=patient.id).count()
+                is_contacted = ContactedPersons.query.filter_by(contacted_patient_id=patient.id).count()
+
                 entry = [patient.region, patient.home_address.lat, patient.home_address.lng,
-                        calculate_age(patient.dob), patient.travel_type, yes_no(were_hospitalized)]
+                        patient.home_address.city, patient.home_address.street, 
+                        patient.dob, gender, patient.travel_type, yes_no(were_hospitalized),
+                        contacted_count, yes_no(is_contacted),
+                        yes_no(patient.is_dead), patient.job, patient.job_address,
+                        patient.job_address.lat, patient.job_address.lng]
                 
                 if start_count != "" and end_count != "":
                     if count >= int(start_count) and count <= int(end_count):
@@ -115,7 +129,12 @@ def export_various_data_xls():
                 else:
                     data.append(entry)
 
-        data = pd.DataFrame(data, columns=[_("Регион"), _("Latitude"), _("Longitude"), _("Возраст"), _("Тип Въезда"), _("Был ли Госпитализирован")])        
+        data = pd.DataFrame(data, columns=[_("Регион"), _("Latitude"), _("Longitude"),
+                                           _("Город"), _("Улица"), _("Дата Рождения"), _("Пол"),
+                                           _("Тип Въезда"), _("Был ли Госпитализирован"),
+                                           _("Число Контактов"), _("Контактный?"),
+                                           _("Умер"), _("Место Работы"), _("Адрес Работы"),
+                                           _("Работа Lat"), _("Работа Lng")])
 
     # output = io.BytesIO()
     # # writer = pd.ExcelWriter(output, engine='xlsxwriter')
