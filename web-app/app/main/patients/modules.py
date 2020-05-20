@@ -331,6 +331,30 @@ class AllPatientsTableModule(TableModule):
 
         self.q = self.q.filter_by(**filt)
 
+        # State serch
+        patient_state = self.request.args.get("patient_state", "-1")
+        if patient_state != "-1":
+            patient_state_id = State.query.filter_by(value=patient_state).first().id
+
+            self.q = self.q.join(PatientState, PatientState.patient_id == Patient.id)
+            self.q = self.q.filter(PatientState.state_id == patient_state_id)
+
+            self.search_form.patient_state.default = patient_state
+
+            state_date_range_start = request.args.get("state_date_range_start", None)
+            
+            if state_date_range_start:
+                state_date_range_start = parse_date(state_date_range_start)
+                self.q = self.q.filter(PatientState.detection_date >= state_date_range_start)
+                self.search_form.state_date_range_start.default = state_date_range_start
+
+            state_date_range_end = request.args.get("state_date_range_end", None)
+            
+            if state_date_range_end:
+                state_date_range_end = parse_date(state_date_range_end)
+                self.q = self.q.filter(PatientState.detection_date <= state_date_range_end)
+                self.search_form.state_date_range_end.default = state_date_range_end
+
         is_iin_fail = request.args.get("is_iin_fail", None)
         if is_iin_fail:
             if is_iin_fail == "is_iin_empty":
@@ -355,15 +379,6 @@ class AllPatientsTableModule(TableModule):
                 ' ', Address.house, ' ', Address.flat)).contains(address.lower()))
 
             self.search_form.address.default = address
-
-        is_infected = self.request.args.get("is_infected", "-1")
-        if is_infected != "-1":
-            infected_state_id = State.query.filter_by(value=c.state_infec[0]).first().id
-
-            self.q = self.q.join(PatientState, PatientState.patient_id == Patient.id)
-            self.q = self.q.filter(PatientState.state_id == infected_state_id)
-
-            self.search_form.is_infected.default = is_infected            
 
         current_country = Country.query.filter_by(code=c.current_country).first()
 
