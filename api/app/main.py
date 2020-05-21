@@ -28,7 +28,6 @@ app = FastAPI()
 
 logger = logging.getLogger("api")
 
-
 # model for JSONEXCEPTIONS
 class UnicornException(Exception):
     def __init__(self):
@@ -57,6 +56,16 @@ def get_db():
         yield db
     finally:
         db.close()
+
+right_get_status_by_iin = "get_status_by_iin"
+right_get_status_by_pn = "get_status_by_pn"
+right_get_patients_within_interval = "get_patients_within_interval"
+#right_get_status_by_iin = "get_status_by_iin"
+
+rights = [right_get_status_by_iin, right_get_status_by_pn, right_get_patients_within_interval]
+
+for right_value in rights:
+    crud.add_token_right(SessionLocal(), right_value)
 
 @app.middleware("http")
 async def add_process_time_header(request: Request, call_next):
@@ -110,3 +119,21 @@ def get_patients_within_interval(request: Request, interval: schemas.Interval, d
 
     db_patients = crud.get_patients(db, interval.begin, interval.end, interval.page)
     return db_patients
+
+@app.post("/api/get_stats_by_region/", response_model=List[schemas.RegionStatsFrom])
+def get_stats_by_region(request: Request, region_id: schemas.Region, db: Session = Depends(get_db)):
+    validate_token(request.headers["X-API-TOKEN"], db)
+    logger.error(request.headers["X-API-TOKEN"][:5])
+    logger.error("/api/get_stats_by_region/")
+
+    db_stats_region = crud.get_region_stats(db, region_id.region_id)
+    return db_stats_region
+
+#@app.post("/api/get_stats_by_region/", response_model=List[schemas.PatientFrom])
+#def get_regions(request: Request, interval: schemas.Interval, db: Session = Depends(get_db)):
+#    validate_token(request.headers["X-API-TOKEN"], db)
+#    logger.error(request.headers["X-API-TOKEN"][:5])
+#    logger.error("/api/get_patients_within_interval/")
+
+#    db_patients = crud.get_patients(db, interval.begin, interval.end, interval.page)
+#    return db_patients

@@ -12,6 +12,19 @@ class Token(Base):
     token = Column(String, unique=False)
     organisation = Column(String, unique=False)
 
+class TokenHasRights(Base):
+    __tablename__ = 'token_has_rights'
+
+    id = Column(Integer, primary_key=True)
+    token_id = Column(Integer, ForeignKey('tokens.id'), nullable=False)
+    token_right_id = Column(Integer, ForeignKey('token_rights.id'), nullable=False)
+
+class TokenRights(Base):
+    __tablename__ = 'token_rights'
+
+    id = Column(Integer, primary_key=True)
+    right_value = Column(String, unique=False)
+
 class Patient(Base):
     __tablename__ = 'Patient'
 
@@ -33,9 +46,22 @@ class Patient(Base):
     telephone = Column(String, nullable=True, default=None)
     travel_id = Column(Integer, nullable=True, default=None, unique=False)
     travel_type_id = Column(Integer, ForeignKey('TravelType.id'), nullable=True, default=None)
+    region_id = Column(Integer, ForeignKey('Region.id'))
+    region = relationship('Region')
 
+class TravelType(Base):
 
+    __tablename__ = 'TravelType'
 
+    id = Column(Integer, primary_key=True)
+    name = Column(String, unique=True)
+    value = Column(String, unique=True)
+
+    def __init__(self, **kwargs):
+        set_props(self, kwargs)
+
+    def __repr__(self):
+        return str(self.name)
 
 class PatientStatus(Base):
 
@@ -232,3 +258,34 @@ class VisitedCountry(Base):
 
     from_date = Column(Date, nullable=True)
     to_date = Column(Date, nullable=True)
+
+class State(Base):
+    """
+    State class represents Patient state:
+    * infected
+    * dead
+    * healthy
+    """
+
+    __tablename__ = 'State'
+    id = Column(Integer, primary_key=True)
+    value = Column(String, nullable=True)
+    name = Column(String, nullable=False)
+
+class PatientState(Base):
+    """
+    PatientState represents many-to-many relationship between Patient and State tables.
+    Table includes:
+    * created_at: creation datetime
+    * detection_date: datetime of detection
+    * comment: comment on state
+    """
+    __tablename__ = 'PatientState'
+
+    id = Column(Integer, primary_key=True, index=True)
+    state_id = Column(Integer, nullable=False)
+    patient_id = Column(Integer, nullable=False)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    detection_date = Column(DateTime, default=datetime.datetime.utcnow)
+    comment = Column(String, nullable=True)
+    attrs = Column(JSON, default={})
