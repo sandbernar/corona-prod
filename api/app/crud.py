@@ -15,11 +15,23 @@ def get_patient_by_pass_num(db: Session, pass_num: str):
 def get_token_id_by_token(db: Session, token: str):
     return db.query(models.Token).filter(models.Token.token == token).first()
 
-def get_token_right(db: Session, right_value: str):
+def check_token_right(db: Session, token_id: int, right: str):
+	token_right_id = get_token_right_id_by_right(db, right)
+
+	if token_right_id:
+		token_has_right = db.query(models.TokenHasRights).filter(models.TokenHasRights.token_id == token_id)
+		token_has_right = token_has_right.filter(models.TokenHasRights.token_right_id == token_right_id)
+
+		if token_has_right.count():
+			return True
+
+	return False
+
+def get_token_right_id_by_right(db: Session, right_value: str):
 	token_right = db.query(models.TokenRights).filter(models.TokenRights.right_value == right_value)
 	
 	if token_right.count():
-		return token_right.first()
+		return token_right.first().id
 
 	return None
 

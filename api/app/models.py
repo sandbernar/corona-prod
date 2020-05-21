@@ -12,18 +12,18 @@ class Token(Base):
     token = Column(String, unique=False)
     organisation = Column(String, unique=False)
 
-class TokenHasRights(Base):
-    __tablename__ = 'token_has_rights'
-
-    id = Column(Integer, primary_key=True)
-    token_id = Column(Integer, ForeignKey('tokens.id'), nullable=False)
-    token_right_id = Column(Integer, ForeignKey('token_rights.id'), nullable=False)
-
 class TokenRights(Base):
     __tablename__ = 'token_rights'
 
     id = Column(Integer, primary_key=True)
     right_value = Column(String, unique=False)
+
+class TokenHasRights(Base):
+    __tablename__ = 'token_has_rights'
+
+    id = Column(Integer, primary_key=True)
+    token_id = Column(Integer, ForeignKey('tokens.id'), nullable=False)
+    token_right_id = Column(Integer, ForeignKey('token_rights.id'), nullable=False)    
 
 class Patient(Base):
     __tablename__ = 'Patient'
