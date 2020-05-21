@@ -115,8 +115,11 @@
               <label class='form-control-label'>{{ _('Текущий Статус Пациента') }}</label>                
               {{ form.patient_status(class="form-control") }}
             </div>
+            <div class="col-md-auto">
+              <label class='form-control-label'>{{ _('Контакты') }}</label>                
+              {{ form.contacted(class="form-control") }}
+            </div>            
             <div class="custom-control custom-checkbox">
-              <br>
               {{ form.probably_duplicate(class="custom-control-input") }}                    
               <label class="custom-control-label" for="probably_duplicate">{{ _("Возможные Дубли") }}</label>
             </div>                                          

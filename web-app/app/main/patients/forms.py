@@ -120,9 +120,10 @@ class PatientsSearchForm(FlaskForm):
     travel_type = SelectField()
     job_category_id = SelectField()
 
-    not_in_hospital = BooleanField(id="not_in_hospital")
-    is_home_quarantine = BooleanField()
     probably_duplicate = BooleanField()
+    contacted = SelectField("Contacted or with Contacts",
+                            choices=[(-1, _("Все")), ("contacted", _("Контактный")), ("with_contacts", _("С Контактами"))], default=-1)
+
 
     is_currently_infected = SelectField("Is Currently Infected",
                             choices=[(-1, _("Все")), (1, _("Да")), (0, _("Нет"))], default=-1)

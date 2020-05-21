@@ -355,6 +355,18 @@ class AllPatientsTableModule(TableModule):
                 self.q = self.q.filter(PatientState.detection_date <= state_date_range_end)
                 self.search_form.state_date_range_end.default = state_date_range_end
 
+        # Is contacted
+        contacted = self.request.args.get("contacted", "-1")
+        if contacted != "-1":
+        	if contacted == "contacted":
+        		self.q = self.q.join(ContactedPersons, ContactedPersons.contacted_patient_id == Patient.id)
+        		self.q = self.q.group_by(Patient.id)
+        	elif contacted == "with_contacts":
+        		self.q = self.q.join(ContactedPersons, ContactedPersons.infected_patient_id == Patient.id)
+        		self.q = self.q.group_by(Patient.id)
+
+        	self.search_form.contacted.default = contacted
+
         is_iin_fail = request.args.get("is_iin_fail", None)
         if is_iin_fail:
             if is_iin_fail == "is_iin_empty":
