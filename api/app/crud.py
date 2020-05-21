@@ -58,6 +58,9 @@ def get_region_stats(db: Session, region_id: int):
 
 	return [response]
 
+def get_regions(db: Session):
+    return [{"name": region.name, "id": region.id } for region in db.query(models.Region).all()]
+
 def get_is_contacted(db: Session, id: int):
     return db.query(models.ContactedPersons).filter(models.ContactedPersons.contacted_patient_id == id).first()
 

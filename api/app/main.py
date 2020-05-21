@@ -60,9 +60,9 @@ def get_db():
 right_get_status_by_iin = "get_status_by_iin"
 right_get_status_by_pn = "get_status_by_pn"
 right_get_patients_within_interval = "get_patients_within_interval"
-#right_get_status_by_iin = "get_status_by_iin"
+get_stats_by_region = "get_stats_by_region"
 
-rights = [right_get_status_by_iin, right_get_status_by_pn, right_get_patients_within_interval]
+rights = [right_get_status_by_iin, right_get_status_by_pn, right_get_patients_within_interval, get_stats_by_region]
 
 for right_value in rights:
     crud.add_token_right(SessionLocal(), right_value)
@@ -121,7 +121,7 @@ def get_patients_within_interval(request: Request, interval: schemas.Interval, d
     return db_patients
 
 @app.post("/api/get_stats_by_region/", response_model=List[schemas.RegionStatsFrom])
-def get_stats_by_region(request: Request, region_id: schemas.Region, db: Session = Depends(get_db)):
+def get_stats_by_region(request: Request, region_id: schemas.RegionId, db: Session = Depends(get_db)):
     validate_token(request.headers["X-API-TOKEN"], db)
     logger.error(request.headers["X-API-TOKEN"][:5])
     logger.error("/api/get_stats_by_region/")
@@ -129,11 +129,11 @@ def get_stats_by_region(request: Request, region_id: schemas.Region, db: Session
     db_stats_region = crud.get_region_stats(db, region_id.region_id)
     return db_stats_region
 
-#@app.post("/api/get_stats_by_region/", response_model=List[schemas.PatientFrom])
-#def get_regions(request: Request, interval: schemas.Interval, db: Session = Depends(get_db)):
-#    validate_token(request.headers["X-API-TOKEN"], db)
-#    logger.error(request.headers["X-API-TOKEN"][:5])
-#    logger.error("/api/get_patients_within_interval/")
+@app.post("/api/get_regions/", response_model=List[schemas.Region])
+def get_regions(request: Request, db: Session = Depends(get_db)):
+    validate_token(request.headers["X-API-TOKEN"], db)
+    logger.error(request.headers["X-API-TOKEN"][:5])
+    logger.error("/api/get_regions/")
 
-#    db_patients = crud.get_patients(db, interval.begin, interval.end, interval.page)
-#    return db_patients
+    db_patients = crud.get_regions(db)
+    return db_patients
