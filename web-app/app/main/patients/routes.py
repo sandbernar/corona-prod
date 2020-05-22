@@ -26,7 +26,7 @@ from app import login_manager, db
 from app import constants as c
 from app.main import blueprint
 from app.main.models import Region, Country, VisitedCountry, Infected_Country_Category, JobCategory
-from app.main.models import TravelType, BorderControl, VariousTravel, BlockpostTravel, Address, HGBDToken
+from app.main.models import TravelType, BorderControl, VariousTravel, BlockpostTravel, Address, HGBDToken, OldDataTravel
 from app.main.patients.forms import PatientForm, UpdateProfileForm, AddFlightFromExcel, ContactedPatientsSearchForm, PatientsSearchForm
 from app.main.patients.models import Patient, PatientStatus, ContactedPersons, State, PatientState
 from app.main.patients.modules import ContactedPatientsTableModule, AllPatientsTableModule
