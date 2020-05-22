@@ -120,13 +120,14 @@ class PatientsSearchForm(FlaskForm):
     travel_type = SelectField()
     job_category_id = SelectField()
 
-    not_in_hospital = BooleanField(id="not_in_hospital")
-    is_home_quarantine = BooleanField()
     probably_duplicate = BooleanField()
+    contacted = SelectField("Contacted or with Contacts",
+                            choices=[(-1, _("Все")), ("contacted", _("Контактный")), ("with_contacts", _("С Контактами"))], default=-1)
+
 
     is_currently_infected = SelectField("Is Currently Infected",
                             choices=[(-1, _("Все")), (1, _("Да")), (0, _("Нет"))], default=-1)
-    is_infected = SelectField("Is Infected", choices=[(-1, _("Все")), (1, _("Да")), (0, _("Нет"))], default=-1)
+    # is_infected = SelectField("Is Infected", choices=[(-1, _("Все")), (1, _("Да")), (0, _("Нет"))], default=-1)
     is_found = SelectField("Is Found", choices=[(-1, _("Все")), (1, _("Да")), (0, _("Нет"))], default=-1)
 
     patient_status = SelectField(choices=[(-1, _("Все Статусы")),
@@ -143,6 +144,11 @@ class PatientsSearchForm(FlaskForm):
     #Date Range
     date_range_start = DateField()
     date_range_end = DateField()
+
+    #States with Dates
+    patient_state = SelectField('State', choices=[(-1, _("Все Статусы"))] + c.states)
+    state_date_range_start = DateField()
+    state_date_range_end = DateField()
 
     # Flight Travel
     flight_arrival_date = SelectField('Flight Arrival Date', id='flight_arrival_date')

@@ -71,3 +71,19 @@ class PatientFrom(BaseModel):
     from_country: Optional[str] = None
     to_region: Optional[str] = None
     patient: Optional[Patient] = None
+
+class RegionId(BaseModel):
+    region_id: int
+
+class Region(BaseModel):
+    id: int
+    name: str
+
+class RegionStats(BaseModel):
+	infected: int
+	contacted: int
+
+class RegionStatsFrom(BaseModel):
+    region: Optional[str] = None
+    id: Optional[int] = None
+    stats: Optional[RegionStats] = None
