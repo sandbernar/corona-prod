@@ -255,3 +255,107 @@ curl -v -X POST "http://demo.crm.alem.school/api/get_status_by_pass_num/" -H "X-
 ```bash
 curl -X POST "http://demo.crm.alem.school/api/get_patients_within_interval/" -H "X-API-TOKEN: ${API_TOKEN}" -H "accept: application/json" -H "Content-Type: application/json" -d "{\"begin\":\"2019-02-21\",\"end\":\"2021-02-20\", \"page\":1}"
 ```
+
+#
+## Get Regions with IDs
+#
+### Title
+> Get Regions with IDs
+### URL
+> /api/get_regions/
+### Method
+> POST
+### URL Params
+> None
+### Header Params
+> X-API-TOKEN
+### Data Params
+```json
+{}
+```
+### Success Response Code
+> 200
+```json
+    [
+        {
+            "id": [int],
+            "name": [string],
+        }
+    ]
+```
+### Error Response 
+> Code: 400
+```json
+{
+    "ErrorCode": "invalid_request",
+    "Error": "Invalid Authorization Code"
+}
+```
+
+> Code: 400
+```json
+{
+    "ErrorCode": "invalid_request",
+    "Error": "The request is missing a required header : X-API-TOKEN"
+}
+```
+
+### Sample Call
+```bash
+curl -X POST "http://demo.crm.alem.school/api/get_regions/" -H "X-API-TOKEN: ${API_TOKEN}" -H "accept: application/json" -H "Content-Type: application/json" -d "{}"
+```
+
+#
+## Get Stats by Region
+#
+### Title
+> Get Stats by Region
+### URL
+> /api/get_stats_by_region/
+### Method
+> POST
+### URL Params
+> None
+### Header Params
+> X-API-TOKEN
+### Data Params
+```json
+{ 
+    "region_id": [int] - id of a region
+}
+```
+### Success Response Code
+> 200
+```json
+    [
+        {
+            "region": [string],
+            "id": [int],
+            "stats": {
+                "infected": [int],
+                "contacted": [int]
+            }
+        }
+    ]
+```
+### Error Response 
+> Code: 400
+```json
+{
+    "ErrorCode": "invalid_request",
+    "Error": "Invalid Authorization Code"
+}
+```
+
+> Code: 400
+```json
+{
+    "ErrorCode": "invalid_request",
+    "Error": "The request is missing a required header : X-API-TOKEN"
+}
+```
+
+### Sample Call
+```bash
+curl -X POST "http://demo.crm.alem.school/api/get_stats_by_region/" -H "X-API-TOKEN: ${API_TOKEN}" -H "accept: application/json" -H "Content-Type: application/json" -d "{\"region_id\": 13"}"
+```
