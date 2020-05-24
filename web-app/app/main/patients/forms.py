@@ -81,7 +81,9 @@ class PatientForm(FlaskForm):
 
     hospital_region_id = SelectField('Hospital Region' , validators=[DataRequired()])
     hospital_type_id = SelectField('Hospital Type' , validators=[DataRequired()])
-    hospital_id = SelectField('Hospital', choices = [], validators=[DataRequired()])  
+    hospital_id = SelectField('Hospital', choices = [], validators=[DataRequired()])
+
+    is_home_duration = DateField("Duration of Home Quarantine")
 
     # patient_states = SelectField(id='patient_states')
     is_transit = RadioField("Is Transit", choices=[(1, _("Да")),(0, _("Нет"))], default=0, validators=[DataRequired()])

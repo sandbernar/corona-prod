@@ -686,7 +686,14 @@
         }
     });
 
-var hospitalForm = `<div class="form-group">
+    function weeksBetween(d1, d2) {
+        var diff = (d2 - d1) / (7 * 24 * 60 * 60 * 1000);
+        if (diff < 0) return 0
+
+        return Math.round(diff);
+    }
+
+    var hospitalForm = `<div class="form-group">
                         <label for="job-input" class="form-control-label">{{ _("Регион Госпитализации") }}</label>
                     {{ form.hospital_region_id(class="form-control", onchange="update_hospitals_list()") }}
                     </div>
@@ -720,8 +727,42 @@ var hospitalForm = `<div class="form-group">
         }
     }
 
+    var isHomeForm = `<div class="form-group">
+                        <div class="row">
+                        <div class="col">
+                        <label for="job-input" class="form-control-label">{{ _("Дата Конца Дом. Карантина") }}</label>
+                    {{ form.is_home_duration(class="form-control", type="date") }}
+                        </div>
+                        <div class="col-md-auto">
+                            <br><br>
+                            <h4 id="is_home_duration_weeks" style="color: green;"></h4>
+                        </div>
+                    </div>`
+
+    function handleIsHomeStateForm(modalBodyID, stateSelectID, modalFormLen) {
+        var stateModalBody = document.getElementById(modalBodyID)
+        if (stateModalBody.children.length !== modalFormLen) {
+            while (stateModalBody.children.length > modalFormLen) {
+                stateModalBody.removeChild(stateModalBody.lastChild);
+            }
+        }
+
+        if ($("#" + stateSelectID).val() === "{{ c.state_is_home[0] }}") {
+            document.getElementById(modalBodyID).insertAdjacentHTML('beforeend', isHomeForm)
+
+            $("#is_home_duration").change(function() {
+                $("#is_home_duration_weeks").text(weeksBetween(new Date(), new Date($("#is_home_duration").val())) + " " + '{{_("недели") }}')
+            })
+            $("#is_home_duration").trigger("change")
+        }
+    }    
+
     $("#addStateStateValue").change(function() {
-        handleHospitalizedStateForm("addStateModalBody", "addStateStateValue", 4);
+        handleIsHomeStateForm("addStateModalBody", "addStateStateValue", 4);
+    });
+
+    $("#updatePatientStateState").change(function() {
+        handleIsHomeStateForm("editStateModalBody", "updatePatientStateState", 5, false);
     });
 
     $("#addPatientStateModal").on("hidden.bs.modal", function () {
@@ -731,10 +772,6 @@ var hospitalForm = `<div class="form-group">
 
     $("#addPatientStateModal").on("shown.bs.modal", function () {
         $('#addStateDate').val(new Date().toISOString().slice(0, 10));
-    });
-
-    $("#updatePatientStateState").change(function() {
-        handleHospitalizedStateForm("editStateModalBody", "updatePatientStateState", 5, false);
     });
     
     $.ajax({

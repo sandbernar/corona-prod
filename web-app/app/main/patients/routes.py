@@ -7,7 +7,7 @@ import os
 import dateutil.parser
 import math, json, re, itertools
 import collections
-from datetime import datetime
+from datetime import datetime, date, timedelta
 from multiprocessing.pool import ThreadPool as threadpool
 
 import numpy as np
@@ -483,18 +483,20 @@ def patient_profile():
                 travel = BlockpostTravel.query.filter_by(patient_id=patient.id).first()
             elif travel_type.value != c.local_type[0]:
                 travel = VariousTravel.query.filter_by(patient_id=patient.id).first()
-
-            if patient.is_found:
-                form.is_found.default = 'checked'
-
-            if patient.is_infected:
-                form.is_infected.default = 'checked'
             
 
             hospital_name = None
             if patient.hospital:
                 form.hospital_id.default = patient.hospital.id
                 hospital_name = Hospital.query.filter_by(id=patient.hospital.id).first().name
+
+            form.is_home_duration.default = date.today() + timedelta(weeks = 2)
+
+            for i in range(len(patient.states)):
+                state = patient.states[i]
+                if state.value == c.state_is_home[0]:
+                    if state.attrs:
+                        form.is_home_duration.default = state.attrs["is_home_duration"]
 
             today = datetime.today()
             age =  today.year - patient.dob.year - ((today.month, today.day) < (patient.dob.month, patient.dob.day))
@@ -927,6 +929,17 @@ def get_all_states(patient_states):
                 attrs["hospital_id"] = hospital.id
                 attrs["hospital_region_id"] = hospital.region_id
                 attrs["hospital_type_id"] = hospital.hospital_type_id
+        elif state.value == c.state_infec[0]:
+            try:
+                hospital = Hospital.query.filter_by(id = state.attrs["hospital_id"]).first()
+            except exc.SQLAlchemyError:
+                return jsonify({'description': _("Hospital not found")}), 405
+            
+            attrs["hospital_id"] = hospital.id
+            attrs["hospital_region_id"] = hospital.region_id
+            attrs["hospital_type_id"] = hospital.hospital_type_id
+        elif state.value == c.state_is_home[0]:
+            attrs["end_date"] = hospital.id
 
         states.append({
             "id":state.id,
