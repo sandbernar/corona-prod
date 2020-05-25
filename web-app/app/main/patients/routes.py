@@ -490,13 +490,11 @@ def patient_profile():
                 form.hospital_id.default = patient.hospital.id
                 hospital_name = Hospital.query.filter_by(id=patient.hospital.id).first().name
 
-            form.is_home_duration.default = date.today() + timedelta(weeks = 2)
-
-            for i in range(len(patient.states)):
-                state = patient.states[i]
-                if state.value == c.state_is_home[0]:
-                    if state.attrs:
-                        form.is_home_duration.default = state.attrs["is_home_duration"]
+            # for i in range(len(patient.states)):
+            #     state = patient.states[i]
+            #     if state.value == c.state_is_home[0]:
+            #         if "is_home_end" in state.attrs.keys():
+            #             form.is_home_end.default = state.attrs["is_home_end"]
 
             today = datetime.today()
             age =  today.year - patient.dob.year - ((today.month, today.day) < (patient.dob.month, patient.dob.day))
@@ -930,16 +928,15 @@ def get_all_states(patient_states):
                 attrs["hospital_region_id"] = hospital.region_id
                 attrs["hospital_type_id"] = hospital.hospital_type_id
         elif state.value == c.state_infec[0]:
-            try:
-                hospital = Hospital.query.filter_by(id = state.attrs["hospital_id"]).first()
-            except exc.SQLAlchemyError:
-                return jsonify({'description': _("Hospital not found")}), 405
+            pass
+            # try:
+            #     hospital = Hospital.query.filter_by(id = state.attrs["hospital_id"]).first()
+            # except exc.SQLAlchemyError:
+            #     return jsonify({'description': _("Hospital not found")}), 405
             
-            attrs["hospital_id"] = hospital.id
-            attrs["hospital_region_id"] = hospital.region_id
-            attrs["hospital_type_id"] = hospital.hospital_type_id
-        elif state.value == c.state_is_home[0]:
-            attrs["end_date"] = hospital.id
+            # attrs["hospital_id"] = hospital.id
+            # attrs["hospital_region_id"] = hospital.region_id
+            # attrs["hospital_type_id"] = hospital.hospital_type_id
 
         states.append({
             "id":state.id,
@@ -951,7 +948,26 @@ def get_all_states(patient_states):
             "attrs":attrs
         })
 
-    return states  
+    return states
+
+def handle_attrs(state, patient, data, patient_attrs):
+    attrs = patient_attrs.copy()
+
+    if state.value == c.state_hosp[0]:
+        try:
+            hospital = Hospital.query.filter_by(id = data["hospital_id"]).first()
+            patient.hospital_id = hospital.id
+            
+            db.session.add(patient)
+            db.session.commit()
+        except exc.SQLAlchemyError:
+            return jsonify({'description': _("Hospital not found")}), 405
+
+        attrs["hospital_id"] = hospital.id
+    elif state.value == c.state_is_home[0]:
+        attrs["is_home_end"] = data["is_home_end"]
+
+    return attrs
 
 @blueprint.route('/get_patient_badges', methods=['POST'])
 @login_required
@@ -1000,17 +1016,7 @@ def add_state():
     state = State.query.filter_by(value=data["value"]).first()
     attrs = {}
     
-    if data["value"] == c.state_hosp[0]:
-        try:
-            hospital = Hospital.query.filter_by(id = data["hospital_id"]).first()
-            patient.hospital_id = hospital.id
-            
-            db.session.add(patient)
-            db.session.commit()
-        except exc.SQLAlchemyError:
-            return jsonify({'description': _("Hospital not found")}), 405
-
-        attrs["hospital_id"] = hospital.id
+    attrs = handle_attrs(state, patient, data, attrs)
 
     result = patient.addState(state,
             detection_date=data["detection_date"],
@@ -1060,30 +1066,23 @@ def update_state():
         return jsonify({'description': 'PatientState not found'}), 406
     state = State.query.filter_by(value=data["value"]).first()
 
-    attrs = {}
-    
-    if data["value"] == c.state_hosp[0]:
-        try:
-            hospital = Hospital.query.filter_by(id = data["hospital_id"]).first()
-            patient.hospital_id = hospital.id
-            
-            db.session.add(patient)
-            db.session.commit()
-        except exc.SQLAlchemyError:
-            return jsonify({'description': _("Hospital not found")}), 405
-
-        attrs["hospital_id"] = hospital.id
-
-    patient_state.attrs = attrs
+    print(patient_state.attrs)
+    patient_state.attrs = handle_attrs(state, patient, data, patient_state.attrs)
+    print(patient_state.attrs)
+    db.session.add(patient_state)
+    db.session.commit()
+    print(patient_state.attrs)
 
     if state:
         patient_state.state_id = state.id
+
     patient_state.detection_date = data["detection_date"]
     patient_state.comment = data["comment"]
 
     result = patient.updateState(patient_state)
     if result == True:
         states = get_all_states(patient.states)
+        # print(patient_state.attrs)
 
         return jsonify({'status': 'updated', 'states': states}), 200
     return jsonify({'description': 'Couldn\'t be updated'}), 300
