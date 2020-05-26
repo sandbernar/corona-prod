@@ -607,20 +607,24 @@ HGDBCountry = {
 }
 
 # State
-in_hospital = ("hospitalized", "Госпитализирован")
 state_dead = ("dead", "Умер")
 state_infec = ("infected", "Инфицирован")
 state_hosp = ("hospitalized", "Госпитализирован")
+state_hosp_off = ("hospitalized_off", "Госпитализирован - Выписка")
+
 state_healthy = ("recovery", "Выздоровление")
 state_is_home = ("is_home", "Домашний Карантин")
+state_is_home_off = ("is_home_off", "Домашний Карантин - Окончание")
 state_is_transit = ("transit", "Транзит")
 state_found = ("found", "Найден")
 states = [
     state_dead,
     state_infec,
     state_hosp,
+    state_hosp_off,
     state_healthy,
     state_is_home,
+    state_is_home_off,
     state_is_transit,
     state_found
 ]
@@ -646,14 +650,20 @@ class GraphState:
         self.reached_end = False
         self.location = []
         self.patient = []
-        self.location_state = [state_found[0], state_is_transit[0], state_hosp[0], state_is_home[0], state_healthy[0]]
+        self.location_state = [state_found[0], state_is_transit[0], state_hosp[0], state_hosp_off[0], state_is_home[0], state_is_home_off[0], state_healthy[0]]
         self.patient_state = [state_found[0], state_infec[0], state_healthy[0], state_dead[0]]
 
         self.dead = GraphNode(state_dead)
         self.infec = GraphNode(state_infec)
+        
         self.hosp = GraphNode(state_hosp)
+        self.state_hosp_off = GraphNode(state_hosp_off)
+        
         self.healthy = GraphNode(state_healthy)
+        
         self.is_home = GraphNode(state_is_home)
+        self.state_is_home_off = GraphNode(state_is_home_off)
+
         self.is_transit = GraphNode(state_is_transit)
         self.found = GraphNode(state_found)
 
@@ -665,10 +675,17 @@ class GraphState:
         self.found.connect(self.hosp)
         self.is_transit.connect(self.hosp)
         self.is_transit.connect(self.is_home)
+        
         self.is_home.connect(self.hosp)
         self.is_home.connect(self.healthy)
+        self.is_home.connect(self.state_is_home_off)
+        self.state_is_home_off.connect(self.is_home)
+
         self.hosp.connect(self.is_home)
         self.hosp.connect(self.healthy)
+        self.hosp.connect(self.state_hosp_off)
+        self.state_hosp_off.connect(self.hosp)
+
         self.infec.connect(self.healthy)
         self.infec.connect(self.dead)
         self.healthy.connect(self.infec)
