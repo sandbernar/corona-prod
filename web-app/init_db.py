@@ -266,7 +266,7 @@ CREATE OR REPLACE FUNCTION set_patient_state() RETURNS trigger AS
             -- pass is_healthy
         ELSE
             UPDATE "Patient" SET is_healthy=true WHERE id=pat_id;
-            UPDATE "Patient" SET in_hospital=false WHERE id=pat_id;
+            -- UPDATE "Patient" SET in_hospital=false WHERE id=pat_id;
             UPDATE "Patient" SET is_home=false WHERE id=pat_id;
             UPDATE "Patient" SET is_infected=false WHERE id=pat_id;
         END IF;
