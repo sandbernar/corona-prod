@@ -146,6 +146,14 @@ CREATE OR REPLACE FUNCTION set_patient_state() RETURNS trigger AS
     DECLARE patient_in_hospital BOOLEAN;
     DECLARE patient_is_home BOOLEAN;
     DECLARE pat_id INTEGER;
+    
+    DECLARE hosp_off_state_count INTEGER;
+    DECLARE last_hosp_off_state_id INTEGER;
+    DECLARE last_hosp_off_state_dd TIMESTAMP;
+    
+    DECLARE home_off_state_count INTEGER;
+    DECLARE last_home_off_state_id INTEGER;
+    DECLARE last_home_off_state_dd TIMESTAMP;    
     BEGIN
     IF TG_OP = 'UPDATE' OR TG_OP = 'INSERT' THEN
         pat_id = NEW.patient_id;
@@ -171,6 +179,14 @@ CREATE OR REPLACE FUNCTION set_patient_state() RETURNS trigger AS
     last_home_state_id = (SELECT id FROM "PatientState" WHERE patient_id=pat_id AND state_id=(SELECT id FROM "State" WHERE value='is_home') ORDER BY detection_date DESC LIMIT 1);
     last_home_state_dd = (SELECT detection_date FROM "PatientState" WHERE patient_id=pat_id AND state_id=(SELECT id FROM "State" WHERE value='is_home') ORDER BY detection_date DESC LIMIT 1);
 
+    hosp_off_state_count = (SELECT count(*) FROM "PatientState" WHERE patient_id=pat_id AND state_id=(SELECT id FROM "State" WHERE value='hospitalized_off'));
+    last_hosp_off_state_id = (SELECT id FROM "PatientState" WHERE patient_id=pat_id AND state_id=(SELECT id FROM "State" WHERE value='hospitalized_off') ORDER BY detection_date DESC LIMIT 1);
+    last_hosp_off_state_dd = (SELECT detection_date FROM "PatientState" WHERE patient_id=pat_id AND state_id=(SELECT id FROM "State" WHERE value='hospitalized_off') ORDER BY detection_date DESC LIMIT 1);
+
+    home_off_state_count = (SELECT count(*) FROM "PatientState" WHERE patient_id=pat_id AND state_id=(SELECT id FROM "State" WHERE value='is_home_off'));
+    last_home_off_state_id = (SELECT id FROM "PatientState" WHERE patient_id=pat_id AND state_id=(SELECT id FROM "State" WHERE value='is_home_off') ORDER BY detection_date DESC LIMIT 1);
+    last_home_off_state_dd = (SELECT detection_date FROM "PatientState" WHERE patient_id=pat_id AND state_id=(SELECT id FROM "State" WHERE value='is_home_off') ORDER BY detection_date DESC LIMIT 1);    
+    
     -- dead
     IF dead_state_count > 0 THEN
         UPDATE "Patient" SET is_dead=true WHERE id=pat_id;
@@ -227,6 +243,19 @@ CREATE OR REPLACE FUNCTION set_patient_state() RETURNS trigger AS
         UPDATE "Patient" SET is_home=false WHERE id=pat_id;
     END IF;
 
+    -- is_home_off    
+    IF home_off_state_count > 0 THEN
+        IF dead_state_count > 0 THEN
+            -- pass in_hospital
+        ELSIF home_off_state_count > 0 AND last_home_state_dd > last_home_off_state_dd THEN
+            -- pass in_hospital
+        ELSIF home_off_state_count > 0 AND last_home_state_dd = last_home_off_state_dd AND last_home_state_dd > last_home_off_state_dd THEN
+            -- pass in_hospital
+        ELSE
+            UPDATE "Patient" SET is_home=false WHERE id=pat_id;
+        END IF;
+    END IF;       
+
     -- in_hospital
     IF hosp_state_count > 0 THEN
         IF dead_state_count > 0 THEN
@@ -247,6 +276,19 @@ CREATE OR REPLACE FUNCTION set_patient_state() RETURNS trigger AS
     ELSE
         UPDATE "Patient" SET in_hospital=false WHERE id=pat_id;
     END IF;
+
+    -- in_hospital_off
+    IF hosp_off_state_count > 0 THEN
+        IF dead_state_count > 0 THEN
+            -- pass in_hospital
+        ELSIF hosp_off_state_count > 0 AND last_hosp_state_dd > last_hosp_off_state_dd THEN
+            -- pass in_hospital
+        ELSIF hosp_off_state_count > 0 AND last_hosp_state_dd = last_hosp_off_state_dd AND last_hosp_state_dd > last_hosp_off_state_dd THEN
+            -- pass in_hospital
+        ELSE
+            UPDATE "Patient" SET in_hospital=false WHERE id=pat_id;
+        END IF;
+    END IF;    
 
     -- is_healthy
     IF healty_state_count > 0 THEN
