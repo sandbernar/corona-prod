@@ -180,3 +180,6 @@ class PatientsSearchForm(FlaskForm):
 
     iin = TextField(id='iin')
     telephone = TextField(id='telephone')
+
+class SelectContactedForm(FlaskForm):
+    contact_type = SelectField('Contact Type', choices=[(1, _("(ПК) Потенциальный Контакт")), (0, _("(БК) Близкий Контакт"))])

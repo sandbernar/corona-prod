@@ -607,14 +607,18 @@ HGDBCountry = {
 }
 
 # State
+in_hospital = ("hospitalized", "Госпитализирован")
+
 state_dead = ("dead", "Умер")
 state_infec = ("infected", "Инфицирован")
 state_hosp = ("hospitalized", "Госпитализирован")
 state_hosp_off = ("hospitalized_off", "Госпитализирован - Выписка")
 
 state_healthy = ("recovery", "Выздоровление")
+
 state_is_home = ("is_home", "Домашний Карантин")
 state_is_home_off = ("is_home_off", "Домашний Карантин - Окончание")
+
 state_is_transit = ("transit", "Транзит")
 state_found = ("found", "Найден")
 states = [

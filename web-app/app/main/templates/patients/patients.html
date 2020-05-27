@@ -11,7 +11,44 @@
 {% include "site_template/navigation.html" %}
 
 {% include "site_template/top-stats.html" %}
-      <form method="GET" id="searchForm">
+
+{% if select_contacted %}
+<!-- Modal ADD CONTACTED PATIENTS-->
+<div class="modal fade" id="addContactedModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">{{ _("Добавить контактные связи?") }}</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true"></span>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="name-input" class="form-control-label">{{ _("Тип Связи") }}*</label>
+                    {{ select_contacted_form.contact_type(class="form-control") }}
+                </div>
+                <div class="col">
+                <div class="row">
+                  <h4>*{{ _("Вы вносите") }}</h4>&nbsp;<h4 id="contacted_num" style="color:green;">55</h4>&nbsp;<h4>{{ _("контактов") }}</h4>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <div class="row">
+                <div class="col">
+                  <button type="button" id="submit_contacted" class="btn btn-primary">{{ _("Да") }}</button>
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ _("Нет") }}</button>
+                </div>
+              </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<form method="GET" id="searchForm">
 <div class="container-fluid mt--7">
   <div class="card shadow">
     <div class="card-header border-0">
@@ -232,12 +269,22 @@ checkboxes.change(function() {
   }
 });
 
+
 $("#add_contacted").on("click", function(e) {
   e.preventDefault();
+
+  var checked_checkboxes = $("input:checkbox[name=add_contacted_patient_id]:checked")
+  $("#contacted_num").text(checked_checkboxes.length)
   
+});
+
+$("#submit_contacted").on("click", function(e) {
+  e.preventDefault();
+
+  var checked_checkboxes = $("input:checkbox[name=add_contacted_patient_id]:checked")
   var checkedArrays = [];
   
-  $("input:checkbox[name=add_contacted_patient_id]:checked").each(function(){
+  checked_checkboxes.each(function(){
     checkedArrays.push($(this).val());
   });
 
@@ -245,7 +292,7 @@ $("#add_contacted").on("click", function(e) {
     type: 'POST',
     url: "/select_contacted",
     async: false,
-    data: {infected_patient_id: {{ select_contacted }}, contacted_patients: checkedArrays},
+    data: {infected_patient_id: {{ select_contacted }}, contacted_patients: checkedArrays, contact_type: $("#contact_type").val()},
     dataType: "text",
     success: function(res) {
       window.location.href = JSON.parse(res).redirect_url;

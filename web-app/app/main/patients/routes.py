@@ -27,7 +27,7 @@ from app import constants as c
 from app.main import blueprint
 from app.main.models import Region, Country, VisitedCountry, Infected_Country_Category, JobCategory
 from app.main.models import TravelType, BorderControl, VariousTravel, BlockpostTravel, Address, HGBDToken, OldDataTravel
-from app.main.patients.forms import PatientForm, UpdateProfileForm, AddFlightFromExcel, ContactedPatientsSearchForm, PatientsSearchForm
+from app.main.patients.forms import PatientForm, UpdateProfileForm, AddFlightFromExcel, ContactedPatientsSearchForm, PatientsSearchForm, SelectContactedForm
 from app.main.patients.models import Patient, PatientStatus, ContactedPersons, State, PatientState
 from app.main.patients.modules import ContactedPatientsTableModule, AllPatientsTableModule
 from app.main.hospitals.models import Hospital, Hospital_Type
@@ -711,6 +711,7 @@ def patients():
     filt = dict()
 
     select_contacted = request.args.get("select_contacted_id", None)
+    select_contacted_form = None
 
     if select_contacted:
         try:
@@ -720,6 +721,8 @@ def patients():
             return render_template('errors/error-400.html'), 400        
         
         select_contacted = patient.id
+
+        select_contacted_form = SelectContactedForm()
 
     flight_codes_list = [c.all_flight_codes] + [ code.code for code in FlightCode.query.all() ]
 
@@ -747,7 +750,8 @@ def patients():
     form.process()
 
     return route_template('patients/patients', form=form, all_patients_table = all_patients_table, constants=c, 
-                        flight_codes_list=flight_codes_list, change=change, error_msg=error_msg, select_contacted = select_contacted)
+                        flight_codes_list=flight_codes_list, change=change, error_msg=error_msg,
+                        select_contacted = select_contacted, select_contacted_form=select_contacted_form)
 
 @blueprint.route('/delete_patient', methods=['POST'])
 @login_required
@@ -878,8 +882,12 @@ def select_contacted():
 
                 contacted_patients.append(contacted_patient)
 
-            for contacted_patient in contacted_patients:                
-                    contacted = ContactedPersons(infected_patient_id=infected_patient.id, contacted_patient_id=contacted_patient.id)
+            for contacted_patient in contacted_patients:
+                    is_potential_contact = int(request.form.get("contact_type")) == 1
+                    print(is_potential_contact, int(request.form.get("contact_type")))
+
+                    contacted = ContactedPersons(infected_patient_id=infected_patient.id, contacted_patient_id=contacted_patient.id,
+                                                    is_potential_contact=is_potential_contact)
                 
                     db.session.add(contacted)
                     db.session.commit()

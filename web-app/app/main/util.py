@@ -79,6 +79,9 @@ def populate_countries_select(select_input, default = None, default_state=None):
         select_input.choices += [(c.id, c.name) for c in countries]
         select_input.default = default
 
+def custom_yes_no(yes, no, value):
+    return yes if value else no
+
 def yes_no(yes=True):
     return _("Да") if yes else _("Нет")
 
