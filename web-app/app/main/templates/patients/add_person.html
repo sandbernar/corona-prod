@@ -55,6 +55,7 @@
     </button>
   </div>
   {% endif %}
+  <form id="add_patients" role="form" method="post" action="">
   {% if select_contacted %}
   <div class="row">
     <div class="col">
@@ -62,11 +63,17 @@
         <div class="card-header bg-transparent">
           <h3 class="mb-0">{{ _("Добавление Контактного Пациента к") }} <a href='patient_profile?id={{ select_contacted.id }}'> {{ select_contacted }}</a></h3>
         </div>
+        <div class="card-body">
+          <div class="form-group">
+              <label for="name-input" class="form-control-label">{{ _("Тип Связи") }}*</label>
+              {{ select_contacted_form.contact_type(class="form-control") }}
+          </div>          
+        </div>
       </div>
     </div>
   </div>
+
   {% endif %}
-  <form id="add_patients" role="form" method="post" action="">
     {% if select_contacted %}
     <div class="row mt-3">
     {% else %}

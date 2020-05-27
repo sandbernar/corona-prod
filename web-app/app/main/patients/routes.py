@@ -346,13 +346,16 @@ def add_patient():
     patient_form.process()
 
     select_contacted = None
+    select_contacted_form = None
 
     select_contacted_id = request.args.get("select_contacted_id", None)
     if select_contacted_id:
         try:
             select_contacted = Patient.query.filter_by(id=select_contacted_id).first()
         except exc.SQLAlchemyError:
-            return render_template('errors/error-400.html'), 400             
+            return render_template('errors/error-400.html'), 400
+
+        select_contacted_form = SelectContactedForm()
 
     if 'create' in request.form:
         request_dict = request.form.to_dict(flat=True)
@@ -371,7 +374,10 @@ def add_patient():
         handle_after_patient(request_dict, final_dict, patient, update_patient=False)
         if select_contacted:
             try:
-                contacted = ContactedPersons(infected_patient_id=select_contacted.id, contacted_patient_id=patient.id)
+                print(request.form)
+                is_potential_contact = int(request.form.get("contact_type")) == 1
+                contacted = ContactedPersons(infected_patient_id=select_contacted.id, contacted_patient_id=patient.id, 
+                                            is_potential_contact=is_potential_contact)
                 db.session.add(contacted)
                 db.session.commit()
             except exc.SQLAlchemyError:
@@ -381,7 +387,7 @@ def add_patient():
         return jsonify({"patient_id": patient.id})
     else:
         return route_template( 'patients/add_person', form=patient_form, select_contacted=select_contacted,
-                                added=False, error_msg=None, c=c)
+                                select_contacted_form=select_contacted_form, added=False, error_msg=None, c=c)
 
 @blueprint.route('/patient_profile', methods=['GET', 'POST'])
 @login_required
@@ -884,7 +890,6 @@ def select_contacted():
 
             for contacted_patient in contacted_patients:
                     is_potential_contact = int(request.form.get("contact_type")) == 1
-                    print(is_potential_contact, int(request.form.get("contact_type")))
 
                     contacted = ContactedPersons(infected_patient_id=infected_patient.id, contacted_patient_id=contacted_patient.id,
                                                     is_potential_contact=is_potential_contact)
