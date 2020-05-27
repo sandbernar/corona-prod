@@ -134,7 +134,14 @@ class ContactedPatientsTableModule(TableModule):
                     valid_ids.append(c.id)
 
             self.q = self.q.filter(ContactedPersons.id.in_(valid_ids))
-            self.search_form.is_added_in_2_hours.default = is_added_in_2_hours                            
+            self.search_form.is_added_in_2_hours.default = is_added_in_2_hours
+
+        contact_type = self.request.args.get("contact_type", "-1")
+        if contact_type != "-1":
+            is_potential_contact = int(contact_type) == 1
+
+            self.q = self.q.filter(ContactedPersons.is_potential_contact == is_potential_contact)
+            self.search_form.contact_type.default = contact_type
 
         self.search_form.process()
 
@@ -371,14 +378,22 @@ class AllPatientsTableModule(TableModule):
         # Is contacted
         contacted = self.request.args.get("contacted", "-1")
         if contacted != "-1":
-        	if contacted == "contacted":
-        		self.q = self.q.join(ContactedPersons, ContactedPersons.contacted_patient_id == Patient.id)
-        		self.q = self.q.group_by(Patient.id)
-        	elif contacted == "with_contacts":
-        		self.q = self.q.join(ContactedPersons, ContactedPersons.infected_patient_id == Patient.id)
-        		self.q = self.q.group_by(Patient.id)
+            if contacted == "contacted":
+                self.q = self.q.join(ContactedPersons, ContactedPersons.contacted_patient_id == Patient.id)
+                self.q = self.q.group_by(Patient.id)
+            elif contacted == "with_contacts":
+                self.q = self.q.join(ContactedPersons, ContactedPersons.infected_patient_id == Patient.id)
+                self.q = self.q.group_by(Patient.id)
+            elif contacted == "contacted_close":
+                self.q = self.q.join(ContactedPersons, ContactedPersons.contacted_patient_id == Patient.id)
+                self.q = self.q.filter(ContactedPersons.is_potential_contact == False)
+                self.q = self.q.group_by(Patient.id)
+            elif contacted == "contacted_potential":
+                self.q = self.q.join(ContactedPersons, ContactedPersons.contacted_patient_id == Patient.id)
+                self.q = self.q.filter(ContactedPersons.is_potential_contact == True)
+                self.q = self.q.group_by(Patient.id)
 
-        	self.search_form.contacted.default = contacted
+            self.search_form.contacted.default = contacted
 
         is_iin_fail = request.args.get("is_iin_fail", None)
         if is_iin_fail:

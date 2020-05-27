@@ -114,6 +114,8 @@ class ContactedPatientsSearchForm(FlaskForm):
     is_found = SelectField("Is Found", choices=[(-1, _("Неважно")), (1, _("Да")), (0, _("Нет"))], default=-1)
     is_added_in_2_hours = SelectField("Is Added in 2 Hours", choices=[(-1, _("Неважно")), (1, _("Да")), (0, _("Нет"))], default=-1)
     is_infected = SelectField("Is Infected", choices=[(-1, _("Неважно")), (1, _("Да")), (0, _("Нет"))], default=-1)
+    contact_type = SelectField('Contact Type', choices=[(-1, _("Неважно")), (1, _("(ПК) Потенциальный Контакт")), 
+                                                        (0, _("(БК) Близкий Контакт"))], validators=[DataRequired()])
 
 class PatientsSearchForm(FlaskForm):
     region_id = SelectField()
@@ -124,7 +126,8 @@ class PatientsSearchForm(FlaskForm):
 
     probably_duplicate = BooleanField()
     contacted = SelectField("Contacted or with Contacts",
-                            choices=[(-1, _("Все")), ("contacted", _("Контактный")), ("with_contacts", _("С Контактами"))], default=-1)
+                            choices=[(-1, _("Все")), ("contacted", _("Контактный")), ("with_contacts", _("С Контактами")),
+                                    ("contacted_close", _("Контактный (БК)")), ("contacted_potential", _("Контактный (ПК)"))], default=-1)
 
 
     is_currently_infected = SelectField("Is Currently Infected",
