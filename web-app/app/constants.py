@@ -608,19 +608,27 @@ HGDBCountry = {
 
 # State
 in_hospital = ("hospitalized", "Госпитализирован")
+
 state_dead = ("dead", "Умер")
 state_infec = ("infected", "Инфицирован")
 state_hosp = ("hospitalized", "Госпитализирован")
+state_hosp_off = ("hospitalized_off", "Госпитализирован - Выписка")
+
 state_healthy = ("recovery", "Выздоровление")
+
 state_is_home = ("is_home", "Домашний Карантин")
+state_is_home_off = ("is_home_off", "Домашний Карантин - Окончание")
+
 state_is_transit = ("transit", "Транзит")
 state_found = ("found", "Найден")
 states = [
     state_dead,
     state_infec,
     state_hosp,
+    state_hosp_off,
     state_healthy,
     state_is_home,
+    state_is_home_off,
     state_is_transit,
     state_found
 ]
@@ -631,6 +639,33 @@ form_states = [
     state_hosp,
     state_is_home
 ]
+
+unknown_num = (-1, "Неизвестно")
+
+# state_infec
+# Infection Types
+self_request = ("self_request", "Самообращение")
+prof_tzel = ("prof_tzel", "Проф. Цель")
+zavoznoi = ("zavoznoi", "Завозной")
+
+contacted_self_request = ("contacted_self_request", "Контактный Самообращение")
+contacted_prof_tzel = ("contacted_prof_tzel", "Контактный  Проф. Цель")
+contacted_zavoznoi = ("contacted_zavoznoi", "Контактный  Завозной")
+
+state_infec_types = [unknown_num, self_request, prof_tzel, zavoznoi, contacted_self_request, contacted_prof_tzel, contacted_zavoznoi]
+
+# Illness Symptoms
+without_symptoms = ("without_symptoms", "Бессимптомно")
+with_symptoms = ("with_symptoms", "Симптомно")
+
+illness_symptoms = [unknown_num, without_symptoms, with_symptoms]
+
+# Illness Severity
+low_severity = ("low_severity", "Легкое")
+medium_severity = ("medium_severity", "Среднее")
+hard_severity = ("hard_severity", "Тяжёлое (критическое)")
+
+illness_severity = [unknown_num, low_severity, medium_severity, hard_severity]
 
 class GraphNode:
     def __init__(self, value):
@@ -646,14 +681,20 @@ class GraphState:
         self.reached_end = False
         self.location = []
         self.patient = []
-        self.location_state = [state_found[0], state_is_transit[0], state_hosp[0], state_is_home[0], state_healthy[0]]
+        self.location_state = [state_found[0], state_is_transit[0], state_hosp[0], state_hosp_off[0], state_is_home[0], state_is_home_off[0], state_healthy[0]]
         self.patient_state = [state_found[0], state_infec[0], state_healthy[0], state_dead[0]]
 
         self.dead = GraphNode(state_dead)
         self.infec = GraphNode(state_infec)
+        
         self.hosp = GraphNode(state_hosp)
+        self.state_hosp_off = GraphNode(state_hosp_off)
+        
         self.healthy = GraphNode(state_healthy)
+        
         self.is_home = GraphNode(state_is_home)
+        self.state_is_home_off = GraphNode(state_is_home_off)
+
         self.is_transit = GraphNode(state_is_transit)
         self.found = GraphNode(state_found)
 
@@ -665,10 +706,17 @@ class GraphState:
         self.found.connect(self.hosp)
         self.is_transit.connect(self.hosp)
         self.is_transit.connect(self.is_home)
+        
         self.is_home.connect(self.hosp)
         self.is_home.connect(self.healthy)
+        self.is_home.connect(self.state_is_home_off)
+        self.state_is_home_off.connect(self.is_home)
+
         self.hosp.connect(self.is_home)
         self.hosp.connect(self.healthy)
+        self.hosp.connect(self.state_hosp_off)
+        self.state_hosp_off.connect(self.hosp)
+
         self.infec.connect(self.healthy)
         self.infec.connect(self.dead)
         self.healthy.connect(self.infec)

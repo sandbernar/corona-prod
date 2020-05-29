@@ -8,7 +8,7 @@ from app.main.flights_trains.models import FlightTravel, TrainTravel, FlightCode
 from app.login.models import User
 
 from collections import OrderedDict
-from app.main.util import parse_date, yes_no_html, yes_no
+from app.main.util import parse_date, yes_no_html, yes_no, custom_yes_no
 from app.main.patients.util import measure_patient_similarity
 
 from sqlalchemy import func, cast, JSON, exc
@@ -25,6 +25,7 @@ class ContactedPatientsTableModule(TableModule):
     def __init__(self, request, q, search_form, header_button = None, page = 1, per_page = 5):
         table_head = OrderedDict()
         table_head[_("ФИО")] = ["second_name"]
+        table_head[_("БК или ПК")] = ["is_potential_contact"]
         table_head[_("Телефон")] = ["telephone"]
         table_head[_("Тип Въезда")] = ["travel_type_id"]
         table_head[_("Регион")] = []
@@ -133,7 +134,14 @@ class ContactedPatientsTableModule(TableModule):
                     valid_ids.append(c.id)
 
             self.q = self.q.filter(ContactedPersons.id.in_(valid_ids))
-            self.search_form.is_added_in_2_hours.default = is_added_in_2_hours                            
+            self.search_form.is_added_in_2_hours.default = is_added_in_2_hours
+
+        contact_type = self.request.args.get("contact_type", "-1")
+        if contact_type != "-1":
+            is_potential_contact = int(contact_type) == 1
+
+            self.q = self.q.filter(ContactedPersons.is_potential_contact == is_potential_contact)
+            self.search_form.contact_type.default = contact_type
 
         self.search_form.process()
 
@@ -141,6 +149,7 @@ class ContactedPatientsTableModule(TableModule):
         patient = result.contacted_patient
 
         patient_id = (patient, "/patient_profile?id={}".format(patient.id))
+        potential_or_close = custom_yes_no(_("ПК"), _("БК"), result.is_potential_contact)
         telephone = patient.telephone
         travel_type = patient.travel_type
         region = patient.region
@@ -165,7 +174,7 @@ class ContactedPatientsTableModule(TableModule):
 
         created_date = patient.created_date.strftime("%d-%m-%Y %H:%M")
 
-        return [patient_id, telephone, travel_type, region, is_found, \
+        return [patient_id, potential_or_close, telephone, travel_type, region, is_found, \
                 in_hospital, is_infected, delete_contact_button, is_added_in_2_hours, created_date]
 
 class AllPatientsTableModule(TableModule):
@@ -181,14 +190,25 @@ class AllPatientsTableModule(TableModule):
             table_head[_("Выбрать контактных")] = []
             table_head_info[_("Выбрать контактных")] = ("checkbox", "contacted_all_checkboxes")
 
+
             infected_contacted = ContactedPersons.query.filter_by(infected_patient_id=select_contacted)
-            self.infected_contacted_ids = [c.contacted_patient_id for c in infected_contacted]
+            self.infected_contacted_ids = []
+            self.infected_contact_type = {}
+
+            for c in infected_contacted:
+                self.infected_contacted_ids.append(c.contacted_patient_id)
+                self.infected_contact_type[c.contacted_patient_id] = c.is_potential_contact
 
             contacted_infected = ContactedPersons.query.filter_by(contacted_patient_id=select_contacted)
-            self.contacted_infected_ids = [c.infected_patient_id for c in contacted_infected]
+            self.contacted_infected_ids = []
+            self.contacted_contact_type = {}
+
+            for c in contacted_infected:
+                self.contacted_infected_ids.append(c.infected_patient_id)
+                self.contacted_contact_type[c.infected_patient_id] = c.is_potential_contact
 
             is_downloadable_xls = False
-            header_button = [(_("Добавить Контактных"), "#", "add_contacted", "disabled")]
+            header_button = [(_("Добавить Контактных"), "#", "add_contacted", "disabled data-toggle=modal data-target=#addContactedModal")]
 
         table_head[_("ФИО")] = ["second_name"]
         table_head[_("ИИН")] = ["iin"]
@@ -358,14 +378,22 @@ class AllPatientsTableModule(TableModule):
         # Is contacted
         contacted = self.request.args.get("contacted", "-1")
         if contacted != "-1":
-        	if contacted == "contacted":
-        		self.q = self.q.join(ContactedPersons, ContactedPersons.contacted_patient_id == Patient.id)
-        		self.q = self.q.group_by(Patient.id)
-        	elif contacted == "with_contacts":
-        		self.q = self.q.join(ContactedPersons, ContactedPersons.infected_patient_id == Patient.id)
-        		self.q = self.q.group_by(Patient.id)
+            if contacted == "contacted":
+                self.q = self.q.join(ContactedPersons, ContactedPersons.contacted_patient_id == Patient.id)
+                self.q = self.q.group_by(Patient.id)
+            elif contacted == "with_contacts":
+                self.q = self.q.join(ContactedPersons, ContactedPersons.infected_patient_id == Patient.id)
+                self.q = self.q.group_by(Patient.id)
+            elif contacted == "contacted_close":
+                self.q = self.q.join(ContactedPersons, ContactedPersons.contacted_patient_id == Patient.id)
+                self.q = self.q.filter(ContactedPersons.is_potential_contact == False)
+                self.q = self.q.group_by(Patient.id)
+            elif contacted == "contacted_potential":
+                self.q = self.q.join(ContactedPersons, ContactedPersons.contacted_patient_id == Patient.id)
+                self.q = self.q.filter(ContactedPersons.is_potential_contact == True)
+                self.q = self.q.group_by(Patient.id)
 
-        	self.search_form.contacted.default = contacted
+            self.search_form.contacted.default = contacted
 
         is_iin_fail = request.args.get("is_iin_fail", None)
         if is_iin_fail:
@@ -514,12 +542,16 @@ class AllPatientsTableModule(TableModule):
             if self.select_contacted == patient.id:
                 select_contacted_button = _("Основной Пациент")
             elif patient.id in self.infected_contacted_ids:
+                potential_or_close = _("Близкий Контакт") if not self.infected_contact_type[patient.id] else _("Потенциальный Контакт")
+
                 select_contacted_html = "<a href=\"/contacted_persons?id={}\" class=\"btn btn-success\">{}</a>".format(
-                                        self.select_contacted, _("Контактный"))
+                                        self.select_contacted, potential_or_close)
                 select_contacted_button = (select_contacted_html, "safe")                
             elif patient.id in self.contacted_infected_ids:
+                potential_or_close = _("Близкий") if not self.contacted_contact_type[patient.id] else _("Потенциальный")
+
                 select_contacted_html = "<a href=\"/contacted_persons?id={}\" class=\"btn btn-danger\">{}</a>".format(
-                                        patient.id, _("Контактировал С"))
+                                        patient.id, "{} ({})".format(_("Контактировал С"), potential_or_close))
                 select_contacted_button = (select_contacted_html, "safe")
             else:
                 select_contacted_html = "<a href=\"/select_contacted?infected_patient_id={}&contacted_patient_id={}\" class=\"btn btn-primary\">{}</a>".format(

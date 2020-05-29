@@ -7,7 +7,7 @@ import os
 import dateutil.parser
 import math, json, re, itertools
 import collections
-from datetime import datetime
+from datetime import datetime, date, timedelta
 from multiprocessing.pool import ThreadPool as threadpool
 
 import numpy as np
@@ -27,7 +27,7 @@ from app import constants as c
 from app.main import blueprint
 from app.main.models import Region, Country, VisitedCountry, Infected_Country_Category, JobCategory
 from app.main.models import TravelType, BorderControl, VariousTravel, BlockpostTravel, Address, HGBDToken, OldDataTravel
-from app.main.patients.forms import PatientForm, UpdateProfileForm, AddFlightFromExcel, ContactedPatientsSearchForm, PatientsSearchForm
+from app.main.patients.forms import PatientForm, UpdateProfileForm, AddFlightFromExcel, ContactedPatientsSearchForm, PatientsSearchForm, SelectContactedForm
 from app.main.patients.models import Patient, PatientStatus, ContactedPersons, State, PatientState
 from app.main.patients.modules import ContactedPatientsTableModule, AllPatientsTableModule
 from app.main.hospitals.models import Hospital, Hospital_Type
@@ -346,13 +346,16 @@ def add_patient():
     patient_form.process()
 
     select_contacted = None
+    select_contacted_form = None
 
     select_contacted_id = request.args.get("select_contacted_id", None)
     if select_contacted_id:
         try:
             select_contacted = Patient.query.filter_by(id=select_contacted_id).first()
         except exc.SQLAlchemyError:
-            return render_template('errors/error-400.html'), 400             
+            return render_template('errors/error-400.html'), 400
+
+        select_contacted_form = SelectContactedForm()
 
     if 'create' in request.form:
         request_dict = request.form.to_dict(flat=True)
@@ -371,7 +374,9 @@ def add_patient():
         handle_after_patient(request_dict, final_dict, patient, update_patient=False)
         if select_contacted:
             try:
-                contacted = ContactedPersons(infected_patient_id=select_contacted.id, contacted_patient_id=patient.id)
+                is_potential_contact = int(request.form.get("contact_type")) == 1
+                contacted = ContactedPersons(infected_patient_id=select_contacted.id, contacted_patient_id=patient.id, 
+                                            is_potential_contact=is_potential_contact)
                 db.session.add(contacted)
                 db.session.commit()
             except exc.SQLAlchemyError:
@@ -381,7 +386,7 @@ def add_patient():
         return jsonify({"patient_id": patient.id})
     else:
         return route_template( 'patients/add_person', form=patient_form, select_contacted=select_contacted,
-                                added=False, error_msg=None, c=c)
+                                select_contacted_form=select_contacted_form, added=False, error_msg=None, c=c)
 
 @blueprint.route('/patient_profile', methods=['GET', 'POST'])
 @login_required
@@ -483,18 +488,18 @@ def patient_profile():
                 travel = BlockpostTravel.query.filter_by(patient_id=patient.id).first()
             elif travel_type.value != c.local_type[0]:
                 travel = VariousTravel.query.filter_by(patient_id=patient.id).first()
-
-            if patient.is_found:
-                form.is_found.default = 'checked'
-
-            if patient.is_infected:
-                form.is_infected.default = 'checked'
             
 
             hospital_name = None
             if patient.hospital:
                 form.hospital_id.default = patient.hospital.id
                 hospital_name = Hospital.query.filter_by(id=patient.hospital.id).first().name
+
+            # for i in range(len(patient.states)):
+            #     state = patient.states[i]
+            #     if state.value == c.state_is_home[0]:
+            #         if "is_home_end" in state.attrs.keys():
+            #             form.is_home_end.default = state.attrs["is_home_end"]
 
             today = datetime.today()
             age =  today.year - patient.dob.year - ((today.month, today.day) < (patient.dob.month, patient.dob.day))
@@ -711,6 +716,7 @@ def patients():
     filt = dict()
 
     select_contacted = request.args.get("select_contacted_id", None)
+    select_contacted_form = None
 
     if select_contacted:
         try:
@@ -720,6 +726,8 @@ def patients():
             return render_template('errors/error-400.html'), 400        
         
         select_contacted = patient.id
+
+        select_contacted_form = SelectContactedForm()
 
     flight_codes_list = [c.all_flight_codes] + [ code.code for code in FlightCode.query.all() ]
 
@@ -747,7 +755,8 @@ def patients():
     form.process()
 
     return route_template('patients/patients', form=form, all_patients_table = all_patients_table, constants=c, 
-                        flight_codes_list=flight_codes_list, change=change, error_msg=error_msg, select_contacted = select_contacted)
+                        flight_codes_list=flight_codes_list, change=change, error_msg=error_msg,
+                        select_contacted = select_contacted, select_contacted_form=select_contacted_form)
 
 @blueprint.route('/delete_patient', methods=['POST'])
 @login_required
@@ -878,8 +887,11 @@ def select_contacted():
 
                 contacted_patients.append(contacted_patient)
 
-            for contacted_patient in contacted_patients:                
-                    contacted = ContactedPersons(infected_patient_id=infected_patient.id, contacted_patient_id=contacted_patient.id)
+            for contacted_patient in contacted_patients:
+                    is_potential_contact = int(request.form.get("contact_type")) == 1
+
+                    contacted = ContactedPersons(infected_patient_id=infected_patient.id, contacted_patient_id=contacted_patient.id,
+                                                    is_potential_contact=is_potential_contact)
                 
                     db.session.add(contacted)
                     db.session.commit()
@@ -927,6 +939,10 @@ def get_all_states(patient_states):
                 attrs["hospital_id"] = hospital.id
                 attrs["hospital_region_id"] = hospital.region_id
                 attrs["hospital_type_id"] = hospital.hospital_type_id
+        elif state.value == c.state_infec[0]:
+            attrs["state_infec_type"] = attrs.get("state_infec_type", -1)
+            attrs["state_infec_illness_symptoms"] = attrs.get("state_infec_illness_symptoms", -1)
+            attrs["state_infec_illness_severity"] = attrs.get("state_infec_illness_severity", -1)
 
         states.append({
             "id":state.id,
@@ -938,7 +954,30 @@ def get_all_states(patient_states):
             "attrs":attrs
         })
 
-    return states  
+    return states
+
+def handle_attrs(state, patient, data, patient_attrs):
+    attrs = patient_attrs.copy()
+
+    if state.value == c.state_hosp[0]:
+        try:
+            hospital = Hospital.query.filter_by(id = data["hospital_id"]).first()
+            patient.hospital_id = hospital.id
+            
+            db.session.add(patient)
+            db.session.commit()
+        except exc.SQLAlchemyError:
+            return jsonify({'description': _("Hospital not found")}), 405
+
+        attrs["hospital_id"] = hospital.id
+    elif state.value == c.state_is_home[0]:
+        attrs["is_home_end"] = data["is_home_end"]
+    elif state.value == c.state_infec[0]:
+        attrs["state_infec_type"] = data.get("state_infec_type", -1)
+        attrs["state_infec_illness_symptoms"] = data.get("state_infec_illness_symptoms", -1)
+        attrs["state_infec_illness_severity"] = data.get("state_infec_illness_severity", -1)
+
+    return attrs
 
 @blueprint.route('/get_patient_badges', methods=['POST'])
 @login_required
@@ -986,18 +1025,8 @@ def add_state():
         return jsonify({'description': 'Patient not found'}), 405
     state = State.query.filter_by(value=data["value"]).first()
     attrs = {}
-    
-    if data["value"] == c.state_hosp[0]:
-        try:
-            hospital = Hospital.query.filter_by(id = data["hospital_id"]).first()
-            patient.hospital_id = hospital.id
-            
-            db.session.add(patient)
-            db.session.commit()
-        except exc.SQLAlchemyError:
-            return jsonify({'description': _("Hospital not found")}), 405
 
-        attrs["hospital_id"] = hospital.id
+    attrs = handle_attrs(state, patient, data, attrs)
 
     result = patient.addState(state,
             detection_date=data["detection_date"],
@@ -1047,24 +1076,13 @@ def update_state():
         return jsonify({'description': 'PatientState not found'}), 406
     state = State.query.filter_by(value=data["value"]).first()
 
-    attrs = {}
-    
-    if data["value"] == c.state_hosp[0]:
-        try:
-            hospital = Hospital.query.filter_by(id = data["hospital_id"]).first()
-            patient.hospital_id = hospital.id
-            
-            db.session.add(patient)
-            db.session.commit()
-        except exc.SQLAlchemyError:
-            return jsonify({'description': _("Hospital not found")}), 405
-
-        attrs["hospital_id"] = hospital.id
-
-    patient_state.attrs = attrs
+    patient_state.attrs = handle_attrs(state, patient, data, patient_state.attrs)
+    db.session.add(patient_state)
+    db.session.commit()
 
     if state:
         patient_state.state_id = state.id
+
     patient_state.detection_date = data["detection_date"]
     patient_state.comment = data["comment"]
 

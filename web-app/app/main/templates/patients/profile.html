@@ -122,7 +122,7 @@
                         <input type="hidden" name="id" id="updatePatientStateID" value=''>
                         <div class="form-group">
                             <label for="name-input" class="form-control-label">{{ _("Статус") }}</label>
-                            {{ form.state(class="form-control", id="updatePatientStateState") }}
+                            {{ form.state(class="form-control", id="updatePatientStateState", disabled=True) }}
                         </div>
                         <div class="form-group">
                             <label for="name-input" class="form-control-label">{{ _("Комментарий") }}</label>
@@ -472,6 +472,18 @@
             update_hospitals_list(false)
 
             $("#hospital_id").val(stateAttrs["hospital_id"])
+        } else if (stateValue === '{{ c.state_is_home[0] }}') {
+            $("#is_home_end").val(stateAttrs["is_home_end"])
+            $("#is_home_end").change()
+        } else if (stateValue === '{{ c.state_infec[0] }}') {
+            $("#state_infec_type").val(stateAttrs["state_infec_type"])
+            $("#state_infec_type").change()
+
+            $("#state_infec_illness_symptoms").val(stateAttrs["state_infec_illness_symptoms"])
+            $("#state_infec_illness_symptoms").change()
+
+            $("#state_infec_illness_severity").val(stateAttrs["state_infec_illness_severity"])
+            $("#state_infec_illness_severity").change()
         }
     }
 
@@ -539,10 +551,23 @@
     }
 
     function handle_state_add_update(stateData) {
-        if (stateData["value"] == '{{ c.state_hosp[0] }}') {
-            stateData["hospital_id"] = $("#hospital_id").val()
+        switch(stateData["value"]) {
+            case '{{ c.state_hosp[0] }}':
+                stateData["hospital_id"] = $("#hospital_id").val()
+                break;
+            case '{{ c.state_is_home[0] }}':
+                stateData["is_home_end"] = $("#is_home_end").val()
+                break;
+            case '{{ c.state_infec[0] }}':
+                stateData["state_infec_type"] = $("#state_infec_type").val()
+                stateData["state_infec_illness_symptoms"] = $("#state_infec_illness_symptoms").val()
+                stateData["state_infec_illness_severity"] = $("#state_infec_illness_severity").val()
+                break;
+            default:
+                break;
         }
     }
+    
 
     $("#updateStateButton").on("click", () => {
         let updateStateData = {
@@ -686,7 +711,14 @@
         }
     });
 
-var hospitalForm = `<div class="form-group">
+    function weeksBetween(d1, d2) {
+        var diff = (d2 - d1) / (7 * 24 * 60 * 60 * 1000);
+        if (diff < 0) return 0
+
+        return Math.round(diff);
+    }
+
+    var hospitalForm = `<div class="form-group">
                         <label for="job-input" class="form-control-label">{{ _("Регион Госпитализации") }}</label>
                     {{ form.hospital_region_id(class="form-control", onchange="update_hospitals_list()") }}
                     </div>
@@ -706,22 +738,100 @@ var hospitalForm = `<div class="form-group">
                         {{ form.hospital_id(class="form-control") }}
                     </div>`
 
-    function handleHospitalizedStateForm(modalBodyID, stateSelectID, modalFormLen, updateHospitalsList=true) {
+    function clearStateForm(modalBodyID, modalFormLen) {
         var stateModalBody = document.getElementById(modalBodyID)
         if (stateModalBody.children.length !== modalFormLen) {
             while (stateModalBody.children.length > modalFormLen) {
                 stateModalBody.removeChild(stateModalBody.lastChild);
             }
         }
+    }
 
+    function handleHospitalizedStateForm(modalBodyID, stateSelectID, updateHospitalsList=true) {
         if ($("#" + stateSelectID).val() === "{{ c.state_hosp[0] }}") {
             document.getElementById(modalBodyID).insertAdjacentHTML('beforeend', hospitalForm)
             if (updateHospitalsList) update_hospitals_list()
         }
     }
 
+    var isHomeForm = `<div class="form-group">
+                        <div class="row">
+                        <div class="col">
+                        <label for="job-input" class="form-control-label">{{ _("Дата Конца Дом. Карантина") }}</label>
+                    {{ form.is_home_end(class="form-control", type="date") }}
+                        </div>
+                        <div class="col-md-auto">
+                            <br><br>
+                            <h4 id="is_home_end_weeks" style="color: green;"></h4>
+                        </div>
+                    </div>`
+
+    function handleIsHomeStateForm(modalBodyID, stateSelectID, weekDiff = 0) {
+        if ($("#" + stateSelectID).val() === "{{ c.state_is_home[0] }}") {
+            document.getElementById(modalBodyID).insertAdjacentHTML('beforeend', isHomeForm)
+
+            if (weekDiff != 0) {
+                $("#is_home_end").val(new Date(new Date().getTime() + weekDiff * (7 * 24 * 60 * 60 * 1000)).toISOString().split('T')[0])
+            }
+
+            $("#is_home_end").change(function() {
+                $("#is_home_end_weeks").text(weeksBetween(new Date(), new Date($("#is_home_end").val())) + " " + '{{_("недели") }}')
+            })
+            $("#is_home_end").trigger("change")
+        }
+    }
+
+    var infectedForm = `<div class="form-group">
+                        <div class="row">
+                        <div class="col">
+                        <label for="job-input" class="form-control-label">{{ _("Тип Инфицирования") }}</label>
+                            {{ form.state_infec_type(class="form-control") }}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="row">
+                        <div class="col">
+                        <label for="job-input" class="form-control-label">{{ _("Симптомы") }}</label>
+                            {{ form.state_infec_illness_symptoms(class="form-control") }}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="row">
+                        <div class="col">
+                        <label for="job-input" class="form-control-label">{{ _("Тяжесть Течения Болезни") }}</label>
+                            {{ form.state_infec_illness_severity(class="form-control") }}
+                        </div>
+                    </div>`
+
+    function handleInfectedStateForm(modalBodyID, stateSelectID) {
+        if ($("#" + stateSelectID).val() === "{{ c.state_infec[0] }}") {
+            document.getElementById(modalBodyID).insertAdjacentHTML('beforeend', infectedForm)
+
+            $("#state_infec_illness_symptoms").change(function() {
+                if ($("#state_infec_illness_symptoms").val() === "{{ c.with_symptoms[0] }}") {
+                    $("#state_infec_illness_severity").val($("#state_infec_illness_severity option:first").val());
+                    $( "#state_infec_illness_severity" ).prop( "disabled", false );
+                } else {
+                    $( "#state_infec_illness_severity" ).prop( "disabled", true );
+                }
+            })
+
+            $("#state_infec_illness_symptoms").trigger('change')
+        }
+    }
+
     $("#addStateStateValue").change(function() {
-        handleHospitalizedStateForm("addStateModalBody", "addStateStateValue", 4);
+        clearStateForm("addStateModalBody", 4)
+        handleHospitalizedStateForm("addStateModalBody", "addStateStateValue");
+        handleIsHomeStateForm("addStateModalBody", "addStateStateValue", 2);
+        handleInfectedStateForm("addStateModalBody", "addStateStateValue");
+    });
+
+    $("#updatePatientStateState").change(function() {
+        clearStateForm("editStateModalBody", 5)
+        handleHospitalizedStateForm("editStateModalBody", "updatePatientStateState", false);
+        handleIsHomeStateForm("editStateModalBody", "updatePatientStateState");
+        handleInfectedStateForm("editStateModalBody", "updatePatientStateState");
     });
 
     $("#addPatientStateModal").on("hidden.bs.modal", function () {
@@ -731,10 +841,6 @@ var hospitalForm = `<div class="form-group">
 
     $("#addPatientStateModal").on("shown.bs.modal", function () {
         $('#addStateDate').val(new Date().toISOString().slice(0, 10));
-    });
-
-    $("#updatePatientStateState").change(function() {
-        handleHospitalizedStateForm("editStateModalBody", "updatePatientStateState", 5, false);
     });
     
     $.ajax({

@@ -387,6 +387,8 @@ class ContactedPersons(db.Model):
     contacted_patient_id = Column(Integer, ForeignKey('Patient.id'))
     contacted_patient = db.relationship('Patient', foreign_keys=[contacted_patient_id])
 
+    is_potential_contact = Column(Boolean, default=True, nullable=False, server_default="true")
+
     attrs = Column(JSON, unique=False)
 
     def __init__(self, **kwargs):

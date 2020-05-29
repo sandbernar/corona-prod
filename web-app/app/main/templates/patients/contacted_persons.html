@@ -100,7 +100,8 @@
           [_("Регион"), contacted_search_form.region_id(class="form-control")],
           [_("Найден"), contacted_search_form.is_found(class="form-control")],
           [_("Инфицирован"), contacted_search_form.is_infected(class="form-control")],
-          [_("Добавлен в течение 2-х часов"), contacted_search_form.is_added_in_2_hours(class="form-control")]]
+          [_("Добавлен в течение 2-х часов"), contacted_search_form.is_added_in_2_hours(class="form-control")],
+          [_("Тип Контакта"), contacted_search_form.contact_type(class="form-control")]]
       ]
       %}
         {% include "modules/table/table.html" %}

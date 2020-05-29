@@ -81,11 +81,18 @@ class PatientForm(FlaskForm):
 
     hospital_region_id = SelectField('Hospital Region' , validators=[DataRequired()])
     hospital_type_id = SelectField('Hospital Type' , validators=[DataRequired()])
-    hospital_id = SelectField('Hospital', choices = [], validators=[DataRequired()])  
+    hospital_id = SelectField('Hospital', choices = [], validators=[DataRequired()])
+
+    is_home_end = DateField("Duration of Home Quarantine")
 
     # patient_states = SelectField(id='patient_states')
     is_transit = RadioField("Is Transit", choices=[(1, _("Да")),(0, _("Нет"))], default=0, validators=[DataRequired()])
     patient_status = SelectField('Patient Status', id='patient_status' , validators=[DataRequired()])
+
+    state_infec_type = SelectField(choices=c.state_infec_types)
+    state_infec_illness_symptoms = SelectField(choices=c.illness_symptoms)
+    state_infec_illness_severity = SelectField(choices=c.illness_severity)
+
     # is_contacted = RadioField("Is Contacted", id="is_contacted", choices=[(1, _("Да")),(0, _("Нет"))], default=0, validators=[DataRequired()])
 
 
@@ -112,6 +119,8 @@ class ContactedPatientsSearchForm(FlaskForm):
     is_found = SelectField("Is Found", choices=[(-1, _("Неважно")), (1, _("Да")), (0, _("Нет"))], default=-1)
     is_added_in_2_hours = SelectField("Is Added in 2 Hours", choices=[(-1, _("Неважно")), (1, _("Да")), (0, _("Нет"))], default=-1)
     is_infected = SelectField("Is Infected", choices=[(-1, _("Неважно")), (1, _("Да")), (0, _("Нет"))], default=-1)
+    contact_type = SelectField('Contact Type', choices=[(-1, _("Неважно")), (1, _("(ПК) Потенциальный Контакт")), 
+                                                        (0, _("(БК) Близкий Контакт"))], validators=[DataRequired()])
 
 class PatientsSearchForm(FlaskForm):
     region_id = SelectField()
@@ -122,7 +131,8 @@ class PatientsSearchForm(FlaskForm):
 
     probably_duplicate = BooleanField()
     contacted = SelectField("Contacted or with Contacts",
-                            choices=[(-1, _("Все")), ("contacted", _("Контактный")), ("with_contacts", _("С Контактами"))], default=-1)
+                            choices=[(-1, _("Все")), ("contacted", _("Контактный")), ("with_contacts", _("С Контактами")),
+                                    ("contacted_close", _("Контактный (БК)")), ("contacted_potential", _("Контактный (ПК)"))], default=-1)
 
 
     is_currently_infected = SelectField("Is Currently Infected",
@@ -178,3 +188,7 @@ class PatientsSearchForm(FlaskForm):
 
     iin = TextField(id='iin')
     telephone = TextField(id='telephone')
+
+class SelectContactedForm(FlaskForm):
+    contact_type = SelectField('Contact Type', choices=[(1, _("(ПК) Потенциальный Контакт")), (0, _("(БК) Близкий Контакт"))],
+                                                validators=[DataRequired()])
