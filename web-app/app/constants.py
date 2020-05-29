@@ -640,6 +640,33 @@ form_states = [
     state_is_home
 ]
 
+unknown_num = (-1, "Неизвестно")
+
+# state_infec
+# Infection Types
+self_request = ("self_request", "Самообращение")
+prof_tzel = ("prof_tzel", "Проф. Цель")
+zavoznoi = ("zavoznoi", "Завозной")
+
+contacted_self_request = ("contacted_self_request", "Контактный Самообращение")
+contacted_prof_tzel = ("contacted_prof_tzel", "Контактный  Проф. Цель")
+contacted_zavoznoi = ("contacted_zavoznoi", "Контактный  Завозной")
+
+state_infec_types = [unknown_num, self_request, prof_tzel, zavoznoi, contacted_self_request, contacted_prof_tzel, contacted_zavoznoi]
+
+# Illness Symptoms
+without_symptoms = ("without_symptoms", "Бессимптомно")
+with_symptoms = ("with_symptoms", "Симптомно")
+
+illness_symptoms = [unknown_num, without_symptoms, with_symptoms]
+
+# Illness Severity
+low_severity = ("low_severity", "Легкое")
+medium_severity = ("medium_severity", "Среднее")
+hard_severity = ("hard_severity", "Тяжёлое (критическое)")
+
+illness_severity = [unknown_num, low_severity, medium_severity, hard_severity]
+
 class GraphNode:
     def __init__(self, value):
         self.value = value

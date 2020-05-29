@@ -374,7 +374,6 @@ def add_patient():
         handle_after_patient(request_dict, final_dict, patient, update_patient=False)
         if select_contacted:
             try:
-                print(request.form)
                 is_potential_contact = int(request.form.get("contact_type")) == 1
                 contacted = ContactedPersons(infected_patient_id=select_contacted.id, contacted_patient_id=patient.id, 
                                             is_potential_contact=is_potential_contact)
@@ -941,15 +940,9 @@ def get_all_states(patient_states):
                 attrs["hospital_region_id"] = hospital.region_id
                 attrs["hospital_type_id"] = hospital.hospital_type_id
         elif state.value == c.state_infec[0]:
-            pass
-            # try:
-            #     hospital = Hospital.query.filter_by(id = state.attrs["hospital_id"]).first()
-            # except exc.SQLAlchemyError:
-            #     return jsonify({'description': _("Hospital not found")}), 405
-            
-            # attrs["hospital_id"] = hospital.id
-            # attrs["hospital_region_id"] = hospital.region_id
-            # attrs["hospital_type_id"] = hospital.hospital_type_id
+            attrs["state_infec_type"] = attrs.get("state_infec_type", -1)
+            attrs["state_infec_illness_symptoms"] = attrs.get("state_infec_illness_symptoms", -1)
+            attrs["state_infec_illness_severity"] = attrs.get("state_infec_illness_severity", -1)
 
         states.append({
             "id":state.id,
@@ -979,6 +972,10 @@ def handle_attrs(state, patient, data, patient_attrs):
         attrs["hospital_id"] = hospital.id
     elif state.value == c.state_is_home[0]:
         attrs["is_home_end"] = data["is_home_end"]
+    elif state.value == c.state_infec[0]:
+        attrs["state_infec_type"] = data.get("state_infec_type", -1)
+        attrs["state_infec_illness_symptoms"] = data.get("state_infec_illness_symptoms", -1)
+        attrs["state_infec_illness_severity"] = data.get("state_infec_illness_severity", -1)
 
     return attrs
 
@@ -1028,7 +1025,7 @@ def add_state():
         return jsonify({'description': 'Patient not found'}), 405
     state = State.query.filter_by(value=data["value"]).first()
     attrs = {}
-    
+
     attrs = handle_attrs(state, patient, data, attrs)
 
     result = patient.addState(state,
@@ -1079,12 +1076,9 @@ def update_state():
         return jsonify({'description': 'PatientState not found'}), 406
     state = State.query.filter_by(value=data["value"]).first()
 
-    print(patient_state.attrs)
     patient_state.attrs = handle_attrs(state, patient, data, patient_state.attrs)
-    print(patient_state.attrs)
     db.session.add(patient_state)
     db.session.commit()
-    print(patient_state.attrs)
 
     if state:
         patient_state.state_id = state.id
@@ -1095,7 +1089,6 @@ def update_state():
     result = patient.updateState(patient_state)
     if result == True:
         states = get_all_states(patient.states)
-        # print(patient_state.attrs)
 
         return jsonify({'status': 'updated', 'states': states}), 200
     return jsonify({'description': 'Couldn\'t be updated'}), 300

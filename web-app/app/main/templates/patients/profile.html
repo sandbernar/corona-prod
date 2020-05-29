@@ -475,6 +475,15 @@
         } else if (stateValue === '{{ c.state_is_home[0] }}') {
             $("#is_home_end").val(stateAttrs["is_home_end"])
             $("#is_home_end").change()
+        } else if (stateValue === '{{ c.state_infec[0] }}') {
+            $("#state_infec_type").val(stateAttrs["state_infec_type"])
+            $("#state_infec_type").change()
+
+            $("#state_infec_illness_symptoms").val(stateAttrs["state_infec_illness_symptoms"])
+            $("#state_infec_illness_symptoms").change()
+
+            $("#state_infec_illness_severity").val(stateAttrs["state_infec_illness_severity"])
+            $("#state_infec_illness_severity").change()
         }
     }
 
@@ -549,10 +558,16 @@
             case '{{ c.state_is_home[0] }}':
                 stateData["is_home_end"] = $("#is_home_end").val()
                 break;
+            case '{{ c.state_infec[0] }}':
+                stateData["state_infec_type"] = $("#state_infec_type").val()
+                stateData["state_infec_illness_symptoms"] = $("#state_infec_illness_symptoms").val()
+                stateData["state_infec_illness_severity"] = $("#state_infec_illness_severity").val()
+                break;
             default:
                 break;
         }
     }
+    
 
     $("#updateStateButton").on("click", () => {
         let updateStateData = {
@@ -764,18 +779,59 @@
             })
             $("#is_home_end").trigger("change")
         }
-    }    
+    }
+
+    var infectedForm = `<div class="form-group">
+                        <div class="row">
+                        <div class="col">
+                        <label for="job-input" class="form-control-label">{{ _("Тип Инфицирования") }}</label>
+                            {{ form.state_infec_type(class="form-control") }}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="row">
+                        <div class="col">
+                        <label for="job-input" class="form-control-label">{{ _("Симптомы") }}</label>
+                            {{ form.state_infec_illness_symptoms(class="form-control") }}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="row">
+                        <div class="col">
+                        <label for="job-input" class="form-control-label">{{ _("Тяжесть Течения Болезни") }}</label>
+                            {{ form.state_infec_illness_severity(class="form-control") }}
+                        </div>
+                    </div>`
+
+    function handleInfectedStateForm(modalBodyID, stateSelectID) {
+        if ($("#" + stateSelectID).val() === "{{ c.state_infec[0] }}") {
+            document.getElementById(modalBodyID).insertAdjacentHTML('beforeend', infectedForm)
+
+            $("#state_infec_illness_symptoms").change(function() {
+                if ($("#state_infec_illness_symptoms").val() === "{{ c.with_symptoms[0] }}") {
+                    $("#state_infec_illness_severity").val($("#state_infec_illness_severity option:first").val());
+                    $( "#state_infec_illness_severity" ).prop( "disabled", false );
+                } else {
+                    $( "#state_infec_illness_severity" ).prop( "disabled", true );
+                }
+            })
+
+            $("#state_infec_illness_symptoms").trigger('change')
+        }
+    }
 
     $("#addStateStateValue").change(function() {
         clearStateForm("addStateModalBody", 4)
         handleHospitalizedStateForm("addStateModalBody", "addStateStateValue");
         handleIsHomeStateForm("addStateModalBody", "addStateStateValue", 2);
+        handleInfectedStateForm("addStateModalBody", "addStateStateValue");
     });
 
     $("#updatePatientStateState").change(function() {
         clearStateForm("editStateModalBody", 5)
         handleHospitalizedStateForm("editStateModalBody", "updatePatientStateState", false);
         handleIsHomeStateForm("editStateModalBody", "updatePatientStateState");
+        handleInfectedStateForm("editStateModalBody", "updatePatientStateState");
     });
 
     $("#addPatientStateModal").on("hidden.bs.modal", function () {
