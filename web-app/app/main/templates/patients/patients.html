@@ -73,9 +73,13 @@
               <label class='form-control-label'>{{ _('Отчество') }}</label>
               {{ form.patronymic_name(class="form-control", placeholder=_('Отчество')) }}              
             </div>                            
-            <div class="col-xl">
+            <div class="col-auto">
               <label class='form-control-label'>{{ _('ИИН') }}</label>
               {{ form.iin(class="form-control", placeholder=_('ИИН')) }}              
+            </div>
+            <div class="col-auto">
+              <label class='form-control-label'>{{ _('Номер Паспорта') }}</label>
+              {{ form.pass_num(class="form-control", placeholder=_('Номер Паспорта')) }}
             </div>
           </div>
         </div>

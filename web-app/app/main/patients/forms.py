@@ -187,6 +187,7 @@ class PatientsSearchForm(FlaskForm):
     patronymic_name = TextField('Patronymic Name')
 
     iin = TextField(id='iin')
+    pass_num = TextField()
     telephone = TextField(id='telephone')
 
 class SelectContactedForm(FlaskForm):
