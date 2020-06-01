@@ -320,7 +320,7 @@ class AllPatientsTableModule(TableModule):
 
         if "pass_num" in request.args:
             self.q = self.q.filter(Patient.pass_num.contains(request.args["pass_num"]))
-            self.search_form.pass_num.default = request.args["pass_num"]            
+            self.search_form.pass_num.default = request.args["pass_num"]
 
         if "telephone" in request.args:
             self.q = self.q.filter(Patient.telephone.contains(request.args["telephone"]))

@@ -1109,7 +1109,7 @@ class RPNService:
         Return:
             (bool)
         """
-        hGBDpath = "http://5.104.236.197:22999/services/api/person"
+        hGBDpath = f"{os.getenv('RPN_API_URL')}/services/api/person"
         address = f"{hGBDpath}?fioiin=иванов&page=1&pagesize=1"
         headers = {'Authorization': f"Bearer {token}"}
         response = requests.request("GET", address, headers=headers, verify=False)
