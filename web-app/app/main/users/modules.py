@@ -117,3 +117,21 @@ class UserPatientsTableModule(TableModule):
         created_date = result.created_date.strftime("%d-%m-%Y %H:%M")
 
         return [full_name, iin, telephone, region, created_date]
+
+class UserRolesTableModule(TableModule):
+    def __init__(self, request, q, header_button = None, page = 1, per_page = 5):
+        table_head = OrderedDict()
+        table_head[_("Название")] = ["name"]
+        table_head[_("Код")] = ["value"]
+        table_head[_("Число Пользователей")] = []
+
+        super().__init__(request, q, table_head, header_button)      
+
+    def print_entry(self, result):
+        # username = result[0].username
+        name = (result.name, "/users/roles/role?id={}".format(result.id))
+        value = result.value
+
+        user_count = User.query.filter_by(user_role_id = result.id).count()
+
+        return [name, value, user_count]

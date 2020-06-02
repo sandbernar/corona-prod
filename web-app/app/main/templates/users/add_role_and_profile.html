@@ -20,18 +20,18 @@
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">{{ _("Удалить пользователя?") }}</h5>
+        <h5 class="modal-title" id="exampleModalLabel">{{ _("Удалить роль?") }}</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true"></span>
         </button>
       </div>
       <div class="modal-body">
-        {{ _("Вы уверены, что хотите удалить пользователя") }} <bold> {{user.username}} </bold>?
+        {{ _("Вы уверены, что хотите удалить роль") }} <bold> {{role.name}} </bold>?
       </div>
       <div class="modal-footer">
         <form action="/delete_user" method="POST">
           {{ form.hidden_tag() }}
-          <input type="hidden" name="delete" value='{{ user.id }}'>
+          <input type="hidden" name="delete" value='{{ role.id }}'>
           <button type="submit" class="btn btn-primary">{{ _("Да") }}</button>
         </form>
         <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ _("Нет") }}</button>
@@ -47,11 +47,22 @@
     <div class="col">
       <div class="card shadow">
         <div class="card-header bg-transparent">
-          {% if is_profile %}
-            <h3 class="mb-0">{{ _("Профиль Пользователя") }}</h3>
-          {% else %}
-            <h3 class="mb-0">{{ _("Добавить Пользователя") }}</h3>
-          {% endif %}
+          <div class="row">
+            <div class="col">
+              {% if is_profile %}
+              <h3 class="mb-0">{{ _("Профиль Роли") }}</h3>
+              {% else %}
+              <h3 class="mb-0">{{ _("Добавить Роль") }}</h3>
+              {% endif %}
+            </div>
+            <div class="col-md-auto">
+              <div class="row">
+                <div class="col">
+                  <a href="/users/roles" class="btn btn-sm btn-primary btn-full-width">{{ _("Вернуться в \"Управление Ролями\"") }}</a>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
         <div class="card-body">
           <div class="row">
@@ -63,107 +74,379 @@
                     <div class="card shadow">
                       <div class="card-header bg-transparent">
                         <div class="form-group">
-                          <label for="name-input" class="form-control-label">{{ _("ФИО") }}*</label>
-                          {{ form.full_name(placeholder="Иванов Иван Иванович",class="form-control", type="text") }}
-                        </div>                        
-                        <div class="form-group">
-                          <label for="name-input" class="form-control-label">{{ _("Логин") }}*</label>
-                          {{ form.username(placeholder="user1234",class="form-control", type="text") }}
-                        </div>
-                        <div class="form-group">
-                          <label for="npass-input" class="form-control-label">{{ _("Пароль") }}*</label>
-                          {{ form.password(placeholder=_("Пароль"), class="form-control", type="text") }}
-                        </div>
-                        <div class="form-group">
-                          <label for="npass-input" class="form-control-label">{{ _("Электронная Почта") }}</label>
-                          {{ form.email(placeholder="E-Mail", class="form-control", type="text") }}
-                        </div>                                                                     
+                          <label for="name-input" class="form-control-label">{{ _("Имя Роли") }}*</label>
+                          {{ form.name(placeholder=_("например Эпидемиолог"), class="form-control", type="text") }}
+                        </div>                                                                  
                       </div>
                     </div>
                   </div>
                   <div class="col">
                     <div class="card shadow">
                       <div class="card-header bg-transparent">
-                        <div class="row">
-                          <div class="col">
-                            <div class="form-group">
-                              <label for="region-input" class="form-control-label">{{ _("Регион") }}*</label>
-                              {{ form.region_id(class="form-control", id="region_id") }}                          
-                            </div>
-                          </div>
-                          {% if current_user.is_admin %}
-                          <div class="col-md-auto">
-                            <div class="form-group">
-                              <label for="region-input" class="form-control-label">{{ _("Администратор?") }}*</label><br>
-                              {% for subfield in form.is_admin %}
-                              <div class="custom-control custom-radio custom-control-inline">
-                                {{ subfield(type="radio", id=subfield.id, class="custom-control-input") }}
-                                <label class="custom-control-label" for='{{ subfield.id }}'>{{ subfield.label }}</label>
-                              </div>
-                              {% endfor %}
-                            </div>
-                          </div>
-                          {% endif %}                          
-                        </div>
                         <div class="form-group">
-                          <label for="phone-input" class="form-control-label">{{ _("Телефон") }}*</label>
-                          {{ form.telephone(placeholder="77017123456", class="form-control", type="tel") }}
-                        </div>
-                        <div class="form-group">
-                          <label for="npass-input" class="form-control-label">{{ _("Организация") }}*</label>
-                          {{ form.organization(placeholder=_("Организация"), class="form-control", type="text") }}
-                        </div>
-                      </div>
-                    </div>
-                    <div class="card shadow mt-3">
-                      <div class="card-header bg-transparent">
-                        <div class="row">
-                          {% if is_profile %}
-                          <div class="col">
-                            <button type="submit" name="update" class="btn btn-primary btn-full-width" type="button">
-                              {{ _("Сохранить") }}
-                            </button>
-                          </div>
-                            {% if current_user.is_admin %}
-                            <div class="col">
-                              <input class="btn btn-danger btn-full-width" data-toggle="modal" data-target="#deletePatientModal" value={{ _("Удалить Пользователя") }}>
-                            </div>
-                            {% endif %}
-                          {% else %}
-                          <div class="col">
-                            <button type="submit" name="create" class="btn btn-primary btn-full-width" type="button">
-                              {{ _("Создать Пользователя") }}
-                            </button>
-                          </div>
-                          {% endif %}
+                          <label for="name-input" class="form-control-label">{{ _("Код Роли (только английский)") }}*</label>
+                          {{ form.value(placeholder=_("например epidemiolog"), class="form-control", type="text") }}
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </form>
             </div>
+          </div>
+        </div>
+      </div>
+      <div class="card shadow mt-3">
+        <div class="card-header bg-transparent">
+          <h3 class="mb-0">{{ _("Управление Правами Роли") }}</h3>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col">
+              <div class="row">
+                <div class="col">
+                  <div class="card shadow">
+                    <div class="card-header bg-transparent">
+                      <h3 class="mb-0">{{ _("Добавление") }}</h3>
+                    </div>
+                    <div class="card-header bg-transparent">
+                      <div class="row" style="margin-left:0px;margin-right:0px;">
+                        <div class="col">
+                          <div class="row">
+                            <label for="name-input" class="form-control-label">{{ _("Авиа") }}</label>
+                          </div>
+                          <div class="row">
+                            <label class="custom-toggle">
+                              {{ form.can_add_air(type="checkbox", class="form-control") }}
+                              <span class="custom-toggle-slider rounded-circle"></span>
+                            </label>
+                          </div>
+                        </div>
+                        <div class="col">
+                          <div class="row">
+                            <label for="name-input" class="form-control-label">{{ _("Поезд") }}</label>
+                          </div>
+                          <div class="row">
+                            <label class="custom-toggle">
+                              {{ form.can_add_train(type="checkbox", class="form-control") }}
+                              <span class="custom-toggle-slider rounded-circle"></span>
+                            </label>
+                          </div>
+                        </div>
+                        <div class="col">
+                          <div class="row">
+                            <label for="name-input" class="form-control-label">{{ _("Авто") }}</label>
+                          </div>
+                          <div class="row">
+                            <label class="custom-toggle">
+                              {{ form.can_add_auto(type="checkbox", class="form-control") }}
+                              <span class="custom-toggle-slider rounded-circle"></span>
+                            </label>
+                          </div>
+                        </div> 
+                        <div class="col">
+                          <div class="row">
+                            <label for="name-input" class="form-control-label">{{ _("Пешком") }}</label>
+                          </div>
+                          <div class="row">
+                            <label class="custom-toggle">
+                              {{ form.can_add_foot(type="checkbox", class="form-control") }}
+                              <span class="custom-toggle-slider rounded-circle"></span>
+                            </label>
+                          </div>
+                        </div>
+                        <div class="col">
+                          <div class="row">
+                            <label for="name-input" class="form-control-label">{{ _("Морской") }}</label>
+                          </div>
+                          <div class="row">
+                            <label class="custom-toggle">
+                              {{ form.can_add_sea(type="checkbox", class="form-control") }}
+                              <span class="custom-toggle-slider rounded-circle"></span>
+                            </label>
+                          </div>
+                        </div>
+                        <div class="col">
+                          <div class="row">
+                            <label for="name-input" class="form-control-label">{{ _("Местный") }}</label>
+                          </div>
+                          <div class="row">
+                            <label class="custom-toggle">
+                              {{ form.can_add_local(type="checkbox", class="form-control") }}
+                              <span class="custom-toggle-slider rounded-circle"></span>
+                            </label>
+                          </div>
+                        </div>                          
+                        <div class="col">
+                          <div class="row">
+                            <label for="name-input" class="form-control-label">{{ _("Блокпост") }}</label>
+                          </div>
+                          <div class="row">
+                            <label class="custom-toggle">
+                              {{ form.can_add_blockpost(type="checkbox", class="form-control") }}
+                              <span class="custom-toggle-slider rounded-circle"></span>
+                            </label>
+                          </div>
+                        </div>                        
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col">
+                  <div class="card shadow">
+                    <div class="card-header bg-transparent">
+                      <h3 class="mb-0">{{ _("Доступ к Профилям") }}</h3>
+                    </div>
+                    <div class="card-header bg-transparent">
+                      <div class="row" style="margin-left:0px;margin-right:0px;">
+                        <div class="col">
+                          <div class="row">
+                            <label for="name-input" class="form-control-label">{{ _("Смотреть свои профили") }}</label>
+                          </div>
+                          <div class="row">
+                            <label class="custom-toggle">
+                              {{ form.can_lookup_own_patients(type="checkbox", class="form-control") }}
+                              <span class="custom-toggle-slider rounded-circle"></span>
+                            </label>
+                          </div>
+                        </div>
+                        <div class="col">
+                          <div class="row">
+                            <label for="name-input" class="form-control-label">{{ _("Смотреть чужие профили") }}</label>
+                          </div>
+                          <div class="row">
+                            <label class="custom-toggle">
+                              {{ form.can_lookup_other_patients(type="checkbox", class="form-control") }}
+                              <span class="custom-toggle-slider rounded-circle"></span>
+                            </label>
+                          </div>
+                        </div>
+                        <div class="col">
+                          <div class="row">
+                            <label for="name-input" class="form-control-label">{{ _("Удалять свои профили") }}</label>
+                          </div>
+                          <div class="row">
+                            <label class="custom-toggle">
+                              {{ form.can_delete_own_patients(type="checkbox", class="form-control") }}
+                              <span class="custom-toggle-slider rounded-circle"></span>
+                            </label>
+                          </div>
+                        </div>
+                        <div class="col">
+                          <div class="row">
+                            <label for="name-input" class="form-control-label">{{ _("Удалять чужие профили") }}</label>
+                          </div>
+                          <div class="row">
+                            <label class="custom-toggle">
+                              {{ form.can_delete_other_patients(type="checkbox", class="form-control") }}
+                              <span class="custom-toggle-slider rounded-circle"></span>
+                            </label>
+                          </div>
+                        </div>
+                        <div class="col">
+                          <div class="row">
+                            <label for="name-input" class="form-control-label">{{ _("Работа с контактными") }}</label>
+                          </div>
+                          <div class="row">
+                            <label class="custom-toggle">
+                              {{ form.can_access_contacted(type="checkbox", class="form-control") }}
+                              <span class="custom-toggle-slider rounded-circle"></span>
+                            </label>
+                          </div>
+                        </div>              
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="row mt-3">
+                <div class="col">
+                  <div class="row">
+                    <div class="col">
+                      <div class="card shadow">
+                        <div class="card-header bg-transparent">
+                          <h3 class="mb-0">{{ _("Редактирование Профилей") }}</h3>
+                        </div>
+                        <div class="card-header bg-transparent">
+                          <div class="row" style="margin-left:0px;margin-right:0px;">
+                            <div class="col">
+                              <div class="row">
+                                <label for="name-input" class="form-control-label">{{ _("\"Найден\" по-умолчанию") }}</label>
+                              </div>
+                              <div class="row">
+                                <label class="custom-toggle">
+                                  {{ form.can_found_by_default(type="checkbox", class="form-control") }}
+                                  <span class="custom-toggle-slider rounded-circle"></span>
+                                </label>
+                              </div>
+                            </div>
+                            <div class="col">
+                              <div class="row">
+                                <label for="name-input" class="form-control-label">{{ _("Добавлять \"Инфицирован\"") }}</label>
+                              </div>
+                              <div class="row">
+                                <label class="custom-toggle">
+                                  {{ form.can_set_infected(type="checkbox", class="form-control") }}
+                                  <span class="custom-toggle-slider rounded-circle"></span>
+                                </label>
+                              </div>
+                            </div>
+                            <div class="col">
+                              <div class="row">
+                                <label for="name-input" class="form-control-label">{{ _("Госпитализация/Карантин") }}</label>
+                              </div>
+                              <div class="row">
+                                <label class="custom-toggle">
+                                  {{ form.can_set_hospital_home_quarant(type="checkbox", class="form-control") }}
+                                  <span class="custom-toggle-slider rounded-circle"></span>
+                                </label>
+                              </div>
+                            </div>
+                            <div class="col">
+                              <div class="row">
+                                <label for="name-input" class="form-control-label">{{ _("Добавлять \"Транзит\"") }}</label>
+                              </div>
+                              <div class="row">
+                                <label class="custom-toggle">
+                                  {{ form.can_set_transit(type="checkbox", class="form-control") }}
+                                  <span class="custom-toggle-slider rounded-circle"></span>
+                                </label>
+                              </div>
+                            </div>                                                        
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col">
+                      <div class="card shadow">
+                        <div class="card-header bg-transparent">
+                          <h3 class="mb-0">{{ _("Функции Менеджера") }}</h3>
+                        </div>
+
+                        <div class="card-header bg-transparent">
+                          <div class="row" style="margin-left:0px;margin-right:0px;">
+                            <div class="col">
+                              <div class="row">
+                                <label for="name-input" class="form-control-label">{{ _("Выгрузка Профилей") }}</label>
+                              </div>
+                              <div class="row">
+                                <label class="custom-toggle">
+                                  {{ form.can_export_patients(type="checkbox", class="form-control") }}
+                                  <span class="custom-toggle-slider rounded-circle"></span>
+                                </label>
+                              </div>
+                            </div>
+                            <div class="col">
+                              <div class="row">
+                                <label for="name-input" class="form-control-label">{{ _("Выгрузка Контактных") }}</label>
+                              </div>
+                              <div class="row">
+                                <label class="custom-toggle">
+                                  {{ form.can_export_contacted(type="checkbox", class="form-control") }}
+                                  <span class="custom-toggle-slider rounded-circle"></span>
+                                </label>
+                              </div>
+                            </div>                            
+                            <div class="col">
+                              <div class="row">
+                                <label for="name-input" class="form-control-label">{{ _("Работа со Стационарами") }}</label>
+                              </div>
+                              <div class="row">
+                                <label class="custom-toggle">
+                                  {{ form.can_add_edit_hospital(type="checkbox", class="form-control") }}
+                                  <span class="custom-toggle-slider rounded-circle"></span>
+                                </label>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="row mt-3">
+                <div class="col">
+                  <div class="row">
+                    <div class="col">
+                      
+                    </div>
+                    <div class="col">
+                      <div class="card shadow">
+                        <div class="card-header bg-transparent">
+                          <h3 class="mb-0">{{ _("Функции Администратора") }}</h3>
+                        </div>
+                        <div class="card-header bg-transparent">
+                          <div class="row" style="margin-left:0px;margin-right:0px;">
+                            <div class="col">
+                              <div class="row">
+                                <label for="name-input" class="form-control-label">{{ _("Блокировка пользователей своего региона") }}</label>
+                              </div>
+                              <div class="row">
+                                <label class="custom-toggle">
+                                  {{ form.can_block_own_region_accounts(type="checkbox", class="form-control") }}
+                                  <span class="custom-toggle-slider rounded-circle"></span>
+                                </label>
+                              </div>
+                            </div>
+                            <div class="col">
+                              <div class="row">
+                                <label for="name-input" class="form-control-label">{{ _("Блокировка всех пользователей") }}</label>
+                              </div>
+                              <div class="row">
+                                <label class="custom-toggle">
+                                  {{ form.can_block_all_accounts(type="checkbox", class="form-control") }}
+                                  <span class="custom-toggle-slider rounded-circle"></span>
+                                </label>
+                              </div>
+                            </div>                            
+                            <div class="col">
+                              <div class="row">
+                                <label for="name-input" class="form-control-label">{{ _("Работа с Ролями") }}</label>
+                              </div>
+                              <div class="row">
+                                <label class="custom-toggle">
+                                  {{ form.can_access_roles(type="checkbox", class="form-control") }}
+                                  <span class="custom-toggle-slider rounded-circle"></span>
+                                </label>
+                              </div>
+                            </div>                           
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>              
+            </div>
+          </div>      
+
+      <div class="card shadow mt-3">
+        <div class="card-header bg-transparent">
+          <div class="row">
+            {% if is_profile %}
+            <div class="col">
+              <button type="submit" name="update" class="btn btn-primary btn-full-width" type="button">
+                {{ _("Сохранить") }}
+              </button>
+            </div>
+              {% if current_user.is_admin %}
+              <div class="col">
+                <input class="btn btn-danger btn-full-width" data-toggle="modal" data-target="#deletePatientModal" value={{ _("Удалить Роль") }}>
+              </div>
+              {% endif %}
+            {% else %}
+            <div class="col">
+              <button type="submit" name="create" class="btn btn-primary btn-full-width" type="button">
+                {{ _("Создать Роль") }}
+              </button>
+            </div>
+            {% endif %}
           </div>
         </div>
       </div>
     </div>
   </div>
-  {% if is_profile %}
-      {% with table=patients_table, hidden_values=[("id", user.id)],
-       search_fields = [
-        [
-          [_("ФИО"), patients_table.search_form.full_name(class="form-control", type="text", placeholder=_("ФИО"))],
-          [_("Регион"), patients_table.search_form.region_id(class="form-control")],
-          [_("ИИН"), patients_table.search_form.iin(class="form-control", type="text", placeholder=_("ИИН"))]
-        ]
-      ] 
-      %}
-      <div class="mt-3">
-              {% include "modules/table/table.html" %}
-            </div>
-      {% endwith %}
-
-  {% endif %}
+  </form>
 
   {% include "site_template/footer.html" %}
 

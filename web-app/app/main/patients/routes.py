@@ -37,6 +37,13 @@ from app.main.routes import route_template
 from app.main.util import get_regions, get_regions_choices, get_flight_code, populate_form, parse_date
 from app.login.util import hash_pass
 
+def process_travel_type(typ, type_value, user_right, patient_form):
+    if typ.value == type_value and user_right:
+        patient_form.travel_type.choices.append((typ.value, typ.name))
+        return True
+    
+    return False
+
 def prepare_patient_form(patient_form, with_old_data = False, with_all_travel_type=False, search_form=False):
     regions_choices = get_regions_choices(current_user, False)
 
@@ -58,12 +65,20 @@ def prepare_patient_form(patient_form, with_old_data = False, with_all_travel_ty
     # TravelTypes for select fiels: Местный, Самолет итд
     if not patient_form.travel_type.choices:
         patient_form.travel_type.choices = [] if not with_all_travel_type else [c.all_travel_types]
+
         for typ in TravelType.query.all():
+            for travel_typ in [(c.flight_type[0], current_user.user_role.can_add_air),
+                               (c.train_type[0], current_user.user_role.can_add_train),
+                               (c.by_auto_type[0], current_user.user_role.can_add_auto),
+                               (c.by_foot_type[0], current_user.user_role.can_add_foot),
+                               (c.by_sea_type[0], current_user.user_role.can_add_sea),
+                               (c.blockpost_type[0], current_user.user_role.can_add_blockpost)]:
+                if process_travel_type(typ, travel_typ[0], travel_typ[1], patient_form):
+                    break
+
             if typ.value == c.old_data_type[0]:
                 if with_old_data:
                     patient_form.travel_type.choices.append((typ.value, typ.name))
-            else:
-                patient_form.travel_type.choices.append((typ.value, typ.name))
         
         if not search_form:
             patient_form.travel_type.default = c.local_type[0]
@@ -742,8 +757,18 @@ def patients():
     elif "error" in request.args:
         error_msg = request.args['error']
 
+    patient_query = Patient.query
+
+    can_lookup_other_patients = current_user.user_role.can_lookup_other_patients
+    can_lookup_own_patients = current_user.user_role.can_lookup_own_patients
+
+    if not can_lookup_other_patients and not can_lookup_own_patients:
+        return render_template('errors/error-400.html'), 400
+    elif can_lookup_own_patients and not can_lookup_other_patients:
+        patient_query = patient_query.filter_by(created_by_id = current_user.id)
+
     try:
-        all_patients_table = AllPatientsTableModule(request, Patient.query, select_contacted,
+        all_patients_table = AllPatientsTableModule(request, patient_query, select_contacted,
                             search_form=form)
 
         if "download_xls" in request.args and all_patients_table.xls_response:

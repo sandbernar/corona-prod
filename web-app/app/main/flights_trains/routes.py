@@ -40,6 +40,9 @@ def get_flights_by_date():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))
 
+    if not current_user.user_role.can_add_air:
+        return render_template('errors/error-400.html'), 400
+
     date = request.form.get("date")
     flights_options = ""
 
@@ -55,6 +58,9 @@ def get_flights_by_date():
 def get_trains_by_date_range():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))
+
+    if not current_user.user_role.can_add_train:
+        return render_template('errors/error-400.html'), 400
 
     departure_date = request.form.get("departure_date", None)
     arrival_date = request.form.get("arrival_date", None)
@@ -109,6 +115,9 @@ def flights():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))
 
+    if not current_user.user_role.can_add_air:
+        return render_template('errors/error-400.html'), 400 
+
     change, error_msg = flights_trains(request)
     form = FlightSearchForm()
 
@@ -126,6 +135,9 @@ def trains():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))
 
+    if not current_user.user_role.can_add_train:
+        return render_template('errors/error-400.html'), 400
+
     change, error_msg = flights_trains(request)
     form = TrainSearchForm()
     
@@ -141,6 +153,9 @@ def trains():
 def add_flight():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))
+
+    if not current_user.user_role.can_add_air:
+        return render_template('errors/error-400.html'), 400
 
     form = FlightForm()
     populate_add_flight_train_form(form)
@@ -170,6 +185,9 @@ def add_flight():
 def add_train():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))
+
+    if not current_user.user_role.can_add_train:
+        return render_template('errors/error-400.html'), 400 
 
     form = TrainForm()
     populate_add_flight_train_form(form)
@@ -273,6 +291,9 @@ def flight_profile():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))
 
+    if not current_user.user_role.can_add_air:
+        return render_template('errors/error-400.html'), 400 
+
     if "id" in request.args:
         flight = None
         try:
@@ -332,6 +353,9 @@ def train_profile():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))
 
+    if not current_user.user_role.can_add_train:
+        return render_template('errors/error-400.html'), 400 
+
     if "id" in request.args:
         train = None
         try:
@@ -381,6 +405,9 @@ def train_profile():
 def delete_flight():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))
+
+    if not current_user.user_role.can_add_air:
+        return render_template('errors/error-400.html'), 400 
     
     message_type = "error"
     message = _("Произошла Ошибка")
@@ -414,6 +441,9 @@ def delete_flight():
 def delete_train():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))
+
+    if not current_user.user_role.can_add_train:
+        return render_template('errors/error-400.html'), 400 
     
     message_type = "error"
     message = _("Произошла Ошибка")

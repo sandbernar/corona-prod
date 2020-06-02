@@ -1,0 +1,53 @@
+{% extends "base_site.html" %}
+
+{% block title %} Tables {% endblock title %}
+
+{% block stylesheets %}
+{{ super() }}
+{% endblock stylesheets %}
+
+{% block content %}
+
+{% include "site_template/navigation.html" %}
+
+{% include "site_template/top-stats.html" %}
+
+<div class="container-fluid mt--7">
+  <div class="row">
+    <div class="col">
+      <div class="card shadow">
+        <div class="card-header border-0">
+
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Table -->
+    <div class="row mt-3">
+      <div class="col">
+      {% with table=user_roles_table
+        
+      %}
+        {% include "modules/table/table.html" %}
+      {% endwith %}
+      </div>
+    </div>
+
+    <!-- Footer -->
+
+
+
+    {% include "site_template/footer.html" %}
+
+  </div>        
+
+  {% endblock content %}
+
+  {% block javascripts %}
+  {{ super()}}
+
+  {% with change=change, error_msg=error_msg %}
+  {% include "site_template/change_notification.html" %}
+  {% endwith %}
+
+  {% endblock javascripts %}
