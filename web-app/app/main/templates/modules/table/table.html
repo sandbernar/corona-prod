@@ -7,6 +7,18 @@
 {% for hidden_val in hidden_values %}
   <input type="hidden" style="display: none;" name="{{ hidden_val[0] }}" value="{{ hidden_val[1] }}">
 {% endfor %}
+
+{% if table.sort_by %}
+<input type="hidden" style="display: none;"
+  id="sort_param"
+  {% if table.sort_by_asc %}
+    name="sort_by_asc"
+  {% else %}
+    name="sort_by_desc"
+  {% endif %}
+  value="{{ table.sort_by }}">
+{% endif %}
+
 {% if search_fields %}
   <div class="card shadow">
     <div class="card-header border-0">
@@ -52,6 +64,7 @@
           {% else %}
             0
           {% endif %}
+
           </h3>
         </div>   
         <div class="col-md-auto">
@@ -108,8 +121,9 @@
                   {% else %}
                   ↓
                   {% endif %}
-                  {% endif %}
                 </a>
+                  <button type="button" onclick="cancelTableSort();return false;" class="btn btn-sm btn-danger" id="cancel_sorting">X</button>
+                  {% endif %}
               </th>
               {% endif %}
             {% endif %}
