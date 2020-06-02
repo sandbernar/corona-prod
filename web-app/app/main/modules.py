@@ -32,6 +32,8 @@ class TableModule:
         self.header_button = header_button
         self.search_form = search_form
         self.sort_param = sort_param
+
+        self.search_params = []
         
         self.is_downloadable_xls = is_downloadable_xls
         self.xls_response = None

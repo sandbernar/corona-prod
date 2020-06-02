@@ -52,8 +52,16 @@
 <div class="container-fluid mt--7">
   <div class="card shadow">
     <div class="card-header border-0">
-      <h3> {{ _('Поиск Пациента') }} </h3>
-
+      <div class="row">
+        <div class="col">
+          <h3> {{ _('Поиск Пациента') }} </h3>
+        </div>
+        {% for search_param in all_patients_table.search_params %}
+          <div class="col-auto">
+            <div class="btn-sm btn-primary"><b>{{ search_param[0] }}:</b> {{ search_param[1] }}</div>
+          </div>
+        {% endfor %}
+      </div>
       <input type="hidden" style="display: none;" name="per_page" value="{{ all_patients_table.per_page }}">
       {% if select_contacted %}
       <input type="text" name="select_contacted_id" style="display:none;" value="{{ select_contacted }}">
@@ -151,10 +159,6 @@
             <div class="col-md-auto">
               <label class='form-control-label'>{{ _('Найден') }}</label>                
               {{ form.is_found(class="form-control") }}
-            </div>
-            <div class="col-md-auto">
-              <label class='form-control-label'>{{ _('Текущий Статус Пациента') }}</label>                
-              {{ form.patient_status(class="form-control") }}
             </div>
             <div class="col-md-auto">
               <label class='form-control-label'>{{ _('Контакты') }}</label>                
