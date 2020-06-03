@@ -368,7 +368,26 @@
                 <div class="col">
                   <div class="row">
                     <div class="col">
-                      
+                      <div class="card shadow">
+                        <div class="card-header bg-transparent">
+                          <h3 class="mb-0">{{ _("Разное") }}</h3>
+                        </div>
+                        <div class="card-header bg-transparent">
+                          <div class="row" style="margin-left:0px;margin-right:0px;">
+                            <div class="col">
+                              <div class="row">
+                                <label for="name-input" class="form-control-label">{{ _("Видит окно \"Пациент успешно добавлен\"") }}</label>
+                              </div>
+                              <div class="row">
+                                <label class="custom-toggle">
+                                  {{ form.can_see_success_add_window(type="checkbox", class="form-control") }}
+                                  <span class="custom-toggle-slider rounded-circle"></span>
+                                </label>
+                              </div>
+                            </div>                          
+                          </div>
+                        </div>
+                      </div>                      
                     </div>
                     <div class="col">
                       <div class="card shadow">

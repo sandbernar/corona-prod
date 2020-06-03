@@ -36,6 +36,33 @@
   </div>
 </div>
 
+<!-- Add Success -->
+<div class="modal fade" id="addSuccessModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="loader" id="submit_loader"></div>
+    <div class="modal-content" style="position:relative;">     
+      <div class="modal-header">
+        <h5 class="modal-title" id="addSuccessModalLabel">{{ _("Пациент был успешно добавлен") }}</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">x</span>
+        </button>
+      </div>
+      <div class="modal-body" id="add_check_body" style="text-align: center;">
+        <span class="done-icon"><i class="fas fa-check"></i></span>
+        <br>
+        <h4>{{ _("Пациент успешно добавлен!") }}</h4>
+        <br>
+        <h4>{{ _("Для добавления статусов нажмите на кнопку внизу. Профиль откроется в новой вкладке") }}</h4>
+        <br>
+        <a class="btn btn-primary" id="success_open_profile" style="white-space: initial;" href="/" target="_blank" rel="noopener noreferrer">{{ _("Профиль Пациента (новая вкладка)") }}</a>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="cancel_button" data-dismiss="modal">{{ _("Продолжить Добавление") }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="container-fluid mt--7">
   {% if added %}
   <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -202,9 +229,12 @@
   {% include "js/travel_form.html" %}
   {% endwith %}
 
-
   update_travel_form()
 
+  function show_success_link(link_to_profile) {
+    $("#success_open_profile").attr("href", link_to_profile)
+    $("#addSuccessModal").modal('show');
+  }
 
   function show_loader(show) {
     var loader = $("#submit_loader")
@@ -266,6 +296,11 @@
             // settings
             type: 'info',
           });
+
+          {% if current_user.user_role.can_see_success_add_window %}
+            show_success_link(`/patient_profile?id=${res.patient_id}`)
+          {% endif %}
+
           close_modal_submit()
 
           if(res.selected_patient_id !== undefined) {

@@ -52,6 +52,7 @@ class CreateUserRoleForm(FlaskForm):
     can_add_sea = BooleanField()
     can_add_local = BooleanField()
     can_add_blockpost = BooleanField()
+    can_see_success_add_window = BooleanField()
 
     # Patient Profile Access
     can_lookup_own_patients = BooleanField()
