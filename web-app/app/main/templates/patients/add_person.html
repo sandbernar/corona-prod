@@ -106,13 +106,47 @@
                   <div class="col-xl">
                         {% with form=form %}
                           {% include "patients/modules/patient_form_left.html" %}
-                        {% endwith %}                    
+                        {% endwith %}
+                  {% if not current_user.user_role.can_found_by_default %}
+                  <div class="row mt-2">
+                  <div class="col">
+                    <div class="card shadow">
+                      <div class="card-header bg-transparent">
+                        <div class="card-body">
+                          <div class="row">
+                            <div class="col">
+                              <div class="form-group">
+                                <label class="form-control-label">{{ _("Найден?") }}</label><br>
+                                {% for subfield in form.is_found %}
+                                <div class="custom-control custom-radio custom-control-inline">
+                                  {{ subfield(type="radio", id=subfield.id, class="custom-control-input") }}
+                                  <label class="custom-control-label" for='{{ subfield.id }}'>{{ subfield.label }}</label>
+                                </div>
+                                {% endfor %}
+                              </div>
+                            </div>
+                            <div class="col">
+                              <div class="form-group">
+                                <label for="is_found_date" class="form-control-label">{{ _("Дата Нахождения") }}*</label>
+                                {{ form.is_found_date(class="form-control datepicker", type="date") }}
+                              </div>
+                            </div>                            
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                  {% endif %}                         
+
                   </div>
                   <div class="col-xl">
                         {% with form=form %}
                           {% include "patients/modules/patient_form_right.html" %}
                         {% endwith %}
-                                        <div class="row mt-2">
+                  
+                  <div class="row mt-2">
+                  {% if current_user.user_role.can_set_transit %}
                   <div class="col">
                     <div class="card shadow">
                       <div class="card-header bg-transparent">
@@ -129,6 +163,7 @@
                                 {% endfor %}
                               </div>
                             </div>
+                  {% endif %}                 
                   <div class="col">
                     <button id="open_modal_add_patient" class="btn btn-primary" data-toggle="modal" data-target="#addPatientModal" class="btn btn-primary" type="button" style="width:100%;height:100%;">
                       {{ _("Отправить") }}
@@ -138,7 +173,7 @@
                         </div>
                       </div>
                     </div>
-                  </div>                 
+                  </div>
                   <button type="submit" id="hiddenSubmit" style="display:none;"></button>
                 </div>                      
                   </div>
@@ -300,6 +335,11 @@
 
 $("#travel_type").on("change", function(){
   update_travel_form();
+});
+
+$('input[name="is_found"]').on("change", function(e) {
+  if(e.target.value == 1) $("#is_found_date").prop('disabled', false)
+  else $("#is_found_date").prop('disabled', true)
 });
 
 

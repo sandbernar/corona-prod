@@ -35,7 +35,7 @@ class User(db.Model, UserMixin):
     
     is_admin = Column(Boolean, default=True)
 
-    user_role_id = Column(Integer, ForeignKey('UserRole.id'), nullable=False)
+    user_role_id = Column(Integer, ForeignKey('UserRole.id'))
     user_role = db.relationship('UserRole')
 
     def __init__(self, **kwargs):

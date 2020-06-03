@@ -667,6 +667,17 @@ hard_severity = ("hard_severity", "Тяжёлое (критическое)")
 
 illness_severity = [unknown_num, low_severity, medium_severity, hard_severity]
 
+# Roles
+skp_avia = ("skp_avia", "СКП (Авиа)")
+skp_train = ("skp_train", "СКП (ЖД)")
+skp_border_control = ("skp_border_control", "СКП (Только Граница)")
+skp_blockpost = ("skp_blockpost", "СКП (Блокпост)")
+epid = ("epid", "Эпидемиолог")
+manager = ("manager", "Менеджер")
+admin = ("admin", "Администратор")
+
+roles = [skp_avia, skp_train, skp_border_control, skp_blockpost, epid, manager, admin]
+
 class GraphNode:
     def __init__(self, value):
         self.value = value

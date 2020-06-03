@@ -60,7 +60,11 @@ def prepare_patient_form(patient_form, with_old_data = False, with_all_travel_ty
             patient_form.hospital_region_id.choices = regions_choices
 
         if current_user.region_id != None:
-            patient_form.hospital_region_id.default = current_user.region_id            
+            patient_form.hospital_region_id.default = current_user.region_id
+
+        if not current_user.user_role.can_found_by_default:
+            patient_form.is_found_date.default = datetime.today()
+            patient_form.is_found.default = 1
 
     # TravelTypes for select fiels: Местный, Самолет итд
     if not patient_form.travel_type.choices:
@@ -69,6 +73,7 @@ def prepare_patient_form(patient_form, with_old_data = False, with_all_travel_ty
         for typ in TravelType.query.all():
             for travel_typ in [(c.flight_type[0], current_user.user_role.can_add_air),
                                (c.train_type[0], current_user.user_role.can_add_train),
+                               (c.local_type[0], current_user.user_role.can_add_local),
                                (c.by_auto_type[0], current_user.user_role.can_add_auto),
                                (c.by_foot_type[0], current_user.user_role.can_add_foot),
                                (c.by_sea_type[0], current_user.user_role.can_add_sea),
@@ -244,6 +249,10 @@ def handle_add_update_patient(request_dict, final_dict, update_dict = {}):
     if 'is_transit' in request_dict:
         final_dict['is_transit'] = int(request_dict['is_transit']) == 1
 
+    if 'is_found' in request_dict:
+        final_dict['is_found'] = int(request_dict['is_found']) == 1
+        final_dict['is_found_date'] = request.form.get("is_found_date", None)
+        
     if 'job_category_id' in request_dict:
         job_category_id = None if request_dict['job_category_id'] == "None" else request_dict['job_category_id']
         final_dict['job_category_id'] = job_category_id
@@ -264,10 +273,18 @@ def handle_add_update_patient(request_dict, final_dict, update_dict = {}):
 
 def handle_after_patient(request_dict, final_dict, patient, update_dict = {}, update_patient=True):
     if not update_patient:
-        patient.is_found = patient.addState(State.query.filter_by(value=c.state_found[0]).first())
-        
-        if final_dict['is_transit'] == True:
-            patient.addState(State.query.filter_by(value=c.state_is_transit[0]).first())
+
+        if not current_user.user_role.can_found_by_default:
+            if final_dict['is_found']:
+                is_found_date = final_dict["is_found_date"]
+
+                patient.is_found = patient.addState(State.query.filter_by(value=c.state_found[0]).first(), detection_date=is_found_date)
+        else:
+            patient.is_found = patient.addState(State.query.filter_by(value=c.state_found[0]).first())
+
+        if current_user.user_role.can_set_transit:
+            if final_dict['is_transit'] == True:
+                patient.addState(State.query.filter_by(value=c.state_is_transit[0]).first())
 
     travel_type = request_dict['travel_type']
     if travel_type:
@@ -425,8 +442,23 @@ def patient_profile():
             
             # States
             states = State.query.all()
-            states = [(st.value, st.name) for st in states]
-            form.state.choices = states
+            states_list = []
+            
+            for s in states:
+                if s.value == c.state_is_transit[0]:
+                    if not current_user.user_role.can_set_transit:
+                        continue
+                elif s.value == c.state_infec[0] or s.value == c.state_healthy[0]:
+                    if not current_user.user_role.can_set_infected:
+                        continue
+                elif s.value == c.state_hosp[0] or s.value == c.state_hosp_off[0] or \
+                     s.value == c.state_is_home[0] or s.value == c.state_is_home_off[0]:
+                    if not current_user.user_role.can_set_hospital_home_quarant:
+                        continue
+
+                states_list.append((s.value, s.name))
+
+            form.state.choices = states_list
 
             if len(request.form):
                 request_dict = request.form.to_dict(flat = True)
