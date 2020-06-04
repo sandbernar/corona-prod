@@ -51,6 +51,9 @@ def get_hospital_short_name(full_name):
 def hospitals():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))
+
+    if not current_user.user_role.can_add_edit_hospital:
+        return render_template('errors/error-500.html'), 500
     
     form = HospitalSearchForm(request.form)
 

@@ -95,11 +95,15 @@ class UserRole(db.Model):
 
     can_export_patients = Column(Boolean, default=False)
     can_export_contacted = Column(Boolean, default=False)
+    can_export_users = Column(Boolean, default=False)
     can_add_edit_hospital = Column(Boolean, default=False)
     
     can_block_own_region_accounts = Column(Boolean, default=False)
     can_block_all_accounts = Column(Boolean, default=False)
+    can_access_users = Column(Boolean, default=False)
+    can_add_edit_user = Column(Boolean, default=False)
     can_access_roles = Column(Boolean, default=False)
+    can_access_various_exports = Column(Boolean, default=False)
 
     def __init__(self, **kwargs):
         set_props(self, kwargs)

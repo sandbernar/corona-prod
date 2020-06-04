@@ -45,7 +45,7 @@ def export_users_activity_xls():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))
 
-    if not current_user.is_admin:
+    if not current_user.user_role.can_export_users:
         return render_template('errors/error-500.html'), 500
    
     q_patient = db.session.query(Patient.created_by_id,
@@ -117,7 +117,7 @@ def users():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))
 
-    if not current_user.is_admin:
+    if not current_user.user_role.can_access_users:
         return render_template('errors/error-500.html'), 500
 
     form = UserActivityReportForm()
@@ -162,7 +162,7 @@ def add_user():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))
 
-    if not current_user.is_admin:
+    if not current_user.user_role.can_add_edit_user:
         return render_template('errors/error-500.html'), 500
 
     form = CreateUserForm()
@@ -177,8 +177,8 @@ def add_user():
         if user:
             return route_template( 'users/add_user_and_profile', error_msg=_('Имя пользователя уже зарегистрировано'), form=form, change=None)
 
-        if "is_admin" in new_dict:
-            new_dict["is_admin"] = int(new_dict["is_admin"]) == 1
+        # if "is_admin" in new_dict:
+            # new_dict["is_admin"] = int(new_dict["is_admin"]) == 1
 
         if 'region_id' in new_dict:
             if new_dict['region_id'] == '-1':
@@ -199,6 +199,9 @@ def add_user():
 def user_profile():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))
+
+    if not current_user.user_role.can_add_edit_user:
+        return render_template('errors/error-500.html'), 500       
 
     if "id" in request.args:
         if request.args["id"] != str(current_user.id):
@@ -298,8 +301,8 @@ def delete_user():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))
 
-    if not current_user.is_admin:
-        return render_template('errors/error-500.html'), 500        
+    if not current_user.user_role.can_add_edit_user:
+        return render_template('errors/error-500.html'), 500         
     
     if len(request.form):
         if "delete" in request.form:
@@ -326,8 +329,8 @@ def user_roles():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))
 
-    if not current_user.is_admin:
-        return render_template('errors/error-500.html'), 500
+    if not current_user.user_role.can_access_roles:
+        return render_template('errors/error-500.html'), 500 
 
     change = None
     error_msg = None
@@ -351,13 +354,12 @@ def user_role_profile():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))
 
-    if not current_user.is_admin:
+    if not current_user.user_role.can_access_roles:
         return render_template('errors/error-500.html'), 500
-
 
     if "id" in request.args:
         if request.args["id"] != str(current_user.id):
-            if not current_user.is_admin:
+            if not current_user.user_role.can_access_roles:
                 return render_template('errors/error-500.html'), 500
         try:
             role_query = UserRole.query.filter_by(id=request.args["id"])
@@ -413,7 +415,7 @@ def add_user_role():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))
 
-    if not current_user.is_admin:
+    if not current_user.user_role.can_access_roles:
         return render_template('errors/error-500.html'), 500
 
     form = CreateUserRoleForm()

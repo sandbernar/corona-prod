@@ -357,6 +357,17 @@
                                 </label>
                               </div>
                             </div>
+                            <div class="col">
+                              <div class="row">
+                                <label for="name-input" class="form-control-label">{{ _("Доступ к разделу \"Разное\"") }}</label>
+                              </div>
+                              <div class="row">
+                                <label class="custom-toggle">
+                                  {{ form.can_access_various_exports(type="checkbox", class="form-control") }}
+                                  <span class="custom-toggle-slider rounded-circle"></span>
+                                </label>
+                              </div>
+                            </div>                            
                           </div>
                         </div>
                       </div>
@@ -428,7 +439,40 @@
                                   <span class="custom-toggle-slider rounded-circle"></span>
                                 </label>
                               </div>
-                            </div>                           
+                            </div>
+                            <div class="col">
+                              <div class="row">
+                                <label for="name-input" class="form-control-label">{{ _("Работа с аккаунтами пользователей") }}</label>
+                              </div>
+                              <div class="row">
+                                <label class="custom-toggle">
+                                  {{ form.can_access_users(type="checkbox", class="form-control") }}
+                                  <span class="custom-toggle-slider rounded-circle"></span>
+                                </label>
+                              </div>
+                            </div>
+                            <div class="col">
+                              <div class="row">
+                                <label for="name-input" class="form-control-label">{{ _("Добавление/Редактирование пользователей") }}</label>
+                              </div>
+                              <div class="row">
+                                <label class="custom-toggle">
+                                  {{ form.can_add_edit_user(type="checkbox", class="form-control") }}
+                                  <span class="custom-toggle-slider rounded-circle"></span>
+                                </label>
+                              </div>
+                            </div>                            
+                            <div class="col">
+                              <div class="row">
+                                <label for="name-input" class="form-control-label">{{ _("Выгрузка статистики пользователей") }}</label>
+                              </div>
+                              <div class="row">
+                                <label class="custom-toggle">
+                                  {{ form.can_export_users(type="checkbox", class="form-control") }}
+                                  <span class="custom-toggle-slider rounded-circle"></span>
+                                </label>
+                              </div>
+                            </div>                                                                                   
                           </div>
                         </div>
                       </div>

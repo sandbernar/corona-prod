@@ -70,9 +70,14 @@ class CreateUserRoleForm(FlaskForm):
     # Manager's Functions
     can_export_patients = BooleanField()
     can_export_contacted = BooleanField()
+    can_access_various_exports = BooleanField()
     can_add_edit_hospital = BooleanField()
 
     # Admin Function
     can_block_own_region_accounts = BooleanField()
     can_block_all_accounts = BooleanField()
     can_access_roles = BooleanField()
+    can_access_users = BooleanField()
+    can_export_users = BooleanField()
+    can_add_edit_user = BooleanField()
+    
