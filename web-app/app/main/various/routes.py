@@ -36,9 +36,9 @@ def export_various_data_xls():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))
 
-    if not current_user.is_admin:
+    if not current_user.user_role.can_access_various_exports:
         return render_template('errors/error-500.html'), 500
-    
+
     q = Patient.query
     
     infected_state_id = State.query.filter_by(value=c.state_infec[0]).first().id
@@ -173,7 +173,7 @@ def various():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))
 
-    if not current_user.is_admin:
+    if not current_user.user_role.can_access_various_exports:
         return render_template('errors/error-500.html'), 500
 
     form = DownloadVariousData()

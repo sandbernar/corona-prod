@@ -117,7 +117,7 @@ def users():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))
 
-    if not current_user.user_role.can_access_users:
+    if not current_user.user_role.can_access_users and not current_user.user_role.can_export_users:
         return render_template('errors/error-500.html'), 500
 
     form = UserActivityReportForm()
@@ -148,9 +148,17 @@ def users():
     
     q_patient = q_patient.group_by(Patient.created_by_id).subquery()
     q = db.session.query(User, q_patient.c.patient_count).outerjoin(q_patient, User.id == q_patient.c.created_by_id)
+
+    header_buttons = []
+    
+    if current_user.user_role.can_access_roles:
+        header_buttons.append((_("Управление Ролями"), "users/roles"))
+
+    if current_user.user_role.can_add_edit_user:
+        header_buttons.append((_("Добавить Пользователя"), "add_user"))
     
     users_table = UserTableModule(request, q, users_search_form, 
-        header_button=[(_("Управление Ролями"), "users/roles"), (_("Добавить Пользователя"), "add_user")])
+        header_button=header_buttons)
 
     users_search_form.process()
     form.process()
