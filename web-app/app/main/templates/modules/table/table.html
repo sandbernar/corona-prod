@@ -71,13 +71,11 @@
           {% if table.header_button %}
           <div class="row">
             {% if table.is_downloadable_xls %}
-              {% if current_user.region.name == "Алматы" or current_user.region.name == "Нур-Султан " or current_user.is_admin %}
               <div class="col">
                 <form method="POST">
                   <button name="download_xls" value='{{ table.__class__.__name__ }}' class="btn btn-sm btn-primary btn-full-width">{{ _("Скачать Выгрузку в Excel") }}</button>
                 </form>
               </div>
-            {% endif %}
           {% endif %}
             {% for button in table.header_button %}
             <div class="col">

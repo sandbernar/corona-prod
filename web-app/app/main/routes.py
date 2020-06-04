@@ -40,7 +40,7 @@ def index():
 
     q = Patient.query
 
-    if not current_user.is_admin:
+    if not current_user.user_role.can_lookup_other_regions_stats:
         q = q.filter_by(region_id=current_user.region_id)
 
     last_five_patients = []
@@ -76,7 +76,7 @@ def route_template(template, **kwargs):
     try:
         q = Patient.query
 
-        if not current_user.is_admin:
+        if not current_user.user_role.can_lookup_other_regions_stats:
             q = q.filter_by(region_id=current_user.region_id)
 
         # Total Patients

@@ -252,7 +252,18 @@
                               <span class="custom-toggle-slider rounded-circle"></span>
                             </label>
                           </div>
-                        </div>              
+                        </div>
+                        <div class="col">
+                          <div class="row">
+                            <label for="name-input" class="form-control-label">{{ _("Статистика всех регионов") }}</label>
+                          </div>
+                          <div class="row">
+                            <label class="custom-toggle">
+                              {{ form.can_lookup_other_regions_stats(type="checkbox", class="form-control") }}
+                              <span class="custom-toggle-slider rounded-circle"></span>
+                            </label>
+                          </div>
+                        </div>                                      
                       </div>
                     </div>
                   </div>
@@ -367,7 +378,18 @@
                                   <span class="custom-toggle-slider rounded-circle"></span>
                                 </label>
                               </div>
-                            </div>                            
+                            </div>
+                            <div class="col">
+                              <div class="row">
+                                <label for="name-input" class="form-control-label">{{ _("Доступ к инфо о пользователе") }}</label>
+                              </div>
+                              <div class="row">
+                                <label class="custom-toggle">
+                                  {{ form.can_access_user_info(type="checkbox", class="form-control") }}
+                                  <span class="custom-toggle-slider rounded-circle"></span>
+                                </label>
+                              </div>
+                            </div>                                                        
                           </div>
                         </div>
                       </div>
@@ -492,7 +514,7 @@
                 {{ _("Сохранить") }}
               </button>
             </div>
-              {% if current_user.is_admin %}
+              {% if current_user.user_role.can_access_roles %}
               <div class="col">
                 <input class="btn btn-danger btn-full-width" data-toggle="modal" data-target="#deletePatientModal" value={{ _("Удалить Роль") }}>
               </div>

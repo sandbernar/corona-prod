@@ -22,7 +22,7 @@ import io
 import urllib
 
 class ContactedPatientsTableModule(TableModule):
-    def __init__(self, request, q, search_form, header_button = None, page = 1, per_page = 5):
+    def __init__(self, request, q, search_form, header_button = None, page = 1, per_page = 5, download_xls_access = False):
         table_head = OrderedDict()
         table_head[_("ФИО")] = ["second_name"]
         table_head[_("БК или ПК")] = ["is_potential_contact"]
@@ -36,10 +36,15 @@ class ContactedPatientsTableModule(TableModule):
         table_head[_("Добавлен за 2 часа")] = []
         table_head[_("Дата Создания Пациента")] = ["created_date"]
 
+        is_downloadable_xls = download_xls_access
+
         super().__init__(request, q, table_head, header_button, search_form, sort_param="contacted_patient",
-                            is_downloadable_xls=True)
+                            is_downloadable_xls=is_downloadable_xls)
 
     def download_xls(self):
+        if not self.is_downloadable_xls:
+            return None
+
         data = []
         for row in self.q.all():
             patient = row.contacted_patient
@@ -178,11 +183,11 @@ class ContactedPatientsTableModule(TableModule):
                 in_hospital, is_infected, delete_contact_button, is_added_in_2_hours, created_date]
 
 class AllPatientsTableModule(TableModule):
-    def __init__(self, request, q, select_contacted = None, search_form = None, page = 1, per_page = 5):
+    def __init__(self, request, q, select_contacted = None, search_form = None, page = 1, per_page = 5, download_xls_access = False):
         table_head = OrderedDict()
         self.select_contacted = select_contacted
 
-        is_downloadable_xls = True
+        is_downloadable_xls = download_xls_access
         header_button = [(_("Добавить Пациента"), "/add_person")]
         table_head_info = dict()
 
@@ -598,6 +603,9 @@ class AllPatientsTableModule(TableModule):
 
 
     def download_xls(self):
+        if not self.is_downloadable_xls:
+            return None
+
         data = []
 
         for row in self.q.all():

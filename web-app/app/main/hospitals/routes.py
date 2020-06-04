@@ -64,8 +64,8 @@ def hospitals():
 
     q = Hospital.query
     region = request.args.get("region", '-1')
-    
-    if not current_user.is_admin:
+
+    if not current_user.user_role.can_add_edit_hospital:
         filt["region_id"] = current_user.region_id
     else:
         if region != str(-1):
@@ -120,7 +120,7 @@ def add_hospital():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))
 
-    if not current_user.is_admin:
+    if not current_user.user_role.can_add_edit_hospital:
         return render_template('errors/error-500.html'), 500
 
     form = AddHospitalForm()
@@ -179,12 +179,12 @@ def hospital_profile():
             change = None
             error_msg = None
 
-            if not current_user.is_admin:
+            if not current_user.user_role.can_add_edit_hospital:
                 form_fields = ["full_name", "region_id", "hospital_type_id"]
 
                 disable_form_fields(form, form_fields)
                                 
-            if 'update' in request.form and current_user.is_admin:
+            if 'update' in request.form and current_user.user_role.can_add_edit_hospital:
                 values = request.form.to_dict()
                 values.pop("csrf_token", None)
                 values.pop("update", None)
@@ -224,7 +224,7 @@ def delete_hospital():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))
 
-    if not current_user.is_admin:
+    if not current_user.user_role.can_add_edit_hospital:
         return render_template('errors/error-500.html'), 500
     
     if len(request.form):

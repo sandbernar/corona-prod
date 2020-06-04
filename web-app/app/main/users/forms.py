@@ -60,6 +60,7 @@ class CreateUserRoleForm(FlaskForm):
     can_access_contacted = BooleanField()
     can_delete_own_patients = BooleanField()
     can_delete_other_patients = BooleanField()
+    can_lookup_other_regions_stats = BooleanField()
 
     # Profile Edit
     can_found_by_default = BooleanField()
@@ -80,4 +81,4 @@ class CreateUserRoleForm(FlaskForm):
     can_access_users = BooleanField()
     can_export_users = BooleanField()
     can_add_edit_user = BooleanField()
-    
+    can_access_user_info = BooleanField()

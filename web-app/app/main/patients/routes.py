@@ -801,7 +801,7 @@ def patients():
 
     try:
         all_patients_table = AllPatientsTableModule(request, patient_query, select_contacted,
-                            search_form=form)
+                            search_form=form, download_xls_access=current_user.user_role.can_export_patients)
 
         if "download_xls" in request.args and all_patients_table.xls_response:
             return all_patients_table.xls_response
@@ -903,8 +903,9 @@ def contacted_persons():
             try:
                 contacted_patients_table = ContactedPatientsTableModule(request, q, contacted_search_form,
                                         header_button=[(_("Добавить Контактное Лицо"), "add_person?select_contacted_id={}".format(patient.id)),
-                                            (_("Выбрать Контактное Лицо"), "patients?select_contacted_id={}".format(patient.id))]
-                                        )
+                                            (_("Выбрать Контактное Лицо"), "patients?select_contacted_id={}".format(patient.id))],
+                                            download_xls_access=current_user.user_role.can_export_contacted)
+                
                 if "download_xls" in request.args:
                     return contacted_patients_table.download_xls()
 

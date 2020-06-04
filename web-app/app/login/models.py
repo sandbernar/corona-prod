@@ -84,6 +84,7 @@ class UserRole(db.Model):
 
     can_lookup_own_patients = Column(Boolean, default=False)
     can_lookup_other_patients = Column(Boolean, default=False)
+    can_lookup_other_regions_stats = Column(Boolean, default=False)
 
     can_found_by_default = Column(Boolean, default=False) 
     can_set_infected = Column(Boolean, default=False) 
@@ -104,6 +105,7 @@ class UserRole(db.Model):
     can_add_edit_user = Column(Boolean, default=False)
     can_access_roles = Column(Boolean, default=False)
     can_access_various_exports = Column(Boolean, default=False)
+    can_access_user_info = Column(Boolean, default=False)
 
     def __init__(self, **kwargs):
         set_props(self, kwargs)
