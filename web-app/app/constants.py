@@ -640,7 +640,7 @@ form_states = [
     state_is_home
 ]
 
-unknown_num = (-1, "Неизвестно")
+unknown_num = ('-1', "Неизвестно")
 
 # state_infec
 # Infection Types

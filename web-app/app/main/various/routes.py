@@ -12,6 +12,7 @@ import pandas as pd
 import io
 
 from app.main.models import Region
+from app.main.hospitals.models import Hospital_Type
 from app.main.patients.models import Patient, PatientState, State, ContactedPersons
 from app.main.various.forms import DownloadVariousData
 from app.main.forms import TableSearchForm
@@ -136,6 +137,34 @@ def export_various_data_xls():
                                            _("Умер"), _("Место Работы"), _("Адрес Работы"),
                                            _("Работа Lat"), _("Работа Lng")])
 
+    elif value == "infected_with_params":
+        # self.q.filter(Patient.created_date >= date_range_start)
+        start_date = request.form.get("start_date", None)
+        if start_date:
+            start_date = parse_date(start_date)
+            q = q.filter(PatientState.detection_date >= start_date)
+
+        end_date = request.form.get("end_date", None)
+        if end_date:
+            end_date = parse_date(end_date)
+            q = q.filter(PatientState.detection_date <= end_date)
+
+        for patient in q.all():
+            infected_state = PatientState.query.filter_by(patient_id = patient.id).filter_by(state_id = infected_state_id).first()
+
+            entry = [str(patient), patient.dob, str(patient.home_address),
+                    patient.job, patient.job_position, patient.job_category,
+                    dict(c.state_infec_types)[infected_state.attrs['state_infec_type']],
+                    dict(c.illness_symptoms)[infected_state.attrs['state_infec_illness_symptoms']],
+                    dict(c.illness_severity)[infected_state.attrs['state_infec_illness_severity']]]
+
+            data.append(entry)
+
+        data = pd.DataFrame(data, columns=[_("ФИО"), _("Год рождения"), _("Адрес"),
+                                           _("Место работы"), _("Профессия (должность)"), _("Категория Работы"),
+                                           _("Как выявлен"),
+                                           _("Клиника"), _("Степень Симптомов")])
+
     # output = io.BytesIO()
     # # writer = pd.ExcelWriter(output, engine='xlsxwriter')
     # data.to_excel(writer, index=False)
@@ -177,6 +206,8 @@ def various():
         return render_template('errors/error-500.html'), 500
 
     form = DownloadVariousData()
+
+    form.hospital_type.choices = [(t.id, t.name) for t in Hospital_Type.query.all()]
 
     change = None
     error_msg = None

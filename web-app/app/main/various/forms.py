@@ -10,4 +10,9 @@ from flask_babelex import _
 
 class DownloadVariousData(FlaskForm):
 	start_count = TextField()
-	end_count = TextField() 
+	end_count = TextField()
+
+	hospital_type = SelectField()
+
+	start_date = DateField()
+	end_date = DateField()
