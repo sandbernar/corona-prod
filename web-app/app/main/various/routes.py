@@ -12,7 +12,7 @@ import pandas as pd
 import io
 
 from app.main.models import Region
-from app.main.hospitals.models import Hospital_Type
+from app.main.hospitals.models import Hospital_Type, Hospital
 from app.main.patients.models import Patient, PatientState, State, ContactedPersons
 from app.main.various.forms import DownloadVariousData
 from app.main.forms import TableSearchForm
@@ -137,8 +137,21 @@ def export_various_data_xls():
                                            _("Умер"), _("Место Работы"), _("Адрес Работы"),
                                            _("Работа Lat"), _("Работа Lng")])
 
+    elif value == "hospitals_list_by_regions":
+        hospitals_q = Hospital.query
+
+        hospital_type = request.form.get("hospital_type", "-1")
+        if hospital_type != "-1":
+            hospitals_q = hospitals_q.filter_by(hospital_type_id = hospital_type)
+
+        for hospital in hospitals_q.all():
+            entry = [str(hospital.region), hospital.hospital_type, str(hospital)]
+
+            data.append(entry)
+
+        data = pd.DataFrame(data, columns=[_("Регион"), _("Тип Стационара"), _("Название Стационара")])
+
     elif value == "infected_with_params":
-        # self.q.filter(Patient.created_date >= date_range_start)
         start_date = request.form.get("start_date", None)
         if start_date:
             start_date = parse_date(start_date)
@@ -163,7 +176,7 @@ def export_various_data_xls():
         data = pd.DataFrame(data, columns=[_("ФИО"), _("Год рождения"), _("Адрес"),
                                            _("Место работы"), _("Профессия (должность)"), _("Категория Работы"),
                                            _("Как выявлен"),
-                                           _("Клиника"), _("Степень Симптомов")])
+                                           _("Клиника"), _("Степень Симптомов")])        
 
     # output = io.BytesIO()
     # # writer = pd.ExcelWriter(output, engine='xlsxwriter')
@@ -189,7 +202,7 @@ def export_various_data_xls():
     # region_name = Region.query.filter_by(id = region_id).first().name if region_id != -1 else c.all_regions
     filename_xls = "выгрузка.csv"
     
-    response = Response(data.to_csv(), mimetype="text/csv")
+    response = Response(data.to_csv(index=False), mimetype="text/csv")
     response.headers["Content-Disposition"] = \
         "attachment;" \
         "filename*=UTF-8''{}".format(urllib.parse.quote(filename_xls.encode('utf-8')))
@@ -207,7 +220,7 @@ def various():
 
     form = DownloadVariousData()
 
-    form.hospital_type.choices = [(t.id, t.name) for t in Hospital_Type.query.all()]
+    form.hospital_type.choices = [c.all_types] + [(t.id, t.name) for t in Hospital_Type.query.all()]
 
     change = None
     error_msg = None

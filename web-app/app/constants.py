@@ -641,6 +641,7 @@ form_states = [
 ]
 
 unknown_num = ('-1', "Неизвестно")
+all_types = ('-1', "Все")
 
 # state_infec
 # Infection Types
