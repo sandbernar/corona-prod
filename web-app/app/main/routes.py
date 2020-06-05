@@ -228,10 +228,14 @@ def patients_within_tiles():
 
     zoom = int(request.args["zoom"])
 
-    if (zoom > 19 or zoom < 0):
-        return render_template('errors/error-400.html'), 400
-    distances = [6,6, 5, 4, 3, 2, 1, 0.5, 0.5, 0.09, 0.07, 0.02, 0.01, 0.009,  0.008, 0.003, 0.002, 0.001, 0.001, 0.001]
-    distance = distances[zoom]
+    distance = 0
+
+    wo_clusters = "clusters_off" in request.args
+    if not wo_clusters:
+        if (zoom > 19 or zoom < 0):
+            return render_template('errors/error-400.html'), 400
+        distances = [6,6, 5, 4, 3, 2, 1, 0.5, 0.5, 0.09, 0.07, 0.02, 0.01, 0.009,  0.008, 0.003, 0.002, 0.001, 0.001, 0.001]
+        distance = distances[zoom]
     
     # distance = 2
     coordinates_patients = {
@@ -268,7 +272,8 @@ def patients_within_tiles():
     # ) tsub
     # GROUP BY id;
     # """ % (bbox_y1, bbox_x1, bbox_y2, bbox_x2))
-    m = db.engine.execute(sql)
+    # m = db.engine.execute(sql)
+    m = []
     for a in m:
         features = []
         count = int(a[1])
