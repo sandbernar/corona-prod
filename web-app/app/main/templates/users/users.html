@@ -13,6 +13,7 @@
 {% include "site_template/top-stats.html" %}
 
 <div class="container-fluid mt--7">
+  {% if current_user.user_role.can_export_users %}
   <div class="row">
     <div class="col">
       <div class="card shadow">
@@ -46,6 +47,8 @@
         </div>
       </div>
     </div>
+    {% endif %}
+    {% if current_user.user_role.can_access_users %}
     <!-- Table -->
     <div class="row mt-3">
       <div class="col">
@@ -62,6 +65,7 @@
       {% endwith %}
       </div>
     </div>
+    {% endif %}
 
     <!-- Footer -->
 

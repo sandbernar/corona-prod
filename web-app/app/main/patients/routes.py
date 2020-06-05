@@ -37,6 +37,13 @@ from app.main.routes import route_template
 from app.main.util import get_regions, get_regions_choices, get_flight_code, populate_form, parse_date
 from app.login.util import hash_pass
 
+def process_travel_type(typ, type_value, user_right, patient_form):
+    if typ.value == type_value and user_right:
+        patient_form.travel_type.choices.append((typ.value, typ.name))
+        return True
+    
+    return False
+
 def prepare_patient_form(patient_form, with_old_data = False, with_all_travel_type=False, search_form=False):
     regions_choices = get_regions_choices(current_user, False)
 
@@ -53,17 +60,30 @@ def prepare_patient_form(patient_form, with_old_data = False, with_all_travel_ty
             patient_form.hospital_region_id.choices = regions_choices
 
         if current_user.region_id != None:
-            patient_form.hospital_region_id.default = current_user.region_id            
+            patient_form.hospital_region_id.default = current_user.region_id
+
+        if not current_user.user_role.can_found_by_default:
+            patient_form.is_found_date.default = datetime.today()
+            patient_form.is_found.default = 1
 
     # TravelTypes for select fiels: Местный, Самолет итд
     if not patient_form.travel_type.choices:
         patient_form.travel_type.choices = [] if not with_all_travel_type else [c.all_travel_types]
+
         for typ in TravelType.query.all():
+            for travel_typ in [(c.flight_type[0], current_user.user_role.can_add_air),
+                               (c.train_type[0], current_user.user_role.can_add_train),
+                               (c.local_type[0], current_user.user_role.can_add_local),
+                               (c.by_auto_type[0], current_user.user_role.can_add_auto),
+                               (c.by_foot_type[0], current_user.user_role.can_add_foot),
+                               (c.by_sea_type[0], current_user.user_role.can_add_sea),
+                               (c.blockpost_type[0], current_user.user_role.can_add_blockpost)]:
+                if process_travel_type(typ, travel_typ[0], travel_typ[1], patient_form):
+                    break
+
             if typ.value == c.old_data_type[0]:
                 if with_old_data:
                     patient_form.travel_type.choices.append((typ.value, typ.name))
-            else:
-                patient_form.travel_type.choices.append((typ.value, typ.name))
         
         if not search_form:
             patient_form.travel_type.default = c.local_type[0]
@@ -229,6 +249,10 @@ def handle_add_update_patient(request_dict, final_dict, update_dict = {}):
     if 'is_transit' in request_dict:
         final_dict['is_transit'] = int(request_dict['is_transit']) == 1
 
+    if 'is_found' in request_dict:
+        final_dict['is_found'] = int(request_dict['is_found']) == 1
+        final_dict['is_found_date'] = request.form.get("is_found_date", None)
+        
     if 'job_category_id' in request_dict:
         job_category_id = None if request_dict['job_category_id'] == "None" else request_dict['job_category_id']
         final_dict['job_category_id'] = job_category_id
@@ -249,10 +273,18 @@ def handle_add_update_patient(request_dict, final_dict, update_dict = {}):
 
 def handle_after_patient(request_dict, final_dict, patient, update_dict = {}, update_patient=True):
     if not update_patient:
-        patient.is_found = patient.addState(State.query.filter_by(value=c.state_found[0]).first())
-        
-        if final_dict['is_transit'] == True:
-            patient.addState(State.query.filter_by(value=c.state_is_transit[0]).first())
+
+        if not current_user.user_role.can_found_by_default:
+            if final_dict['is_found']:
+                is_found_date = final_dict["is_found_date"]
+
+                patient.is_found = patient.addState(State.query.filter_by(value=c.state_found[0]).first(), detection_date=is_found_date)
+        else:
+            patient.is_found = patient.addState(State.query.filter_by(value=c.state_found[0]).first())
+
+        if current_user.user_role.can_set_transit:
+            if final_dict['is_transit'] == True:
+                patient.addState(State.query.filter_by(value=c.state_is_transit[0]).first())
 
     travel_type = request_dict['travel_type']
     if travel_type:
@@ -410,8 +442,23 @@ def patient_profile():
             
             # States
             states = State.query.all()
-            states = [(st.value, st.name) for st in states]
-            form.state.choices = states
+            states_list = []
+            
+            for s in states:
+                if s.value == c.state_is_transit[0]:
+                    if not current_user.user_role.can_set_transit:
+                        continue
+                elif s.value == c.state_infec[0] or s.value == c.state_healthy[0]:
+                    if not current_user.user_role.can_set_infected:
+                        continue
+                elif s.value == c.state_hosp[0] or s.value == c.state_hosp_off[0] or \
+                     s.value == c.state_is_home[0] or s.value == c.state_is_home_off[0]:
+                    if not current_user.user_role.can_set_hospital_home_quarant:
+                        continue
+
+                states_list.append((s.value, s.name))
+
+            form.state.choices = states_list
 
             if len(request.form):
                 request_dict = request.form.to_dict(flat = True)
@@ -742,9 +789,19 @@ def patients():
     elif "error" in request.args:
         error_msg = request.args['error']
 
+    patient_query = Patient.query
+
+    can_lookup_other_patients = current_user.user_role.can_lookup_other_patients
+    can_lookup_own_patients = current_user.user_role.can_lookup_own_patients
+
+    if not can_lookup_other_patients and not can_lookup_own_patients:
+        return render_template('errors/error-400.html'), 400
+    elif can_lookup_own_patients and not can_lookup_other_patients:
+        patient_query = patient_query.filter_by(created_by_id = current_user.id)
+
     try:
-        all_patients_table = AllPatientsTableModule(request, Patient.query, select_contacted,
-                            search_form=form)
+        all_patients_table = AllPatientsTableModule(request, patient_query, select_contacted,
+                            search_form=form, download_xls_access=current_user.user_role.can_export_patients)
 
         if "download_xls" in request.args and all_patients_table.xls_response:
             return all_patients_table.xls_response
@@ -846,8 +903,9 @@ def contacted_persons():
             try:
                 contacted_patients_table = ContactedPatientsTableModule(request, q, contacted_search_form,
                                         header_button=[(_("Добавить Контактное Лицо"), "add_person?select_contacted_id={}".format(patient.id)),
-                                            (_("Выбрать Контактное Лицо"), "patients?select_contacted_id={}".format(patient.id))]
-                                        )
+                                            (_("Выбрать Контактное Лицо"), "patients?select_contacted_id={}".format(patient.id))],
+                                            download_xls_access=current_user.user_role.can_export_contacted)
+                
                 if "download_xls" in request.args:
                     return contacted_patients_table.download_xls()
 
@@ -1109,7 +1167,7 @@ class RPNService:
         Return:
             (bool)
         """
-        hGBDpath = "http://5.104.236.197:22999/services/api/person"
+        hGBDpath = f"{os.getenv('RPN_API_URL')}/services/api/person"
         address = f"{hGBDpath}?fioiin=иванов&page=1&pagesize=1"
         headers = {'Authorization': f"Bearer {token}"}
         response = requests.request("GET", address, headers=headers, verify=False)

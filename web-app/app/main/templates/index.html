@@ -53,12 +53,18 @@
               <div class="col">
                 <h2 class="mb-0">{{ _('Карта Пациентов') }}</h2>
               </div>
+              <div class="col-md-auto">
+                <div class="custom-control custom-checkbox">
+                  <input type="checkbox" class="custom-control-input" id="with_clusters" checked>
+                  <label class="custom-control-label" for="with_clusters">{{ _("С Кластерами") }}</label>
+                </div>
+              </div>
             </div>
           </div>
            <div id="map" style="width:100%; height:500px"></div>
           </div>
       </div>
-  {% if current_user.is_admin %}
+  {% if current_user.user_role.can_lookup_other_regions_stats %}
       <div class="col-xl-4">
         <div class="card shadow">
           <div class="card-header bg-transparent">
@@ -142,7 +148,7 @@
           </div>
         </div>
       </div>
-  {% if current_user.is_admin %}
+  {% if current_user.user_role.can_lookup_other_regions_stats %}
       <div class="col-xl-4">
         <div class="card shadow">
           <div class="card-header bg-transparent">
@@ -192,21 +198,28 @@ $("#agreeButton").on("click", () => {
 
 ymaps.ready(init);
 
-function init() {
-  var myMap = new ymaps.Map(
+var myMap = null;
+
+function init(with_clusters = true) {
+  myMap = new ymaps.Map(
     "map",
     {
       center: [51.14744, 71.5189],
       zoom: 8,
-      controls: ["zoomControl"],
+      controls: ["zoomControl", "fullscreenControl"],
     },
     {
       searchControlProvider: "yandex#search",
     }
   );
 
+  var tiles_url = window.location.origin + "/patients_within_tiles?bbox=%b&zoom=%z&tiles=%t";
+
+  if(!with_clusters) tiles_url += "&clusters_off"
+  console.log(tiles_url)
+
   var remoteObjectManager = new ymaps.RemoteObjectManager(
-    window.location.origin + "/patients_within_tiles?bbox=%b&zoom=%z&tiles=%t",
+    tiles_url,
     {
       clusterHasBaloon: true,
       clusterDisableClickZoom: false,
@@ -302,7 +315,6 @@ function init() {
   remoteObjectManager.clusters.events.add("click", clusterEventListener);
 }
 
-
 colors = ["#3e95cd", "#8e5ea2", "#3cba9f", "#e8c3b9", "#b8860b", "#c45850", "#ff4500", "#f00f30", "#0000cd", 
           "#7cfc00", "#00fa9a", "#000fff", "#f08080", "#d8bfd8", "#ff00ff", "#1e90ff", "#ff1493", "#ee82ee"]
 
@@ -362,6 +374,15 @@ new Chart(not_in_hospital, {
         text: '{{ _("Инфицированы (по регионам)") }}'
       }
     }
+});
+
+$("#with_clusters").on("change", function() {
+  var with_clusters = false;
+  
+  if($("#with_clusters").is(':checked')) with_clusters = true;
+  
+  myMap.destroy();
+  init(with_clusters);
 });
 
 </script>

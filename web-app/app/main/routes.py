@@ -40,7 +40,7 @@ def index():
 
     q = Patient.query
 
-    if not current_user.is_admin:
+    if not current_user.user_role.can_lookup_other_regions_stats:
         q = q.filter_by(region_id=current_user.region_id)
 
     last_five_patients = []
@@ -76,7 +76,7 @@ def route_template(template, **kwargs):
     try:
         q = Patient.query
 
-        if not current_user.is_admin:
+        if not current_user.user_role.can_lookup_other_regions_stats:
             q = q.filter_by(region_id=current_user.region_id)
 
         # Total Patients
@@ -228,12 +228,17 @@ def patients_within_tiles():
 
     zoom = int(request.args["zoom"])
 
-    if (zoom > 19 or zoom < 0):
-        return render_template('errors/error-400.html'), 400
-    distances = [6,6, 5, 4, 3, 2, 1, 0.5, 0.5, 0.09, 0.07, 0.02, 0.01, 0.009,  0.008, 0.003, 0.002, 0.001, 0.001, 0.001]
-    distance = distances[zoom]
+    distance = 0.1**10
+
+    wo_clusters = "clusters_off" in request.args
+    if not wo_clusters:
+        if (zoom > 19 or zoom < 0):
+            return render_template('errors/error-400.html'), 400
+        distances = [6,6, 5, 4, 3, 2, 1, 0.5, 0.5, 0.09, 0.07, 0.02, 0.01, 0.009,  0.008, 0.003, 0.002, 0.001, 0.001, 0.001]
+        distance = distances[zoom]
     
     # distance = 2
+    print(distance)
     coordinates_patients = {
         "type": "FeatureCollection",
         "features": []

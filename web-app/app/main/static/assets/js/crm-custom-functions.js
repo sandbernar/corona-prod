@@ -35,3 +35,9 @@ function tableSort(value) {
 
   setSearchParam(sort_arg, value)
 }
+
+function cancelTableSort(e) {
+  $("#sort_param").attr('disabled', 'disabled');
+  setSearchParam("sort_by_desc", null, false)
+  setSearchParam("sort_by_asc", null)
+}
