@@ -929,20 +929,21 @@ def get_all_states(patient_states):
     for state in patient_states:
         attrs = state.attrs
         
-        if state.value == c.state_hosp[0]:
-            if "hospital_id" in attrs:
-                try:
-                    hospital = Hospital.query.filter_by(id = state.attrs["hospital_id"]).first()
-                except exc.SQLAlchemyError:
-                    return jsonify({'description': _("Hospital not found")}), 405
-                
-                attrs["hospital_id"] = hospital.id
-                attrs["hospital_region_id"] = hospital.region_id
-                attrs["hospital_type_id"] = hospital.hospital_type_id
-        elif state.value == c.state_infec[0]:
-            attrs["state_infec_type"] = attrs.get("state_infec_type", -1)
-            attrs["state_infec_illness_symptoms"] = attrs.get("state_infec_illness_symptoms", -1)
-            attrs["state_infec_illness_severity"] = attrs.get("state_infec_illness_severity", -1)
+        if attrs:
+            if state.value == c.state_hosp[0]:
+                if "hospital_id" in attrs:
+                    try:
+                        hospital = Hospital.query.filter_by(id = state.attrs["hospital_id"]).first()
+                    except exc.SQLAlchemyError:
+                        return jsonify({'description': _("Hospital not found")}), 405
+                    
+                    attrs["hospital_id"] = hospital.id
+                    attrs["hospital_region_id"] = hospital.region_id
+                    attrs["hospital_type_id"] = hospital.hospital_type_id
+            elif state.value == c.state_infec[0]:
+                attrs["state_infec_type"] = attrs.get("state_infec_type", -1)
+                attrs["state_infec_illness_symptoms"] = attrs.get("state_infec_illness_symptoms", -1)
+                attrs["state_infec_illness_severity"] = attrs.get("state_infec_illness_severity", -1)
 
         states.append({
             "id":state.id,
