@@ -165,11 +165,21 @@ def export_various_data_xls():
         for patient in q.all():
             infected_state = PatientState.query.filter_by(patient_id = patient.id).filter_by(state_id = infected_state_id).first()
 
+            state_infec_attr = infected_state.attrs.get('state_infec_type', c.unknown[1])
+            if state_infec_attr != c.unknown[1]:
+                state_infec_attr = dict(c.state_infec_types)[state_infec_attr]
+
+            illness_symptoms = infected_state.attrs.get('state_infec_illness_symptoms', c.unknown[1])
+            if illness_symptoms != c.unknown[1]:
+                illness_symptoms = dict(c.illness_symptoms)[illness_symptoms]
+
+            illness_severity = infected_state.attrs.get('state_infec_illness_severity', c.unknown[1])
+            if illness_severity != c.unknown[1]:
+                illness_severity = dict(c.illness_severity)[illness_severity]                                
+
             entry = [str(patient), patient.dob, str(patient.home_address),
                     patient.job, patient.job_position, patient.job_category,
-                    dict(c.state_infec_types)[infected_state.attrs['state_infec_type']],
-                    dict(c.illness_symptoms)[infected_state.attrs['state_infec_illness_symptoms']],
-                    dict(c.illness_severity)[infected_state.attrs['state_infec_illness_severity']]]
+                    state_infec_attr, illness_symptoms, illness_severity]
 
             data.append(entry)
 
