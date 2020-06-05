@@ -91,14 +91,12 @@
                               {{ form.region_id(class="form-control", id="region_id") }}                          
                             </div>
                           </div>
-                          {% if current_user.user_role.can_access_roles %}
                           <div class="col-md-auto">
                             <div class="form-group">
                               <label for="region-input" class="form-control-label">{{ _("Роль") }}*</label>
                               {{ form.user_role_id(class="form-control") }}                          
                             </div>
                           </div>
-                          {% endif %}                          
                         </div>
                         <div class="form-group">
                           <label for="phone-input" class="form-control-label">{{ _("Телефон") }}*</label>
