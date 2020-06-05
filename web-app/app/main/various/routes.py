@@ -184,9 +184,9 @@ def export_various_data_xls():
                     if illness_severity != c.unknown[1]:
                         illness_severity = dict(c.illness_severity)[illness_severity]                                
 
-                    entry = [str(patient), patient.dob, str(patient.home_address),
-                            patient.job, patient.job_position, patient.job_category,
-                            state_infec_attr, illness_symptoms, illness_severity]
+                entry = [str(patient), patient.dob, str(patient.home_address),
+                        patient.job, patient.job_position, patient.job_category,
+                        state_infec_attr, illness_symptoms, illness_severity]
 
                 data.append(entry)
 
