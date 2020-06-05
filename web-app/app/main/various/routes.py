@@ -202,7 +202,7 @@ def export_various_data_xls():
     # region_name = Region.query.filter_by(id = region_id).first().name if region_id != -1 else c.all_regions
     filename_xls = "выгрузка.csv"
     
-    response = Response(data.to_csv(index=False, encoding='utf-8-sig'), mimetype="text/csv")
+    response = Response(data.to_csv(index=False, encoding='windows-1251'), mimetype="text/csv")
     response.headers["Content-Disposition"] = \
         "attachment;" \
         "filename*=UTF-8''{}".format(urllib.parse.quote(filename_xls.encode('utf-8')))

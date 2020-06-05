@@ -228,7 +228,7 @@ def patients_within_tiles():
 
     zoom = int(request.args["zoom"])
 
-    distance = 0
+    distance = 0.1**10
 
     wo_clusters = "clusters_off" in request.args
     if not wo_clusters:
