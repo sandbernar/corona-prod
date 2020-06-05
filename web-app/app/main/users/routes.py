@@ -208,12 +208,12 @@ def user_profile():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))
 
-    if not current_user.user_role.can_add_edit_user:
-        return render_template('errors/error-500.html'), 500       
+    # if not current_user.user_role.can_add_edit_user:
+        # return render_template('errors/error-500.html'), 500       
 
     if "id" in request.args:
         if request.args["id"] != str(current_user.id):
-            if not current_user.is_admin:
+            if not current_user.user_role.can_add_edit_user:
                 return render_template('errors/error-500.html'), 500
 
         try:
@@ -230,16 +230,16 @@ def user_profile():
             change = None
             error_msg = None
 
-            if not current_user.is_admin:
+            if not current_user.user_role.can_add_edit_user:
                 form_fields = ["full_name", "username", "email", "region_id",
-                                "telephone", "organization", "is_admin"]
+                                "telephone", "organization", "is_admin", "user_role_id"]
 
                 disable_form_fields(form, form_fields)
                                 
             if 'update' in request.form:
                 values = request.form.to_dict()
 
-                if current_user.is_admin:
+                if current_user.user_role.can_add_edit_user:
                     if 'username' in values:
                         new_username = values['username']
                         
@@ -260,6 +260,7 @@ def user_profile():
                     values.pop("is_admin", None)
                     values.pop("username", None)
                     values.pop("region_id", None)
+                    values.pop("user_role_id", None)
 
                 if not error_msg:
                     if values.get('password', ''):
@@ -366,9 +367,9 @@ def user_role_profile():
         return render_template('errors/error-500.html'), 500
 
     if "id" in request.args:
-        if request.args["id"] != str(current_user.id):
-            if not current_user.user_role.can_access_roles:
-                return render_template('errors/error-500.html'), 500
+        # if request.args["id"] != str(current_user.id):
+        #     if not current_user.user_role.can_access_roles:
+        #         return render_template('errors/error-500.html'), 500
         try:
             role_query = UserRole.query.filter_by(id=request.args["id"])
             role = role_query.first()
