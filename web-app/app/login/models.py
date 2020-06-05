@@ -27,7 +27,16 @@ class User(db.Model, UserMixin):
     region_id = Column(Integer, ForeignKey('Region.id'))
     region = db.relationship('Region')
 
+    @property
+    def is_admin(self):
+        admin_role = UserRole.query.filter_by(value="admin").first()
+
+        return user_role_id == admin_role.id
+    
     is_admin = Column(Boolean, default=True)
+
+    user_role_id = Column(Integer, ForeignKey('UserRole.id'))
+    user_role = db.relationship('UserRole')
 
     def __init__(self, **kwargs):
         for property, value in kwargs.items():
@@ -49,6 +58,60 @@ class User(db.Model, UserMixin):
     def __repr__(self):
         return str(self.username)
 
+def set_props(model, kwargs):
+    for property, value in kwargs.items():
+        if hasattr(value, '__iter__') and not isinstance(value, str):
+            value = value[0]
+            
+        setattr(model, property, value)
+
+class UserRole(db.Model):
+    __tablename__ = 'UserRole'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String, unique=True, nullable=False)
+    value = Column(String, unique=True, nullable=False)
+
+    #User Rights
+    can_add_air = Column(Boolean, default=False)
+    can_add_train = Column(Boolean, default=False)
+    can_add_auto = Column(Boolean, default=False)
+    can_add_foot = Column(Boolean, default=False)
+    can_add_sea = Column(Boolean, default=False)
+    can_add_local = Column(Boolean, default=False)
+    can_add_blockpost = Column(Boolean, default=False)
+    can_see_success_add_window = Column(Boolean, default=False)
+
+    can_lookup_own_patients = Column(Boolean, default=False)
+    can_lookup_other_patients = Column(Boolean, default=False)
+    can_lookup_other_regions_stats = Column(Boolean, default=False)
+
+    can_found_by_default = Column(Boolean, default=False) 
+    can_set_infected = Column(Boolean, default=False) 
+    can_set_hospital_home_quarant = Column(Boolean, default=False) 
+    can_set_transit = Column(Boolean, default=False) 
+    can_access_contacted = Column(Boolean, default=False)    
+    can_delete_own_patients = Column(Boolean, default=False)
+    can_delete_other_patients = Column(Boolean, default=False)
+
+    can_export_patients = Column(Boolean, default=False)
+    can_export_contacted = Column(Boolean, default=False)
+    can_export_users = Column(Boolean, default=False)
+    can_add_edit_hospital = Column(Boolean, default=False)
+    
+    can_block_own_region_accounts = Column(Boolean, default=False)
+    can_block_all_accounts = Column(Boolean, default=False)
+    can_access_users = Column(Boolean, default=False)
+    can_add_edit_user = Column(Boolean, default=False)
+    can_access_roles = Column(Boolean, default=False)
+    can_access_various_exports = Column(Boolean, default=False)
+    can_access_user_info = Column(Boolean, default=False)
+
+    def __init__(self, **kwargs):
+        set_props(self, kwargs)
+
+    def __repr__(self):
+        return str(self.name)
 
 @login_manager.user_loader
 def user_loader(id):

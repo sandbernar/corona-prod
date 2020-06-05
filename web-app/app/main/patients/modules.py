@@ -3,7 +3,7 @@ import math
 from app.main.modules import TableModule
 
 from app.main.patients.models import Patient, ContactedPersons, PatientStatus, PatientState, State
-from app.main.models import TravelType, VariousTravel, BlockpostTravel, Address, Country, Region
+from app.main.models import TravelType, VariousTravel, BlockpostTravel, Address, Country, Region, JobCategory, BorderControl
 from app.main.flights_trains.models import FlightTravel, TrainTravel, FlightCode, Train
 from app.login.models import User
 
@@ -22,7 +22,7 @@ import io
 import urllib
 
 class ContactedPatientsTableModule(TableModule):
-    def __init__(self, request, q, search_form, header_button = None, page = 1, per_page = 5):
+    def __init__(self, request, q, search_form, header_button = None, page = 1, per_page = 5, download_xls_access = False):
         table_head = OrderedDict()
         table_head[_("ФИО")] = ["second_name"]
         table_head[_("БК или ПК")] = ["is_potential_contact"]
@@ -36,10 +36,15 @@ class ContactedPatientsTableModule(TableModule):
         table_head[_("Добавлен за 2 часа")] = []
         table_head[_("Дата Создания Пациента")] = ["created_date"]
 
+        is_downloadable_xls = download_xls_access
+
         super().__init__(request, q, table_head, header_button, search_form, sort_param="contacted_patient",
-                            is_downloadable_xls=True)
+                            is_downloadable_xls=is_downloadable_xls)
 
     def download_xls(self):
+        if not self.is_downloadable_xls:
+            return None
+
         data = []
         for row in self.q.all():
             patient = row.contacted_patient
@@ -178,11 +183,11 @@ class ContactedPatientsTableModule(TableModule):
                 in_hospital, is_infected, delete_contact_button, is_added_in_2_hours, created_date]
 
 class AllPatientsTableModule(TableModule):
-    def __init__(self, request, q, select_contacted = None, search_form = None, page = 1, per_page = 5):
+    def __init__(self, request, q, select_contacted = None, search_form = None, page = 1, per_page = 5, download_xls_access = False):
         table_head = OrderedDict()
         self.select_contacted = select_contacted
 
-        is_downloadable_xls = True
+        is_downloadable_xls = download_xls_access
         header_button = [(_("Добавить Пациента"), "/add_person")]
         table_head_info = dict()
 
@@ -236,14 +241,7 @@ class AllPatientsTableModule(TableModule):
 
         return entries
 
-    def search_table(self):
-        full_name_value = self.request.args.get("full_name", None)
-        if full_name_value:
-            self.q = self.q.filter(func.lower(func.concat(Patient.second_name, ' ', Patient.first_name, ' ', 
-                                    Patient.patronymic_name)).contains(full_name_value.lower()))
-            
-            self.search_form.full_name.default = full_name_value        
-
+    def search_table(self):    
         region_id = self.request.args.get("region_id", -1)
         if region_id:
             region_id = int(region_id)
@@ -251,76 +249,75 @@ class AllPatientsTableModule(TableModule):
             if region_id != -1:
                 self.q = self.q.filter(Patient.region_id == region_id)
                 self.search_form.region_id.default = region_id
+                
+                self.search_params.append((_("Регион"), Region.query.filter_by(id = region_id).first().name))
 
         filt = dict()
 
         job_category_id = self.request.args.get("job_category_id", "-1")
         if job_category_id != "-1":
+            job_category_disp_name = _("Неизвестно")
             if job_category_id == "None":
                 job_category_id = None
             else:
                 job_category_id = int(job_category_id)
+                job_category_disp_name = JobCategory.query.filter_by(id = job_category_id).first().name
 
+            self.search_params.append((_("Категория Работы"), job_category_disp_name))
             self.q = self.q.filter(Patient.job_category_id == job_category_id)
             self.search_form.job_category_id.default = job_category_id
-
         
         is_found = self.request.args.get("is_found", "-1")
         if is_found != "-1":
             filt["is_found"] = is_found == "1"
-            self.search_form.is_found.default = is_found         
+            self.search_form.is_found.default = is_found
+
+            self.search_params.append((_("Найден"), _("Да") if is_found == "1" else _("Нет")))
 
         is_currently_infected = self.request.args.get("is_currently_infected", "-1")
         if is_currently_infected != "-1":
             filt["is_infected"] = is_currently_infected == "1"
             self.search_form.is_currently_infected.default = is_currently_infected
 
-        patient_status = self.request.args.get("patient_status", "-1")
-        if patient_status != "-1":
-            if patient_status == "in_hospital" or patient_status == "not_in_hospital":
-                in_hospital = patient_status == "in_hospital"
+            self.search_params.append((_("Инфицирован"), _("Да") if filt["is_infected"] else _("Нет")))
 
-                if in_hospital:
-                    self.q = self.q.filter(Patient.in_hospital == True)
-                else:
-                    self.q = self.q.filter(Patient.in_hospital == False)
-            elif patient_status == "is_home_quarantine":
-                self.q = self.q.filter(Patient.is_home == True)
-            elif patient_status == "is_transit":
-                self.q = self.q.join(PatientState, PatientState.patient_id == Patient.id)
-                self.q = self.q.join(State, State.id == PatientState.state_id)
-                self.q = self.q.filter(State.value == c.state_is_transit[0])
-                # is_transit_id = PatientStatus.query.filter_by(value=c.is_transit[0]).first().id
-                # self.q = self.q.filter(Patient.status_id == is_transit_id)
-
-            self.search_form.patient_status.default = patient_status
-
-        # if "probably_duplicate" in request.args:
-        #     print(Patient.query.first().attrs[''])
-        #     # self.q = self.q.filter(Patient.attrs['is_duplicate'])
-        #     self.search_form.probably_duplicate.default='checked'            
-
-        def name_search(param, param_str, q):
+        def name_search(param, param_str, q, param_disp_name):
             if param_str in request.args:
                 req_str = request.args[param_str]
                 q = q.filter(func.lower(param).contains(req_str.lower()))
                 param = getattr(self.search_form, param_str, None)
                 if param:
                     setattr(param, 'default', req_str)
+                    
+                    if req_str:
+                        self.search_params.append((param_disp_name, req_str))
             
             return q
 
-        self.q = name_search(Patient.first_name, "first_name", self.q)
-        self.q = name_search(Patient.second_name, "second_name", self.q)
-        self.q = name_search(Patient.patronymic_name, "patronymic_name", self.q)
+        self.q = name_search(Patient.first_name, "first_name", self.q, _("Имя"))
+        self.q = name_search(Patient.second_name, "second_name", self.q, _("Фамилия"))
+        self.q = name_search(Patient.patronymic_name, "patronymic_name", self.q, _("Отчество"))
 
         if "iin" in request.args:
             self.q = self.q.filter(Patient.iin.contains(request.args["iin"]))
             self.search_form.iin.default = request.args["iin"]
 
+            if request.args["iin"]:
+                self.search_params.append((_("ИИН"), request.args["iin"]))
+
+        if "pass_num" in request.args:
+            self.q = self.q.filter(Patient.pass_num.contains(request.args["pass_num"]))
+            self.search_form.pass_num.default = request.args["pass_num"]
+            
+            if request.args["pass_num"]:
+                self.search_params.append((_("Номер Паспорта"), request.args["pass_num"]))
+
         if "telephone" in request.args:
             self.q = self.q.filter(Patient.telephone.contains(request.args["telephone"]))
             self.search_form.telephone.default = request.args["telephone"]
+
+            if request.args["telephone"]:
+                self.search_params.append((_("Телефон"), request.args["telephone"]))
 
         travel_type = request.args.get("travel_type", c.all_travel_types[0])
         if travel_type and travel_type != c.all_travel_types[0]:
@@ -334,6 +331,8 @@ class AllPatientsTableModule(TableModule):
                 filt["travel_type_id"] = travel_type_id
                 self.search_form.travel_type.default = travel_type
 
+            self.search_params.append((_("Тип Въезда"), travel_type_query.name))
+
         # Created_date range
         date_range_start = request.args.get("date_range_start", None)
         
@@ -341,6 +340,8 @@ class AllPatientsTableModule(TableModule):
             date_range_start = parse_date(date_range_start)
             self.q = self.q.filter(Patient.created_date >= date_range_start)
             self.search_form.date_range_start.default = date_range_start
+            
+            self.search_params.append((_("Дата Создания (Начало)"), date_range_start.strftime('%Y-%m-%d')))
 
         date_range_end = request.args.get("date_range_end", None)
         
@@ -349,12 +350,17 @@ class AllPatientsTableModule(TableModule):
             self.q = self.q.filter(Patient.created_date <= date_range_end)
             self.search_form.date_range_end.default = date_range_end
 
+            self.search_params.append((_("Дата Создания (Конец)"), date_range_end.strftime('%Y-%m-%d')))
+
         self.q = self.q.filter_by(**filt)
 
-        # State serch
+        # State search
         patient_state = self.request.args.get("patient_state", "-1")
         if patient_state != "-1":
-            patient_state_id = State.query.filter_by(value=patient_state).first().id
+            patient_state_val = State.query.filter_by(value=patient_state).first()
+            patient_state_id = patient_state_val.id
+
+            patient_state_disp_name = patient_state_val.name
 
             self.q = self.q.join(PatientState, PatientState.patient_id == Patient.id)
             self.q = self.q.filter(PatientState.state_id == patient_state_id)
@@ -368,6 +374,8 @@ class AllPatientsTableModule(TableModule):
                 self.q = self.q.filter(PatientState.detection_date >= state_date_range_start)
                 self.search_form.state_date_range_start.default = state_date_range_start
 
+                patient_state_disp_name = "{} {}".format(patient_state_disp_name, state_date_range_start.strftime('%Y-%m-%d'))
+
             state_date_range_end = request.args.get("state_date_range_end", None)
             
             if state_date_range_end:
@@ -375,25 +383,40 @@ class AllPatientsTableModule(TableModule):
                 self.q = self.q.filter(PatientState.detection_date <= state_date_range_end)
                 self.search_form.state_date_range_end.default = state_date_range_end
 
+                patient_state_disp_name = "{}:{}".format(patient_state_disp_name, state_date_range_end.strftime('%Y-%m-%d'))
+
+            self.search_params.append((_("Статус Пациента"), patient_state_disp_name))
+
         # Is contacted
         contacted = self.request.args.get("contacted", "-1")
         if contacted != "-1":
+            contacted_disp_name = None
             if contacted == "contacted":
                 self.q = self.q.join(ContactedPersons, ContactedPersons.contacted_patient_id == Patient.id)
                 self.q = self.q.group_by(Patient.id)
+
+                contacted_disp_name = _("Контактный")
             elif contacted == "with_contacts":
                 self.q = self.q.join(ContactedPersons, ContactedPersons.infected_patient_id == Patient.id)
                 self.q = self.q.group_by(Patient.id)
+
+                contacted_disp_name = _("С Контактами")
             elif contacted == "contacted_close":
                 self.q = self.q.join(ContactedPersons, ContactedPersons.contacted_patient_id == Patient.id)
                 self.q = self.q.filter(ContactedPersons.is_potential_contact == False)
                 self.q = self.q.group_by(Patient.id)
+
+                contacted_disp_name = _("Контактный (БК)")
             elif contacted == "contacted_potential":
                 self.q = self.q.join(ContactedPersons, ContactedPersons.contacted_patient_id == Patient.id)
                 self.q = self.q.filter(ContactedPersons.is_potential_contact == True)
                 self.q = self.q.group_by(Patient.id)
 
+                contacted_disp_name = _("Контактный (ПК)")
+
             self.search_form.contacted.default = contacted
+
+            self.search_params.append((_("Контакты"), contacted_disp_name))
 
         is_iin_fail = request.args.get("is_iin_fail", None)
         if is_iin_fail:
@@ -420,6 +443,8 @@ class AllPatientsTableModule(TableModule):
 
             self.search_form.address.default = address
 
+            self.search_params.append((_("Адрес"), address))
+
         current_country = Country.query.filter_by(code=c.current_country).first()
 
         if travel_type and travel_type != c.all_travel_types[0]:
@@ -430,6 +455,9 @@ class AllPatientsTableModule(TableModule):
                 flight_code_id = request.args.get("flight_code_id", None)
                 if flight_code_id != None:
                     self.q = self.q.filter(FlightTravel.flight_code_id == flight_code_id)
+
+                    # print(FlightCode.query.all())
+                    self.search_params.append((_("Номер Рейса"), FlightCode.query.filter_by(id = flight_code_id).first()))
 
                 travel_in_out = request.args.get("travel_departure_outer", "all_travel")
                 if travel_in_out != "all_travel":
@@ -459,7 +487,9 @@ class AllPatientsTableModule(TableModule):
                     elif travel_in_out == "domestic_travel":
                         self.q = self.q.filter(Train.from_country == current_country)
 
-                    self.search_form.travel_departure_outer.default = travel_in_out                
+                    self.search_form.travel_departure_outer.default = travel_in_out
+
+                    self.search_params.append((_("Поезд"), Train.query.filter_by(id = train_id).first()))
 
             # Blockpost
             elif travel_type_query.value == c.blockpost_type[0]:
@@ -475,6 +505,8 @@ class AllPatientsTableModule(TableModule):
                     self.q = self.q.filter(BlockpostTravel.region_id == blockpost_region_id)
                     self.search_form.blockpost_region_id.default = blockpost_region_id
 
+                    self.search_params.append((_("Блокпост"), Region.query.filter_by(id = blockpost_region_id).first().name))
+            
             # Auto
             elif (travel_type_query.value, travel_type_query.name) in c.various_travel_types:
                 self.q = self.q.join(VariousTravel)
@@ -499,7 +531,10 @@ class AllPatientsTableModule(TableModule):
                             border_type[1].default = border_id
                 
                             self.q = self.q.filter(VariousTravel.border_control_id == border_id)
+                            self.search_params.append((_("Граница"), BorderControl.query.filter_by(id = border_id).first().name))
                             break
+
+
         self.search_form.process()
 
     def print_entry(self, result):
@@ -568,6 +603,9 @@ class AllPatientsTableModule(TableModule):
 
 
     def download_xls(self):
+        if not self.is_downloadable_xls:
+            return None
+
         data = []
 
         for row in self.q.all():
@@ -619,6 +657,8 @@ class AllPatientsTableModule(TableModule):
 
             is_infected = yes_no(row.is_infected)
             is_found = yes_no(row.is_found)
+
+            print(row.id)
 
             data.append([row.id, str(row), row.iin, gender, row.dob, str(row.region), 
                         row.pass_num, str(row.citizenship), str(row.country_of_residence),

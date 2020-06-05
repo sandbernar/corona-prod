@@ -64,6 +64,52 @@
               </div>
             </div>
           </div>
+          <div class="row mt-3">
+            <div class="col">
+              <div class="card bg-secondary shadow">
+                <div class="card-header bg-white">
+                  <div class="row">
+                    <div class="col-xl">
+                      <p class="mb-0" style="font-weight:400;">{{ _("Список стационаров по областям") }}</p>
+                    </div>
+                    <div class="col">
+                      <label class="form-control-label">{{ _("Тип Стационара") }}</label>
+                      {{ form.hospital_type(class="form-control") }}              
+                    </div>                    
+                    <div class="col-auto">
+                      <button class="btn btn-primary" name="value" type="submit" value="hospitals_list_by_regions" style="height:100%">
+                        {{ _('Скачать') }}
+                      </button>                      
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col">
+              <div class="card bg-secondary shadow">
+                <div class="card-header bg-white">
+                  <div class="row">
+                    <div class="col-xl">
+                      <p class="mb-0" style="font-weight:400;">{{ _("Инфицированные с параметрами инфицирования") }}</p>
+                    </div>
+                    <div class="col">
+                      <label class="form-control-label">{{ _("Начало Периода") }}</label>
+                      {{ form.start_date(class="form-control", type="date") }}              
+                    </div>
+                    <div class="col">
+                      <label class="form-control-label">{{ _("Конец Периода") }}</label>
+                      {{ form.end_date(class="form-control", type="date") }}              
+                    </div>
+                    <div class="col-auto">
+                      <button class="btn btn-primary" name="value" type="submit" value="infected_with_params" style="height:100%">
+                        {{ _('Скачать') }}
+                      </button>                      
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>          
         </div>
       </div>
     </div>

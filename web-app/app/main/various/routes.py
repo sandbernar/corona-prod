@@ -12,6 +12,7 @@ import pandas as pd
 import io
 
 from app.main.models import Region
+from app.main.hospitals.models import Hospital_Type, Hospital
 from app.main.patients.models import Patient, PatientState, State, ContactedPersons
 from app.main.various.forms import DownloadVariousData
 from app.main.forms import TableSearchForm
@@ -36,9 +37,9 @@ def export_various_data_xls():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))
 
-    if not current_user.is_admin:
+    if not current_user.user_role.can_access_various_exports:
         return render_template('errors/error-500.html'), 500
-    
+
     q = Patient.query
     
     infected_state_id = State.query.filter_by(value=c.state_infec[0]).first().id
@@ -136,31 +137,74 @@ def export_various_data_xls():
                                            _("Умер"), _("Место Работы"), _("Адрес Работы"),
                                            _("Работа Lat"), _("Работа Lng")])
 
-    # output = io.BytesIO()
-    # # writer = pd.ExcelWriter(output, engine='xlsxwriter')
-    # data.to_excel(writer, index=False)
-    # data.to_csv()
+    elif value == "hospitals_list_by_regions":
+        hospitals_q = Hospital.query
 
-    # def get_col_widths(df):
-    #     widths = []
-    #     for col in df.columns:
-    #         col_data_width = max(df[col].map(str).map(len).max(), len(col))
-    #         col_data_width *= 1.2
+        hospital_type = request.form.get("hospital_type", "-1")
+        if hospital_type != "-1":
+            hospitals_q = hospitals_q.filter_by(hospital_type_id = hospital_type)
 
-    #         widths.append(col_data_width)
-        
-    #     return widths
+        for hospital in hospitals_q.all():
+            entry = [str(hospital.region), hospital.hospital_type, str(hospital)]
 
-    # for i, width in enumerate(get_col_widths(data)):
-    #     writer.sheets['Sheet1'].set_column(i, i, width)
+            data.append(entry)
 
-    # writer.save()
-    # xlsx_data = output.getvalue()
+        data = pd.DataFrame(data, columns=[_("Регион"), _("Тип Стационара"), _("Название Стационара")])
 
-    # region_name = Region.query.filter_by(id = region_id).first().name if region_id != -1 else c.all_regions
-    filename_xls = "выгрузка.csv"
+    elif value == "infected_with_params":
+        start_date = request.form.get("start_date", None)
+        if start_date:
+            start_date = parse_date(start_date)
+            q = q.filter(PatientState.detection_date >= start_date)
+
+        end_date = request.form.get("end_date", None)
+        if end_date:
+            end_date = parse_date(end_date)
+            q = q.filter(PatientState.detection_date <= end_date)
+
+        for patient in q.all():
+            infected_state = PatientState.query.filter_by(patient_id = patient.id).filter_by(state_id = infected_state_id).first()
+
+            if infected_state:
+
+                state_infec_attr = c.unknown[1]
+                illness_symptoms = c.unknown[1]
+                illness_severity = c.unknown[1]
+
+                if infected_state.attrs:                
+                    state_infec_attr = infected_state.attrs.get('state_infec_type', None)
+                    if state_infec_attr:
+                        state_infec_attr = dict(c.state_infec_types)[state_infec_attr]
+
+                    illness_symptoms = infected_state.attrs.get('state_infec_illness_symptoms', None)
+                    if illness_symptoms != c.unknown[1]:
+                        illness_symptoms = dict(c.illness_symptoms)[illness_symptoms]
+
+                    illness_severity = infected_state.attrs.get('state_infec_illness_severity', None)
+                    if illness_severity != c.unknown[1]:
+                        illness_severity = dict(c.illness_severity)[illness_severity]                                
+
+                entry = [str(patient), patient.dob, str(patient.home_address),
+                        patient.job, patient.job_position, patient.job_category,
+                        state_infec_attr, illness_symptoms, illness_severity]
+
+                data.append(entry)
+
+        data = pd.DataFrame(data, columns=[_("ФИО"), _("Год рождения"), _("Адрес"),
+                                           _("Место работы"), _("Профессия (должность)"), _("Категория Работы"),
+                                           _("Как выявлен"),
+                                           _("Клиника"), _("Степень Симптомов")])        
+
+    output = io.BytesIO()
+    writer = pd.ExcelWriter(output, engine='xlsxwriter')
+    data.to_excel(writer, index=False)
+
+    writer.save()
+    xlsx_data = output.getvalue()
+
+    filename_xls = "выгрузка.xls"
     
-    response = Response(data.to_csv(), mimetype="text/csv")
+    response = Response(xlsx_data, mimetype="application/vnd.ms-excel")
     response.headers["Content-Disposition"] = \
         "attachment;" \
         "filename*=UTF-8''{}".format(urllib.parse.quote(filename_xls.encode('utf-8')))
@@ -173,10 +217,12 @@ def various():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))
 
-    if not current_user.is_admin:
+    if not current_user.user_role.can_access_various_exports:
         return render_template('errors/error-500.html'), 500
 
     form = DownloadVariousData()
+
+    form.hospital_type.choices = [c.all_types] + [(t.id, t.name) for t in Hospital_Type.query.all()]
 
     change = None
     error_msg = None

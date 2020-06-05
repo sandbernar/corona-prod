@@ -23,6 +23,8 @@ ap.add_argument("-u", "--username", required=True,
 	help="Login")
 ap.add_argument("-p", "--password", required=True,
 	help="Password")
+ap.add_argument("-r", "--admin_role_id", required=True,
+	help="Admin Role ID")
 args = vars(ap.parse_args())
 
 get_config_mode = environ.get('CONFIG_MODE', 'Debug')
@@ -44,6 +46,7 @@ session = Session()
 user = User()
 user.username = args["username"]
 user.password = hash_pass(args["password"])
+user.user_role_id = args["admin_role_id"]
 
 # user.full_name = "test1"
 # user.organization = "test2"

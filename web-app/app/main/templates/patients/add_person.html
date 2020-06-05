@@ -36,6 +36,33 @@
   </div>
 </div>
 
+<!-- Add Success -->
+<div class="modal fade" id="addSuccessModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="loader" id="submit_loader"></div>
+    <div class="modal-content" style="position:relative;">     
+      <div class="modal-header">
+        <h5 class="modal-title" id="addSuccessModalLabel">{{ _("Пациент был успешно добавлен") }}</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">x</span>
+        </button>
+      </div>
+      <div class="modal-body" id="add_check_body" style="text-align: center;">
+        <span class="done-icon"><i class="fas fa-check"></i></span>
+        <br>
+        <h4>{{ _("Пациент успешно добавлен!") }}</h4>
+        <br>
+        <h4>{{ _("Для добавления статусов нажмите на кнопку внизу. Профиль откроется в новой вкладке") }}</h4>
+        <br>
+        <a class="btn btn-primary" id="success_open_profile" style="white-space: initial;" href="/" target="_blank" rel="noopener noreferrer">{{ _("Профиль Пациента (новая вкладка)") }}</a>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="cancel_button" data-dismiss="modal">{{ _("Продолжить Добавление") }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="container-fluid mt--7">
   {% if added %}
   <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -106,18 +133,51 @@
                   <div class="col-xl">
                         {% with form=form %}
                           {% include "patients/modules/patient_form_left.html" %}
-                        {% endwith %}                    
-                  </div>
-                  <div class="col-xl">
-                        {% with form=form %}
-                          {% include "patients/modules/patient_form_right.html" %}
                         {% endwith %}
-                                        <div class="row mt-2">
+                  {% if not current_user.user_role.can_found_by_default %}
+                  <div class="row mt-2">
                   <div class="col">
                     <div class="card shadow">
                       <div class="card-header bg-transparent">
                         <div class="card-body">
                           <div class="row">
+                            <div class="col">
+                              <div class="form-group">
+                                <label class="form-control-label">{{ _("Найден?") }}</label><br>
+                                {% for subfield in form.is_found %}
+                                <div class="custom-control custom-radio custom-control-inline">
+                                  {{ subfield(type="radio", id=subfield.id, class="custom-control-input") }}
+                                  <label class="custom-control-label" for='{{ subfield.id }}'>{{ subfield.label }}</label>
+                                </div>
+                                {% endfor %}
+                              </div>
+                            </div>
+                            <div class="col">
+                              <div class="form-group">
+                                <label for="is_found_date" class="form-control-label">{{ _("Дата Нахождения") }}*</label>
+                                {{ form.is_found_date(class="form-control datepicker", type="date") }}
+                              </div>
+                            </div>                            
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                  {% endif %}    
+                  </div>
+                  <div class="col-xl">
+                        {% with form=form %}
+                          {% include "patients/modules/patient_form_right.html" %}
+                        {% endwith %}
+                  
+                  <div class="row mt-2">
+                  <div class="col">
+                    <div class="card shadow">
+                      <div class="card-header bg-transparent">
+                        <div class="card-body">
+                          <div class="row">
+                  {% if current_user.user_role.can_set_transit %}
                             <div class="col">
                               <div class="form-group">
                                 <label class="form-control-label">{{ _("Транзит?") }}</label><br>
@@ -129,6 +189,7 @@
                                 {% endfor %}
                               </div>
                             </div>
+                  {% endif %}                 
                   <div class="col">
                     <button id="open_modal_add_patient" class="btn btn-primary" data-toggle="modal" data-target="#addPatientModal" class="btn btn-primary" type="button" style="width:100%;height:100%;">
                       {{ _("Отправить") }}
@@ -138,7 +199,7 @@
                         </div>
                       </div>
                     </div>
-                  </div>                 
+                  </div>
                   <button type="submit" id="hiddenSubmit" style="display:none;"></button>
                 </div>                      
                   </div>
@@ -167,9 +228,12 @@
   {% include "js/travel_form.html" %}
   {% endwith %}
 
-
   update_travel_form()
 
+  function show_success_link(link_to_profile) {
+    $("#success_open_profile").attr("href", link_to_profile)
+    $("#addSuccessModal").modal('show');
+  }
 
   function show_loader(show) {
     var loader = $("#submit_loader")
@@ -231,6 +295,11 @@
             // settings
             type: 'info',
           });
+
+          {% if current_user.user_role.can_see_success_add_window %}
+            show_success_link(`/patient_profile?id=${res.patient_id}`)
+          {% endif %}
+
           close_modal_submit()
 
           if(res.selected_patient_id !== undefined) {
@@ -300,6 +369,11 @@
 
 $("#travel_type").on("change", function(){
   update_travel_form();
+});
+
+$('input[name="is_found"]').on("change", function(e) {
+  if(e.target.value == 1) $("#is_found_date").prop('disabled', false)
+  else $("#is_found_date").prop('disabled', true)
 });
 
 

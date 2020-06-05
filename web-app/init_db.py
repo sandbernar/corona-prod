@@ -10,6 +10,7 @@ from app.main.models import (Region, Country, Infected_Country_Category, JobCate
                             TravelType, BorderControl, VariousTravel, Address, VisitedCountry)
 from app.main.patients.models import ContactedPersons, Patient, State, PatientState
 from app.main.hospitals.models import Hospital, Hospital_Type
+from app.login.models import UserRole
 from app.main.flights_trains.models import FlightTravel, FlightCode
 from config import config_dict
 
@@ -384,6 +385,11 @@ def initialize_db(db):
                 typ = Hospital_Type(name=n)
                 db.session.add(typ)
 
+    # Add roles
+    for role in C.roles:
+        if not UserRole.query.filter_by(value = role[0]).first():
+            user_role = UserRole(name = role[1], value = role[0])
+            db.session.add(user_role)
     
     db.session.commit()
 

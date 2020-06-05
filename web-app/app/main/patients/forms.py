@@ -86,6 +86,9 @@ class PatientForm(FlaskForm):
     is_home_end = DateField("Duration of Home Quarantine")
 
     # patient_states = SelectField(id='patient_states')
+    is_found = RadioField("Is Found", choices=[(1, _("Да")),(0, _("Нет"))], default=0, validators=[DataRequired()])
+    is_found_date = DateField("Is Found Date")
+
     is_transit = RadioField("Is Transit", choices=[(1, _("Да")),(0, _("Нет"))], default=0, validators=[DataRequired()])
     patient_status = SelectField('Patient Status', id='patient_status' , validators=[DataRequired()])
 
@@ -187,6 +190,7 @@ class PatientsSearchForm(FlaskForm):
     patronymic_name = TextField('Patronymic Name')
 
     iin = TextField(id='iin')
+    pass_num = TextField()
     telephone = TextField(id='telephone')
 
 class SelectContactedForm(FlaskForm):
