@@ -178,31 +178,16 @@ def export_various_data_xls():
                                            _("Как выявлен"),
                                            _("Клиника"), _("Степень Симптомов")])        
 
-    # output = io.BytesIO()
-    # # writer = pd.ExcelWriter(output, engine='xlsxwriter')
-    # data.to_excel(writer, index=False)
-    # data.to_csv()
+    output = io.BytesIO()
+    writer = pd.ExcelWriter(output, engine='xlsxwriter')
+    data.to_excel(writer, index=False)
 
-    # def get_col_widths(df):
-    #     widths = []
-    #     for col in df.columns:
-    #         col_data_width = max(df[col].map(str).map(len).max(), len(col))
-    #         col_data_width *= 1.2
+    writer.save()
+    xlsx_data = output.getvalue()
 
-    #         widths.append(col_data_width)
-        
-    #     return widths
-
-    # for i, width in enumerate(get_col_widths(data)):
-    #     writer.sheets['Sheet1'].set_column(i, i, width)
-
-    # writer.save()
-    # xlsx_data = output.getvalue()
-
-    # region_name = Region.query.filter_by(id = region_id).first().name if region_id != -1 else c.all_regions
-    filename_xls = "выгрузка.csv"
+    filename_xls = "выгрузка.xls"
     
-    response = Response(data.to_csv(index=False, encoding='windows-1251'), mimetype="text/csv")
+    response = Response(xlsx_data, mimetype="application/vnd.ms-excel")
     response.headers["Content-Disposition"] = \
         "attachment;" \
         "filename*=UTF-8''{}".format(urllib.parse.quote(filename_xls.encode('utf-8')))
