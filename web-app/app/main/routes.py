@@ -238,6 +238,7 @@ def patients_within_tiles():
         distance = distances[zoom]
     
     # distance = 2
+    print(distance)
     coordinates_patients = {
         "type": "FeatureCollection",
         "features": []
@@ -272,8 +273,7 @@ def patients_within_tiles():
     # ) tsub
     # GROUP BY id;
     # """ % (bbox_y1, bbox_x1, bbox_y2, bbox_x2))
-    # m = db.engine.execute(sql)
-    m = []
+    m = db.engine.execute(sql)
     for a in m:
         features = []
         count = int(a[1])
