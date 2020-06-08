@@ -147,6 +147,7 @@ for i in range(int(args['number'])):
     patient.dob = bornDate
     patient.created_date = datetime.strftime(datetime.today(), "%Y-%m-%dT00:00:00+06:00")
     patient.travel_type_id = local_type_id
+    patient.region_id = 10
     
     toPoint = kzcities[randint(0, len(kzcities)-1)]
     # insert address
