@@ -22,7 +22,7 @@ try:
 except KeyError:
     exit('Error: Invalid CONFIG_MODE environment variable entry.')
 
-app = create_app(config_mode) 
+app = create_app(config_mode)
 Migrate(app, db)
 babel = Babel(app)
 
