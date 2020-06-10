@@ -162,7 +162,7 @@ def users():
 
     users_search_form.process()
     form.process()
-    return route_template('users/users', users=users, users_table = users_table, form=form,
+    return route_template('users/users', users_table = users_table, form=form,
                             users_search_form=users_search_form, constants=c, change=change, error_msg=error_msg)
 
 @blueprint.route('/add_user', methods=['GET', 'POST'])

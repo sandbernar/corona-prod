@@ -1,0 +1,105 @@
+{% extends "base_site.html" %}
+
+{% block title %} Tables {% endblock title %}
+
+{% block stylesheets %}
+{{ super() }}
+{% endblock stylesheets %}
+
+{% block content %}
+
+{% include "site_template/navigation.html" %}
+
+{% include "site_template/top-stats.html" %}
+
+<div class="container-fluid mt--7">
+  {% if current_user.user_role.can_export_users %}
+  <div class="row">
+    <div class="col">
+      <div class="card shadow">
+        <div class="card-header border-0">
+          <form method="POST" id="export_xls" action="/export_users_activity_xls">
+          {{ form.hidden_tag() }}       
+            <div class="row">
+              <div class="col">
+                <h3> {{ _('Скачать Выгрузку') }} </h3>
+              </div>
+              <div class="col">
+                <label class="form-control-label">{{ _("Регион Пользователей") }}</label>
+                {{ form.region_id(class="form-control") }}              
+              </div>
+              <div class="col">
+                <label class="form-control-label">{{ _("Дата Начала Периода") }}</label>
+                {{ form.start_date(type="date", class="form-control") }}              
+              </div>
+              <div class="col">
+                <label class="form-control-label">{{ _("Дата Конца Периода") }}</label>
+                {{ form.end_date(type="date", class="form-control") }}              
+              </div>
+              <div class="col-md-auto">
+              <button class="btn btn-primary" type="submit" style="height:100%">
+                {{ _('Скачать') }}
+              </button>
+            </div>
+            </div>
+          </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+    {% if current_user.user_role.can_access_users %}
+    <!-- Table -->
+    <div class="row mt-3">
+      <div class="col">
+      {% with table=users_table,
+       search_fields = [
+        [
+          [_("Логин"), users_search_form.username(class="form-control", type="text", placeholder=_("Логин"))],
+          [_("Регион"), users_search_form.region_id(class="form-control")],
+          [_("Администратор?"), users_search_form.is_admin(class="form-control")],
+        ]
+      ] 
+      %}
+        {% include "modules/table/table.html" %}
+      {% endwith %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Footer -->
+
+
+
+    {% include "site_template/footer.html" %}
+
+  </div>        
+
+  {% endblock content %}
+
+  {% block javascripts %}
+  {{ super()}}
+
+  <script>
+  function download_users_activity_xls() {
+    $.post($("#export_xls").attr('action'), $("#export_xls").serialize(), function(res){
+      console.log(res)
+    })
+    .fail(function() {
+        $.notify({
+          // options
+          icon: 'fa fa-exclamation-circle',
+          message: '{{ _("Произошла ошибка. Обратитесь к администратору") }}'
+        },{
+          // settings
+          type: 'danger',
+        });
+    });
+  }
+  </script>
+
+  {% with change=change, error_msg=error_msg %}
+  {% include "site_template/change_notification.html" %}
+  {% endwith %}
+
+  {% endblock javascripts %}

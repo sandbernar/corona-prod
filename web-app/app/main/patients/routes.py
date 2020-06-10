@@ -9,6 +9,8 @@ import math, json, re, itertools
 import collections
 from datetime import datetime, date, timedelta
 from multiprocessing.pool import ThreadPool as threadpool
+import random
+import time
 
 import numpy as np
 import nltk
@@ -22,7 +24,7 @@ from flask_uploads import UploadSet
 from jinja2 import TemplateNotFound
 from sqlalchemy import func, exc
 
-from app import login_manager, db
+from app import login_manager, db, celery
 from app import constants as c
 from app.main import blueprint
 from app.main.models import Region, Country, VisitedCountry, Infected_Country_Category, JobCategory
@@ -160,6 +162,26 @@ def prepare_patient_form(patient_form, with_old_data = False, with_all_travel_ty
         populate_countries_select(patient_form.visited_country_id, -1)
 
     return patient_form
+
+@celery.task(bind=True)
+def long_task(self):
+    """Background task that runs a long function with progress reports."""
+    verb = ['Starting up', 'Booting', 'Repairing', 'Loading', 'Checking']
+    adjective = ['master', 'radiant', 'silent', 'harmonic', 'fast']
+    noun = ['solar array', 'particle reshaper', 'cosmic ray', 'orbiter', 'bit']
+    message = ''
+    total = random.randint(10, 50)
+    for i in range(total):
+        if not message or random.random() < 0.25:
+            message = '{0} {1} {2}...'.format(random.choice(verb),
+                                              random.choice(adjective),
+                                              random.choice(noun))
+        self.update_state(state='PROGRESS',
+                          meta={'current': i, 'total': total,
+                                'status': message})
+        time.sleep(1)
+    return {'current': 100, 'total': 100, 'status': 'Task completed!',
+            'result': 42}
 
 def is_same_address(request_dict, address, form_prefix='home'):
     is_same = True
@@ -755,6 +777,8 @@ def get_lat_lng(patients):
 def patients():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))
+
+    task = long_task.apply_async()
 
     form = PatientsSearchForm()
     form = prepare_patient_form(form, with_all_travel_type=True, with_old_data=True, search_form=True)
