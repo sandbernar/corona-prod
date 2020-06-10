@@ -1,11 +1,12 @@
 # -*- encoding: utf-8 -*-
 """
 License: MIT
-Copyright (c) 2019 - present AppSeed.us
+Copyright (c) 2020 - Artem Fedoskin
 """
+import datetime
 
 from flask_login import UserMixin
-from sqlalchemy import Column, Integer, String, Date, Boolean, Float, ForeignKey
+from sqlalchemy import Column, Integer, String, Date, Boolean, Float, ForeignKey, DateTime
 
 from app import db
 from app import constants as c
@@ -18,12 +19,15 @@ class Download(db.Model):
     __tablename__ = 'Download'
 
     id = Column(Integer, primary_key=True)
+    created_date = Column(DateTime, default=datetime.datetime.utcnow)
 
     user_id = Column(Integer, ForeignKey('User.id', ondelete="CASCADE"))
-    user = db.relationship('User', backref=db.backref('download', passive_deletes=True))
+    user = db.relationship('User', backref=db.backref('downloads', passive_deletes=True))
 
     task_id = Column(String, unique=False, nullable=False)
-    filename = Column(String, unique=False, nullable=True)
+
+    download_name = Column(String, unique=False, nullable=True) 
+    filename = Column(String, unique=True, nullable=True)
 
     def __init__(self, **kwargs):
         for property, value in kwargs.items():

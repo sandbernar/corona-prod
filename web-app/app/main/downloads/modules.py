@@ -11,15 +11,12 @@ from app.main.util import parse_date
 from sqlalchemy import func
 from flask_babelex import _
 
-class UserTableModule(TableModule):
+class DownloadsTableModule(TableModule):
     def __init__(self, request, q, search_form, header_button = None, page = 1, per_page = 5):
         table_head = OrderedDict()
-        table_head[_("Логин")] = ["username"]
-        table_head[_("E-Mail")] = ["email"]
-        table_head[_("Регион")] = []
-        table_head[_("Администратор?")] = ["is_admin"]
-        table_head[_("Телефон")] = ["telephone"]
-        table_head[_("Добавлено Пациентов")] = []
+        table_head[_("Название")] = ["download_name"]
+        table_head[_("Дата")] = ["created_date"]
+        table_head[_("Прогресс")] = []
 
         super().__init__(request, q, table_head, header_button, search_form)     
 
@@ -52,7 +49,7 @@ class UserTableModule(TableModule):
             except ValueError:
                 return render_template('errors/error-500.html'), 500                
             
-            self.search_form.is_admin.default = is_admin        
+            self.search_form.is_admin.default = is_admin
 
     def print_entry(self, result):
         username = result[0].username
