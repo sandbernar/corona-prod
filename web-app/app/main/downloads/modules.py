@@ -2,6 +2,8 @@ from flask import request
 import math
 from app.main.modules import TableModule
 
+from app import celery
+
 import app.constants as c
 from app.login.models import User
 from app.main.patients.models import Patient
@@ -52,17 +54,22 @@ class DownloadsTableModule(TableModule):
             self.search_form.is_admin.default = is_admin
 
     def print_entry(self, result):
-        username = result[0].username
-        username = (username, "/user_profile?id={}".format(result[0].id))
+        # username = result[0].username
+        # username = (username, "/user_profile?id={}".format(result[0].id))
 
-        email = result[0].email
-        region = c.all_regions if result[0].region == None else result[0].region
+        # email = result[0].email
+        # region = c.all_regions if result[0].region == None else result[0].region
 
-        is_admin = _("Нет")
-        if result[0].is_admin:
-            is_admin = _("Да")
+        # is_admin = _("Нет")
+        # if result[0].is_admin:
+        #     is_admin = _("Да")
         
-        telephone = result[0].telephone
-        added_patients_count = 0 if result[1] == None else result[1]
+        # telephone = result[0].telephone
+        # added_patients_count = 0 if result[1] == None else result[1]
 
-        return [username, email, region, is_admin, telephone, added_patients_count]
+        # return [username, email, region, is_admin, telephone, added_patients_count]
+        download_name = result.download_name
+        created_date = result.created_date
+        progress = celery.AsyncResult(result.task_id).state
+
+        return [download_name, created_date, progress]

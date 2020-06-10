@@ -1,12 +1,12 @@
 # -*- encoding: utf-8 -*-
 """
 License: MIT
-Copyright (c) 2019 - present AppSeed.us
+Copyright (c) 2020 - Artem Fedoskin
 """
 from app.main import blueprint
 from flask import render_template, redirect, url_for, request, Response
 from flask_login import login_required, current_user
-from app import login_manager, db
+from app import login_manager, db, celery
 
 import pandas as pd
 import io
@@ -29,7 +29,61 @@ from sqlalchemy.sql import select
 import urllib
 from datetime import datetime, timedelta, date
 
+from app.main.celery_util import start_task, finish_task
+
 from app.main.users.modules import UserTableModule, UserPatientsTableModule
+
+@celery.task(bind=True)
+def export_region_age_sex_infected(self, filename):
+    def get_age_filter(age_start, age_end):
+        date_start = datetime.strftime(datetime.today() - timedelta(days=age_start*365), "%Y-%m-%d")
+        date_end = datetime.strftime(datetime.today() - timedelta(days=age_end*365), "%Y-%m-%d")
+
+        return Patient.dob.between(date_end, date_start)
+
+    q = Patient.query
+    
+    infected_state_id = State.query.filter_by(value=c.state_infec[0]).first().id
+
+    q = q.join(PatientState, PatientState.patient_id == Patient.id)
+    q = q.filter(PatientState.state_id == infected_state_id)
+    q = q.group_by(Patient.id)
+
+    total = Region.query.count()
+    i = 0
+
+    data = []
+
+    for region in Region.query.all():
+        if region.name != "Вне РК":
+            infected_count = q.filter(Patient.region_id == region.id).count()
+
+            entry = [region.name, infected_count]
+            
+            for age_range in [(0, 9), (10, 19), (20, 29), (30, 39), (40, 49), (50, 59), (60, 69)
+                              , (70, 79), (80, 89), (90, 99)]:
+                
+                age_query = q.filter(get_age_filter(age_range[0], age_range[1])).filter(Patient.region_id == region.id)     
+                
+                entry.append(age_query.filter(Patient.gender == False).count())
+                entry.append(age_query.filter(Patient.gender == True).count())
+
+            data.append(entry)
+
+        self.update_state(state='PROGRESS',
+                            meta={'current': i, 'total': total,
+                            'status': 'PROGRESS'})
+        i += 1
+
+    age_ranges = [ _("0-9"), _("10-19"), _("20-29"), _("30-39"), _("40-49"), _("50-59"), _("60-69"),
+                   _("70-79"), _("80-89"), _("90-99")]
+
+    gender_age_ranges = [["М {}".format(age_r), "Ж {}".format(age_r)] for age_r in age_ranges]
+    gender_age_ranges = [x for l in gender_age_ranges for x in l]
+
+    data = pd.DataFrame(data, columns=[_("Регион"), _("Все"), *gender_age_ranges])
+
+    finish_task(data, self.request.id, filename)
 
 @blueprint.route('/export_various_data_xls', methods=['POST'])
 @login_required
@@ -53,35 +107,9 @@ def export_various_data_xls():
     value = request.form.get("value", None)
 
     if value == "region_age_sex_infected":
-        def get_age_filter(age_start, age_end):
-            date_start = datetime.strftime(datetime.today() - timedelta(days=age_start*365), "%Y-%m-%d")
-            date_end = datetime.strftime(datetime.today() - timedelta(days=age_end*365), "%Y-%m-%d")
+        task = export_region_age_sex_infected.delay(filename = "sss.xls")
+        start_task(current_user, _("Инфицированные - регион, возраст, пол"), task.id)
 
-            return Patient.dob.between(date_end, date_start)
-
-        for region in Region.query.all():
-            if region.name != "Вне РК":
-                infected_count = q.filter(Patient.region_id == region.id).count()
-
-                entry = [region.name, infected_count]
-                
-                for age_range in [(0, 9), (10, 19), (20, 29), (30, 39), (40, 49), (50, 59), (60, 69)
-                                  , (70, 79), (80, 89), (90, 99)]:
-                    
-                    age_query = q.filter(get_age_filter(age_range[0], age_range[1])).filter(Patient.region_id == region.id)     
-                    
-                    entry.append(age_query.filter(Patient.gender == False).count())
-                    entry.append(age_query.filter(Patient.gender == True).count())
-
-                data.append(entry)
-
-        age_ranges = [ _("0-9"), _("10-19"), _("20-29"), _("30-39"), _("40-49"), _("50-59"), _("60-69"),
-                       _("70-79"), _("80-89"), _("90-99")]
-
-        gender_age_ranges = [["М {}".format(age_r), "Ж {}".format(age_r)] for age_r in age_ranges]
-        gender_age_ranges = [x for l in gender_age_ranges for x in l]
-
-        data = pd.DataFrame(data, columns=[_("Регион"), _("Все"), *gender_age_ranges])
     
     elif value == "region_geo_age":
         def calculate_age(born):
@@ -195,21 +223,22 @@ def export_various_data_xls():
                                            _("Как выявлен"),
                                            _("Клиника"), _("Степень Симптомов")])        
 
-    output = io.BytesIO()
-    writer = pd.ExcelWriter(output, engine='xlsxwriter')
-    data.to_excel(writer, index=False)
+    # output = io.BytesIO()
+    # writer = pd.ExcelWriter(output, engine='xlsxwriter')
+    # data.to_excel(writer, index=False)
 
-    writer.save()
-    xlsx_data = output.getvalue()
+    # writer.save()
+    # xlsx_data = output.getvalue()
 
-    filename_xls = "выгрузка.xls"
+    # filename_xls = "выгрузка.xls"
     
-    response = Response(xlsx_data, mimetype="application/vnd.ms-excel")
-    response.headers["Content-Disposition"] = \
-        "attachment;" \
-        "filename*=UTF-8''{}".format(urllib.parse.quote(filename_xls.encode('utf-8')))
+    # response = Response(xlsx_data, mimetype="application/vnd.ms-excel")
+    # response.headers["Content-Disposition"] = \
+    #     "attachment;" \
+    #     "filename*=UTF-8''{}".format(urllib.parse.quote(filename_xls.encode('utf-8')))
 
-    return response
+    # return response
+    return redirect(url_for('main_blueprint.downloads'))
 
 @blueprint.route('/various', methods=['GET'])
 @login_required

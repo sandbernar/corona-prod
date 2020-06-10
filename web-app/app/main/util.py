@@ -93,3 +93,12 @@ def yes_no_html(yes=True, invert_colors=False):
         return ("<font color='{}'>{}</font>".format(yes_color, yes_no(yes)), "safe")
 
     return ("<font color='{}'>{}</font>".format(no_color, yes_no(yes)), "safe")
+
+
+def pands_to_xls():
+    output = io.BytesIO()
+    writer = pd.ExcelWriter(output, engine='xlsxwriter')
+    data.to_excel(writer, index=False)
+
+    writer.save()
+    xlsx_data = output.getvalue()
