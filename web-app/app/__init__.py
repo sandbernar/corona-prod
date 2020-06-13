@@ -5,8 +5,9 @@ Copyright (c) 2019 - present AppSeed.us
 """
 
 from logging import basicConfig, DEBUG, getLogger, StreamHandler
-from os import path, getenv
+from os import path, getenv, environ
 from importlib import import_module
+from celery import Celery
 
 from flask import Flask, url_for
 from flask_login import LoginManager
@@ -17,6 +18,7 @@ import numpy as np
 db = SQLAlchemy()
 login_manager = LoginManager()
 csrf = CSRFProtect()
+celery = Celery(__name__)
 
 def register_extensions(app):
     db.init_app(app)
@@ -28,7 +30,7 @@ def register_blueprints(app):
         app.register_blueprint(module.blueprint)
 
         if module_name == "main":
-            for submodule_name in ["users", "hospitals", "patients", "flights_trains", "various"]:
+            for submodule_name in ["users", "hospitals", "patients", "flights_trains", "various", "downloads"]:
                 module = import_module('app.{}.{}.routes'.format(module_name, submodule_name))
                 app.register_blueprint(module.blueprint)            
 
@@ -85,6 +87,12 @@ def create_app(config, selenium=False, unittest=False):
     if unittest:
         app.config['WTF_CSRF_ENABLED'] = False
     app.config['SECRET_KEY'] = getenv("APP_SECRET_KEY") or "supersecret123456haha"
+
+    app.config['CELERY_BROKER_URL'] = environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/0')
+    app.config['CELERY_RESULT_BACKEND'] = environ.get('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0')
+
+    celery.conf.update(app.config)
+
     csrf.init_app(app)
     register_extensions(app)
     register_blueprints(app)

@@ -12,10 +12,9 @@ from flask_babelex import Babel
 from flask import request, session
 
 from config import config_dict
-from app import create_app, db
+from app import create_app, db, celery
 
 get_config_mode = environ.get('CONFIG_MODE', 'Debug')
-print(get_config_mode)
 
 try:
     config_mode = config_dict[get_config_mode.capitalize()]
@@ -23,7 +22,8 @@ except KeyError:
     exit('Error: Invalid CONFIG_MODE environment variable entry.')
 
 app = create_app(config_mode)
-Migrate(app, db)
+app.app_context().push()
+
 babel = Babel(app)
 
 @babel.localeselector
@@ -34,6 +34,3 @@ def get_locale():
 
 docs = UploadSet('documents', ['xls', 'xlsx', 'csv'])
 configure_uploads(app, docs)
-
-if __name__ == "__main__":
-    app.run()
