@@ -234,7 +234,7 @@ def patients_within_tiles():
     if not wo_clusters:
         if (zoom > 19 or zoom < 0):
             return render_template('errors/error-400.html'), 400
-        distances = [6,6, 5, 4, 3, 2, 1, 0.5, 0.5, 0.09, 0.07, 0.02, 0.01, 0.009,  0.008, 0.003, 0.002, 0.001, 0.001, 0.001]
+        distances = [0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.5, 0.5, 0.09, 0.07, 0.02, 0.01, 0.009,  0.008, 0.003, 0.002, 0.0009, 0.0005, 0.0001]
         distance = distances[zoom]
     
     # distance = 2

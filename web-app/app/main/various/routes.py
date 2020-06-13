@@ -363,18 +363,18 @@ def export_various_data_xls():
                 illness_symptoms = c.unknown[1]
                 illness_severity = c.unknown[1]
 
-                if infected_state.attrs:                
+                if infected_state.attrs:
                     state_infec_attr = infected_state.attrs.get('state_infec_type', None)
                     if state_infec_attr:
-                        state_infec_attr = dict(c.state_infec_types)[state_infec_attr]
+                        state_infec_attr = dict(c.state_infec_types).get(state_infec_attr, c.unknown[1])
 
                     illness_symptoms = infected_state.attrs.get('state_infec_illness_symptoms', None)
-                    if illness_symptoms != c.unknown[1]:
-                        illness_symptoms = dict(c.illness_symptoms)[illness_symptoms]
+                    if illness_symptoms != c.unknown[1] and illness_symptoms:
+                        illness_symptoms = dict(c.illness_symptoms).get(illness_symptoms, c.unknown[1])
 
                     illness_severity = infected_state.attrs.get('state_infec_illness_severity', None)
-                    if illness_severity != c.unknown[1]:
-                        illness_severity = dict(c.illness_severity)[illness_severity]                                
+                    if illness_severity != c.unknown[1] and illness_severity:
+                        illness_severity = dict(c.illness_severity).get(illness_severity, c.unknown[1])
 
                 entry = [str(patient), patient.dob, str(patient.home_address),
                         patient.job, patient.job_position, patient.job_category,
