@@ -778,7 +778,7 @@ def patients():
     if not current_user.is_authenticated:
         return redirect(url_for('login_blueprint.login'))
 
-    task = long_task.apply_async()
+    # task = long_task.apply_async()
 
     form = PatientsSearchForm()
     form = prepare_patient_form(form, with_all_travel_type=True, with_old_data=True, search_form=True)
