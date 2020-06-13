@@ -24,12 +24,127 @@ from flask_babelex import _
 from app.main.routes import route_template
 from jinja2 import TemplateNotFound
 from app import constants as c
-from sqlalchemy import exc, extract, func
+from sqlalchemy import exc, extract, func, cast, JSON, String, or_
 from sqlalchemy.sql import select
 import urllib
 from datetime import datetime, timedelta, date
 
 from app.main.users.modules import UserTableModule, UserPatientsTableModule
+
+def get_gen_stat(request, q, type_="all"):
+    infected_state_id = State.query.filter_by(value=c.state_infec[0]).first().id
+    hospitalized_state_id = State.query.filter_by(value=c.state_hosp[0]).first().id
+
+    data = []
+
+    date = request.form.get("date", datetime.today())
+    if not date:
+        date = datetime.today()
+    else:
+        date = parse_date(date)
+
+    prev_date = date - timedelta(days=1)
+
+    q = q.filter(PatientState.detection_date == date)
+
+    if type_ == "wo_symptoms":
+        q = q.filter(cast(PatientState.attrs["state_infec_illness_symptoms"], db.String) == "'{}'".format(c.without_symptoms))
+    elif type_ == "w_symptoms":
+        q = q.filter(cast(PatientState.attrs["state_infec_illness_symptoms"], db.String) == "'{}'".format(c.with_symptoms))
+
+    for region in Region.query.all():
+        if region.name != "Вне РК":
+            def count_increase(a, b):
+                increase = 0
+                if a != 0:
+                    increase = ((a - b)/b)*100
+
+                return increase
+
+            infected_count = q.filter(Patient.region_id == region.id).count()
+            prev_day_infected_count = q.filter(PatientState.detection_date == prev_date).count()
+            
+            infec_increase_percent = count_increase(infected_count, prev_day_infected_count)
+
+            def symptoms_count(params):
+                params_q = []
+
+                for p in params:
+                    params_q.append(cast(PatientState.attrs[p[0]], db.String) == "'{}'".format(p[1]))
+
+                symptoms_q = q.filter(or_(*params_q))
+                symptoms = symptoms_q.count()
+
+                symptoms_prev_day = symptoms_q.filter(PatientState.detection_date == prev_date).count()
+                symptoms_increase = count_increase(symptoms, symptoms_prev_day)
+
+                return symptoms, symptoms_increase
+
+            wo_symptoms, wo_symptoms_increase = symptoms_count([("state_infec_illness_symptoms", c.without_symptoms)])
+            w_symptoms, w_symptoms_increase = symptoms_count([("state_infec_illness_symptoms", c.with_symptoms)])
+
+            prof_screen, prof_screen_increase = symptoms_count([("state_infec_type", c.prof_tzel), ("state_infec_type", c.contacted_prof_tzel)])
+            self_request, self_request_increase = symptoms_count([("state_infec_type", c.self_request), ("state_infec_type", c.contacted_self_request)])
+
+            zavoznoi, zavoznoi_increase = symptoms_count([("state_infec_type", c.zavoznoi), ("state_infec_type", c.contacted_zavoznoi)])
+            contacted, contacted_increase = symptoms_count([("state_infec_type", c.contacted_self_request),
+                                                            ("state_infec_type", c.contacted_prof_tzel),
+                                                            ("state_infec_type", c.contacted_zavoznoi)])
+
+            unknown, unknown_increase = symptoms_count([("state_infec_type", -1)])
+
+            overall_count = Patient.query.join(PatientState, PatientState.patient_id == Patient.id)
+            overall_count = q.filter(PatientState.state_id == infected_state_id).group_by(Patient.id).count()
+
+            contact_q = ContactedPersons.query.join(Patient, ContactedPersons.contacted_patient_id == Patient.id)
+
+            date_contact = contact_q.filter(Patient.created_date == date)
+            prev_date_contact = contact_q.filter(Patient.created_date == prev_date)
+
+            close_date_contact = date_contact.filter(ContactedPersons.is_potential_contact == False).count()
+            close_prev_date_contact = date_contact.filter(ContactedPersons.is_potential_contact == False).count()
+            close_contact_increase = count_increase(close_date_contact, close_prev_date_contact)
+
+            potential_date_contact = date_contact.filter(ContactedPersons.is_potential_contact == True).count()
+            potential_prev_date_contact = date_contact.filter(ContactedPersons.is_potential_contact == True).count()
+            potential_contact_increase = count_increase(close_date_contact, close_prev_date_contact)
+
+            hospitalized_count = Patient.query.join(PatientState, PatientState.patient_id == Patient.id)
+            hospitalized_count = q.filter(PatientState.detection_date == date)
+            hospitalized_count = q.filter(PatientState.state_id == hospitalized_state_id).group_by(Patient.id).count()
+
+            entry = [region.name, infected_count, infec_increase_percent,
+                        close_date_contact, potential_date_contact]
+
+            if type_ == "all":
+                entry += [wo_symptoms, wo_symptoms_increase, w_symptoms, w_symptoms_increase]
+
+            entry += [prof_screen, prof_screen_increase, self_request, self_request_increase,
+                        zavoznoi, zavoznoi_increase, contacted, contacted_increase,
+                        unknown, unknown_increase,
+                        overall_count,
+                        close_contact_increase, potential_contact_increase,
+                        hospitalized_count]
+
+            data.append(entry)
+
+    infec_day_header = "{} {}".format(_("инфицировано за"), date)
+
+    columns = [_("Регион"), infec_day_header, _("прирост (%)"), _("установлено БК"), _("установлено ПК")]
+    
+    if type_ == "all":
+        columns += [_("без симптомов"), _("%"), _("с симптомами"), _("%")]
+    
+    columns += [_("профскрининг"), _("%"), _("самообращение"), _("%"),
+                _("завозной"), _("%"), _("контактных"), _("%"),
+                _("статус не известен"), _("%"),
+                _("всего зарегистрировано инфицированных с 13 марта"),
+                _("БК в нарастании"), _("ПК в нарастании"),
+                _("изолировано в карантинный стационар")]
+
+    data = pd.DataFrame(data, columns=columns)
+
+    return data
 
 @blueprint.route('/export_various_data_xls', methods=['POST'])
 @login_required
@@ -43,6 +158,7 @@ def export_various_data_xls():
     q = Patient.query
     
     infected_state_id = State.query.filter_by(value=c.state_infec[0]).first().id
+    hospitalized_state_id = State.query.filter_by(value=c.state_hosp[0]).first().id
 
     q = q.join(PatientState, PatientState.patient_id == Patient.id)
     q = q.filter(PatientState.state_id == infected_state_id)
@@ -193,7 +309,13 @@ def export_various_data_xls():
         data = pd.DataFrame(data, columns=[_("ФИО"), _("Год рождения"), _("Адрес"),
                                            _("Место работы"), _("Профессия (должность)"), _("Категория Работы"),
                                            _("Как выявлен"),
-                                           _("Клиника"), _("Степень Симптомов")])        
+                                           _("Клиника"), _("Степень Симптомов")])
+    elif value == "gen_stat_1_day":
+        data = get_gen_stat(request, q)
+    elif value == "gen_stat_1_day_wo_symptoms":
+        data = get_gen_stat(request, q, "wo_symptoms")
+    elif value == "gen_stat_1_day_w_symptoms":
+        data = get_gen_stat(request, q, "w_symptoms")
 
     output = io.BytesIO()
     writer = pd.ExcelWriter(output, engine='xlsxwriter')

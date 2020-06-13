@@ -16,3 +16,5 @@ class DownloadVariousData(FlaskForm):
 
 	start_date = DateField()
 	end_date = DateField()
+
+	date = DateField()
