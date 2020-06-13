@@ -58,7 +58,7 @@ def get_gen_stat(request, q, type_="all"):
         if region.name != "Вне РК":
             def count_increase(a, b):
                 increase = 0
-                if a != 0:
+                if b != 0:
                     increase = ((a - b)/b)*100
 
                 return increase
