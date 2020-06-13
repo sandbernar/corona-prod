@@ -7,7 +7,7 @@ Copyright (c) 2019 - present AppSeed.us
 from logging import basicConfig, DEBUG, getLogger, StreamHandler
 from os import path, getenv, environ
 from importlib import import_module
-from celery import Celery
+# from celery import Celery
 
 from flask import Flask, url_for
 from flask_login import LoginManager
@@ -18,7 +18,7 @@ import numpy as np
 db = SQLAlchemy()
 login_manager = LoginManager()
 csrf = CSRFProtect()
-celery = Celery(__name__)
+# celery = Celery(__name__)
 
 def register_extensions(app):
     db.init_app(app)
