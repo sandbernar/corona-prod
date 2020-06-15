@@ -300,9 +300,11 @@ def handle_after_patient(request_dict, final_dict, patient, update_dict = {}, up
             if final_dict['is_found']:
                 is_found_date = final_dict["is_found_date"]
 
-                patient.is_found = patient.addState(State.query.filter_by(value=c.state_found[0]).first(), detection_date=is_found_date)
+                patient.addState(State.query.filter_by(value=c.state_found[0]).first(), detection_date=is_found_date)
+                patient.is_found = True
         else:
-            patient.is_found = patient.addState(State.query.filter_by(value=c.state_found[0]).first())
+            patient.addState(State.query.filter_by(value=c.state_found[0]).first())
+            patient.is_found = True
 
         if current_user.user_role.can_set_transit:
             if final_dict['is_transit'] == True:
