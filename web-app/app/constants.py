@@ -693,7 +693,7 @@ class GraphState:
         self.reached_end = False
         self.location = []
         self.patient = []
-        self.location_state = [state_found[0], state_is_transit[0], state_hosp[0], state_hosp_off[0], state_is_home[0], state_is_home_off[0], state_healthy[0]]
+        self.location_state = [state_found[0], state_is_transit[0], state_hosp[0], state_hosp_off[0], state_is_home[0], state_is_home_off[0]]
         self.patient_state = [state_found[0], state_infec[0], state_healthy[0], state_dead[0]]
 
         self.dead = GraphNode(state_dead)
@@ -722,19 +722,21 @@ class GraphState:
         self.is_home.connect(self.hosp)
         self.is_home.connect(self.healthy)
         self.is_home.connect(self.state_is_home_off)
-        self.state_is_home_off.connect(self.is_home)
 
+        self.state_is_home_off.connect(self.is_home)
+        self.state_is_home_off.connect(self.hosp)
+        
         self.hosp.connect(self.is_home)
         self.hosp.connect(self.healthy)
         self.hosp.connect(self.state_hosp_off)
+        
         self.state_hosp_off.connect(self.hosp)
+        self.state_hosp_off.connect(self.is_home)
 
         self.infec.connect(self.healthy)
         self.infec.connect(self.dead)
         self.healthy.connect(self.infec)
         self.healthy.connect(self.dead)
-        self.healthy.connect(self.hosp)
-        self.healthy.connect(self.is_home)
 
         self.states = []
     
@@ -763,7 +765,7 @@ class GraphState:
         elif in_state[0] in self.patient_state:
             states = self.patient
         
-        if in_state[0] in [state_found[0], state_healthy[0]]:
+        if in_state[0] in [state_found[0]]:
             self.location.append(in_state)
             self.patient.append(in_state)
             loc = checkStates(self.location)
