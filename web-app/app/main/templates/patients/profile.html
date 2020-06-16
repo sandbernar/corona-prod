@@ -583,8 +583,15 @@
                 break;
         }
     }
-    
 
+    function handle_csrf(xhr, settings) {
+        if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type)) {
+            xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token() }}")
+        }
+    }
+
+    var updateStateAjaxLock = false;
+    
     $("#updateStateButton").on("click", () => {
         let updateStateData = {
             'value':document.getElementById("updatePatientStateState").value,
@@ -598,21 +605,84 @@
         } else {
             handle_state_add_update(updateStateData)
 
+            if (updateStateAjaxLock === false) {
+                $.ajax({
+                    url: "/update_state",
+                    type: "post",
+                    contentType: "application/json",
+                    data: JSON.stringify(updateStateData),
+                    success: function (response) {
+                        renderStateHistoryTable(response);
+                        $('#updatePatientStateModal').modal('hide');
+                        $.notify({
+                            icon: 'fa fa-thumbs-up',
+                            message: 'Успешно изменено'
+                        },{
+                            type: 'info',
+                        });
+                    },
+                    beforeSend:function(xhr, settings) {
+                        handle_csrf(xhr, settings)
+                        addStateAjaxLock = true;
+                    },
+                    complete: function(){
+                        addStateAjaxLock = false;
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                       console.log(textStatus, errorThrown, jqXHR);
+                       text = 'Неизвестная ошибка';
+                       if (jqXHR.status == 403)
+                           text = 'Невалидные данные';
+                       if (jqXHR.status == 405)
+                           text = 'Пациент не найден';
+                       if (jqXHR.status == 406)
+                           text = 'Статус не найден';
+                       if (jqXHR.status == 300)
+                           text = 'Невозможно изменить, неправильная последовательность.';
+            
+                       $.notify({
+                            icon: 'fa fa-times',
+                            message: text
+                        },{
+                            type: 'danger',
+                        });
+                    }
+                })
+            }
+        }
+    });
+
+    var deleteStateAjaxLock = false;
+
+    $("#deleteStateButton").on("click", () => {
+        let deleteStateData = {
+            'patient_state_id':document.getElementById("deletePatientStateID").value,
+            'patient_id':document.getElementById("deleteStatePatientID").value
+        }
+        if (deleteStateAjaxLock === false) {
             $.ajax({
-                url: "/update_state",
+                url: "/delete_state",
                 type: "post",
                 contentType: "application/json",
-                data: JSON.stringify(updateStateData),
+                data: JSON.stringify(deleteStateData),
                 success: function (response) {
+                    console.log(response);
                     renderStateHistoryTable(response);
-                    $('#updatePatientStateModal').modal('hide');
+                    $('#deletePatientStateModal').modal('hide');
                     $.notify({
                         icon: 'fa fa-thumbs-up',
-                        message: 'Успешно изменено'
+                        message: 'Успешно удалено'
                     },{
                         type: 'info',
                     });
                 },
+                beforeSend:function(xhr, settings) {
+                    handle_csrf(xhr, settings)
+                    addStateAjaxLock = true;
+                },
+                complete: function(){
+                    addStateAjaxLock = false;
+                },            
                 error: function(jqXHR, textStatus, errorThrown) {
                    console.log(textStatus, errorThrown, jqXHR);
                    text = 'Неизвестная ошибка';
@@ -620,10 +690,8 @@
                        text = 'Невалидные данные';
                    if (jqXHR.status == 405)
                        text = 'Пациент не найден';
-                   if (jqXHR.status == 406)
-                       text = 'Статус не найден';
                    if (jqXHR.status == 300)
-                       text = 'Невозможно изменить, неправильная последовательность.';
+                       text = 'Невозможно удалить, неправильная последовательность.';
         
                    $.notify({
                         icon: 'fa fa-times',
@@ -636,46 +704,7 @@
         }
     });
 
-    $("#deleteStateButton").on("click", () => {
-        let deleteStateData = {
-            'patient_state_id':document.getElementById("deletePatientStateID").value,
-            'patient_id':document.getElementById("deleteStatePatientID").value
-        }
-        $.ajax({
-            url: "/delete_state",
-            type: "post",
-            contentType: "application/json",
-            data: JSON.stringify(deleteStateData),
-            success: function (response) {
-                console.log(response);
-                renderStateHistoryTable(response);
-                $('#deletePatientStateModal').modal('hide');
-                $.notify({
-                    icon: 'fa fa-thumbs-up',
-                    message: 'Успешно удалено'
-                },{
-                    type: 'info',
-                });
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-               console.log(textStatus, errorThrown, jqXHR);
-               text = 'Неизвестная ошибка';
-               if (jqXHR.status == 403)
-                   text = 'Невалидные данные';
-               if (jqXHR.status == 405)
-                   text = 'Пациент не найден';
-               if (jqXHR.status == 300)
-                   text = 'Невозможно удалить, неправильная последовательность.';
-    
-               $.notify({
-                    icon: 'fa fa-times',
-                    message: text
-                },{
-                    type: 'danger',
-                });
-            }
-        })
-    });
+    var addStateAjaxLock = false;
 
     $("#addStateButton").on("click", () => {
         const addStateData = {
@@ -688,42 +717,51 @@
         if ($("#addStateForm")[0].checkValidity() === false) {
             $("#hiddenAddState")[0].click();
         } else {
-            handle_state_add_update(addStateData)
+            if (addStateAjaxLock === false) {
+                handle_state_add_update(addStateData)
 
-            $.ajax({
-                url: "/add_state",
-                type: "post",
-                contentType: "application/json",
-                data: JSON.stringify(addStateData),
-                success: function (response) {
-                    console.log(response);
-                    renderStateHistoryTable(response);
-                    $('#addPatientStateModal').modal('hide');
-                    $.notify({
-                        icon: 'fa fa-thumbs-up',
-                        message: 'Успешно добавлено'
-                    },{
-                        type: 'info',
-                    });
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                   console.log(textStatus, errorThrown, jqXHR);
-                   text = 'Неизвестная ошибка';
-                   if (jqXHR.status == 403)
-                       text = 'Невалидные данные';
-                   if (jqXHR.status == 405)
-                       text = 'Пациент не найден';
-                   if (jqXHR.status == 300)
-                       text = 'Невозможно добавить, неправильная последовательность.';
-        
-                   $.notify({
-                        icon: 'fa fa-times',
-                        message: text
-                    },{
-                        type: 'danger',
-                    });
-                }
-            });
+                $.ajax({
+                    url: "/add_state",
+                    type: "post",
+                    contentType: "application/json",
+                    data: JSON.stringify(addStateData),
+                    success: function (response) {
+                        console.log(response);
+                        renderStateHistoryTable(response);
+                        $('#addPatientStateModal').modal('hide');
+                        $.notify({
+                            icon: 'fa fa-thumbs-up',
+                            message: 'Успешно добавлено'
+                        },{
+                            type: 'info',
+                        });
+                    },
+                    beforeSend:function(xhr, settings) {
+                        handle_csrf(xhr, settings)
+                        addStateAjaxLock = true;
+                    },
+                    complete: function(){
+                        addStateAjaxLock = false;
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                       console.log(textStatus, errorThrown, jqXHR);
+                       text = 'Неизвестная ошибка';
+                       if (jqXHR.status == 403)
+                           text = 'Невалидные данные';
+                       if (jqXHR.status == 405)
+                           text = 'Пациент не найден';
+                       if (jqXHR.status == 300)
+                           text = 'Невозможно добавить, неправильная последовательность.';
+            
+                       $.notify({
+                            icon: 'fa fa-times',
+                            message: text
+                        },{
+                            type: 'danger',
+                        });
+                    }
+                });
+            }
         }
     });
 

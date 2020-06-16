@@ -24,7 +24,7 @@ from flask_babelex import _
 from app.main.routes import route_template
 from jinja2 import TemplateNotFound
 from app import constants as c
-from sqlalchemy import exc, extract, func, cast, JSON, String, or_
+from sqlalchemy import exc, extract, func, cast, JSON, String, or_, text
 from sqlalchemy.sql import select
 import urllib
 from datetime import datetime, timedelta, date
@@ -45,9 +45,8 @@ def get_gen_stat(request, q, type_="all"):
     else:
         date = parse_date(date)
 
+    date = date.date()
     prev_date = date - timedelta(days=1)
-
-    q = q.filter(PatientState.detection_date == date)
 
     if type_ == "wo_symptoms":
         q = q.filter(cast(PatientState.attrs["state_infec_illness_symptoms"], db.String) == "'{}'".format(c.without_symptoms))
@@ -56,15 +55,19 @@ def get_gen_stat(request, q, type_="all"):
 
     for region in Region.query.all():
         if region.name != "Вне РК":
+            region_q = q.filter(Patient.region_id == region.id)
+            region_q_date = region_q.filter(PatientState.detection_date == date)
+            region_q_prev_date = region_q.filter(PatientState.detection_date == prev_date)
+            
             def count_increase(a, b):
                 increase = 0
                 if b != 0:
-                    increase = ((a - b)/b)*100
+                    increase = round(((a - b)/b)*100, 2)
 
                 return increase
 
-            infected_count = q.filter(Patient.region_id == region.id).count()
-            prev_day_infected_count = q.filter(PatientState.detection_date == prev_date).count()
+            infected_count = region_q_date.count()
+            prev_day_infected_count = region_q_prev_date.count()
             
             infec_increase_percent = count_increase(infected_count, prev_day_infected_count)
 
@@ -72,33 +75,35 @@ def get_gen_stat(request, q, type_="all"):
                 params_q = []
 
                 for p in params:
-                    params_q.append(cast(PatientState.attrs[p[0]], db.String) == "'{}'".format(p[1]))
+                    params_q.append(text("CAST(\"PatientState\".attrs ->> '{}' AS VARCHAR) = '{}'".format(p[0], p[1])))
 
-                symptoms_q = q.filter(or_(*params_q))
+                symptoms_q = region_q_date.filter(or_(*params_q))
                 symptoms = symptoms_q.count()
 
-                symptoms_prev_day = symptoms_q.filter(PatientState.detection_date == prev_date).count()
+                symptoms_prev_day = region_q_prev_date.filter(or_(*params_q)).count()
                 symptoms_increase = count_increase(symptoms, symptoms_prev_day)
 
                 return symptoms, symptoms_increase
 
-            wo_symptoms, wo_symptoms_increase = symptoms_count([("state_infec_illness_symptoms", c.without_symptoms)])
-            w_symptoms, w_symptoms_increase = symptoms_count([("state_infec_illness_symptoms", c.with_symptoms)])
+            wo_symptoms, wo_symptoms_increase = symptoms_count([("state_infec_illness_symptoms", c.without_symptoms[0])])
+            w_symptoms, w_symptoms_increase = symptoms_count([("state_infec_illness_symptoms", c.with_symptoms[0])])
 
-            prof_screen, prof_screen_increase = symptoms_count([("state_infec_type", c.prof_tzel), ("state_infec_type", c.contacted_prof_tzel)])
-            self_request, self_request_increase = symptoms_count([("state_infec_type", c.self_request), ("state_infec_type", c.contacted_self_request)])
+            prof_screen, prof_screen_increase = symptoms_count([("state_infec_type", c.prof_tzel[0]), ("state_infec_type", c.contacted_prof_tzel[0])])
+            self_request, self_request_increase = symptoms_count([("state_infec_type", c.self_request[0]), ("state_infec_type", c.contacted_self_request[0])])
 
-            zavoznoi, zavoznoi_increase = symptoms_count([("state_infec_type", c.zavoznoi), ("state_infec_type", c.contacted_zavoznoi)])
-            contacted, contacted_increase = symptoms_count([("state_infec_type", c.contacted_self_request),
-                                                            ("state_infec_type", c.contacted_prof_tzel),
-                                                            ("state_infec_type", c.contacted_zavoznoi)])
+            zavoznoi, zavoznoi_increase = symptoms_count([("state_infec_type", c.zavoznoi[0]), ("state_infec_type", c.contacted_zavoznoi[0])])
+            contacted, contacted_increase = symptoms_count([("state_infec_type", c.contacted_self_request[0]),
+                                                            ("state_infec_type", c.contacted_prof_tzel[0]),
+                                                            ("state_infec_type", c.contacted_zavoznoi[0])])
 
             unknown, unknown_increase = symptoms_count([("state_infec_type", -1)])
 
             overall_count = Patient.query.join(PatientState, PatientState.patient_id == Patient.id)
-            overall_count = q.filter(PatientState.state_id == infected_state_id).group_by(Patient.id).count()
+            overall_count = overall_count.filter(Patient.region_id == region.id)
+            overall_count = overall_count.filter(PatientState.state_id == infected_state_id).group_by(Patient.id).count()
 
             contact_q = ContactedPersons.query.join(Patient, ContactedPersons.contacted_patient_id == Patient.id)
+            contact_q = contact_q.filter(Patient.region_id == region.id)
 
             date_contact = contact_q.filter(Patient.created_date == date)
             prev_date_contact = contact_q.filter(Patient.created_date == prev_date)
@@ -112,8 +117,9 @@ def get_gen_stat(request, q, type_="all"):
             potential_contact_increase = count_increase(close_date_contact, close_prev_date_contact)
 
             hospitalized_count = Patient.query.join(PatientState, PatientState.patient_id == Patient.id)
-            hospitalized_count = q.filter(PatientState.detection_date == date)
-            hospitalized_count = q.filter(PatientState.state_id == hospitalized_state_id).group_by(Patient.id).count()
+            hospitalized_count = hospitalized_count.filter(Patient.region_id == region.id)
+            hospitalized_count = hospitalized_count.filter(PatientState.detection_date == date)
+            hospitalized_count = hospitalized_count.filter(PatientState.state_id == hospitalized_state_id).group_by(Patient.id).count()
 
             entry = [region.name, infected_count, infec_increase_percent,
                         close_date_contact, potential_date_contact]
@@ -130,19 +136,19 @@ def get_gen_stat(request, q, type_="all"):
 
             data.append(entry)
 
-    infec_day_header = "{} {}".format(_("инфицировано за"), date)
+    infec_day_header = "{} {}".format(_("инфицировано за \n"), date.strftime("%d-%m-%Y"))
 
     columns = [_("Регион"), infec_day_header, _("прирост (%)"), _("установлено БК"), _("установлено ПК")]
     
     if type_ == "all":
-        columns += [_("без симптомов"), _("%"), _("с симптомами"), _("%")]
+        columns += [_("без \n симптомов"), _("%"), _("с \n симптомами"), _("%")]
     
     columns += [_("профскрининг"), _("%"), _("самообращение"), _("%"),
                 _("завозной"), _("%"), _("контактных"), _("%"),
-                _("статус не известен"), _("%"),
-                _("всего зарегистрировано инфицированных с 13 марта"),
+                _("статус \n не известен"), _("%"),
+                _("всего зарегистрировано \n инфицированных с 13 марта"),
                 _("БК в нарастании"), _("ПК в нарастании"),
-                _("изолировано в карантинный стационар")]
+                _("изолировано в карантинный \n стационар")]
 
     data = pd.DataFrame(data, columns=columns)
 
@@ -396,6 +402,29 @@ def export_various_data_xls():
     output = io.BytesIO()
     writer = pd.ExcelWriter(output, engine='xlsxwriter')
     data.to_excel(writer, index=False)
+
+    def get_col_widths(df):
+        widths = []
+        for col in df.columns:
+            col_data_width = len(col)
+
+            if col_data_width < 5:
+                col_data_width = 5
+
+            if not isinstance(df[col], pd.DataFrame):
+                col_data_width = max(df[col].map(str).map(len).max(), len(col))
+
+                if col_data_width < 40:
+                    col_data_width *= 1.2
+
+            widths.append(col_data_width)
+
+        return widths
+
+    for i, width in enumerate(get_col_widths(data)):
+        writer.sheets['Sheet1'].set_column(i, i, width)
+
+    writer.sheets['Sheet1'].set_row(0, 30)
 
     writer.save()
     xlsx_data = output.getvalue()
