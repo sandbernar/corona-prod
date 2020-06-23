@@ -3,7 +3,7 @@ import math
 from app.main.modules import TableModule
 
 from app.main.patients.models import Patient, ContactedPersons, PatientStatus, PatientState, State
-from app.main.models import TravelType, VariousTravel, BlockpostTravel, Address, Country, Region, JobCategory, BorderControl
+from app.main.models import TravelType, VariousTravel, BlockpostTravel, Address, Country, Region, JobCategory, BorderControl, AddressLocationType
 from app.main.flights_trains.models import FlightTravel, TrainTravel, FlightCode, Train
 from app.login.models import User
 
@@ -284,12 +284,13 @@ class AllPatientsTableModule(TableModule):
         def name_search(param, param_str, q, param_disp_name):
             if param_str in request.args:
                 req_str = request.args[param_str]
-                q = q.filter(func.lower(param).contains(req_str.lower()))
-                param = getattr(self.search_form, param_str, None)
-                if param:
-                    setattr(param, 'default', req_str)
-                    
-                    if req_str:
+
+                if req_str:
+                    q = q.filter(func.lower(param).contains(req_str.lower()))
+                    param = getattr(self.search_form, param_str, None)
+                    if param:
+                        setattr(param, 'default', req_str)
+                        
                         self.search_params.append((param_disp_name, req_str))
             
             return q
@@ -298,26 +299,19 @@ class AllPatientsTableModule(TableModule):
         self.q = name_search(Patient.second_name, "second_name", self.q, _("Фамилия"))
         self.q = name_search(Patient.patronymic_name, "patronymic_name", self.q, _("Отчество"))
 
-        if "iin" in request.args:
-            self.q = self.q.filter(Patient.iin.contains(request.args["iin"]))
-            self.search_form.iin.default = request.args["iin"]
-
-            if request.args["iin"]:
-                self.search_params.append((_("ИИН"), request.args["iin"]))
-
-        if "pass_num" in request.args:
-            self.q = self.q.filter(Patient.pass_num.contains(request.args["pass_num"]))
-            self.search_form.pass_num.default = request.args["pass_num"]
+        iin = request.args.get("iin", "")
+        if iin:
+            self.q = self.q.filter(Patient.iin.contains(iin))
+            self.search_form.iin.default = iin
             
-            if request.args["pass_num"]:
-                self.search_params.append((_("Номер Паспорта"), request.args["pass_num"]))
+            self.search_params.append((_("ИИН"), iin))
 
-        if "telephone" in request.args:
-            self.q = self.q.filter(Patient.telephone.contains(request.args["telephone"]))
-            self.search_form.telephone.default = request.args["telephone"]
-
-            if request.args["telephone"]:
-                self.search_params.append((_("Телефон"), request.args["telephone"]))
+        pass_num = request.args.get("pass_num", "")
+        if pass_num:
+            self.q = self.q.filter(Patient.pass_num.contains(pass_num))
+            self.search_form.pass_num.default = pass_num
+            
+            self.search_params.append((_("Номер Паспорта"), pass_num))
 
         travel_type = request.args.get("travel_type", c.all_travel_types[0])
         if travel_type and travel_type != c.all_travel_types[0]:
@@ -447,6 +441,18 @@ class AllPatientsTableModule(TableModule):
 
         current_country = Country.query.filter_by(code=c.current_country).first()
 
+        home_address_location_type_id = self.request.args.get("home_address_location_type_id", "-1")
+        if home_address_location_type_id != "-1":
+            location_type = AddressLocationType.query.filter_by(id = home_address_location_type_id).first()
+            self.q = self.q.join(Address, Patient.home_address_id == Address.id)
+            self.q = self.q.group_by(Patient.id)
+
+            self.q = self.q.filter(Address.location_type_id == home_address_location_type_id)
+
+            self.search_form.home_address_location_type_id.default = home_address_location_type_id
+
+            self.search_params.append((_("Село/Город"), location_type))
+
         if travel_type and travel_type != c.all_travel_types[0]:
             # FlightTravel
             if travel_type_query.value == c.flight_type[0]:
@@ -534,7 +540,7 @@ class AllPatientsTableModule(TableModule):
                             self.search_params.append((_("Граница"), BorderControl.query.filter_by(id = border_id).first().name))
                             break
 
-
+        print(self.q)
         self.search_form.process()
 
     def print_entry(self, result):

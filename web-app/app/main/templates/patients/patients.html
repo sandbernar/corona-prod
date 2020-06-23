@@ -163,10 +163,14 @@
             <div class="col-md-auto">
               <label class='form-control-label'>{{ _('Контакты') }}</label>                
               {{ form.contacted(class="form-control") }}
-            </div>            
+            </div>
+            <div class="col-md-auto">
+              <label class='form-control-label'>{{ _('Село/Город') }}</label>                
+              {{ form.home_address_location_type_id(class="form-control") }}
+            </div>                          
             <div class="custom-control custom-checkbox">
               {{ form.probably_duplicate(class="custom-control-input") }}                    
-              <label class="custom-control-label" for="probably_duplicate">{{ _("Возможные Дубли") }}</label>
+              <label class="custom-control-label" for="probably_duplicate">{{ _("Дубли") }}</label>
             </div>                                          
           </div>
         </div>

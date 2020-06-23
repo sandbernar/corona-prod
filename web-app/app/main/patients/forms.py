@@ -50,12 +50,13 @@ class PatientForm(FlaskForm):
 
     home_address_country_id = SelectField('Home Address Country', validators=[DataRequired()])
     home_address_state = TextField('Home State')
-    home_address_county = TextField('Home County')    
+    home_address_county = TextField('Home County')
     home_address_city = TextField('Home City')
     home_address_street = TextField('Home Street')
     home_address_house = TextField('Home House')
     home_address_flat = TextField('Home Flat')
-    home_address_building = TextField('Home Building')    
+    home_address_building = TextField('Home Building')
+    home_address_location_type_id = SelectField('Home Address Location Type Id', validators=[DataRequired()])
 
     visited_country_id = SelectField('Visited Country', validators=[DataRequired()])
     visited_from_date = DateField('Visit From Date')
@@ -192,6 +193,8 @@ class PatientsSearchForm(FlaskForm):
     iin = TextField(id='iin')
     pass_num = TextField()
     telephone = TextField(id='telephone')
+
+    home_address_location_type_id = SelectField('Home Address Location Type Id', validators=[DataRequired()])
 
 class SelectContactedForm(FlaskForm):
     contact_type = SelectField('Contact Type', choices=[(1, _("(ПК) Потенциальный Контакт")), (0, _("(БК) Близкий Контакт"))],

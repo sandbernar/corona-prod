@@ -108,6 +108,12 @@
 		{{ form.home_address_city(class="form-control", id="cityInput", type="text" ) }}
 	  </div>
 	  </div>
+	  <div class="col-auto">
+	  <div class="form-group">
+		<label for="home-input" class="form-control-label sub-label">{{ _("Тип (Село/Город)") }}</label>
+		{{ form.home_address_location_type_id(class="form-control", id="address_location_type_value", type="text" ) }}
+	  </div>
+	  </div>	  
 	</div>
 	<div class="row">
 	  <div class="col-xl">
@@ -188,11 +194,11 @@ $("#iinAutoFill").click(() => {
 			if (response.deathDate != null) {
 				$.notify({
 					icon: 'fa fa-times',
-					message: 'Человек с таким ИИН умер'
+					message: 'Человек с таким ИИН умер. Добавьте статус \'Умер\'.'
 				},{
 					type: 'danger',
 				});
-				return ;
+				// return ;
 			}
 			document.getElementById("lastnameInput").value = titleCase(response.lastName, ' ');
 			document.getElementById("firstnameInput").value = titleCase(response.firstName, ' ');

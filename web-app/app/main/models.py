@@ -7,7 +7,7 @@ Copyright (c) 2019 - present AppSeed.us
 import datetime
 
 from flask_login import UserMixin
-from sqlalchemy import Column, Integer, String, Date, Boolean, Float, ForeignKey, JSON, DateTime
+from sqlalchemy import Column, Integer, String, Date, Boolean, Float, ForeignKey, JSON, DateTime, null
 
 from app import db
 from app import constants as c
@@ -202,6 +202,9 @@ class Address(db.Model):
 
     lat = Column(Float, nullable=True, default = None)
     lng = Column(Float, nullable=True, default = None)
+
+    location_type_id = Column(Integer, ForeignKey('AddressLocationType.id'), nullable=True, server_default=null())
+    location_type = db.relationship('AddressLocationType')
     
     def __init__(self, **kwargs):
         set_props(self, kwargs)
@@ -218,6 +221,19 @@ class Address(db.Model):
         display_str = str(display_str).rstrip().rstrip(",")
 
         return display_str
+
+class AddressLocationType(db.Model):
+    __tablename__ = 'AddressLocationType'
+
+    id = Column(Integer, primary_key=True)
+    value = Column(String, unique=True, nullable=True, default=None)
+    name = Column(String, unique=True)
+
+    def __init__(self, **kwargs):
+        set_props(self, kwargs)
+
+    def __repr__(self):
+        return str(self.name)        
 
 class Token(db.Model):
     __tablename__ = 'tokens'

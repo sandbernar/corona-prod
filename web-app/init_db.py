@@ -7,7 +7,7 @@ import pandas as pd
 from app import create_app, db
 from app import constants as C
 from app.main.models import (Region, Country, Infected_Country_Category, JobCategory, 
-                            TravelType, BorderControl, VariousTravel, Address, VisitedCountry)
+                            TravelType, BorderControl, VariousTravel, Address, VisitedCountry, AddressLocationType)
 from app.main.patients.models import ContactedPersons, Patient, State, PatientState
 from app.main.hospitals.models import Hospital, Hospital_Type
 from app.login.models import UserRole
@@ -390,6 +390,12 @@ def initialize_db(db):
         if not UserRole.query.filter_by(value = role[0]).first():
             user_role = UserRole(name = role[1], value = role[0])
             db.session.add(user_role)
+
+    # Add roles
+    for loc_type in C.address_loc_types:
+        if not AddressLocationType.query.filter_by(value = loc_type[0]).first():
+            address_loc_type = AddressLocationType(name = loc_type[1], value = loc_type[0])
+            db.session.add(address_loc_type)            
     
     db.session.commit()
 
