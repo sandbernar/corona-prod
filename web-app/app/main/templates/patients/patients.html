@@ -118,20 +118,20 @@
           </div>
         </div>
       </div>
-      <div class="row">
+      <div class="row" id="state_search">
         <div class="col">
           <div class="card shadow mt-3">
             <div class="card-header border-0">
               <div class="row">
-                <div class="col">
+                <div class="col" id="state_search_main_col">
                   <label class='form-control-label'>{{ _('Статус') }}</label>                
                   {{ form.patient_state(class="form-control") }}
                 </div>                
-                <div class="col">
+                <div class="col-md-auto">
                   <label class='form-control-label'>{{ _('Начало Даты Выявления') }}</label>
                   {{ form.state_date_range_start(class="form-control datepicker", type="date") }}              
                 </div>
-                <div class="col">
+                <div class="col-md-auto">
                   <label class='form-control-label'>{{ _('Конец Даты Выявления') }}</label>                
                   {{ form.state_date_range_end(class="form-control datepicker", type="date") }}              
                 </div>
@@ -227,6 +227,16 @@
   $("#travel_type").on("change", function(){
     update_travel_form();
   });
+
+  {% with form=form, c=constants, search_form=True %}
+  {% include "js/state_search_form.html" %}
+  {% endwith %}
+
+  update_state_search_form()
+
+  $("#patient_state").on("change", function(){
+    update_state_search_form();
+  });  
 
   const queryString = window.location.search;
   const urlParams = new URLSearchParams(queryString);

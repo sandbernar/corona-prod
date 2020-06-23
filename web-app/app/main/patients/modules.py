@@ -11,7 +11,7 @@ from collections import OrderedDict
 from app.main.util import parse_date, yes_no_html, yes_no, custom_yes_no
 from app.main.patients.util import measure_patient_similarity
 
-from sqlalchemy import func, cast, JSON, exc
+from sqlalchemy import func, cast, JSON, exc, text
 import sqlalchemy
 
 from flask_babelex import _
@@ -393,12 +393,45 @@ class AllPatientsTableModule(TableModule):
                 self.q = self.q.having(func.count(PatientState.id) >= state_count_min)
                 self.search_form.state_count_min.default = state_count_min
 
+                self.search_params.append((_("Минимум Статусов"), state_count_min))
+
             # State Count Max
             state_count_max = request.args.get("state_count_max", None)
 
             if state_count_max:
                 self.q = self.q.having(func.count(PatientState.id) <= state_count_max)
-                self.search_form.state_count_max.default = state_count_max               
+                self.search_form.state_count_max.default = state_count_max
+
+                self.search_params.append((_("Максимум Статусов"), state_count_max))
+
+            # State Infec
+            if patient_state_val.value == c.state_infec[0]:
+                state_infec_type = request.args.get("state_infec_type", "-1")
+                if state_infec_type != "-1":
+                    param = "state_infec_type"
+                    self.q = self.q.filter(text("CAST(\"PatientState\".attrs ->> '{}' AS VARCHAR) = '{}'".format(param, state_infec_type)))
+
+                    self.search_form.state_infec_type.default = state_infec_type
+
+                    self.search_params.append((_("Инфицирован - Тип"), dict(c.state_infec_types)[state_infec_type]))
+
+                state_infec_illness_symptoms = request.args.get("state_infec_illness_symptoms", "-1")
+                if state_infec_illness_symptoms != "-1":
+                    param = "state_infec_illness_symptoms"
+                    self.q = self.q.filter(text("CAST(\"PatientState\".attrs ->> '{}' AS VARCHAR) = '{}'".format(param, state_infec_illness_symptoms)))
+
+                    self.search_form.state_infec_illness_symptoms.default = state_infec_illness_symptoms
+
+                    self.search_params.append((_("Инфицирован - Симптомы"), dict(c.illness_symptoms)[state_infec_illness_symptoms]))
+
+                state_infec_illness_severity = request.args.get("state_infec_illness_severity", "-1")
+                if state_infec_illness_severity != "-1":
+                    param = "state_infec_illness_severity"
+                    self.q = self.q.filter(text("CAST(\"PatientState\".attrs ->> '{}' AS VARCHAR) = '{}'".format(param, state_infec_illness_severity)))
+
+                    self.search_form.state_infec_illness_severity.default = state_infec_illness_severity
+
+                    self.search_params.append((_("Инфицирован - Тяжесть Болезни"), dict(c.illness_severity)[state_infec_illness_severity]))
 
             self.q = self.q.group_by(Patient.id)
 

@@ -1,0 +1,46 @@
+function update_state_search_form() {
+  var infectedStateForm = `<div class="col">
+                    <div class="card shadow mt-3">
+                      <div class="card-header border-0">
+                        <div class="row">
+                          <div class="col-md-auto">
+                            <label class='form-control-label'>{{ _("Тип Инфицирования") }}</label>                
+                            {{ form.state_infec_type(class="form-control") }}
+                          </div>                
+                          <div class="col-md-auto">
+                            <label class='form-control-label'>{{ _("Симптомы") }}</label>
+                            {{ form.state_infec_illness_symptoms(class="form-control") }}             
+                          </div>
+                          <div class="col-md-auto">
+                            <label class='form-control-label'>{{ _("Тяжесть Течения Болезни") }}</label>                
+                            {{ form.state_infec_illness_severity(class="form-control") }}              
+                          </div>                
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                      `;
+                                                  
+  var stateSearchForm = document.getElementById("state_search")
+
+  function addToStateSearchForm(html) {
+    document.getElementById("state_search").insertAdjacentHTML('beforeend', html)
+  }
+
+  if (stateSearchForm.children.length !== 1) {
+    while (stateSearchForm.children.length > 1) {
+        stateSearchForm.removeChild(stateSearchForm.lastChild);
+    }
+  }
+
+  var added = false;
+
+  var state_type = $("#patient_state").val();
+    if (state_type === '{{c.state_infec[0]}}') {
+      addToStateSearchForm(infectedStateForm)
+      added = true;
+    } 
+
+  if (added) $("#state_search_main_col").attr('class', 'col-md-auto')
+  else $("#state_search_main_col").attr('class', 'col')
+}

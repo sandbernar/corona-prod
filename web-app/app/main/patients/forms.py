@@ -168,6 +168,11 @@ class PatientsSearchForm(FlaskForm):
     state_count_min = h5fields.IntegerField("State Count Min", widget=h5widgets.NumberInput(min=0, max=100, step=1))
     state_count_max = h5fields.IntegerField("State Count Max", widget=h5widgets.NumberInput(min=0, max=100, step=1))
 
+    #States - Infected
+    state_infec_type = SelectField(choices=[c.all_types] + c.state_infec_types)
+    state_infec_illness_symptoms = SelectField(choices=[c.all_types] + c.illness_symptoms)
+    state_infec_illness_severity = SelectField(choices=[c.all_types] + c.illness_severity)    
+
     # Flight Travel
     flight_arrival_date = SelectField('Flight Arrival Date', id='flight_arrival_date')
     flight_code_id = SelectField('Flight Code', id='flight_code_id')
