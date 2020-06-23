@@ -462,7 +462,6 @@ class AllPatientsTableModule(TableModule):
                 if flight_code_id != None:
                     self.q = self.q.filter(FlightTravel.flight_code_id == flight_code_id)
 
-                    # print(FlightCode.query.all())
                     self.search_params.append((_("Номер Рейса"), FlightCode.query.filter_by(id = flight_code_id).first()))
 
                 travel_in_out = request.args.get("travel_departure_outer", "all_travel")
@@ -540,7 +539,6 @@ class AllPatientsTableModule(TableModule):
                             self.search_params.append((_("Граница"), BorderControl.query.filter_by(id = border_id).first().name))
                             break
 
-        print(self.q)
         self.search_form.process()
 
     def print_entry(self, result):

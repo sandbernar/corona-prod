@@ -143,8 +143,11 @@ def prepare_patient_form(patient_form, with_old_data = False, with_all_travel_ty
         patient_form.job_category_id.choices = [] if not search_form else [c.all_job_categories]
         if search_form:
             patient_form.job_category_id.default = c.all_job_categories[0]
-            
-        patient_form.job_category_id.choices += [c.unknown] + [(cat.id, cat.name) for cat in job_categories]
+            patient_form.job_category_id.choices += [c.unknown]
+        else:
+            patient_form.job_category_id.choices += [c.unknown_num]
+
+        patient_form.job_category_id.choices += [(cat.id, cat.name) for cat in job_categories]
 
     def populate_countries_select(select_input, default, with_unknown = True):
         if not select_input.choices:
@@ -287,7 +290,7 @@ def handle_add_update_patient(request_dict, final_dict, update_dict = {}):
             final_dict['is_found_date'] = request.form.get("is_found_date", None)
         
     if 'job_category_id' in request_dict:
-        job_category_id = None if request_dict['job_category_id'] == "None" else request_dict['job_category_id']
+        job_category_id = None if request_dict['job_category_id'] == "-1" else request_dict['job_category_id']
         final_dict['job_category_id'] = job_category_id
 
     # 3
