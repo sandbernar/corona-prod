@@ -9,7 +9,9 @@ from app.main.forms import UploadDataForm
 from flask_wtf import FlaskForm
 from flask_babelex import _
 from wtforms.validators import DataRequired
-from wtforms import TextField, DateField, SelectField, RadioField, BooleanField, SelectMultipleField
+from wtforms import TextField, DateField, SelectField, RadioField, BooleanField, SelectMultipleField, IntegerField
+from wtforms.fields import html5 as h5fields
+from wtforms.widgets import html5 as h5widgets
 
 class PatientForm(FlaskForm):
     travel_type = SelectField('Travel Type', id='travel_type', validators=[DataRequired()])
@@ -163,6 +165,8 @@ class PatientsSearchForm(FlaskForm):
     patient_state = SelectField('State', choices=[(-1, _("Все Статусы"))] + c.states)
     state_date_range_start = DateField()
     state_date_range_end = DateField()
+    state_count_min = h5fields.IntegerField("State Count Min", widget=h5widgets.NumberInput(min=0, max=100, step=1))
+    state_count_max = h5fields.IntegerField("State Count Max", widget=h5widgets.NumberInput(min=0, max=100, step=1))
 
     # Flight Travel
     flight_arrival_date = SelectField('Flight Arrival Date', id='flight_arrival_date')

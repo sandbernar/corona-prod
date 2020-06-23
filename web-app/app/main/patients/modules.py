@@ -351,16 +351,19 @@ class AllPatientsTableModule(TableModule):
         # State search
         patient_state = self.request.args.get("patient_state", "-1")
         if patient_state != "-1":
+            # State Filter
             patient_state_val = State.query.filter_by(value=patient_state).first()
             patient_state_id = patient_state_val.id
 
             patient_state_disp_name = patient_state_val.name
 
             self.q = self.q.join(PatientState, PatientState.patient_id == Patient.id)
-            self.q = self.q.filter(PatientState.state_id == patient_state_id)
+            self.q = self.q.filter(PatientState.state_id == patient_state_id)            
 
             self.search_form.patient_state.default = patient_state
 
+            # State Date
+            # State Date Start
             state_date_range_start = request.args.get("state_date_range_start", None)
             
             if state_date_range_start:
@@ -370,6 +373,7 @@ class AllPatientsTableModule(TableModule):
 
                 patient_state_disp_name = "{} {}".format(patient_state_disp_name, state_date_range_start.strftime('%Y-%m-%d'))
 
+            # State Date End
             state_date_range_end = request.args.get("state_date_range_end", None)
             
             if state_date_range_end:
@@ -380,6 +384,23 @@ class AllPatientsTableModule(TableModule):
                 patient_state_disp_name = "{}:{}".format(patient_state_disp_name, state_date_range_end.strftime('%Y-%m-%d'))
 
             self.search_params.append((_("Статус Пациента"), patient_state_disp_name))
+
+            # State Count
+            # State Count Min
+            state_count_min = request.args.get("state_count_min", None)
+
+            if state_count_min:
+                self.q = self.q.having(func.count(PatientState.id) >= state_count_min)
+                self.search_form.state_count_min.default = state_count_min
+
+            # State Count Max
+            state_count_max = request.args.get("state_count_max", None)
+
+            if state_count_max:
+                self.q = self.q.having(func.count(PatientState.id) <= state_count_max)
+                self.search_form.state_count_max.default = state_count_max               
+
+            self.q = self.q.group_by(Patient.id)
 
         # Is contacted
         contacted = self.request.args.get("contacted", "-1")
