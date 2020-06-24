@@ -26,7 +26,7 @@ def upgrade():
     sa.UniqueConstraint('name'),
     sa.UniqueConstraint('value')
     )
-    op.add_column('Address', sa.Column('location_type_id', sa.Integer(), server_default='null', nullable=True))
+    op.add_column('Address', sa.Column('location_type_id', sa.Integer(), nullable=True))
     op.create_foreign_key(None, 'Address', 'AddressLocationType', ['location_type_id'], ['id'])
     op.drop_constraint('Download_status_key', 'Download', type_='unique')
     op.drop_column('Download', 'status')

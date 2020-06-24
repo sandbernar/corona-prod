@@ -203,7 +203,7 @@ class Address(db.Model):
     lat = Column(Float, nullable=True, default = None)
     lng = Column(Float, nullable=True, default = None)
 
-    location_type_id = Column(Integer, ForeignKey('AddressLocationType.id'), nullable=True, server_default=null())
+    location_type_id = Column(Integer, ForeignKey('AddressLocationType.id'), nullable=True)
     location_type = db.relationship('AddressLocationType')
     
     def __init__(self, **kwargs):
