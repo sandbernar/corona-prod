@@ -28,8 +28,8 @@ def upgrade():
     )
     op.add_column('Address', sa.Column('location_type_id', sa.Integer(), nullable=True))
     op.create_foreign_key(None, 'Address', 'AddressLocationType', ['location_type_id'], ['id'])
-    op.drop_constraint('Download_status_key', 'Download', type_='unique')
-    op.drop_column('Download', 'status')
+    # op.drop_constraint('Download_status_key', 'Download', type_='unique')
+    # op.drop_column('Download', 'status')
     # ### end Alembic commands ###
 
 
