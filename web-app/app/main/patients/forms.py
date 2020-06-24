@@ -9,7 +9,9 @@ from app.main.forms import UploadDataForm
 from flask_wtf import FlaskForm
 from flask_babelex import _
 from wtforms.validators import DataRequired
-from wtforms import TextField, DateField, SelectField, RadioField, BooleanField, SelectMultipleField
+from wtforms import TextField, DateField, SelectField, RadioField, BooleanField, SelectMultipleField, IntegerField
+from wtforms.fields import html5 as h5fields
+from wtforms.widgets import html5 as h5widgets
 
 class PatientForm(FlaskForm):
     travel_type = SelectField('Travel Type', id='travel_type', validators=[DataRequired()])
@@ -50,12 +52,13 @@ class PatientForm(FlaskForm):
 
     home_address_country_id = SelectField('Home Address Country', validators=[DataRequired()])
     home_address_state = TextField('Home State')
-    home_address_county = TextField('Home County')    
+    home_address_county = TextField('Home County')
     home_address_city = TextField('Home City')
     home_address_street = TextField('Home Street')
     home_address_house = TextField('Home House')
     home_address_flat = TextField('Home Flat')
-    home_address_building = TextField('Home Building')    
+    home_address_building = TextField('Home Building')
+    home_address_location_type_id = SelectField('Home Address Location Type Id', validators=[DataRequired()])
 
     visited_country_id = SelectField('Visited Country', validators=[DataRequired()])
     visited_from_date = DateField('Visit From Date')
@@ -162,6 +165,13 @@ class PatientsSearchForm(FlaskForm):
     patient_state = SelectField('State', choices=[(-1, _("Все Статусы"))] + c.states)
     state_date_range_start = DateField()
     state_date_range_end = DateField()
+    state_count_min = h5fields.IntegerField("State Count Min", widget=h5widgets.NumberInput(min=0, max=100, step=1))
+    state_count_max = h5fields.IntegerField("State Count Max", widget=h5widgets.NumberInput(min=0, max=100, step=1))
+
+    #States - Infected
+    state_infec_type = SelectField(choices=[c.all_types] + c.state_infec_types)
+    state_infec_illness_symptoms = SelectField(choices=[c.all_types] + c.illness_symptoms)
+    state_infec_illness_severity = SelectField(choices=[c.all_types] + c.illness_severity)    
 
     # Flight Travel
     flight_arrival_date = SelectField('Flight Arrival Date', id='flight_arrival_date')
@@ -192,6 +202,8 @@ class PatientsSearchForm(FlaskForm):
     iin = TextField(id='iin')
     pass_num = TextField()
     telephone = TextField(id='telephone')
+
+    home_address_location_type_id = SelectField('Home Address Location Type Id', validators=[DataRequired()])
 
 class SelectContactedForm(FlaskForm):
     contact_type = SelectField('Contact Type', choices=[(1, _("(ПК) Потенциальный Контакт")), (0, _("(БК) Близкий Контакт"))],

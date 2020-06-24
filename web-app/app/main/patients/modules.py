@@ -3,7 +3,7 @@ import math
 from app.main.modules import TableModule
 
 from app.main.patients.models import Patient, ContactedPersons, PatientStatus, PatientState, State
-from app.main.models import TravelType, VariousTravel, BlockpostTravel, Address, Country, Region, JobCategory, BorderControl
+from app.main.models import TravelType, VariousTravel, BlockpostTravel, Address, Country, Region, JobCategory, BorderControl, AddressLocationType
 from app.main.flights_trains.models import FlightTravel, TrainTravel, FlightCode, Train
 from app.login.models import User
 
@@ -11,7 +11,7 @@ from collections import OrderedDict
 from app.main.util import parse_date, yes_no_html, yes_no, custom_yes_no
 from app.main.patients.util import measure_patient_similarity
 
-from sqlalchemy import func, cast, JSON, exc
+from sqlalchemy import func, cast, JSON, exc, text
 import sqlalchemy
 
 from flask_babelex import _
@@ -284,12 +284,13 @@ class AllPatientsTableModule(TableModule):
         def name_search(param, param_str, q, param_disp_name):
             if param_str in request.args:
                 req_str = request.args[param_str]
-                q = q.filter(func.lower(param).contains(req_str.lower()))
-                param = getattr(self.search_form, param_str, None)
-                if param:
-                    setattr(param, 'default', req_str)
-                    
-                    if req_str:
+
+                if req_str:
+                    q = q.filter(func.lower(param).contains(req_str.lower()))
+                    param = getattr(self.search_form, param_str, None)
+                    if param:
+                        setattr(param, 'default', req_str)
+                        
                         self.search_params.append((param_disp_name, req_str))
             
             return q
@@ -298,26 +299,19 @@ class AllPatientsTableModule(TableModule):
         self.q = name_search(Patient.second_name, "second_name", self.q, _("Фамилия"))
         self.q = name_search(Patient.patronymic_name, "patronymic_name", self.q, _("Отчество"))
 
-        if "iin" in request.args:
-            self.q = self.q.filter(Patient.iin.contains(request.args["iin"]))
-            self.search_form.iin.default = request.args["iin"]
-
-            if request.args["iin"]:
-                self.search_params.append((_("ИИН"), request.args["iin"]))
-
-        if "pass_num" in request.args:
-            self.q = self.q.filter(Patient.pass_num.contains(request.args["pass_num"]))
-            self.search_form.pass_num.default = request.args["pass_num"]
+        iin = request.args.get("iin", "")
+        if iin:
+            self.q = self.q.filter(Patient.iin.contains(iin))
+            self.search_form.iin.default = iin
             
-            if request.args["pass_num"]:
-                self.search_params.append((_("Номер Паспорта"), request.args["pass_num"]))
+            self.search_params.append((_("ИИН"), iin))
 
-        if "telephone" in request.args:
-            self.q = self.q.filter(Patient.telephone.contains(request.args["telephone"]))
-            self.search_form.telephone.default = request.args["telephone"]
-
-            if request.args["telephone"]:
-                self.search_params.append((_("Телефон"), request.args["telephone"]))
+        pass_num = request.args.get("pass_num", "")
+        if pass_num:
+            self.q = self.q.filter(Patient.pass_num.contains(pass_num))
+            self.search_form.pass_num.default = pass_num
+            
+            self.search_params.append((_("Номер Паспорта"), pass_num))
 
         travel_type = request.args.get("travel_type", c.all_travel_types[0])
         if travel_type and travel_type != c.all_travel_types[0]:
@@ -357,16 +351,19 @@ class AllPatientsTableModule(TableModule):
         # State search
         patient_state = self.request.args.get("patient_state", "-1")
         if patient_state != "-1":
+            # State Filter
             patient_state_val = State.query.filter_by(value=patient_state).first()
             patient_state_id = patient_state_val.id
 
             patient_state_disp_name = patient_state_val.name
 
             self.q = self.q.join(PatientState, PatientState.patient_id == Patient.id)
-            self.q = self.q.filter(PatientState.state_id == patient_state_id)
+            self.q = self.q.filter(PatientState.state_id == patient_state_id)            
 
             self.search_form.patient_state.default = patient_state
 
+            # State Date
+            # State Date Start
             state_date_range_start = request.args.get("state_date_range_start", None)
             
             if state_date_range_start:
@@ -376,6 +373,7 @@ class AllPatientsTableModule(TableModule):
 
                 patient_state_disp_name = "{} {}".format(patient_state_disp_name, state_date_range_start.strftime('%Y-%m-%d'))
 
+            # State Date End
             state_date_range_end = request.args.get("state_date_range_end", None)
             
             if state_date_range_end:
@@ -386,6 +384,56 @@ class AllPatientsTableModule(TableModule):
                 patient_state_disp_name = "{}:{}".format(patient_state_disp_name, state_date_range_end.strftime('%Y-%m-%d'))
 
             self.search_params.append((_("Статус Пациента"), patient_state_disp_name))
+
+            # State Count
+            # State Count Min
+            state_count_min = request.args.get("state_count_min", None)
+
+            if state_count_min:
+                self.q = self.q.having(func.count(PatientState.id) >= state_count_min)
+                self.search_form.state_count_min.default = state_count_min
+
+                self.search_params.append((_("Минимум Статусов"), state_count_min))
+
+            # State Count Max
+            state_count_max = request.args.get("state_count_max", None)
+
+            if state_count_max:
+                self.q = self.q.having(func.count(PatientState.id) <= state_count_max)
+                self.search_form.state_count_max.default = state_count_max
+
+                self.search_params.append((_("Максимум Статусов"), state_count_max))
+
+            # State Infec
+            if patient_state_val.value == c.state_infec[0]:
+                state_infec_type = request.args.get("state_infec_type", "-1")
+                if state_infec_type != "-1":
+                    param = "state_infec_type"
+                    self.q = self.q.filter(text("CAST(\"PatientState\".attrs ->> '{}' AS VARCHAR) = '{}'".format(param, state_infec_type)))
+
+                    self.search_form.state_infec_type.default = state_infec_type
+
+                    self.search_params.append((_("Инфицирован - Тип"), dict(c.state_infec_types)[state_infec_type]))
+
+                state_infec_illness_symptoms = request.args.get("state_infec_illness_symptoms", "-1")
+                if state_infec_illness_symptoms != "-1":
+                    param = "state_infec_illness_symptoms"
+                    self.q = self.q.filter(text("CAST(\"PatientState\".attrs ->> '{}' AS VARCHAR) = '{}'".format(param, state_infec_illness_symptoms)))
+
+                    self.search_form.state_infec_illness_symptoms.default = state_infec_illness_symptoms
+
+                    self.search_params.append((_("Инфицирован - Симптомы"), dict(c.illness_symptoms)[state_infec_illness_symptoms]))
+
+                state_infec_illness_severity = request.args.get("state_infec_illness_severity", "-1")
+                if state_infec_illness_severity != "-1":
+                    param = "state_infec_illness_severity"
+                    self.q = self.q.filter(text("CAST(\"PatientState\".attrs ->> '{}' AS VARCHAR) = '{}'".format(param, state_infec_illness_severity)))
+
+                    self.search_form.state_infec_illness_severity.default = state_infec_illness_severity
+
+                    self.search_params.append((_("Инфицирован - Тяжесть Болезни"), dict(c.illness_severity)[state_infec_illness_severity]))
+
+            self.q = self.q.group_by(Patient.id)
 
         # Is contacted
         contacted = self.request.args.get("contacted", "-1")
@@ -447,6 +495,18 @@ class AllPatientsTableModule(TableModule):
 
         current_country = Country.query.filter_by(code=c.current_country).first()
 
+        home_address_location_type_id = self.request.args.get("home_address_location_type_id", "-1")
+        if home_address_location_type_id != "-1":
+            location_type = AddressLocationType.query.filter_by(id = home_address_location_type_id).first()
+            self.q = self.q.join(Address, Patient.home_address_id == Address.id)
+            self.q = self.q.group_by(Patient.id)
+
+            self.q = self.q.filter(Address.location_type_id == home_address_location_type_id)
+
+            self.search_form.home_address_location_type_id.default = home_address_location_type_id
+
+            self.search_params.append((_("Село/Город"), location_type))
+
         if travel_type and travel_type != c.all_travel_types[0]:
             # FlightTravel
             if travel_type_query.value == c.flight_type[0]:
@@ -456,7 +516,6 @@ class AllPatientsTableModule(TableModule):
                 if flight_code_id != None:
                     self.q = self.q.filter(FlightTravel.flight_code_id == flight_code_id)
 
-                    # print(FlightCode.query.all())
                     self.search_params.append((_("Номер Рейса"), FlightCode.query.filter_by(id = flight_code_id).first()))
 
                 travel_in_out = request.args.get("travel_departure_outer", "all_travel")
@@ -533,7 +592,6 @@ class AllPatientsTableModule(TableModule):
                             self.q = self.q.filter(VariousTravel.border_control_id == border_id)
                             self.search_params.append((_("Граница"), BorderControl.query.filter_by(id = border_id).first().name))
                             break
-
 
         self.search_form.process()
 

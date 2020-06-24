@@ -170,7 +170,6 @@
                         {% with form=form %}
                           {% include "patients/modules/patient_form_right.html" %}
                         {% endwith %}
-                  
                   <div class="row mt-2">
                   <div class="col">
                     <div class="card shadow">
@@ -354,18 +353,16 @@
       if (border_form_id) backup_values[border_form_id] = $(border_form_id).val()
     }
 
-  $("#add_patients")[0].reset();
+    $("#add_patients")[0].reset();
 
-  $("#travel_type").val(travel_type)
+    $("#travel_type").val(travel_type)
 
-  for (var key in backup_values) {
-    if (backup_values.hasOwnProperty(key)) {
-      $(key).val(backup_values[key])
+    for (var key in backup_values) {
+      if (backup_values.hasOwnProperty(key)) {
+        $(key).val(backup_values[key])
+      }
     }
   }
-}
-
-
 
 $("#travel_type").on("change", function(){
   update_travel_form();

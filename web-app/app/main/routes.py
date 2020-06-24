@@ -76,6 +76,10 @@ def route_template(template, **kwargs):
     try:
         q = Patient.query
 
+        out_of_rk = Region.query.filter_by(name="Вне РК").first()
+
+        q = q.filter(Patient.region_id != out_of_rk.id)
+
         if not current_user.user_role.can_lookup_other_regions_stats:
             q = q.filter_by(region_id=current_user.region_id)
 

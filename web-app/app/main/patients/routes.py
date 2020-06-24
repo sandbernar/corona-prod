@@ -28,7 +28,7 @@ from app import login_manager, db, celery
 from app import constants as c
 from app.main import blueprint
 from app.main.models import Region, Country, VisitedCountry, Infected_Country_Category, JobCategory
-from app.main.models import TravelType, BorderControl, VariousTravel, BlockpostTravel, Address, HGBDToken, OldDataTravel
+from app.main.models import TravelType, BorderControl, VariousTravel, BlockpostTravel, Address, AddressLocationType, HGBDToken, OldDataTravel
 from app.main.patients.forms import PatientForm, UpdateProfileForm, AddFlightFromExcel, ContactedPatientsSearchForm, PatientsSearchForm, SelectContactedForm
 from app.main.patients.models import Patient, PatientStatus, ContactedPersons, State, PatientState
 from app.main.patients.modules import ContactedPatientsTableModule, AllPatientsTableModule
@@ -143,8 +143,11 @@ def prepare_patient_form(patient_form, with_old_data = False, with_all_travel_ty
         patient_form.job_category_id.choices = [] if not search_form else [c.all_job_categories]
         if search_form:
             patient_form.job_category_id.default = c.all_job_categories[0]
-            
-        patient_form.job_category_id.choices += [c.unknown] + [(cat.id, cat.name) for cat in job_categories]
+            patient_form.job_category_id.choices += [c.unknown]
+        else:
+            patient_form.job_category_id.choices += [c.unknown_num]
+
+        patient_form.job_category_id.choices += [(cat.id, cat.name) for cat in job_categories]
 
     def populate_countries_select(select_input, default, with_unknown = True):
         if not select_input.choices:
@@ -160,6 +163,9 @@ def prepare_patient_form(patient_form, with_old_data = False, with_all_travel_ty
         populate_countries_select(patient_form.job_address_country_id, kz.id)
 
         populate_countries_select(patient_form.visited_country_id, -1)
+
+    # Address loc. type
+    patient_form.home_address_location_type_id.choices = [c.unknown_loc_type] + [(loc_type.id, loc_type.name) for loc_type in AddressLocationType.query.all()]
 
     return patient_form
 
@@ -204,12 +210,17 @@ def is_same_address(request_dict, address, form_prefix='home'):
         is_same = False
     elif address.building != request_dict.get(form_prefix + '_address_building', None):
         is_same = False
+    elif address.location_type_id != request_dict.get(form_prefix + '_address_location_type_id', None):
+        is_same = False
 
     return is_same
 
 def process_address(request_dict, form_prefix='home', lat_lng = True, address = None):
     if request_dict[form_prefix + '_address_country_id'] == '-1':
         request_dict[form_prefix + '_address_country_id'] = None
+
+    if request_dict.get(form_prefix + '_address_location_type_id', '-1') == '-1':
+        request_dict[form_prefix + '_address_location_type_id'] = None        
 
     if address is None:
         address = Address()
@@ -225,6 +236,7 @@ def process_address(request_dict, form_prefix='home', lat_lng = True, address = 
     address.house = request_dict[form_prefix + '_address_house']
     address.flat = request_dict.get(form_prefix + '_address_flat', None)
     address.building = request_dict.get(form_prefix + '_address_building', None)
+    address.location_type_id = request_dict.get(form_prefix + '_address_location_type_id', None)
 
     db.session.add(address)
     db.session.commit()
@@ -236,6 +248,7 @@ def process_address(request_dict, form_prefix='home', lat_lng = True, address = 
         address.lng = lat_lng[1]
 
         db.session.add(address)
+
 
     return address
 
@@ -277,7 +290,7 @@ def handle_add_update_patient(request_dict, final_dict, update_dict = {}):
             final_dict['is_found_date'] = request.form.get("is_found_date", None)
         
     if 'job_category_id' in request_dict:
-        job_category_id = None if request_dict['job_category_id'] == "None" else request_dict['job_category_id']
+        job_category_id = None if request_dict['job_category_id'] == "-1" else request_dict['job_category_id']
         final_dict['job_category_id'] = job_category_id
 
     # 3

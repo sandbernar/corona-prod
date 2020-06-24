@@ -63,6 +63,13 @@ cyrillic_to_ascii = {
     "Т": "T"
 }
 
+# Address Location Types
+unknown_loc_type = (-1, "Неизвестно")
+village_loc_type = ("village_loc_type", "Село")
+city_loc_type = ("city_loc_type", "Город")
+
+address_loc_types = [village_loc_type, city_loc_type]
+
 # Countries
 country_category = ["1a", "1b", "2", "3", "4"]
 
