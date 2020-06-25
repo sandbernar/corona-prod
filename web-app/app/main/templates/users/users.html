@@ -57,7 +57,7 @@
         [
           [_("Логин"), users_search_form.username(class="form-control", type="text", placeholder=_("Логин"))],
           [_("Регион"), users_search_form.region_id(class="form-control")],
-          [_("Администратор?"), users_search_form.is_admin(class="form-control")],
+          [_("Роль"), users_search_form.user_role_id(class="form-control")],
         ]
       ] 
       %}
@@ -68,9 +68,6 @@
     {% endif %}
 
     <!-- Footer -->
-
-
-
     {% include "site_template/footer.html" %}
 
   </div>        

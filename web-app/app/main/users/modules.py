@@ -17,7 +17,7 @@ class UserTableModule(TableModule):
         table_head[_("Логин")] = ["username"]
         table_head[_("E-Mail")] = ["email"]
         table_head[_("Регион")] = []
-        table_head[_("Администратор?")] = ["is_admin"]
+        table_head[_("Роль")] = ["user_role_id"]
         table_head[_("Телефон")] = ["telephone"]
         table_head[_("Добавлено Пациентов")] = []
 
@@ -45,14 +45,14 @@ class UserTableModule(TableModule):
                 self.q = self.q.filter(User.region_id == query_region_id)
                 self.search_form.region_id.default = region_id
 
-        is_admin = self.request.args.get("is_admin", "-1")
-        if is_admin != "-1":
+        user_role_id = self.request.args.get("user_role_id", "-1")
+        if user_role_id != "-1":
             try:
-                self.q = self.q.filter(User.is_admin == bool(int(is_admin)))
+                self.q = self.q.filter(User.user_role_id == int(user_role_id))
             except ValueError:
-                return render_template('errors/error-500.html'), 500                
-            
-            self.search_form.is_admin.default = is_admin        
+                return render_template('errors/error-500.html'), 500
+
+            self.search_form.user_role_id.default = user_role_id
 
     def print_entry(self, result):
         username = result[0].username
@@ -61,14 +61,12 @@ class UserTableModule(TableModule):
         email = result[0].email
         region = c.all_regions if result[0].region == None else result[0].region
 
-        is_admin = _("Нет")
-        if result[0].is_admin:
-            is_admin = _("Да")
+        user_role = result[0].user_role
         
         telephone = result[0].telephone
         added_patients_count = 0 if result[1] == None else result[1]
 
-        return [username, email, region, is_admin, telephone, added_patients_count]
+        return [username, email, region, user_role, telephone, added_patients_count]
 
 class UserPatientsTableModule(TableModule):
     def __init__(self, request, q, search_form, header_button = None, page = 1, per_page = 5):
