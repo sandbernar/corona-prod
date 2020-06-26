@@ -99,6 +99,8 @@ class PatientForm(FlaskForm):
     state_infec_illness_symptoms = SelectField(choices=c.illness_symptoms)
     state_infec_illness_severity = SelectField(choices=c.illness_severity)
 
+    state_dead_reason = SelectField(choices=c.death_reasons)
+
     # is_contacted = RadioField("Is Contacted", id="is_contacted", choices=[(1, _("Да")),(0, _("Нет"))], default=0, validators=[DataRequired()])
 
 

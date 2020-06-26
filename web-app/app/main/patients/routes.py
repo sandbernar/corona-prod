@@ -492,6 +492,13 @@ def patient_profile():
             # States
             states = State.query.all()
             states_list = []
+
+            # Switch states order in form so that found is first and dead is last
+            for a in range(len(states)):
+                if states[a].value == c.state_dead[0]:
+                    states.append(states.pop(a))
+                elif states[a].value == c.state_found[0]:
+                    states.insert(0, states.pop(a))
             
             for s in states:
                 if s.value == c.state_is_transit[0]:
@@ -590,12 +597,6 @@ def patient_profile():
             if patient.hospital:
                 form.hospital_id.default = patient.hospital.id
                 hospital_name = Hospital.query.filter_by(id=patient.hospital.id).first().name
-
-            # for i in range(len(patient.states)):
-            #     state = patient.states[i]
-            #     if state.value == c.state_is_home[0]:
-            #         if "is_home_end" in state.attrs.keys():
-            #             form.is_home_end.default = state.attrs["is_home_end"]
 
             today = datetime.today()
             age =  today.year - patient.dob.year - ((today.month, today.day) < (patient.dob.month, patient.dob.day))
@@ -1053,6 +1054,8 @@ def get_all_states(patient_states):
                 attrs["state_infec_type"] = attrs.get("state_infec_type", -1)
                 attrs["state_infec_illness_symptoms"] = attrs.get("state_infec_illness_symptoms", -1)
                 attrs["state_infec_illness_severity"] = attrs.get("state_infec_illness_severity", -1)
+            elif state.value == c.state_dead[0]:
+                attrs["state_dead_reason"] = attrs.get("state_dead_reason", -1)
 
         states.append({
             "id":state.id,
@@ -1086,6 +1089,8 @@ def handle_attrs(state, patient, data, patient_attrs):
         attrs["state_infec_type"] = data.get("state_infec_type", -1)
         attrs["state_infec_illness_symptoms"] = data.get("state_infec_illness_symptoms", -1)
         attrs["state_infec_illness_severity"] = data.get("state_infec_illness_severity", -1)
+    elif state.value == c.state_dead[0]:
+        attrs["state_dead_reason"] = data.get("state_dead_reason", -1)
 
     return attrs
 
