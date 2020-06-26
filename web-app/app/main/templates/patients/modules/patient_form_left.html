@@ -105,7 +105,7 @@
 	  <div class="col">
 	  <div class="form-group">
 		<label for="home-input" class="form-control-label sub-label">{{ _("Город") }}</label>
-		{{ form.home_address_city(class="form-control", id="cityInput", type="text" ) }}
+		{{ form.home_address_city(class="form-control", type="text" ) }}
 	  </div>
 	  </div>
 	  <div class="col-auto">
@@ -119,7 +119,7 @@
 	  <div class="col-xl">
 	  <div class="form-group">
 		<label for="home-input" class="form-control-label sub-label">{{ _("Улица") }}</label>
-		{{ form.home_address_street(class="form-control", id="streetInput", type="text", placeholder=_("Байтурсынова или мкр. Отырар") ) }}
+		{{ form.home_address_street(class="form-control", type="text", placeholder=_("Байтурсынова или мкр. Отырар") ) }}
 	  </div>
 	  </div>
 	  <div class="col">
@@ -127,7 +127,7 @@
 		<div class="col">
 		<div class="form-group">
 		  <label for="home-input" class="form-control-label sub-label">{{ _("Дом") }}</label>
-		  {{ form.home_address_house(class="form-control", id="houseInput", type="text", placeholder=_("1") ) }}
+		  {{ form.home_address_house(class="form-control", type="text", placeholder=_("1") ) }}
 		</div>
 		</div>
 		<div class="col">
@@ -178,7 +178,6 @@ $("#iinAutoFill").click(() => {
 		contentType: "application/json",
         data: JSON.stringify(iinData),
         success: function (response) {
-			console.log(response);
 			// if already exists
 			if ('id' in response) {
 				$.notify({
@@ -220,19 +219,88 @@ $("#iinAutoFill").click(() => {
 				document.getElementById("gender-2").checked = true;
 			}
 
+			var typesDict = {
+				"country": ["РЕСПУБЛИКА"],
+				"state": ["ОБЛАСТЬ"],
+				"area": ["РАЙОН", "РАЙОН ВНУТРИ ГОРОДА"],
+				"city": ["ГОРОД РЕСП.ЗНАЧ.", "ГОРОД ОБЛ.ЗНАЧ.", "ГОРОД РАЙ.ЗНАЧ."],
+				"village": ["ПОСЕЛОК", "АУЛ(СЕЛО)"],
+				"street": ["УЛИЦА", "МИКРОРАЙОН", "ВОИНСКАЯ ЧАСТЬ"],
+				"house": ["ДОМ"],
+				"flat": ["КВАРТИРА"]
+			};
+
+			function getAddressType(value) {
+				for (var type in typesDict) {
+					if(typesDict[type].includes(value)) return type
+				}
+
+				return null
+			}
+
+			function resetForm(id) {
+			    $('#' + id).val(function() {
+			        return this.defaultValue;
+			    });
+			}			
+
+			var addressValuesDict = {}
+			console.log(response.address.addressString)		
+
 			if (response.address != null) {
 				let addressValues = response.address.addressString.split(", ");
+
 				for (let i = 0; i < addressValues.length; i++) {
 					addressValues[i] = addressValues[i].split(": ");
 					if (addressValues[i].length > 1) {
+						var addressType = getAddressType(addressValues[i][0])
+						if (addressType != null) {
+							addressValuesDict[addressType] = addressValues[i][1];
+						}
+
 						addressValues[i] = addressValues[i][1];
 					}  else {
 						addressValues[i] = "";
 					}
 				}
-				document.getElementById("cityInput").value = titleCase(addressValues[1], ' ');
-				document.getElementById("streetInput").value = titleCase(addressValues[3], ' ');
-				document.getElementById("houseInput").value = titleCase(addressValues[4], ' ');
+
+				// console.log(Object.keys(addressValuesDict))
+				var addressTypeKeys = Object.keys(addressValuesDict)
+
+				var resetFormList = ["home_address_state", "home_address_county", "home_address_city", "home_address_street",
+									 "home_address_house", "home_address_flat"]
+
+				for (resetParam in resetFormList) resetForm(resetFormList[resetParam])
+
+				if (addressTypeKeys.includes("state")){
+					document.getElementById("home_address_state").value = titleCase(addressValuesDict["state"], ' ');
+				}
+
+				if (addressTypeKeys.includes("area")){
+					document.getElementById("home_address_county").value = titleCase(addressValuesDict["area"], ' ');
+				}				
+
+				if (addressTypeKeys.includes("city")){
+					document.getElementById("home_address_city").value = titleCase(addressValuesDict["city"], ' ');
+					$('#home_address_location_type_id').val('{{ location_type_value_id[c.city_loc_type[0]] }}');
+				}
+
+				if (addressTypeKeys.includes("village")){
+					document.getElementById("home_address_city").value = titleCase(addressValuesDict["village"], ' ');
+					$('#home_address_location_type_id').val('{{ location_type_value_id[c.village_loc_type[0]] }}');
+				}				
+
+				if (addressTypeKeys.includes("street")) {
+					document.getElementById("home_address_street").value = titleCase(addressValuesDict["street"], ' ');
+				}
+
+				if (addressTypeKeys.includes("house")) {
+					document.getElementById("home_address_house").value = titleCase(addressValuesDict["house"], ' ');
+				}
+
+				if (addressTypeKeys.includes("flat")) {
+					document.getElementById("home_address_flat").value = titleCase(addressValuesDict["flat"], ' ');
+				}
 			}
 			if (response.phone != null) {
 				document.getElementById("phoneInput").value = response.phone.PhoneNumber;

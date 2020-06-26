@@ -408,6 +408,16 @@ def handle_after_patient(request_dict, final_dict, patient, update_dict = {}, up
         db.session.add(v_country)
         db.session.commit()
 
+def patient_aux_data():
+    aux_data = dict()
+
+    aux_data["location_type_value_id"] = dict()
+    
+    for loc_type in AddressLocationType.query.all():
+        aux_data["location_type_value_id"][loc_type.value] = loc_type.id
+
+    return aux_data
+
 @blueprint.route('/add_person', methods=['GET', 'POST'])
 @login_required
 def add_patient():
@@ -456,7 +466,8 @@ def add_patient():
         return jsonify({"patient_id": patient.id})
     else:
         return route_template( 'patients/add_person', form=patient_form, select_contacted=select_contacted,
-                                select_contacted_form=select_contacted_form, added=False, error_msg=None, c=c)
+                                select_contacted_form=select_contacted_form, added=False, error_msg=None, c=c,
+                                **patient_aux_data())
 
 @blueprint.route('/patient_profile', methods=['GET', 'POST'])
 @login_required
@@ -623,7 +634,7 @@ def patient_profile():
             states = patient.states
 
             return route_template('patients/profile', states=states, patient=patient, age=age, hospital_name=hospital_name,
-                                    form = form, change = change, c=c, travel=travel)
+                                    form = form, change = change, c=c, travel=travel, **patient_aux_data())
     else:    
         return render_template('errors/error-500.html'), 500
 
