@@ -143,6 +143,10 @@ def users():
         users_search_form.region_id.choices = [(-2, _("Неважно"))]
         users_search_form.region_id.choices += get_regions_choices(current_user)
 
+    if not users_search_form.user_role_id.choices:
+        roles = UserRole.query.all()
+        users_search_form.user_role_id.choices = [c.all_types] + [(r.id, r.name) for r in roles]
+
     q_patient = db.session.query(Patient.created_by_id,
                                     func.count('*').label('patient_count'))    
     

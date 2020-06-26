@@ -20,7 +20,7 @@ class CreateUserForm(FlaskForm):
     region_id = SelectField('Region', validators=[DataRequired()])
     organization = TextField('Organization', validators=[DataRequired()])
     user_role_id = SelectField('Region', validators=[DataRequired()])
-    is_admin = RadioField("Is Admin", choices=[(1, _("Да")), (0, _("Нет"))], default=0, validators=[DataRequired()])
+    # is_admin = RadioField("Is Admin", choices=[(1, _("Да")), (0, _("Нет"))], default=0, validators=[DataRequired()])
 
 class UpdateUserForm(CreateUserForm):
     password = TextField('Password', validators=[])
@@ -28,7 +28,8 @@ class UpdateUserForm(CreateUserForm):
 class UserSearchForm(FlaskForm):
     username = TextField('Username')
     region_id = SelectField('Region')
-    is_admin = SelectField("Is Admin", choices=[(-1, _("Неважно")), (1, _("Да")), (0, _("Нет"))], default=-1)
+    user_role_id = SelectField('Region', validators=[DataRequired()])
+    # is_admin = SelectField("Is Admin", choices=[(-1, _("Неважно")), (1, _("Да")), (0, _("Нет"))], default=-1)
 
 class UserActivityReportForm(FlaskForm):
     region_id = SelectField('Region')

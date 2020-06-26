@@ -650,6 +650,8 @@ form_states = [
 unknown_num = ('-1', "Неизвестно")
 all_types = ('-1', "Все")
 
+all_types_none = (None, 'Все')
+
 # state_infec
 # Infection Types
 self_request = ("self_request", "Самообращение")
@@ -674,6 +676,12 @@ medium_severity = ("medium_severity", "Среднее")
 hard_severity = ("hard_severity", "Тяжёлое (критическое)")
 
 illness_severity = [unknown_num, low_severity, medium_severity, hard_severity]
+
+#state_dead
+due_covid = ("due_covid", "От КВИ")
+due_other = ("due_other", "От Сопутствующих")
+
+death_reasons = [unknown_num, due_covid, due_other]
 
 # Roles
 skp_avia = ("skp_avia", "СКП (Авиа)")

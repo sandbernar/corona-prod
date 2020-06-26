@@ -406,8 +406,8 @@ class AllPatientsTableModule(TableModule):
 
             # State Infec
             if patient_state_val.value == c.state_infec[0]:
-                state_infec_type = request.args.get("state_infec_type", "-1")
-                if state_infec_type != "-1":
+                state_infec_type = request.args.get("state_infec_type", "None")
+                if state_infec_type != "None":
                     param = "state_infec_type"
                     self.q = self.q.filter(text("CAST(\"PatientState\".attrs ->> '{}' AS VARCHAR) = '{}'".format(param, state_infec_type)))
 
@@ -415,8 +415,8 @@ class AllPatientsTableModule(TableModule):
 
                     self.search_params.append((_("Инфицирован - Тип"), dict(c.state_infec_types)[state_infec_type]))
 
-                state_infec_illness_symptoms = request.args.get("state_infec_illness_symptoms", "-1")
-                if state_infec_illness_symptoms != "-1":
+                state_infec_illness_symptoms = request.args.get("state_infec_illness_symptoms", "None")
+                if state_infec_illness_symptoms != "None":
                     param = "state_infec_illness_symptoms"
                     self.q = self.q.filter(text("CAST(\"PatientState\".attrs ->> '{}' AS VARCHAR) = '{}'".format(param, state_infec_illness_symptoms)))
 
@@ -424,14 +424,25 @@ class AllPatientsTableModule(TableModule):
 
                     self.search_params.append((_("Инфицирован - Симптомы"), dict(c.illness_symptoms)[state_infec_illness_symptoms]))
 
-                state_infec_illness_severity = request.args.get("state_infec_illness_severity", "-1")
-                if state_infec_illness_severity != "-1":
+                state_infec_illness_severity = request.args.get("state_infec_illness_severity", "None")
+                if state_infec_illness_severity != "None":
                     param = "state_infec_illness_severity"
                     self.q = self.q.filter(text("CAST(\"PatientState\".attrs ->> '{}' AS VARCHAR) = '{}'".format(param, state_infec_illness_severity)))
 
                     self.search_form.state_infec_illness_severity.default = state_infec_illness_severity
 
                     self.search_params.append((_("Инфицирован - Тяжесть Болезни"), dict(c.illness_severity)[state_infec_illness_severity]))
+
+            # State Dead
+            if patient_state_val.value == c.state_dead[0]:
+                state_dead_reason = request.args.get("state_dead_reason", "None")
+                if state_dead_reason != "None":
+                    param = "state_dead_reason"
+                    self.q = self.q.filter(text("CAST(\"PatientState\".attrs ->> '{}' AS VARCHAR) = '{}'".format(param, state_dead_reason)))
+
+                    self.search_form.state_dead_reason.default = state_dead_reason
+
+                    self.search_params.append((_("Умер - Причина Смерти"), dict(c.death_reasons)[state_dead_reason]))                
 
             self.q = self.q.group_by(Patient.id)
 

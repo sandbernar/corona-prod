@@ -500,6 +500,10 @@
 
             $("#state_infec_illness_severity").val(stateAttrs["state_infec_illness_severity"])
             $("#state_infec_illness_severity").change()
+        } else if (stateValue === '{{ c.state_dead[0] }}') {
+            $("#state_dead_reason").val(stateAttrs["state_dead_reason"])
+            $("#state_dead_reason").change()
+            console.log($("#state_dead_reason").val())
         }
     }
 
@@ -578,6 +582,10 @@
                 stateData["state_infec_type"] = $("#state_infec_type").val()
                 stateData["state_infec_illness_symptoms"] = $("#state_infec_illness_symptoms").val()
                 stateData["state_infec_illness_severity"] = $("#state_infec_illness_severity").val()
+                break;
+            case '{{ c.state_dead[0] }}':
+                stateData["state_dead_reason"] = $("#state_dead_reason").val()
+                console.log($("#state_dead_reason").val())
                 break;
             default:
                 break;
@@ -726,7 +734,6 @@
                     contentType: "application/json",
                     data: JSON.stringify(addStateData),
                     success: function (response) {
-                        console.log(response);
                         renderStateHistoryTable(response);
                         $('#addPatientStateModal').modal('hide');
                         $.notify({
@@ -874,11 +881,26 @@
         }
     }
 
+    var deadForm = `<div class="form-group">
+                        <div class="row">
+                        <div class="col">
+                        <label for="job-input" class="form-control-label">{{ _("Причина Смерти") }}</label>
+                            {{ form.state_dead_reason(class="form-control") }}
+                        </div>
+                    </div>`
+
+    function handleDeadStateForm(modalBodyID, stateSelectID) {
+        if ($("#" + stateSelectID).val() === "{{ c.state_dead[0] }}") {
+            document.getElementById(modalBodyID).insertAdjacentHTML('beforeend', deadForm)
+        }
+    }
+
     $("#addStateStateValue").change(function() {
         clearStateForm("addStateModalBody", 4)
         handleHospitalizedStateForm("addStateModalBody", "addStateStateValue");
         handleIsHomeStateForm("addStateModalBody", "addStateStateValue", 2);
         handleInfectedStateForm("addStateModalBody", "addStateStateValue");
+        handleDeadStateForm("addStateModalBody", "addStateStateValue");
     });
 
     $("#updatePatientStateState").change(function() {
@@ -886,11 +908,13 @@
         handleHospitalizedStateForm("editStateModalBody", "updatePatientStateState", false);
         handleIsHomeStateForm("editStateModalBody", "updatePatientStateState");
         handleInfectedStateForm("editStateModalBody", "updatePatientStateState");
+        handleDeadStateForm("editStateModalBody", "updatePatientStateState");
     });
 
     $("#addPatientStateModal").on("hidden.bs.modal", function () {
         $('#addStateStateValue').val($("#addStateStateValue option:first").val());
         $('#addStateStateValue').trigger('change');
+        clearStateForm("addStateModalBody", 4)
     });
 
     $("#addPatientStateModal").on("shown.bs.modal", function () {
