@@ -650,6 +650,8 @@ form_states = [
 unknown_num = ('-1', "Неизвестно")
 all_types = ('-1', "Все")
 
+all_types_none = (None, 'Все')
+
 # state_infec
 # Infection Types
 self_request = ("self_request", "Самообращение")

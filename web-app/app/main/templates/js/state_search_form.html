@@ -20,6 +20,20 @@ function update_state_search_form() {
                     </div>
                   </div>
                       `;
+
+  var deadStateForm = `<div class="col-md-auto">
+                    <div class="card shadow mt-3">
+                      <div class="card-header border-0">
+                        <div class="row">
+                          <div class="col-md-auto">
+                            <label class='form-control-label'>{{ _("Причина Смерти") }}</label>                
+                            {{ form.state_dead_reason(class="form-control") }}
+                          </div>               
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                      `;                      
                                                   
   var stateSearchForm = document.getElementById("state_search")
 
@@ -39,6 +53,9 @@ function update_state_search_form() {
     if (state_type === '{{c.state_infec[0]}}') {
       addToStateSearchForm(infectedStateForm)
       added = true;
+    } else if (state_type === '{{c.state_dead[0]}}') {
+      addToStateSearchForm(deadStateForm)
+      <!-- added = true; -->
     } 
 
   if (added) $("#state_search_main_col").attr('class', 'col-md-auto')
