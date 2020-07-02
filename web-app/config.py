@@ -31,6 +31,7 @@ class Config(object):
     # DEFAULT_THEME = "themes/dark"
     DEFAULT_THEME = None
     UPLOADED_DOCUMENTS_DEST = os.path.join(basedir, 'documents')
+    TEMPLATES_AUTO_RELOAD = True
 
 
 class ProductionConfig(Config):
@@ -49,6 +50,8 @@ class ProductionConfig(Config):
         environ.get('DATABASE_PORT', '5432'),
         environ.get('DATABASE_NAME')
     )
+    
+    TEMPLATES_AUTO_RELOAD = True
 
 
 class DebugConfig(Config):
