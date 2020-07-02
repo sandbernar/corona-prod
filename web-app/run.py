@@ -14,7 +14,7 @@ from flask import request, session
 from config import config_dict
 from app import create_app, db
 
-get_config_mode = environ.get('CONFIG_MODE', 'Debug')
+get_config_mode = environ.get('CONFIG_MODE', 'Production')
 print(get_config_mode)
 
 try:
