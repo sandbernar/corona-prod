@@ -1,0 +1,39 @@
+.ico {
+	display: inline-block;
+	-webkit-background-size: contain;
+	background-size: contain;
+}
+
+.ico-add {
+	width: 24px;
+	height: 24px;
+	background-image: url(../img/plus-ico.svg);	
+}
+
+.ico-load {
+	width: 24px;
+	height: 24px;
+	background-image: url(../img/load-ico.svg);	
+}
+
+.ico-search {
+	width: 24px;
+	height: 24px;
+	background-image: url(../img/search-ico.svg);	
+}
+
+h1 {
+	font-size: 18px;
+	font-weight: 300;
+	margin: 12px 0 10px;
+	padding-left: 10px;
+}
+
+h1 .ico {
+	vertical-align: middle;
+	position: relative;top: -1px;
+}
+
+.card {
+	border-radius: 6px;
+}
