@@ -14,7 +14,7 @@
 
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software. -->
 <!DOCTYPE html>
-<html lang="en">
+<html>
 
 <head>
   {% block head %}
@@ -74,17 +74,32 @@
     <!-- Argon JS -->
     <script src="{{ url_for('static', filename='assets/js/argon-dashboard.min.js') }}"></script>
     <script src="{{ url_for('static', filename='assets/vendor/bootstrap-notify-3.1.3/bootstrap-notify.js') }}"></script>
+    <script src="{{ url_for('static', filename='assets/vendor/Form-Completion-Progress-Bar/formProgressBar.jquery.min.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='assets/vendor/Form-Completion-Progress-Bar/formProgressBar.css') }}">
+
+
     <script language="javascript" src="https://momentjs.com/downloads/moment.js"></script>
     <script language="javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.43/js/bootstrap-datetimepicker.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.43/css/bootstrap-datetimepicker.min.css">
 
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='assets/vendor/select2/css/select2.min.css') }}">
+    <script src="{{ url_for('static', filename='assets/vendor/select2/js/select2.min.js') }}"></script>
+
     <script>
+
+        if ($('.js-select2').length) {
+          $('.js-select2').select2();
+        }
         if ($('.datepicker').length > 0) {
             if ( $('.datepicker')[0].type != 'date' ) $('.datepicker').datetimepicker({
                 format: 'L',
                 ignoreReadonly: true
             })
         }
+
+        $('.daterange').daterangepicker();
+
   </script>
   {% endblock javascripts %}
 
