@@ -162,6 +162,13 @@ def countries_categories():
 def help_route():
     return render_template('help.html')
 
+
+
+@blueprint.route("/add_person2")
+@login_required
+def add_person2():
+    return render_template('patients/add_person2.html')
+
 # move to another dir
 
 
