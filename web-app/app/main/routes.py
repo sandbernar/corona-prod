@@ -167,7 +167,8 @@ def help_route():
 @blueprint.route("/add_person2")
 @login_required
 def add_person2():
-    return render_template('patients/add_person2.html')
+    months = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"]
+    return render_template('patients/add_person2.html', months=months)
 
 # move to another dir
 

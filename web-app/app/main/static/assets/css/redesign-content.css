@@ -11,9 +11,15 @@
 }
 
 .ico-load {
-	width: 24px;
-	height: 24px;
+	margin-left: 3px;
+	position: relative;
+	top: 1px;
+	width: 11px;
+	height: 11px;
 	background-image: url(../img/load-ico.svg);	
+	-webkit-animation: spin 4s linear infinite;
+	-o-animation: spin 4s linear infinite;
+	animation: spin 4s linear infinite;
 }
 
 .ico-search {
@@ -34,6 +40,81 @@ h1 .ico {
 	position: relative;top: -1px;
 }
 
+@keyframes spin { 100% { -webkit-transform: rotate(360deg); transform:rotate(360deg); } }
+
+
+
+/* form */
 .card {
 	border-radius: 6px;
+}
+
+.card h2 {
+	margin-top: 15px;
+	margin-bottom: 7px;
+	line-height: 26px;
+}
+
+.card .card-info {
+	display: inline-block;
+	color: #373A3C;
+	font-weight: 300;
+	font-size: 10px;
+	margin-bottom: 26px;
+	line-height: 20px;
+}
+
+
+#iinInput {
+	position: relative;
+}
+
+.form-control-end-ico {
+	position: absolute;
+	display: block;
+	right: 15px;
+	top: 39px;
+}
+.iin-brackets {
+	width: 27px;
+	height: 27px;
+	background-image: url(../img/brackets-ico.svg);
+}
+
+
+.iin-form-group .form-control {
+	margin-bottom: 64px;
+}
+
+.iin-form-group.form-group small.form-text {
+	bottom: 40px;
+}
+
+
+.btn-secondary {
+	box-shadow: none;
+	background-color: #fff;
+	border: 1px solid #E0E0E0;
+	font-weight: 300;
+	color: #ccc;
+}
+
+.btn-secondary.focus,
+.btn-secondary:focus,
+.btn-secondary:hover {
+	color: #5DA2FF;
+	border-color: #5DA2FF;
+	background-color: #fff;
+}
+
+.btn-secondary.active,
+.btn-secondary:active,
+.btn-secondary:not(:disabled):not(.disabled):active, 
+.btn-secondary:not(:disabled):not(.disabled).active, 
+.show>.btn-secondary.dropdown-toggle {
+	color: #fff;
+	background-color: #2F80ED;
+	box-shadow: 0px 0px 7px rgba(0, 109, 255, 0.35), inset 1px 2px 3px rgba(0, 0, 0, 0.16);
+	border: 1px solid #296CC6;
+
 }
