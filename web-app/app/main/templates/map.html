@@ -2,13 +2,19 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
-  <title>ArcGIS JavaScript Tutorials: Add layers to a map</title>
+  <title>Метрики</title>
   <style>
     html, body, #viewDiv {
       padding: 0;
       margin: 0;
       height: 100%;
       width: 100%;
+    }
+
+    #viewDiv {
+      max-width: 1000px;
+      max-height: 600px;
+      margin: 20px auto;
     }
   </style>
   <link rel="stylesheet" href="https://js.arcgis.com/4.15/esri/themes/light/main.css">
@@ -22,7 +28,11 @@
 		// "esri/Graphic",
 		// "esri/layers/GraphicsLayer",
 		"esri/layers/GeoJSONLayer",
+    "esri/symbols/SimpleFillSymbol",
 		// "esri/geometry/geometryEngine"
+    "esri/renderers/ClassBreaksRenderer"
+
+
     ], function(
         Map, 
         MapView, 
@@ -30,7 +40,9 @@
         // Graphic, 
         // GraphicsLayer, 
         // geometryEngine, 
-        GeoJSONLayer
+        GeoJSONLayer,
+        SimpleFillSymbol,
+        ClassBreaksRenderer
         ) {
       
       // var map = new Map({
@@ -40,7 +52,7 @@
 
       const template = {
         title: "{name}",
-        content: "Magnitude {mag} {type} hit {place} on {time}",
+        content: "<span style='color:red'>Зараженных {infected}</span> <br><span style='color:green'>Выздоровело {recovered} </span><br><span style='color:orange'>Активных случаев ?</span><br><span style='color:black'>Смертей {deaths}</span>",
         fieldInfos: [
           {
             fieldName: "time",
@@ -51,44 +63,169 @@
         ]
       };
 
-      const renderer = {
-        type: "simple",
-        field: "mag",
-        symbol: {
-          type: "simple-marker",
-          color: "orange",
-          outline: {
-            color: "white"
-          }
-        },
-        visualVariables: [
-          {
-            type: "size",
-            field: "mag",
-            stops: [
-              {
-                value: 2.5,
-                size: "4px"
-              },
-              {
-                value: 8,
-                size: "40px"
-              }
-            ]
-          }
-        ]
+      // const renderer = {
+      //   type: "simple",
+      //   field: "mag",
+      //   symbol: {
+      //     type: "simple-marker",
+      //     color: "orange",
+      //     outline: {
+      //       color: "white"
+      //     }
+      //   },
+      //   visualVariables: [
+      //     {
+      //       type: "size",
+      //       field: "mag",
+      //       stops: [
+      //         {
+      //           value: 2.5,
+      //           size: "4px"
+      //         },
+      //         {
+      //           value: 8,
+      //           size: "40px"
+      //         }
+      //       ]
+      //     }
+      //   ]
+      // };
+
+      // const renderer2 = {
+      //   type: "simple",
+      //   color: [150,10,10,.5],
+      //   style: "solid",
+      //   outline: {
+      //     color: "white",
+      //     width: 1
+      //   }
+      // }
+      var sym = {
+        type: "simple-fill",  // autocasts as new SimpleFillSymbol()
+        color: "#BDBDBD",
+        style: "solid",
+        outline: {  // autocasts as new SimpleLineSymbol()
+          color: "#BDBDBD",
+          width: 1
+        }
       };
 
-      const renderer2 = {
+      var sym2 = {
+        type: "simple-fill",  // autocasts as new SimpleFillSymbol()
+        color: "#FFE596",
+        style: "solid",
+        outline: {  // autocasts as new SimpleLineSymbol()
+          color: "[242, 201, 76, 0.24]",
+          width: 1
+        }
+      };
+      var sym3 = {
+        type: "simple-fill",  // autocasts as new SimpleFillSymbol()
+        color: "#F2C94C",
+        style: "solid",
+        outline: {  // autocasts as new SimpleLineSymbol()
+          color: "#F2C94C",
+          width: 1
+        }
+      };
+      var sym4 = {
+        type: "simple-fill",  // autocasts as new SimpleFillSymbol()
+        color: "#F2994A",
+        style: "solid",
+        outline: {  // autocasts as new SimpleLineSymbol()
+          color: "#F2994A",
+          width: 1
+        }
+      };
+      var sym5 = {
+        type: "simple-fill",  // autocasts as new SimpleFillSymbol()
+        color: "[0,0,0,.4]",
+        style: "solid",
+        outline: {  // autocasts as new SimpleLineSymbol()
+          color: "#EB5757",
+          width: 1
+        }
+      };
 
-      }
+
+      var renderer4 = new ClassBreaksRenderer({
+        field: "infected"
+      });
+
+      // All features with magnitude between 0 - 4.0
+      renderer4.addClassBreakInfo({
+        minValue: 1,
+        maxValue: 1000,
+        symbol: sym
+      });
+      renderer4.addClassBreakInfo({
+        minValue: 1001,
+        maxValue: 2000,
+        symbol: sym2
+      });
+      renderer4.addClassBreakInfo({
+        minValue: 2001,
+        maxValue: 3000,
+        symbol: sym3
+      });
+      renderer4.addClassBreakInfo({
+        minValue: 3001,
+        maxValue: 5000,
+        symbol: sym4
+      });
+      renderer4.addClassBreakInfo({
+        minValue: 5001,
+        maxValue: 7000,
+        symbol: sym5
+      });
+
+      var regionsRenderer = {
+        type: "simple",  // autocasts as new SimpleRenderer()
+        symbol: { 
+          type: "simple-fill",  
+          outline: {  // autocasts as new SimpleLineSymbol()
+            width: 0
+          }
+        },  // autocasts as new SimpleFillSymbol()
+        visualVariables: [{
+          type: "color",
+          field: "infected",
+          // normalizationField: "SQ_KM",
+          // features with 30 ppl/sq km or below are assigned the first color
+          // 255, 255, 255, 0.35
+          // 189, 189, 189, 0.35
+          // 255, 224, 129, 0.35
+          // 255, 192, 0, 0.35
+          // 255, 120, 0, 0.35
+          // 237, 0, 0, 0.35
+          
+
+
+
+          stops: [
+            { value: 1000, color: [ 255, 255, 255, 0.35 ] },
+            { value: 2000, color: [ 189, 189, 189, 0.35 ] },
+            { value: 3000, color: [ 255, 224, 129, 0.35 ] },
+            { value: 4000, color: [ 255, 192, 0, 0.35 ] },
+            { value: 5000, color: [ 255, 120, 0, 0.35 ] },
+            { value: 6000, color: [ 237, 0, 0, 0.35 ] }
+          ]
+        }]
+      };
+
+
+
+
+
 		
 
       const geojsonLayer = new GeoJSONLayer({
-        url: "/static/assets/js/region_outlines/regionsFeautre.geojson",
+        // url: "/static/assets/js/region_outlines/regionsFeautre.geojson",
+        url: "/static/assets/js/region_outlines/readable.regionsFeautre.geojson",
         // copyright: "USGS Earthquakes",
         popupTemplate: template,
-        renderer: renderer //optional
+        renderer: regionsRenderer
+        // renderer: renderer2 //optional
       });
 
       // map.add(featureLayer);
@@ -102,7 +239,7 @@
       const view = new MapView({
         container: "viewDiv",
         center: [67,48.14744],
-        zoom: 6,
+        zoom: 5,
         map: map
       });
 
