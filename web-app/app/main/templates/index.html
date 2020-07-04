@@ -46,7 +46,7 @@
 
   <div class="container-fluid mt--7">
     <div class="row">
-      <div class="col-xl mb-5">
+      <!-- <div class="col-xl mb-5">
           <div class="card shadow">
                       <div class="card-header bg-transparent">
             <div class="row align-items-center">
@@ -63,7 +63,23 @@
           </div>
            <div id="map" style="width:100%; height:500px"></div>
           </div>
+      </div> -->
+
+      <div class="col-xl mb-5">
+          <div class="card shadow">
+                      <div class="card-header bg-transparent">
+            <div class="row align-items-center">
+              <div class="col">
+                <h2 class="mb-0">{{ _('Карта случаев') }}</h2>
+              </div>
+            </div>
+          </div>
+           <div id="viewDiv" style="width:100%; height:500px">
+             <iframe src="/map" frameborder="0" width="100%" height="100%"></iframe>
+           </div>
+          </div>
       </div>
+
   {% if current_user.user_role.can_lookup_other_regions_stats %}
       <div class="col-xl-4">
         <div class="card shadow">
