@@ -22,8 +22,8 @@
 							<path
 								d="M11.4583 19.7917C16.0607 19.7917 19.7917 16.0607 19.7917 11.4583C19.7917 6.85596 16.0607 3.125 11.4583 3.125C6.85596 3.125 3.125 6.85596 3.125 11.4583C3.125 16.0607 6.85596 19.7917 11.4583 19.7917Z"
 								stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-							<path d="M21.875 21.875L17.3438 17.3438" stroke="white" stroke-width="3" stroke-linecap="round"
-								stroke-linejoin="round" />
+							<path d="M21.875 21.875L17.3438 17.3438" stroke="white" stroke-width="3"
+								stroke-linecap="round" stroke-linejoin="round" />
 						</svg>
 					</div>
 				</div>
@@ -43,21 +43,30 @@
 <div class="main-content">
 	<h1>
 		<i class="ico ico-add"></i>
-		Добавление пациента 
+		Добавление пациента
 	</h1>
-	<div class="card">
-		<div class="container">
-
-			<h2 class="card-title">Введите данные удостоверяющие <br class="xs-visible">личность</h2>
-			<span class="card-info">После ввода ИИН мы устанавливаем <br class="xs-visible">связь с РПН и поля заполняются <br class="xs-visible">автоматически</span>
+	<div class="card my-2">
+		<div class="container position-relative">
+			<div class="decorate-image decorate-image--boy">
+				<!-- boy.png -->
+			</div>
+			<div class="row">
+				<div class="col-xs-12 col-md-8 col-lg-7">
+					<h2 class="card-title pb-2">Введите данные удостоверяющие <br class="xs-visible">личность</h2>
+					<span class="card-info">После ввода ИИН мы устанавливаем <br class="xs-visible">связь с РПН и поля
+						заполняются <br class="xs-visible">автоматически</span>
+				</div>
+			</div>
 
 			<div class="row">
 
-				<div class="col-12">
+				<div class="col-12 col-md-8">
 					<div class="form-group iin-form-group">
 						<label for="iinInput">ИИН</label>
-						<input type="text" class="form-control" placeholder="000 000 000 000" id="iinInput">
-						<span class="form-control-end-ico iin-brackets"></span>
+						<div class="position-relative">
+							<input type="text" class="form-control" placeholder="000 000 000 000" id="iinInput">
+							<span class="form-control-end-ico iin-brackets"></span>
+						</div>
 						<small class="form-text">
 							<i class="ico ico-load"></i>
 							Устанавливаем связь с РПН....
@@ -65,14 +74,15 @@
 					</div>
 				</div>
 
-				<div class="col-12">
+				<div class="col-12 col-md-8">
 					<div class="form-group">
 						<label for="surnameInput">Фамилия</label>
-						<input type="text" class="form-control error" placeholder="Константинопольский" id="surnameInput">
+						<input type="text" class="form-control error" placeholder="Константинопольский"
+							id="surnameInput">
 					</div>
 				</div>
 
-				<div class="col-12">
+				<div class="col-12 col-md-8">
 					<div class="form-group">
 						<label for="nameInput">Имя</label>
 						<input type="text" class="form-control" placeholder="Константин" id="nameInput">
@@ -81,24 +91,24 @@
 
 
 
-				<div class="col-12">
+				<div class="col-12 col-md-8">
 					<div class="form-group">
 						<label for="patronymInput">Отчество</label>
 						<input type="text" class="form-control" placeholder="" id="patronymInput">
 					</div>
 				</div>
-				
 
-				
-				<div class="col-12">
+
+
+				<div class="col-12 col-md-6">
 					<div class="form-group">
 						<label for="patronymInput">Пол</label><br>
-						<div class="btn-group btn-group-toggle" data-toggle="buttons">
-							<label class="btn btn-secondary">
+						<div class="btn-group btn-group-toggle d-flex justify-content-center" data-toggle="buttons">
+							<label class="btn btn-secondary w-50 switch-button-two">
 								<input type="radio" name="options" id="option1"> мужской
 							</label>
-							<label class="btn btn-secondary">
-								<input type="radio" name="options" id="option2"> женский 
+							<label class="btn btn-secondary w-50 switch-button-two">
+								<input type="radio" name="options" id="option2"> женский
 							</label>
 						</div>
 					</div>
@@ -106,7 +116,7 @@
 
 
 
-				<div class="col-12">
+				<div class="col-12 col-md-8">
 					<div class="form-group">
 						<label for="patronymInput">Гражданство</label>
 						<select name="citizenship" id="citizenshipSelect" class="form-control js-select2">
@@ -125,276 +135,266 @@
 
 
 
-				<div class="col-12">
+				<div class="col-12 col-md-8">
 					<label for="dobInput">Дата рождения</label>
 
 					<div class="form-row">
 
-						<div class="col">
+						<div class="col-3">
 							<select name="dob" class="form-control js-select2">
-		                        {% for day in range(1,31) %}
-									<option value="{{ day }}">{{ day }}</option>
-		                        {% endfor %}
+								{% for day in range(1,31) %}
+								<option value="{{ day }}">{{ day }}</option>
+								{% endfor %}
 							</select>
 						</div>
 
 
-						<div class="col">
+						<div class="col-6">
 							<select name="mob" class="form-control js-select2">
-		                        {% for i in range(months |count) %}
-									<option value="{{ i }}">{{ months[i] }}</option>
-		                        {% endfor %}
+								{% for i in range(months |count) %}
+								<option value="{{ i }}">{{ months[i] }}</option>
+								{% endfor %}
 							</select>
 						</div>
 
 
-						<div class="col">
+						<div class="col-3">
 							<select name="yob" class="form-control js-select2">
-		                        {% for year in range(1900,2020) %}
-									<option value="{{ year }}">{{ year }}</option>
-		                        {% endfor %}
+								{% for year in range(1900,2020) %}
+								<option value="{{ year }}">{{ year }}</option>
+								{% endfor %}
 							</select>
 						</div>
-						
+
 					</div>
 
-					<div class="form-group">
+					<!-- <div class="form-group">
 						<input type="text" class="form-control" placeholder="" id="dobInput">
-					</div>
+					</div> -->
 				</div>
-
-
-
-
 
 			</div>
 
 
-			
+
 		</div>
 
-		<span class="text-success text-center">Данные удостоверяющие личность успешно заполнены.</span>
-	</div>
-	
-	<div class="card">
+		<span class="text-success text-center my-4">Данные удостоверяющие личность успешно заполнены.</span>
+	</div><!-- card -->
+
+	<div class="card my-2">
 		<div class="container">
 
-			<h2 class="card-title">Заполнините адреса пациента </h2>
+			<h2 class="card-title pb-2">Заполнините адреса пациента </h2>
 
 			<div class="row">
 
-				<div class="col-12">
+				<div class="col-12 col-md-8">
 					<div class="form-group">
 						<label for="patronymInput">Адрес фиксации</label>
 
 						<div class="input-group">
 
-					        <div class="input-group-prepend">
-					        	<div class="input-group-text">
-						        	@
-					          		<i class="ico ico-location"></i>
-					        	</div>
-					        </div>
+							<div class="input-group-prepend">
+								<div class="input-group-text">
+									<img src="/static/assets/img/point-on.svg">
+								</div>
+							</div>
 
-					        <input type="text" class="form-control" id="inlineFormInputGroupUsername" placeholder="Username">
-					        
-					        <div class="input-group-append">
-					        	<div class="input-group-text">
-					          		<a href="#" class="map-invoker">Карта</a>
-					        	</div>
-					        </div>
-						
+							<input type="text" class="form-control" id="inlineFormInputGroupUsername"
+								placeholder="Username">
+
+							<div class="input-group-append">
+								<div class="input-group-text">
+									<a href="#" class="map-invoker">Карта</a>
+								</div>
+							</div>
+
 						</div>
 
 					</div>
 				</div>
 
-				<div class="col-12">
+				<div class="col-12 col-md-8">
 					<div class="form-group">
 						<label for="patronymInput">Адрес прописки</label>
 
-						<div class="input-group">
+						<div class="input-group d-none">
 
-					        <div class="input-group-prepend">
-					        	<div class="input-group-text">
-						        	@
-					          		<i class="ico ico-location"></i>
-					        	</div>
-					        </div>
+							<div class="input-group-prepend">
+								<div class="input-group-text">
+									<img src="/static/assets/img/point-on.svg">
+								</div>
+							</div>
 
-					        <input type="text" class="form-control" id="inlineFormInputGroupUsername" placeholder="Username">
-					        
-					        <div class="input-group-append">
-					        	<div class="input-group-text">
-					          		<a href="#" class="map-invoker">Карта</a>
-					        	</div>
-					        </div>
-						
+							<input type="text" class="form-control form-control-fake" id="inlineFormInputGroupUsername"
+								placeholder="Username">
+
+							<div class="input-group-append">
+								<div class="input-group-text">
+									<a href="#" class="map-invoker">Карта</a>
+								</div>
+							</div>
+
 						</div>
-
-						<div class="input-group input-group-mask">
-
-							<span>Совпадает с адресом фиксации?</span>
-							<a href="#" class="btn btn-primary map-same-1">да</a>
-							<a href="#" class="btn btn-primary map-not-same">Нет</a>
-							
+						<div class="input-group input-group-mask input-group-fake">
+							<div class="input-group">
+								<input type="text" class="form-control form-control-fake" placeholder="Совпадает с адресом фиксации?"
+									aria-label="Совпадает с адресом фиксации?" aria-describedby="basic-addon2" readonly>
+								<div class="input-group-append">
+									<div class="custom-input-group d-flex justify-content-end align-items-center">
+										<button class="btn btn-primary custom-btn micro-box-m" data-action="0" type="button">да</button>
+										<button class="btn btn-primary custom-btn micro-box-m" data-action="1" type="button">нет</button>
+									</div>
+								</div>
+							</div>
 						</div>
 
 					</div>
 				</div>
 
-				<div class="col-12">
+				<div class="col-12 col-md-8">
 					<div class="form-group">
 						<label for="patronymInput">Адрес проживания</label>
 
-						<div class="input-group">
+						<div class="input-group d-none">
 
-					        <div class="input-group-prepend">
-					        	<div class="input-group-text">
-						        	@
-					          		<i class="ico ico-location"></i>
-					        	</div>
-					        </div>
+							<div class="input-group-prepend">
+								<div class="input-group-text">
+									<img src="/static/assets/img/point-on.svg">
+									<i class="ico ico-location"></i>
+								</div>
+							</div>
 
-					        <input type="text" class="form-control" id="inlineFormInputGroupUsername" placeholder="Username">
-					        
-					        <div class="input-group-append">
-					        	<div class="input-group-text">
-					          		<a href="#" class="map-invoker">Карта</a>
-					        	</div>
-					        </div>
-						
+							<input type="text" class="form-control" id="inlineFormInputGroupUsername"
+								placeholder="Username">
+
+							<div class="input-group-append">
+								<div class="input-group-text">
+									<a href="#" class="map-invoker">Карта</a>
+								</div>
+							</div>
+
 						</div>
+						<div class="input-group input-group-mask input-group-fake">
 
-						<div class="input-group input-group-mask">
+							<div class="input-group">
+								<input type="text" class="form-control form-control-fake" placeholder="Совпадает с адресом фиксации?"
+									aria-label="Совпадает с адресом фиксации?" aria-describedby="basic-addon2" readonly>
+								<div class="input-group-append">
+									<div class="custom-input-group d-flex justify-content-end align-items-center">
+										<button class="btn btn-primary custom-btn micro-box-m" type="button">да</button>
+										<button class="btn btn-primary custom-btn micro-box-m" type="button">нет</button>
+									</div>
+								</div>
+							</div>
 
-							<span>Совпадает с адресом фиксации?</span>
-							<a href="#" class="btn btn-primary map-same-1">да</a>
-							<a href="#" class="btn btn-primary map-not-same">Нет</a>
-							
-						</div>
-
-					</div>
-				</div>
-
-
-
-
-
-				<div class="col-12">
-					<div class="form-group">
-						<label for="patronymInput">Визиты за 14 дней</label>
-
-						<select name="journey_country" id="journeyCountrySelect" class="form-control js-select2">
-							<option value="1">Бангладеш</option>
-							<option value="2">Узбекстан</option>
-							<option value="3">Россия</option>
-						</select>
-
-						<input type="text" class="form-control daterange" name="">
-
-						<div class="input-group input-group-mask">
-
-							<span>Был ли пациент зарубежом?</span>
-							<a href="#" class="btn btn-primary map-same-1">да</a>
-							<a href="#" class="btn btn-primary map-not-same">Нет</a>
-							
-						</div>
-
-						<div class="input-group input-group-mask-no">
-
-							<span>После карантина обязательно отправитесь!</span>
-							
 						</div>
 
 					</div>
 				</div>
-
-				
-
 			</div>
 		</div>
 	</div><!-- card -->
 
-	<div class="card">
-		
-		<div class="container">
 
-			<h2 class="card-title">Выбирите тип прибытия в страну</h2>
+	<div class="card my-2">
+		<div class="container position-relative">
+			<div class="decorate-image decorate-image--woman">
+				<!-- woman-lg.png -->
+			</div>
+
+			<h2 class="card-title pb-2 pb-lg-5">Выбирите тип прибытия в страну</h2>
 
 			<div class="arrival-types">
-
-				<div class="arrival-types-nav">
-
-
-					<label class="btn btn-secondary btn-wide">
-						<input type="radio" name="options" id="option1"> местный случай
-					</label>
-					<label class="btn btn-secondary">
-						<img src="/static/assets/img/plain-ico.svg" class="arrival-icon">
-						<input type="radio" name="options" id="option2"> самолёт
-					</label>
-
-					<label class="btn btn-secondary">
-						<img src="/static/assets/img/train-ico.svg" class="arrival-icon">
-						<input type="radio" name="options" id="option3"> поезд
-					</label>
-
-					<label class="btn btn-secondary">
-						<img src="/static/assets/img/car-ico.svg" class="arrival-icon">
-						<input type="radio" name="options" id="option2"> авто
-					</label>
-
-					<label class="btn btn-secondary">
-						<img src="/static/assets/img/track-ico.svg" class="arrival-icon">
-						<input type="radio" name="options" id="option2"> пеший
-					</label>
-
-					<label class="btn btn-secondary">
-						<img src="/static/assets/img/ship-ico.svg" class="arrival-icon">
-						<input type="radio" name="options" id="option2"> морской
-					</label>
-
-					<label class="btn btn-secondary">
-						<img src="/static/assets/img/block-ico.svg" class="arrival-icon">
-						<input type="radio" name="options" id="option2"> блокпост
-					</label>
+				
+				<div class="arrival-types-nav row">
+					<div class="col-12 col-sm-3">
+						<label class="btn btn-secondary btn-wide radio-card">
+							<input class="d-none" type="radio" name="options" id="option1">
+							<div class="checkmark">местный случай</div>
+						</label>
+					</div>
+					<div class="col-4 col-sm-3">
+						<label class="btn btn-secondary col-4 radio-card radio-card--adaptive">
+							<i class="radio-card-icon custom-ico-raphael_plane"></i>
+							<input class="d-none" type="radio" name="options" id="option2"> 
+							<div class="checkmark">самолёт</div>
+						</label>
+					</div>
+					<div class="col-4 col-sm-3">
+						<label class="btn btn-secondary col-4 radio-card radio-card--adaptive">
+							<i class="radio-card-icon custom-ico-ion_train-sharp"></i>
+							<input class="d-none" type="radio" name="options" id="option3"> 
+							<div class="checkmark">поезд</div>
+						</label>
+					</div>
+					<div class="col-4 col-sm-3 d-none d-sm-block d-md-block d-lg-block">
+					</div>
+					<div class="col-4 col-sm-3">
+						<label class="btn btn-secondary col-4 radio-card radio-card--adaptive">
+							<i class="radio-card-icon custom-ico-ant-design_car-filled"></i>
+							<input class="d-none" type="radio" name="options" id="option2">
+							<div class="checkmark">авто</div>
+						</label>
+					</div>
+					<div class="col-4 col-sm-3">
+						<label class="btn btn-secondary col-4 radio-card radio-card--adaptive">
+							<i class="radio-card-icon custom-ico-ri_footprint-fill"></i>
+							<input class="d-none" type="radio" name="options" id="option2">
+							<div class="checkmark">пеший</div>
+						</label>
+					</div>
+					<div class="col-4 col-sm-3">
+						<label class="btn btn-secondary col-4 radio-card radio-card--adaptive">
+							<i class="radio-card-icon custom-ico-ri_ship-fill"></i>
+							<input class="d-none" type="radio" name="options" id="option2">
+							<div class="checkmark">морской</div>
+						</label>
+					</div>
+					<div class="col-4 col-sm-3">
+						<label class="btn btn-secondary col-4 radio-card radio-card--adaptive">
+							<i class="radio-card-icon custom-ico-maki_roadblock-15"></i>
+							<input class="d-none" type="radio" name="options" id="option2">
+							<div class="checkmark">блокпост</div>
+						</label>
+					</div>
 
 
 				</div>
 
 				<div class="arrival-by-plane">
 
-
-					<div class="form-group">
-						<label for="flightArrivalInput">Дата прилета</label>
-						<input type="text" class="form-control" name="" id="flightArrivalInput">
+					<div class="col-12">
+						<div class="form-group">
+							<label for="flightArrivalInput">Дата прилета</label>
+							<input type="text" class="form-control" name="" id="flightArrivalInput">
+						</div>
+						<div class="form-group">
+							<label for="flightSelect">Номер рейса</label>
+							<select name="flight_no" id="flightSelect" class="form-control js-select2">
+								<option value="1">123ФЫВа</option>
+								<option value="2">ф234</option>
+								<option value="3">fu324</option>
+							</select>
+						</div>
 					</div>
-
-
-					<div class="form-group">
-						<label for="flightSelect">Номер рейса</label>
-						<select name="flight_no" id="flightSelect" class="form-control js-select2">
-							<option value="1">123ФЫВа</option>
-							<option value="2">ф234</option>
-							<option value="3">fu324</option>
-						</select>
-					</div>
-
-					<div class="form-group">
-						<label for="planePlaceSelect">Место</label>
-						<select name="plane_place" id="planePlaceSelect" class="form-control js-select2">
-							<option value="1">AC 5</option>
-							<option value="2">AC 4</option>
-							<option value="3">AC 6</option>
-						</select>
+					<div class="col-12">
+						<div class="form-group">
+							<label for="planePlaceSelect">Место</label>
+							<select name="plane_place" id="planePlaceSelect" class="form-control js-select2">
+								<option value="1">AC 5</option>
+								<option value="2">AC 4</option>
+								<option value="3">AC 6</option>
+							</select>
+						</div>
 					</div>
 
 				</div>
 				<div class="arrival-by-train">
 
 
-					
+
 				</div>
 				<div class="arrival-by-car"></div>
 				<div class="arrival-by-foot"></div>
@@ -408,43 +408,108 @@
 
 	</div><!-- card -->
 
-	<div class="card">
-		
-		<div class="container">
+	<div class="card my-2">
 
-			<h2 class="card-title">Симптомы пациента </h2>
-			<span class="card-info">Опишите обнаружили ли симптомы при первичном осмотре.</span>
+		<div class="container pb-4">
 
-			<label for="patronymInput">Симптомы</label>
+			<h2 class="card-title pb-2">Симптомы пациента</h2>
 
-			<select name="symptoms" class="form-control js-select2" multiple="multiple">
-				<option value="1">Сухой кашель</option>
-				<option value="2">Тошнота </option>
-				<option value="3">Утомляемость </option>
-				<option value="4">Температура </option>
-			</select>
-
-			<input type="text" class="form-control daterange" name="">
-
-			<div class="input-group input-group-mask">
-
-				<span>Имеются жалобы или симптомы?</span>
-				<a href="#" class="btn btn-primary map-same-1">да</a>
-				<a href="#" class="btn btn-primary map-not-same">Нет</a>
+			<span class="card-info">
+				Опишите обнаружили ли симптомы при первичном осмотре.
+			</span>
+			
+			<div class="row">
+				<div class="col-12 col-md-8">
+					<div class="form-group">
+						<label for="patronymInput">Симптомы</label>
+						<select name="symptoms" class="form-control js-select2" multiple="multiple">
+							<option value="1">Сухой кашель</option>
+							<option value="2">Тошнота </option>
+							<option value="3">Утомляемость </option>
+							<option value="4">Температура </option>
+						</select>
+					</div>
+				</div>
+				<!-- <div class="col-12 col-md-8">
+					<div class="form-group">
+						<div class="input-group input-group-mask">
+							<div class="input-group d-none">
+			
+								<div class="input-group-prepend">
+									<div class="input-group-text">
+										<img src="/static/assets/img/point-on.svg">
+										<i class="ico ico-location"></i>
+									</div>
+								</div>
 				
+								<input type="text" class="form-control" id="inlineFormInputGroupUsername"
+									placeholder="Username">
+				
+								<div class="input-group-append">
+									<div class="input-group-text">
+										<a href="#" class="map-invoker">Карта</a>
+									</div>
+								</div>
+				
+							</div>
+							<div class="input-group input-group-mask input-group-fake input-group-fake--blackeplacaholder">
+				
+								<div class="input-group">
+									<input type="text" class="form-control form-control-fake" placeholder="Имеются жалобы или симптомы??"
+										aria-label="Имеются жалобы или симптомы?" aria-describedby="basic-addon2" readonly>
+									<div class="input-group-append">
+										<div class="custom-input-group d-flex justify-content-end align-items-center">
+											<button class="btn btn-primary custom-btn micro-box-m" type="button">да</button>
+											<button class="btn btn-primary custom-btn micro-box-m" type="button">нет</button>
+										</div>
+									</div>
+								</div>
+				
+							</div>
+						</div>
+					</div>
+				</div> -->
 			</div>
 
+		</div>
+	</div><!-- card -->
+	<!-- <div class="card my-2">
+		<div class="container">
+			<div class="col-12">
+				<div class="form-group">
+					<label for="patronymInput">Визиты за 14 дней</label>
 
+					<select name="journey_country" id="journeyCountrySelect" class="form-control js-select2">
+						<option value="1">Бангладеш</option>
+						<option value="2">Узбекстан</option>
+						<option value="3">Россия</option>
+					</select>
+
+					<input type="text" class="form-control daterange" name="">
+
+					<div class="input-group input-group-mask">
+
+						<span>Был ли пациент зарубежом?</span>
+						<a href="#" class="btn btn-primary map-same-1">да</a>
+						<a href="#" class="btn btn-primary map-not-same">Нет</a>
+
+					</div>
+
+					<div class="input-group input-group-mask-no">
+
+						<span>После карантина обязательно отправитесь!</span>
+
+					</div>
+
+				</div>
+			</div>
 
 		</div>
+	</div> -->
+	<div class="container mt-3 mb-5">
+		<button class="btn btn-primary">Сохранить пациента</button>
 	</div>
-
-	<button class="btn btn-primary">Сохранить пациента</button>
-
 </div>
-
-
-
 
 
 
@@ -460,7 +525,8 @@
 							<g clip-path="url(#clip0)">
 								<path d="M16.5313 4.3125L9.70314 11.1406L6.10938 7.54688L0.71875 12.9375" stroke="white"
 									stroke-linecap="round" stroke-linejoin="round" />
-								<path d="M12.2188 4.3125H16.5313V8.62501" stroke="white" stroke-linecap="round" stroke-linejoin="round" />
+								<path d="M12.2188 4.3125H16.5313V8.62501" stroke="white" stroke-linecap="round"
+									stroke-linejoin="round" />
 							</g>
 							<defs>
 								<clipPath id="clip0">
@@ -468,7 +534,7 @@
 								</clipPath>
 							</defs>
 						</svg>
-	
+
 					</div>
 					<h3 class="mobile-nav__menu__title">Метрики</h3>
 				</a>
@@ -483,7 +549,7 @@
 							<path d="M7.875 5.25V10.5" stroke="white" stroke-linecap="round" stroke-linejoin="round" />
 							<path d="M5.25 7.875H10.5" stroke="white" stroke-linecap="round" stroke-linejoin="round" />
 						</svg>
-	
+
 					</div>
 					<h3 class="mobile-nav__menu__title">Добавить</h3>
 				</a>
@@ -492,12 +558,16 @@
 				<a class="d-flex flex-column align-items-center mobile-nav__menu__link" href="#">
 					<div class="mobile-nav__menu__icon">
 						<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-							<path d="M13.7813 6.5625H1.96875" stroke="white" stroke-linecap="round" stroke-linejoin="round" />
-							<path d="M13.7813 3.9375H1.96875" stroke="white" stroke-linecap="round" stroke-linejoin="round" />
-							<path d="M13.7813 9.1875H1.96875" stroke="white" stroke-linecap="round" stroke-linejoin="round" />
-							<path d="M13.7813 11.8125H1.96875" stroke="white" stroke-linecap="round" stroke-linejoin="round" />
+							<path d="M13.7813 6.5625H1.96875" stroke="white" stroke-linecap="round"
+								stroke-linejoin="round" />
+							<path d="M13.7813 3.9375H1.96875" stroke="white" stroke-linecap="round"
+								stroke-linejoin="round" />
+							<path d="M13.7813 9.1875H1.96875" stroke="white" stroke-linecap="round"
+								stroke-linejoin="round" />
+							<path d="M13.7813 11.8125H1.96875" stroke="white" stroke-linecap="round"
+								stroke-linejoin="round" />
 						</svg>
-	
+
 					</div>
 					<h3 class="mobile-nav__menu__title">Пациенты</h3>
 				</a>
@@ -513,7 +583,7 @@
 								d="M9 8.25001C10.6569 8.25001 12 6.90686 12 5.25001C12 3.59315 10.6569 2.25 9 2.25C7.34315 2.25 6 3.59315 6 5.25001C6 6.90686 7.34315 8.25001 9 8.25001Z"
 								stroke="white" stroke-linecap="round" stroke-linejoin="round" />
 						</svg>
-	
+
 					</div>
 					<h3 class="mobile-nav__menu__title">Профиль</h3>
 				</a>
@@ -535,7 +605,7 @@
 	/*==================== DOM elements START====================*/
 	const $mainHeaderInput = $('#mainHeaderInput')
 	/*==================== DOM elements END====================*/
-	
+
 	$('#mainHeaderSearch').on('click', () => {
 		$mainHeaderInput.fadeIn(250)
 	})
@@ -545,5 +615,6 @@
 			$mainHeaderInput.fadeOut(250)
 		}
 	})
+
 </script>
 {% endblock javascripts %}

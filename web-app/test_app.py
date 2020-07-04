@@ -24,6 +24,10 @@ import names
 
 import string
 from faker import Faker
+
+from dotenv import load_dotenv
+load_dotenv()
+
 def str_time_prop(start, end, format, prop):
     """Get a time at a proportion of a range of two formatted times.
 

@@ -10,6 +10,8 @@ from sys import exit
 from flask_uploads import UploadSet, configure_uploads
 from flask_babelex import Babel
 from flask import request, session
+from dotenv import load_dotenv
+load_dotenv()
 
 from config import config_dict
 from app import create_app, db
