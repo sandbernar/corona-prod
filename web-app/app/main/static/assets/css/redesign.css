@@ -425,6 +425,12 @@ label {
 .switch-button-two {
 	font-size: 14px;
 }
+
+.card {
+	margin-right: 10px;
+	margin-left: 10px; 
+}
+
 /*sm*/
 @media (min-width: 576px) {
 	.radio-card {
@@ -442,6 +448,10 @@ label {
 	.switch-button-two {
 		font-size: 21px;
 	}
+	.card {
+		margin-right: 20px;
+		margin-left: 20px; 
+	}
 }
 /*lg*/
 @media(min-width: 992px) {
@@ -451,4 +461,19 @@ label {
 	.switch-button-two {
 		font-size: 30px;
 	}
+}
+
+.mobile-nav__menu {
+	z-index: 2;
+	position: fixed;
+}
+html, body {
+	padding: 0;
+	overflow-x: hidden;
+}
+.select2-container--default.select2-container--focus .select2-selection--multiple {
+	background-color: #ffffff00;
+}
+.success-custom {
+	font-weight: 300;
 }
