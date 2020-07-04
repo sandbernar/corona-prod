@@ -298,6 +298,7 @@ label {
 	font-size  : 13px;
 	font-family: 'Montserrat', sans-serif;
 	font-weight: 300;
+	min-width: 55px;
 }
 
 .micro-box-m {
@@ -360,8 +361,11 @@ label {
 	margin-bottom: 20px;
 }
 .radio-card-icon {
-	font-size: 46px;
+	font-size: 25px;
 	margin: 0 !important;
+}
+.radio-card-icon:before {
+	margin: 0;
 }
 .radio-card-icon--black {
 	color: black;
@@ -377,6 +381,7 @@ label {
 	border-color: #5DA2FF;
 	background-color: #2F80ED;
 }
+
 
 .btn-primary {
     background-color: #2F80ED;
@@ -406,6 +411,7 @@ label {
 	background-color: #3297d340;
 }
 
+
 .decorate-image {
 	position: absolute;
 	width: 100%;
@@ -415,11 +421,12 @@ label {
 	background-position: 100% 0%;
 }
 .decorate-image--woman {
-	background-image: url(/static/assets/img/woman-lg.png);
 	background-size: 24%;
 }
 .decorate-image--boy {
-	background-image: url(/static/assets/img/boy.png);
+	background-size: 36%;
+}
+.decorate-image--points {
 	background-size: 36%;
 }
 .switch-button-two {
@@ -431,6 +438,63 @@ label {
 	margin-left: 10px; 
 }
 
+.mobile-nav__menu {
+	z-index: 2;
+	position: fixed;
+	padding: 0px;
+	margin: 0 10px;
+	width: calc(100% - 20.1px);
+}
+footer {
+	background-color: #333333;
+	color: white;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-direction: column;
+	padding-bottom: 50px;
+}
+.info-footer {
+	margin-top: 17px;
+	display: flex;
+    justify-content: center;
+    flex-direction: row;
+    width: 100%;
+    align-items: center;
+    margin-bottom: 4px;
+}
+.info-logo {
+	font-family: Montserrat;
+	font-style: normal;
+	font-weight: 900;
+	font-size: 21px;
+	line-height: 22px;
+	letter-spacing: 1.5px;
+}
+.logo-thin {
+	font-weight: 300;
+}
+.info-copyright {
+	font-family: Montserrat;
+	font-style: normal;
+	font-weight: 300;
+	font-size: 8px;
+	line-height: 22px;
+}
+.info-center {
+	font-family: Montserrat;
+	font-style: normal;
+	font-weight: 300;
+	font-size: 7px;
+	line-height: 11px;
+}
+.info-vertical-line {
+	width: 1px;
+    background-color: #C4C4C4;
+    height: 28px;
+    margin: 0px 7px;
+}
+
 /*sm*/
 @media (min-width: 576px) {
 	.radio-card {
@@ -439,6 +503,15 @@ label {
 }
 /*md*/ 
 @media(min-width: 768px) {
+	.decorate-image--woman {
+		background-image: url(/static/assets/img/woman-lg.png);
+	}
+	.decorate-image--boy {
+		background-image: url(/static/assets/img/boy-two.png);
+	}
+	.decorate-image--points {
+		background-image: url(/static/assets/img/points.png);
+	}
 	.radio-card {
 		height: 160px;
 	}
@@ -452,23 +525,51 @@ label {
 		margin-right: 20px;
 		margin-left: 20px; 
 	}
+	.mobile-nav__menu {
+		margin: 0 20px;
+		width: calc(100% - 40.1px);
+	}
 }
 /*lg*/
 @media(min-width: 992px) {
+	.decorate-image--first-blob {
+		background-size: 21.4%;
+		background-image: url(/static/assets/img/blob-first-left.png);
+	}
 	.radio-card {
-		height: 220px;
+		height: 265px;
 	}
 	.switch-button-two {
 		font-size: 30px;
 	}
+	.decorate-image--boy {
+		background-image: url(/static/assets/img/boy.png);
+		background-size: 29%;
+	}
+	.info-logo {
+		font-size: 30px;
+		line-height: 22px;
+	}
+	.info-copyright {
+		font-size: 13px;
+	}
+	.info-center {
+		font-size: 10px;
+	}
+	.info-footer {
+		margin-top: 30px;
+		margin-bottom: 11px;
+	}
+	footer {
+		padding-bottom: 18px;
+	}
 }
 
-.mobile-nav__menu {
-	z-index: 2;
-	position: fixed;
+.mobile-nav__menu .container {
+	padding: 0px;
 }
 html, body {
-	padding: 0;
+	padding: 0px;
 	overflow-x: hidden;
 }
 .select2-container--default.select2-container--focus .select2-selection--multiple {
