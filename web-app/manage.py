@@ -5,6 +5,8 @@ from flask_migrate import Migrate, MigrateCommand
 from config import config_dict
 from run import app, db
 
+from dotenv import load_dotenv
+load_dotenv()
 
 get_config_mode = os.environ.get('CONFIG_MODE', 'Debug')
 config_mode = config_dict[get_config_mode.capitalize()]

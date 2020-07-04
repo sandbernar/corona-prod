@@ -13,6 +13,8 @@ from app.main.hospitals.models import Hospital, Hospital_Type
 from app.login.models import UserRole
 from app.main.flights_trains.models import FlightTravel, FlightCode
 from config import config_dict
+from dotenv import load_dotenv
+load_dotenv()
 
 # Database logging
 psqlConn = psycopg2.connect(dbname=os.getenv("DATABASE_NAME"),

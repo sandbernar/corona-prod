@@ -6,6 +6,8 @@ Copyright (c) 2019 - present AppSeed.us
 
 from flask_migrate import Migrate
 from os import environ
+from dotenv import load_dotenv
+load_dotenv()
 from sys import exit
 from flask_uploads import UploadSet, configure_uploads
 
