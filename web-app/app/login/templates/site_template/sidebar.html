@@ -73,6 +73,12 @@
               <i class="ni ni-fat-add text-blue"></i> {{ _('Добавить Пациента') }}
             </a>
           </li>
+
+          <li class="nav-item">
+            <a class="nav-link" href="/add_person2">
+              <i class="ni ni-fat-add text-blue"></i> {{ _('Добавить Пациента (редизайн)') }}
+            </a>
+          </li>
           {% if current_user.user_role.can_lookup_other_patients or current_user.user_role.can_lookup_own_patients%}
           <li class="nav-item">
             <a class="nav-link" href="/patients">
