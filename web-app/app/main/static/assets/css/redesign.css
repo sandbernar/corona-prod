@@ -167,7 +167,7 @@ label {
 }
 
 .main-header__search {
-	height: 30px;
+	min-height: 30px;
 }
 
 .main-header__search__icon {
@@ -490,11 +490,38 @@ footer {
 }
 .info-vertical-line {
 	width: 1px;
-    background-color: #C4C4C4;
-    height: 28px;
-    margin: 0px 7px;
+	background-color: #C4C4C4;
+	height: 28px;
+	margin: 0px 7px;
 }
-
+.logo-bottom {
+	color: #FFFFFF;
+	line-height: 17px;
+	font-size: 10px;
+	font-weight: 300;
+}
+.header__user-container {
+	display: inline-flex;
+	justify-content: center;
+	align-items: center;
+}
+.header__avatar {
+	height: 24px;
+	width: 24px;
+	border-radius: 50%;
+	border: 1px solid #618DFF;
+	background-color: white;
+	padding: 6px;
+}
+.header__username {
+	font-family: 'Montserrat';
+	font-style: normal;
+	font-weight: normal;
+	font-size: 13px;
+	line-height: 18px;
+	padding: 6px;
+	color: #FFFFFF;
+}
 /*sm*/
 @media (min-width: 576px) {
 	.radio-card {
@@ -535,6 +562,21 @@ footer {
 }
 /*lg*/
 @media(min-width: 992px) {
+	.main-header__input {
+		top: 50%;
+		transform: translate(50%, -50%);
+		right: 50%;
+	}
+	.main-header__search__icon {
+		right: 16px;
+	}
+	.logo {
+		padding-left: 0px !important;
+		padding-right: 0px !important;
+	}
+	.main-header__search {
+		min-height: 117px;
+	}
 	.radio-card-icon {
 		font-size: 48px;
 	}
@@ -619,6 +661,14 @@ footer {
 		background-color: #C4C4C4;
 		height: calc(100% - 4px);
 	}
+	.main-header__input {
+		min-width: calc(100% - 35px);
+		max-width: calc(100% - 35px);
+	}
+	.main-header__input:active, .main-header__input:focus {
+		min-width: calc(100% - 35px);
+		max-width: calc(100% - 35px);
+	}
 }
 
 .mobile-nav__menu .container {
@@ -633,4 +683,26 @@ html, body {
 }
 .success-custom {
 	font-weight: 300;
+}
+.btn-outline-white {
+	color: #fff;
+	background-color: transparent;
+	background-image: none;
+	border-color: #fff;
+	border-radius: 4px;
+}
+.btn-outline-white:not(:disabled):not(.disabled):active, .btn-outline-light:not(:disabled):not(.disabled).active, .show>.btn-outline-light.dropdown-toggle {
+	color: #0031B0;
+	background-color: #fff;
+	box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+}
+
+.btn-outline-white:hover {
+	color: #0031B0;
+	background-color: #fff;
+	box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.06);
+}
+
+.header__button {
+	margin: 10px 10px;
 }
