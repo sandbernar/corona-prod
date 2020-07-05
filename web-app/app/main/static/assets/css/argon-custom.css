@@ -141,3 +141,15 @@ input {
   font-size: 6.25rem;
   color: green;
 }
+
+
+
+
+/*update dashboard*/
+.stats-block .h2 {
+  font-size: 30px;
+}
+
+.stats-block .icon {
+  margin-top: 8px;
+}
