@@ -705,4 +705,16 @@ html, body {
 
 .header__button {
 	margin: 10px 10px;
+	min-width: 128px;
+}
+.select2-container--default .select2-selection--single .select2-selection__arrow b {
+	border-color: #5DA2FF transparent transparent transparent;
+	border-width: 13px 14px 0 14px;
+}
+.select2-container--default.select2-container--open .select2-selection--single .select2-selection__arrow b {
+	border-color: transparent transparent #5DA2FF transparent;
+	border-width: 0 14px 13px 14px;
+}
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+	width: 90px;
 }
