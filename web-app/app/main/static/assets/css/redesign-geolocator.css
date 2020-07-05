@@ -1,0 +1,8 @@
+.location-hints {
+	position: absolute;
+	top: 100%;
+	padding-top: 10px;
+	left: 0;
+	background-color: #fff;
+	z-index: 1;
+}
