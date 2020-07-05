@@ -120,17 +120,9 @@
 				<div class="col-12 col-md-8">
 					<div class="form-group">
 						<label for="patronymInput">Гражданство</label>
-						<select name="citizenship" id="citizenshipSelect" class="form-control js-select2">
-							<option value="1">Казахстан</option>
-							<option value="8">Узбекстан</option>
-							<option value="7">Узбекстан</option>
-							<option value="6">Узбекстан</option>
-							<option value="10">Узбекстан</option>
-							<option value="9">Узбекстан</option>
-							<option value="11">Узбекстан</option>
-							<option value="12">Узбекстан</option>
-							<option value="3">Россия</option>
-						</select>
+
+						{{ form.country_of_residence_id(class="form-control js-select2", id="citizenshipSelect") }}
+
 					</div>
 				</div>
 
@@ -194,9 +186,9 @@
 					<div class="form-group">
 						<input
 							type="text"
-							class="form-control error"
-							placeholder="8 707 123 58 13"
-							id="telephone"
+							class="form-control"
+							placeholder="+7 700 000 00 00"
+							id="phoneInput"
 						>
 					</div>
 				</div>

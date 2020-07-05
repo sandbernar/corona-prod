@@ -66,7 +66,26 @@ $(document).ready(function() {
 
 
 		}
-	})
+	});
+
+
+	// init masks
+	// phone masks
+	var element = document.getElementById('phoneInput');
+	var maskOptions = {
+	  mask: '+{7} 000 000-00-00'
+	};
+	var mask = IMask(element, maskOptions);
+
+	
+	var element = document.getElementById('iinInput');
+	var maskOptions = {
+	  mask: '000 000 000 000'
+	};
+	var mask = IMask(element, maskOptions);
+
+	
+
 })
 
 var geoCodeResultObjects;
