@@ -469,6 +469,66 @@ def add_patient():
                                 select_contacted_form=select_contacted_form, added=False, error_msg=None, c=c,
                                 **patient_aux_data())
 
+
+@blueprint.route("/add_person2")
+@login_required
+def add_person2():
+
+    patient_form = PatientForm()
+    patient_form = prepare_patient_form(patient_form)
+    patient_form.process()
+
+    select_contacted = None
+    select_contacted_form = None
+
+    select_contacted_id = request.args.get("select_contacted_id", None)
+    if select_contacted_id:
+        try:
+            select_contacted = Patient.query.filter_by(id=select_contacted_id).first()
+        except exc.SQLAlchemyError:
+            return render_template('errors/error-400.html'), 400
+
+        select_contacted_form = SelectContactedForm()
+
+    if 'create' in request.form:
+        request_dict = request.form.to_dict(flat=True)
+        final_dict = {'created_by_id': current_user.id}
+        
+        should_we_add_patient, message = can_we_add_patient(request_dict)
+        if not should_we_add_patient:
+            return jsonify({"error": message})
+        # create Patient
+        handle_add_update_patient(request_dict, final_dict)        
+        patient = Patient(**final_dict)
+        db.session.add(patient)
+        db.session.commit()
+
+        # Create Travels and VisitedCountries to created Patient
+        handle_after_patient(request_dict, final_dict, patient, update_patient=False)
+        if select_contacted:
+            try:
+                is_potential_contact = int(request.form.get("contact_type")) == 1
+                contacted = ContactedPersons(infected_patient_id=select_contacted.id, contacted_patient_id=patient.id, 
+                                            is_potential_contact=is_potential_contact)
+                db.session.add(contacted)
+                db.session.commit()
+            except exc.SQLAlchemyError:
+                return jsonify({"error": _("Ошибка при добавлении контактной связи")})
+
+            return jsonify({"patient_id": patient.id, "selected_patient_id": select_contacted.id})
+        return jsonify({"patient_id": patient.id})
+    else:
+        months = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"]
+        return render_template('patients/add_person2.html', months=months, form=patient_form, select_contacted=select_contacted,
+                                select_contacted_form=select_contacted_form, added=False, error_msg=None, c=c,
+                                **patient_aux_data())
+        
+        return route_template( 'patients/add_person', form=patient_form, select_contacted=select_contacted,
+                                select_contacted_form=select_contacted_form, added=False, error_msg=None, c=c,
+                                **patient_aux_data())
+
+
+
 @blueprint.route('/patient_profile', methods=['GET', 'POST'])
 @login_required
 def patient_profile():
