@@ -4,5 +4,13 @@
 	padding-top: 10px;
 	left: 0;
 	background-color: #fff;
-	z-index: 1;
+	z-index: 3;
+}
+
+.location-hints ul {
+	padding: 0;
+}
+
+.location-hints ul li {
+	margin-left: 43px;
 }
