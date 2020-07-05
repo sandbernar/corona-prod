@@ -196,7 +196,7 @@
 					<div class="form-group">
 						<label for="patronymInput">Адрес фиксации</label>
 
-						<div class="input-group">
+						<div class="input-group location-detection-block">
 
 							<div class="input-group-prepend">
 								<div class="input-group-text">
@@ -204,7 +204,7 @@
 								</div>
 							</div>
 
-							<input type="text" class="form-control" id="inlineFormInputGroupUsername"
+							<input type="text" class="form-control location-input" id="inlineFormInputGroupAddress1"
 								placeholder="Адрес">
 
 							<div class="input-group-append">
@@ -213,8 +213,13 @@
 								</div>
 							</div>
 
-						</div>
 
+							<div class="location-hints">
+
+								<ul>
+								</ul>
+							</div>
+						</div>
 					</div>
 				</div>
 
@@ -612,6 +617,15 @@
 	</div>
 </footer>
 <!-- /footer -->
+
+
+
+
+
+<script src="/static/assets/js/add_person2.js"></script>
+<link rel="stylesheet" href="/static/assets/css/redesign-geolocator.css">
+
+<div id="map" style="width: 600px; height: 400px"></div>
 
 {% endblock content %}
 
