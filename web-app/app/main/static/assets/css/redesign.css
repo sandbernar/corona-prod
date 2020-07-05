@@ -529,12 +529,22 @@ footer {
 		margin: 0 20px;
 		width: calc(100% - 40.1px);
 	}
+	.radio-card-icon {
+		font-size: 28px;
+	}
 }
 /*lg*/
 @media(min-width: 992px) {
+	.radio-card-icon {
+		font-size: 48px;
+	}
+	.checkmark {
+		font-size: 28px;
+	}
 	.decorate-image--first-blob {
 		background-size: 21.4%;
 		background-image: url(/static/assets/img/blob-first-left.png);
+		background-position: 0% 0%;
 	}
 	.radio-card {
 		height: 265px;
@@ -562,6 +572,52 @@ footer {
 	}
 	footer {
 		padding-bottom: 18px;
+	}
+
+	.form-control {
+		height: 76px;
+	}
+	.form-control,
+	.form-control::placeholder {
+		font-size  : 24px;
+	}
+	.form-control::placeholder {
+		color: #373A3C;
+	}
+	.form-group {
+		margin-bottom: 46px;
+	}
+	.main-header__input {
+		height: 62px;
+	}
+	.select2-selection__rendered {
+		line-height: 60px !important;
+	}
+	.select2-container .select2-selection--single {
+		height: 76px !important;
+	}
+	.select2-selection__arrow {
+		height: 74px !important;
+	}
+	.select2-container--default.select2-selection--single.select2-selection__rendered {
+		font-size: 24px !important;
+	}
+	.custom-btn {
+		min-width: 116px;
+		height: 70px;
+		font-size: 24px;
+		line-height: 24px;
+	}
+	.input-group-text img {
+		height: 29px;
+	}
+	.map-invoker {
+		font-size: 18px;
+	}
+	.map-invoker__vertial-line {
+		width: 1px;
+		background-color: #C4C4C4;
+		height: calc(100% - 4px);
 	}
 }
 
