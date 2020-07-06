@@ -360,6 +360,12 @@ label {
 	white-space: pre-wrap;
 	margin-bottom: 20px;
 }
+
+.radio-card.active .radio-card-icon--black:before {
+	color: #fff;
+}
+
+
 .radio-card-icon {
 	font-size: 25px;
 	margin: 0 !important;
